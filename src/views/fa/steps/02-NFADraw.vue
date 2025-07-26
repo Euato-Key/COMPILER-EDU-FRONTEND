@@ -46,6 +46,10 @@
                 </ul>
               </div>
             </div>
+            <!-- 集成ThompsonRules可视化 -->
+            <!-- <div class="mt-6">
+              <ThompsonRules />
+            </div> -->
           </div>
         </div>
 
@@ -171,7 +175,6 @@ const faStore = useFAStore()
 const showAnswer = ref(false)
 const userCanvasRef = ref<InstanceType<typeof FACanvas>>()
 const answerSvgContainer = ref<HTMLElement>()
-const hasRendered = ref(false) // 防重复渲染
 
 // 计算属性
 const nfaDotString = computed(() => faStore.nfaDotString)
@@ -191,34 +194,43 @@ onMounted(() => {
   }
 })
 
-// 答案控制 - 模仿旧代码的简单做法
+// 答案控制 - 采用06的正确方式
 const toggleAnswer = async () => {
   showAnswer.value = !showAnswer.value
 
-  if (showAnswer.value && !hasRendered.value && nfaDotString.value) {
+  if (showAnswer.value && nfaDotString.value) {
     await nextTick()
+    renderSvgAnswer()
+  }
+}
 
-    // 直接渲染，不要复杂的状态管理
+// 渲染SVG答案 - 每次显示都重新渲染
+const renderSvgAnswer = async () => {
+  if (!answerSvgContainer.value || !nfaDotString.value) return
+
+  try {
+    // 使用 viz.js 渲染 DOT 字符串
+    const viz = await instance()
+    const svg = viz.renderSVGElement(nfaDotString.value)
+
+    // 清空容器并添加SVG
+    answerSvgContainer.value.innerHTML = ''
+    if (svg) {
+      svg.classList.add('nfa-svg')
+      answerSvgContainer.value.appendChild(svg)
+    }
+  } catch (error) {
+    console.error('NFA render failed:', error)
     if (answerSvgContainer.value) {
-      try {
-        const viz = await instance()
-        const svg = viz.renderSVGElement(nfaDotString.value)
-
-        // 模仿旧代码：直接添加SVG，添加样式类
-        svg.classList.add('nfa-svg')
-        answerSvgContainer.value.appendChild(svg)
-        hasRendered.value = true // 防重复渲染
-      } catch (error) {
-        console.error('NFA render failed:', error)
-        // 简单错误处理：在容器中显示错误信息
-        if (answerSvgContainer.value) {
-          answerSvgContainer.value.innerHTML = `
-            <div class="text-center text-red-500 p-4">
-              <p>渲染失败: ${error instanceof Error ? error.message : String(error)}</p>
-            </div>
-          `
-        }
-      }
+      answerSvgContainer.value.innerHTML = `
+        <div class="flex items-center justify-center h-full text-red-500">
+          <div class="text-center">
+            <Icon icon="lucide:alert-circle" class="w-8 h-8 mx-auto mb-2" />
+            <p>渲染失败</p>
+            <p class="text-sm mt-1">${error instanceof Error ? error.message : String(error)}</p>
+          </div>
+        </div>
+      `
     }
   }
 }

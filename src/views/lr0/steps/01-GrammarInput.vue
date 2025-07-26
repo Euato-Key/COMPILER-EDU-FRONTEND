@@ -33,7 +33,9 @@
       <!-- 文法输入区域 -->
       <div class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"> 输入LR0文法产生式 </label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            输入LR0文法产生式
+          </label>
           <textarea
             v-model="grammarInput"
             placeholder="请输入文法产生式，例如：&#10;S -> aAb&#10;A -> c&#10;A -> ε"
@@ -47,12 +49,13 @@
           <div>
             <h4 class="font-medium text-gray-900 mb-2">示例文法1</h4>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <pre class="text-xs font-mono text-gray-700">
-S -> A a
-A -> B D
-B -> b
-D -> d</pre
-              >
+              <pre class="text-xs font-mono text-gray-700">S -> E
+E -> E + T
+E -> T
+T -> T * F
+T -> F
+F -> ( E )
+F -> id</pre>
               <button
                 @click="loadExample(1)"
                 class="mt-2 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -65,12 +68,9 @@ D -> d</pre
           <div>
             <h4 class="font-medium text-gray-900 mb-2">示例文法2</h4>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <pre class="text-xs font-mono text-gray-700">
-S -> a A
-A -> B c
-B -> b
-B -> ε</pre
-              >
+              <pre class="text-xs font-mono text-gray-700">S -> aAb
+A -> c
+A -> ε</pre>
               <button
                 @click="loadExample(2)"
                 class="mt-2 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -85,62 +85,59 @@ B -> ε</pre
         <div class="flex justify-center">
           <button
             @click="analyzeGrammar"
-            :disabled="!grammarInput.trim()"
+            :disabled="!grammarInput.trim() || isAnalyzing"
             class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            <Icon icon="lucide:play" class="w-4 h-4 inline mr-2" />
-            分析文法
+            <Icon
+              :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
+              :class="['w-4 h-4 inline mr-2', isAnalyzing ? 'animate-spin' : '']"
+            />
+            {{ isAnalyzing ? '分析中...' : '分析文法' }}
           </button>
         </div>
 
         <!-- 分析结果 -->
-        <transition name="slide-fade" mode="out-in">
-          <div v-if="analysisResult" class="mt-6">
-            <div
-              :class="[
-                'p-4 rounded-lg border transition-all duration-200',
-                analysisResult.success
-                  ? 'bg-green-50 border-green-200 text-green-800'
-                  : 'bg-red-50 border-red-200 text-red-800',
-              ]"
-            >
-              <div class="flex items-start gap-2">
-                <Icon
-                  :icon="analysisResult.success ? 'lucide:check-circle' : 'lucide:alert-circle'"
-                  class="w-5 h-5 mt-0.5 flex-shrink-0"
-                />
-                <div class="flex-1">
-                  <p class="font-medium">
-                    {{ analysisResult.success ? '文法分析成功' : '文法分析失败' }}
-                  </p>
-                  <p class="text-sm mt-1">{{ analysisResult.message }}</p>
+        <div v-if="analysisResult" class="mt-6">
+          <div
+            :class="[
+              'p-4 rounded-lg border',
+              analysisResult.success
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
+            ]"
+          >
+            <div class="flex items-start gap-2">
+              <Icon
+                :icon="analysisResult.success ? 'lucide:check-circle' : 'lucide:alert-circle'"
+                class="w-5 h-5 mt-0.5 flex-shrink-0"
+              />
+              <div class="flex-1">
+                <p class="font-medium">{{ analysisResult.success ? '文法分析成功' : '文法分析失败' }}</p>
+                <p class="text-sm mt-1">{{ analysisResult.message }}</p>
 
-                  <!-- 成功时显示文法信息 -->
-                  <div v-if="analysisResult.success && analysisResult.data" class="mt-4 space-y-3">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span class="font-medium">开始符号：</span>{{ analysisResult.data.S }}
-                      </div>
-                      <div>
-                        <span class="font-medium">非终结符：</span
-                        >{{ analysisResult.data.Vn?.join(', ') }}
-                      </div>
-                      <div>
-                        <span class="font-medium">终结符：</span
-                        >{{ analysisResult.data.Vt?.join(', ') }}
-                      </div>
-                    </div>
-
+                <!-- 成功时显示文法信息 -->
+                <div v-if="analysisResult.success && analysisResult.data" class="mt-4 space-y-3">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span class="font-medium">产生式：</span>
-                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                        <div
-                          v-for="(prod, index) in analysisResult.data.formulas_list"
-                          :key="index"
-                          class="text-xs bg-white px-2 py-1 rounded border font-mono"
-                        >
-                          {{ prod }}
-                        </div>
+                      <span class="font-medium">开始符号：</span>{{ analysisResult.data.S }}
+                    </div>
+                    <div>
+                      <span class="font-medium">非终结符：</span>{{ analysisResult.data.Vn?.join(', ') }}
+                    </div>
+                    <div>
+                      <span class="font-medium">终结符：</span>{{ analysisResult.data.Vt?.join(', ') }}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span class="font-medium">产生式：</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                      <div
+                        v-for="(prod, index) in analysisResult.data.formulas_list"
+                        :key="index"
+                        class="text-xs bg-white px-2 py-1 rounded border font-mono"
+                      >
+                        {{ prod }}
                       </div>
                     </div>
                   </div>
@@ -148,7 +145,7 @@ B -> ε</pre
               </div>
             </div>
           </div>
-        </transition>
+        </div>
       </div>
     </div>
 
@@ -162,7 +159,7 @@ B -> ε</pre
             'px-6 py-2 rounded-lg transition-colors',
             isStepComplete
               ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           ]"
         >
           下一步
@@ -174,101 +171,93 @@ B -> ε</pre
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useLR0Store } from '@/stores/lr0'
-import { useCommonStore } from '@/stores/common'
+import { useLR0API } from '@/composables/api/useLR0API'
 
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
 }>()
 
-const lr0Store = useLR0Store()
-const commonStore = useCommonStore()
+const lr0API = useLR0API()
 
 // 组件状态
 const grammarInput = ref('')
-
-// 从store获取状态
-const analysisResult = computed(() => {
-  if (lr0Store.analysisResult) {
-    return {
-      success: true,
-      message: lr0Store.isLR0Grammar ? '文法分析完成，符合LR0文法！' : '文法存在冲突，不是LR0文法',
-      data: lr0Store.analysisResult,
-    }
-  }
-  if (commonStore.error) {
-    return {
-      success: false,
-      message: commonStore.error,
-      data: null,
-    }
-  }
-  return null
-})
+const isAnalyzing = ref(false)
+const analysisResult = ref<any>(null)
 
 // 步骤完成状态
-const isStepComplete = computed(() => lr0Store.analysisResult && lr0Store.isLR0Grammar === true)
-
-// 组件挂载时加载持久化数据
-onMounted(() => {
-  // 从store加载持久化的产生式
-  if (lr0Store.productions.length > 0) {
-    grammarInput.value = lr0Store.productions.join('\n')
-  }
-})
+const isStepComplete = computed(() =>
+  analysisResult.value?.success && analysisResult.value?.data
+)
 
 // 输入变化处理
 const onInputChange = () => {
-  // 清除错误状态
-  commonStore.clearError()
+  if (analysisResult.value) {
+    analysisResult.value = null
+  }
 }
 
 // 加载示例文法
 const loadExample = (exampleId: number) => {
   const examples = {
-    1: `S -> Aa
-A -> BD
-B -> b
-D -> d`,
-    2: `S -> aA
-A -> Bc
-B -> b
-B -> ε`,
+    1: `S -> E
+E -> E + T
+E -> T
+T -> T * F
+T -> F
+F -> ( E )
+F -> id`,
+    2: `S -> aAb
+A -> c
+A -> ε`
   }
 
   grammarInput.value = examples[exampleId as keyof typeof examples] || ''
-  commonStore.clearError()
+  analysisResult.value = null
 }
 
 // 分析文法
 const analyzeGrammar = async () => {
   if (!grammarInput.value.trim()) return
 
-  // 清除之前的错误状态
-  commonStore.clearError()
+  isAnalyzing.value = true
+  analysisResult.value = null
 
   try {
     // 处理输入的产生式
     const productions = grammarInput.value
       .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
 
-    // 批量更新：先更新产生式
-    lr0Store.setProductions(productions)
+    const result = await lr0API.analyseGrammar(productions)
 
-    // 执行LR0分析
-    const success = await lr0Store.performLR0Analysis()
-
-    if (!success) {
-      console.error('LR0 analysis failed')
+    analysisResult.value = {
+      success: true,
+      message: '文法分析完成，可以进行下一步',
+      data: result.data
     }
+
+    // 保存分析结果供其他步骤使用
+    const step1Data = {
+      analysisResult: result.data,
+      originalProductions: productions, // 保存原始产生式数组
+      grammarInput: grammarInput.value, // 保存原始输入文本
+      timestamp: new Date().toISOString()
+    }
+    localStorage.setItem('lr0-step1-data', JSON.stringify(step1Data))
+
   } catch (error: any) {
+    analysisResult.value = {
+      success: false,
+      message: error.message || '文法分析失败，请检查输入格式',
+      data: null
+    }
     console.error('Grammar analysis error:', error)
-    commonStore.setError(error.message || '文法分析失败，请检查输入格式')
+  } finally {
+    isAnalyzing.value = false
   }
 }
 
@@ -280,41 +269,8 @@ const nextStep = () => {
 </script>
 
 <style scoped>
-.step-header {
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-.step-icon {
-  width: 3rem;
-  height: 3rem;
-  background: #dbeafe;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step-content {
-  padding: 2rem;
-}
-.step-actions {
-  padding: 1rem 2rem 2rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-/* 平滑过渡效果 */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.2s ease-out;
-}
-
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
+.step-header { padding: 2rem 2rem 1rem; border-bottom: 1px solid #e5e7eb; }
+.step-icon { width: 3rem; height: 3rem; background: #dbeafe; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+.step-content { padding: 2rem; }
+.step-actions { padding: 1rem 2rem 2rem; border-top: 1px solid #e5e7eb; background: #f9fafb; }
 </style>

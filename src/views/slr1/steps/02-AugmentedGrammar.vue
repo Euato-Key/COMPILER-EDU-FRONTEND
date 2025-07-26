@@ -30,10 +30,7 @@
       </div>
 
       <!-- 原文法显示 -->
-      <div
-        v-if="originalGrammar.length > 0"
-        class="bg-white border border-gray-200 rounded-lg p-6 mb-6"
-      >
+      <div v-if="originalGrammar.length > 0" class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">原文法</h3>
         <div class="space-y-2">
           <div
@@ -57,10 +54,8 @@
         <!-- 增广文法输入区域 -->
         <div class="bg-white border border-gray-200 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">增广文法产生式</h3>
-          <p class="text-sm text-gray-600 mb-4">
-            请填写增广后的文法产生式（每个产生式右侧只有一个候选式）
-          </p>
-
+          <p class="text-sm text-gray-600 mb-4">请填写增广后的文法产生式（每个产生式右侧只有一个候选式）</p>
+          
           <div class="space-y-3">
             <div
               v-for="(formula, index) in augmentedFormulas"
@@ -75,7 +70,7 @@
                   :placeholder="`产生式 ${index + 1}`"
                   :class="[
                     'w-full px-3 py-2 border rounded-lg transition-colors',
-                    getInputClass(formula.status),
+                    getInputClass(formula.status)
                   ]"
                   @input="checkFormCompletion"
                   :readonly="formula.readonly"
@@ -103,7 +98,7 @@
               </div>
             </div>
           </div>
-
+          
           <!-- 提示信息 -->
           <div class="mt-4 text-sm text-gray-600">
             <p><strong>填写提示：</strong></p>
@@ -128,7 +123,7 @@
             />
             {{ isValidating ? '验证中...' : '验证增广文法' }}
           </button>
-
+          
           <button
             @click="showAnswer"
             class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -143,9 +138,9 @@
           <div
             :class="[
               'p-4 rounded-lg border',
-              validationSuccess
+              validationSuccess 
                 ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800',
+                : 'bg-red-50 border-red-200 text-red-800'
             ]"
           >
             <div class="flex items-start gap-2">
@@ -165,22 +160,19 @@
 
     <div class="step-actions">
       <div class="flex justify-between items-center">
-        <button
-          @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
+        <button @click="$emit('prev-step')" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
           <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
           上一步
         </button>
         <div class="text-sm text-gray-500">步骤 2 / 5</div>
-        <button
+        <button 
           @click="nextStep"
           :disabled="!isStepComplete"
           :class="[
             'px-6 py-2 rounded-lg transition-colors',
             isStepComplete
               ? 'bg-purple-600 text-white hover:bg-purple-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           ]"
         >
           下一步
@@ -192,9 +184,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useSLR1Store } from '@/stores/slr1'
 
 interface AugmentedFormula {
   id: string
@@ -208,24 +199,18 @@ const emit = defineEmits<{
   'prev-step': []
 }>()
 
-const slr1Store = useSLR1Store()
-
 // 响应式数据
+const grammarData = ref<any>(null)
 const augmentedFormulas = ref<AugmentedFormula[]>([])
 const formulaCounter = ref(1)
 const isValidating = ref(false)
 const validationMessage = ref('')
 const validationSuccess = ref(false)
+const originalGrammar = ref<string[]>([])
 
 // 计算属性
 const startSymbol = computed(() => {
-  return slr1Store.analysisResult?.S || 'S'
-})
-
-const grammarData = computed(() => slr1Store.analysisResult)
-
-const originalGrammar = computed(() => {
-  return slr1Store.productions || []
+  return grammarData.value?.S || 'S'
 })
 
 const isStepComplete = computed(() => {
@@ -249,7 +234,7 @@ const checkFormCompletion = () => {
   // 重置验证状态
   validationMessage.value = ''
   validationSuccess.value = false
-  augmentedFormulas.value.forEach((formula) => {
+  augmentedFormulas.value.forEach(formula => {
     formula.status = 'normal'
   })
 }
@@ -257,19 +242,19 @@ const checkFormCompletion = () => {
 // 添加产生式
 const addFormula = (index: number) => {
   if (isStepComplete.value) return
-
+  
   augmentedFormulas.value.splice(index + 1, 0, {
     id: `formula_${formulaCounter.value++}`,
     text: '',
     status: 'normal',
-    readonly: false,
+    readonly: false
   })
 }
 
 // 删除产生式
 const removeFormula = (index: number) => {
   if (augmentedFormulas.value.length <= 1 || augmentedFormulas.value[index].readonly) return
-
+  
   augmentedFormulas.value.splice(index, 1)
   checkFormCompletion()
 }
@@ -280,16 +265,16 @@ const validateFormulas = async () => {
 
   isValidating.value = true
   validationMessage.value = ''
-
+  
   try {
     // 获取正确答案
-    const correctFormulas = grammarData.value.formulas_list
-    const userFormulas = augmentedFormulas.value.map((f) => f.text.trim()).filter((t) => t)
-
+    const correctFormulas = grammarData.value.formulas_list.map((item: any) => item.text || item)
+    const userFormulas = augmentedFormulas.value.map(f => f.text.trim()).filter(t => t)
+    
     // 验证每个产生式
     const correctSet = new Set(correctFormulas)
     let allCorrect = true
-
+    
     for (const formula of augmentedFormulas.value) {
       const trimmedText = formula.text.trim()
       if (!trimmedText) {
@@ -297,7 +282,7 @@ const validateFormulas = async () => {
         allCorrect = false
         continue
       }
-
+      
       if (correctSet.has(trimmedText)) {
         formula.status = 'correct'
         correctSet.delete(trimmedText)
@@ -306,10 +291,16 @@ const validateFormulas = async () => {
         allCorrect = false
       }
     }
-
+    
     if (allCorrect && correctSet.size === 0 && userFormulas.length === correctFormulas.length) {
       validationSuccess.value = true
       validationMessage.value = '增广文法构造正确！'
+      
+      // 保存验证结果
+      localStorage.setItem('slr1_augmented_data', JSON.stringify({
+        formulas: augmentedFormulas.value,
+        timestamp: Date.now()
+      }))
     } else {
       validationSuccess.value = false
       if (correctSet.size > 0) {
@@ -333,21 +324,21 @@ const validateFormulas = async () => {
 const showAnswer = () => {
   if (!grammarData.value || !grammarData.value.formulas_list) return
 
-  const correctFormulas = grammarData.value.formulas_list
-
+  const correctFormulas = grammarData.value.formulas_list.map((item: any) => item.text || item)
+  
   // 清空当前输入
   augmentedFormulas.value = []
-
+  
   // 填充正确答案
   correctFormulas.forEach((formula: string, index: number) => {
     augmentedFormulas.value.push({
       id: `formula_${formulaCounter.value++}`,
       text: formula,
       status: 'correct',
-      readonly: false,
+      readonly: false
     })
   })
-
+  
   validationMessage.value = '已显示标准答案'
   validationSuccess.value = true
 }
@@ -367,50 +358,51 @@ const initializeFormulas = () => {
       id: `formula_${formulaCounter.value++}`,
       text: startSymbol.value ? `${startSymbol.value}' -> ${startSymbol.value}` : '',
       status: 'normal',
-      readonly: false,
+      readonly: false
     })
   }
 }
 
-// 监听store中的分析结果变化
-watch(
-  () => slr1Store.analysisResult,
-  (newValue) => {
-    if (newValue && augmentedFormulas.value.length === 0) {
-      initializeFormulas()
+// 加载数据
+const loadData = () => {
+  // 从localStorage加载前面步骤的数据
+  const grammarStorageData = localStorage.getItem('slr1_grammar_data')
+  
+  if (grammarStorageData) {
+    grammarData.value = JSON.parse(grammarStorageData)
+    
+    // 设置原文法显示
+    if (grammarData.value.original_productions) {
+      originalGrammar.value = grammarData.value.original_productions
     }
-  },
-  { immediate: true },
-)
-
-// 组件挂载时初始化
-onMounted(() => {
-  if (slr1Store.analysisResult) {
+    
     initializeFormulas()
   }
+  
+  // 加载之前保存的增广文法数据
+  const savedAugmentedData = localStorage.getItem('slr1_augmented_data')
+  if (savedAugmentedData) {
+    const augmentedData = JSON.parse(savedAugmentedData)
+    if (augmentedData.formulas) {
+      augmentedFormulas.value = augmentedData.formulas
+      // 检查是否已验证成功
+      if (augmentedFormulas.value.every(f => f.status === 'correct')) {
+        validationSuccess.value = true
+        validationMessage.value = '增广文法构造正确！'
+      }
+    }
+  }
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadData()
 })
 </script>
 
 <style scoped>
-.step-header {
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-.step-icon {
-  width: 3rem;
-  height: 3rem;
-  background: #faf5ff;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step-content {
-  padding: 2rem;
-}
-.step-actions {
-  padding: 1rem 2rem 2rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
+.step-header { padding: 2rem 2rem 1rem; border-bottom: 1px solid #e5e7eb; }
+.step-icon { width: 3rem; height: 3rem; background: #faf5ff; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+.step-content { padding: 2rem; }
+.step-actions { padding: 1rem 2rem 2rem; border-top: 1px solid #e5e7eb; background: #f9fafb; }
 </style>

@@ -66,6 +66,7 @@
                           :disabled="pItem.category === 'onlyRead' || step6Open"
                           @focus="handlePSetFocus(pItem)"
                           @input="handlePSetInput(pItem)"
+                          @blur="handlePSetBlur(pItem)"
                           placeholder="输入状态子集，如：123"
                         />
                         <button
@@ -89,7 +90,7 @@
                         请输入状态子集
                       </div>
                       <div v-else-if="pItem.check === 'isError'" class="text-xs text-red-600 ml-2">
-                        答案不正确
+                        {{ isDuplicateAnswer(pItem) ? '答案重复' : '答案不正确' }}
                       </div>
                       <div
                         v-else-if="pItem.check === 'isCorrect'"
@@ -616,11 +617,19 @@ const handlePSetInput = (pItem: PSetItem) => {
   if (step6Open.value) return
 
   const inputText = pItem.text.trim()
-  pItem.check = inputText ? ValidationState.NORMAL : ValidationState.EMPTY
+
+  // 用户开始输入时，清除错误状态，设置为正常状态
+  if (pItem.check === ValidationState.ERROR) {
+    pItem.check = inputText ? ValidationState.NORMAL : ValidationState.EMPTY
+  } else {
+    pItem.check = inputText ? ValidationState.NORMAL : ValidationState.EMPTY
+  }
 
   // 使用新的验证逻辑
   validatePSetField(pItem)
 }
+
+
 
 const removePSet = (index: number) => {
   if (step6Open.value || localPSets.value.length <= 1) return
@@ -663,6 +672,21 @@ const areCharacterSetsEqual = (str1: string, str2: string): boolean => {
     }
   }
   return true
+}
+
+// 检查是否为重复答案
+const isDuplicateAnswer = (pItem: PSetItem): boolean => {
+  const inputText = pItem.text.trim()
+  if (!inputText) return false
+
+  const currentIndex = localPSets.value.findIndex(item => item.id === pItem.id)
+  const otherInputs = localPSets.value
+    .filter((item, index) => index !== currentIndex && item.text.trim())
+    .map(item => item.text.trim())
+
+  return otherInputs.some(otherInput =>
+    areCharacterSetsEqual(inputText, otherInput)
+  )
 }
 
 // P集合匹配验证

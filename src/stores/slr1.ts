@@ -35,11 +35,7 @@ export const useSLR1Store = defineStore('slr1', () => {
 
   // Actions
   const setProductions = (newProductions: string[]) => {
-    // 处理产生式：移除所有空格，保持与旧前端一致的格式
-    const processedProductions = newProductions.map(
-      (prod) => prod.replace(/ +/g, ''), // 只消除空格但不消除换行
-    )
-    productions.value = [...processedProductions]
+    productions.value = [...newProductions]
     // 清除之前的分析结果
     clearAnalysisResults()
   }
@@ -144,72 +140,27 @@ export const useSLR1Store = defineStore('slr1', () => {
 
       const response = await getSLR1AnalyseAPI(productions.value)
 
-      // 添加调试日志
-      console.log('SLR1 API Response:', response)
-      console.log('Response data:', response.data)
-      console.log('Response status:', response.status)
+      if (response.data.code === 200 && response.data.data) {
+        const result = response.data.data
+        analysisResult.value = result
 
-      // 检查响应是否成功 - 后端返回 code: 0 表示成功
-      if (response.status === 200 && response.data && response.data.code === 0) {
-        const result = response.data.data as SLR1AnalysisResult
+        // 更新相关状态
+        actionTable.value = result.actions || {}
+        gotoTable.value = result.gotos || {}
+        dfaStates.value = result.all_dfa || []
+        dotItems.value = result.dot_items || []
+        isSLR1Grammar.value = result.isSLR1 ?? null
+        dotString.value = result.SLR1_dot_str || ''
 
-        console.log('Parsed result:', result)
+        // 转换为校验数据
+        validationData.value = transformToValidationData(result)
 
-        if (result && result.S) {
-          analysisResult.value = result
-
-          // 添加后端数据调试日志
-          console.log('=== SLR1 后端返回数据调试 ===')
-          console.log('后端返回的 actions:', result.actions)
-          console.log('后端返回的 gotos:', result.gotos)
-          console.log('actions 类型:', typeof result.actions)
-          console.log('gotos 类型:', typeof result.gotos)
-
-          if (result.actions) {
-            console.log('actions 键值示例:')
-            Object.entries(result.actions)
-              .slice(0, 5)
-              .forEach(([key, value]) => {
-                console.log(`  ${key} => ${value}`)
-              })
-          }
-
-          if (result.gotos) {
-            console.log('gotos 键值示例:')
-            Object.entries(result.gotos)
-              .slice(0, 5)
-              .forEach(([key, value]) => {
-                console.log(`  ${key} => ${value}`)
-              })
-          }
-
-          // 更新相关状态
-          actionTable.value = result.actions || {}
-          gotoTable.value = result.gotos || {}
-          dfaStates.value = result.all_dfa || []
-          dotItems.value = result.dot_items || []
-          isSLR1Grammar.value = result.isSLR1 ?? null
-          dotString.value = result.SLR1_dot_str || ''
-
-          // 转换为校验数据
-          validationData.value = transformToValidationData(result)
-
-          return true
-        } else {
-          console.error('Invalid analysis result structure:', result)
-          commonStore.setError('分析结果格式错误')
-          return false
-        }
+        return true
       } else {
-        // 处理后端返回的错误
-        const errorMsg =
-          response.data?.message || response.data?.msg || `分析失败 (code: ${response.data?.code})`
-        console.error('SLR1 Analysis failed:', errorMsg, response.data)
-        commonStore.setError(errorMsg)
+        commonStore.setError(response.data.message || response.data.msg || 'SLR1分析失败')
         return false
       }
     } catch (err) {
-      console.error('SLR1 Analysis Error:', err)
       commonStore.setError(err instanceof Error ? err.message : 'SLR1分析请求失败')
       return false
     } finally {
@@ -235,22 +186,11 @@ export const useSLR1Store = defineStore('slr1', () => {
 
       const response = await SLR1AnalyseInpStrAPI(productions.value, inputString.value.trim())
 
-      // 检查响应是否成功 - 后端返回 code: 0 表示成功
-      if (response.status === 200 && response.data && response.data.code === 0) {
-        const result = response.data.data
-        if (result) {
-          inputAnalysisResult.value = result
-          return true
-        } else {
-          commonStore.setError('输入串分析结果为空')
-          return false
-        }
+      if (response.data.code === 200 && response.data.data) {
+        inputAnalysisResult.value = response.data.data
+        return true
       } else {
-        const errorMsg =
-          response.data?.message ||
-          response.data?.msg ||
-          `输入串分析失败 (code: ${response.data?.code})`
-        commonStore.setError(errorMsg)
+        commonStore.setError(response.data.message || response.data.msg || '输入串分析失败')
         return false
       }
     } catch (err) {

@@ -42,15 +42,9 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">原文法</h3>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <div class="space-y-2">
-                <div class="text-sm text-gray-600 mb-2">
-                  开始符号：{{ stepData.analysisResult.S }}
-                </div>
+                <div class="text-sm text-gray-600 mb-2">开始符号：{{ stepData.analysisResult.S }}</div>
                 <div class="font-mono text-sm">
-                  <div
-                    v-for="(production, index) in stepData.analysisResult.formulas_list"
-                    :key="index"
-                    class="py-1"
-                  >
+                  <div v-for="(production, index) in stepData.analysisResult.formulas_list" :key="index" class="py-1">
                     {{ production }}
                   </div>
                 </div>
@@ -62,11 +56,8 @@
                 <h4 class="text-sm font-medium text-gray-700 mb-2">非终结符 (Vn)</h4>
                 <div class="bg-white border rounded p-3">
                   <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="vn in stepData.analysisResult.Vn"
-                      :key="vn"
-                      class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-mono"
-                    >
+                    <span v-for="vn in stepData.analysisResult.Vn" :key="vn"
+                          class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-mono">
                       {{ vn }}
                     </span>
                   </div>
@@ -76,11 +67,8 @@
                 <h4 class="text-sm font-medium text-gray-700 mb-2">终结符 (Vt)</h4>
                 <div class="bg-white border rounded p-3">
                   <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="vt in stepData.analysisResult.Vt"
-                      :key="vt"
-                      class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-mono"
-                    >
+                    <span v-for="vt in stepData.analysisResult.Vt" :key="vt"
+                          class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-mono">
                       {{ vt }}
                     </span>
                   </div>
@@ -98,17 +86,11 @@
                 <div class="font-mono text-sm">
                   <!-- 新增的产生式 -->
                   <div class="py-1 bg-yellow-100 px-2 rounded mb-2 border border-yellow-300">
-                    <span class="text-yellow-800 font-medium"
-                      >S' -> {{ stepData.analysisResult.S }}</span
-                    >
+                    <span class="text-yellow-800 font-medium">S' -> {{ stepData.analysisResult.S }}</span>
                     <span class="text-xs text-yellow-600 ml-2">(新增)</span>
                   </div>
                   <!-- 原有产生式 -->
-                  <div
-                    v-for="(production, index) in stepData.analysisResult.formulas_list"
-                    :key="index"
-                    class="py-1"
-                  >
+                  <div v-for="(production, index) in stepData.analysisResult.formulas_list" :key="index" class="py-1">
                     {{ production }}
                   </div>
                 </div>
@@ -120,16 +102,11 @@
                 <h4 class="text-sm font-medium text-gray-700 mb-2">增广非终结符 (Vn')</h4>
                 <div class="bg-white border rounded p-3">
                   <div class="flex flex-wrap gap-2">
-                    <span
-                      class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-mono border border-yellow-300"
-                    >
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-mono border border-yellow-300">
                       S'
                     </span>
-                    <span
-                      v-for="vn in stepData.analysisResult.Vn"
-                      :key="vn"
-                      class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-mono"
-                    >
+                    <span v-for="vn in stepData.analysisResult.Vn" :key="vn"
+                          class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-mono">
                       {{ vn }}
                     </span>
                   </div>
@@ -139,11 +116,8 @@
                 <h4 class="text-sm font-medium text-gray-700 mb-2">终结符 (Vt)</h4>
                 <div class="bg-white border rounded p-3">
                   <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="vt in stepData.analysisResult.Vt"
-                      :key="vt"
-                      class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-mono"
-                    >
+                    <span v-for="vt in stepData.analysisResult.Vt" :key="vt"
+                          class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-mono">
                       {{ vt }}
                     </span>
                   </div>
@@ -158,18 +132,11 @@
           <h3 class="text-lg font-semibold text-gray-900 mb-4">编号后的产生式</h3>
           <div class="bg-white border border-gray-200 rounded-lg p-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div
-                v-for="(production, index) in augmentedProductions"
-                :key="index"
-                class="flex items-center space-x-3 p-2 rounded"
-                :class="index === 0 ? 'bg-yellow-50' : 'bg-gray-50'"
-              >
-                <span
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  :class="
-                    index === 0 ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-700'
-                  "
-                >
+              <div v-for="(production, index) in augmentedProductions" :key="index"
+                   class="flex items-center space-x-3 p-2 rounded"
+                   :class="index === 0 ? 'bg-yellow-50' : 'bg-gray-50'">
+                <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                      :class="index === 0 ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-700'">
                   {{ index }}
                 </span>
                 <span class="font-mono text-sm">{{ production }}</span>
@@ -183,10 +150,7 @@
 
     <div class="step-actions">
       <div class="flex justify-between items-center">
-        <button
-          @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
+        <button @click="$emit('prev-step')" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
           <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
           上一步
         </button>
@@ -205,65 +169,50 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useLR0Store } from '@/stores/lr0'
 
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
 }>()
 
-const lr0Store = useLR0Store()
-
-// 从store获取分析结果
-const stepData = computed(() => {
-  if (lr0Store.analysisResult) {
-    return {
-      analysisResult: lr0Store.analysisResult,
-    }
-  }
-  return null
-})
+const stepData = ref<any>(null)
 
 // 增广产生式列表
 const augmentedProductions = computed(() => {
   if (!stepData.value) return []
 
-  const productions = [
-    `S' -> ${stepData.value.analysisResult.S}`,
-    ...stepData.value.analysisResult.formulas_list,
-  ]
+  const productions = [`S' -> ${stepData.value.analysisResult.S}`, ...stepData.value.analysisResult.formulas_list]
   return productions
+})
+
+onMounted(() => {
+  // 从localStorage获取第一步的数据
+  const step1Data = localStorage.getItem('lr0-step1-data')
+  if (step1Data) {
+    stepData.value = JSON.parse(step1Data)
+  }
 })
 
 const nextStep = () => {
   if (stepData.value) {
+    const step2Data = {
+      originalGrammar: stepData.value.analysisResult,
+      augmentedProductions: augmentedProductions.value,
+      newStartSymbol: "S'",
+      timestamp: new Date().toISOString()
+    }
+
+    localStorage.setItem('lr0-step2-data', JSON.stringify(step2Data))
     emit('next-step')
   }
 }
 </script>
 
 <style scoped>
-.step-header {
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-.step-icon {
-  width: 3rem;
-  height: 3rem;
-  background: #f3e8ff;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step-content {
-  padding: 2rem;
-}
-.step-actions {
-  padding: 1rem 2rem 2rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
+.step-header { padding: 2rem 2rem 1rem; border-bottom: 1px solid #e5e7eb; }
+.step-icon { width: 3rem; height: 3rem; background: #f3e8ff; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+.step-content { padding: 2rem; }
+.step-actions { padding: 1rem 2rem 2rem; border-top: 1px solid #e5e7eb; background: #f9fafb; }
 </style>

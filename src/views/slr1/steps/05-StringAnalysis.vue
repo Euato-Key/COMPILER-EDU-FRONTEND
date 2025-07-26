@@ -78,7 +78,9 @@
             <div
               :class="[
                 'px-3 py-1 rounded-full text-sm font-medium',
-                analysisResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
+                analysisResult.success
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
               ]"
             >
               {{ analysisResult.success ? '接受' : '拒绝' }}
@@ -103,35 +105,19 @@
             <table class="min-w-full">
               <thead class="bg-gray-50">
                 <tr>
-                  <th
-                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    步骤
-                  </th>
-                  <th
-                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    状态栈
-                  </th>
-                  <th
-                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    符号栈
-                  </th>
-                  <th
-                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    输入串
-                  </th>
-                  <th
-                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    动作
-                  </th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">步骤</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态栈</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">符号栈</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">输入串</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">动作</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="(step, index) in analysisSteps" :key="index" class="hover:bg-gray-50">
+                <tr
+                  v-for="(step, index) in analysisSteps"
+                  :key="index"
+                  class="hover:bg-gray-50"
+                >
                   <td class="px-4 py-2 text-sm text-gray-900">{{ index + 1 }}</td>
                   <td class="px-4 py-2 text-sm font-mono text-gray-900">{{ step.stateStack }}</td>
                   <td class="px-4 py-2 text-sm font-mono text-gray-900">{{ step.symbolStack }}</td>
@@ -183,10 +169,7 @@
             <div>
               <h4 class="font-medium text-gray-700 mb-2">剩余输入</h4>
               <div class="bg-gray-50 p-4 rounded-lg min-h-[200px]">
-                <div
-                  v-if="currentStep"
-                  class="bg-yellow-100 border border-yellow-300 rounded px-3 py-2 font-mono"
-                >
+                <div v-if="currentStep" class="bg-yellow-100 border border-yellow-300 rounded px-3 py-2 font-mono">
                   {{ currentStep.inputString }}
                 </div>
               </div>
@@ -244,10 +227,7 @@
 
     <div class="step-actions">
       <div class="flex justify-between items-center">
-        <button
-          @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
+        <button @click="$emit('prev-step')" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
           <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
           上一步
         </button>
@@ -259,7 +239,7 @@
             'px-6 py-2 rounded-lg transition-colors',
             analysisResult
               ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           ]"
         >
           完成分析
@@ -271,9 +251,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useSLR1Store } from '@/stores/slr1'
+import { useSLR1API } from '@/composables/api/useSLR1API'
 
 interface AnalysisStep {
   stateStack: string
@@ -285,34 +265,19 @@ interface AnalysisStep {
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
-  complete: [data: any]
+  'complete': [data: any]
 }>()
 
-const slr1Store = useSLR1Store()
+const { analyseInputString } = useSLR1API()
 
 // 响应式数据
+const inputString = ref('')
 const isAnalyzing = ref(false)
+const analysisResult = ref<any>(null)
 const analysisSteps = ref<AnalysisStep[]>([])
 const currentStepIndex = ref(0)
 const errorMessage = ref('')
-
-// 从store获取数据
-const inputString = computed({
-  get: () => slr1Store.inputString,
-  set: (value: string) => slr1Store.setInputString(value),
-})
-
-const analysisResult = computed(() => {
-  if (slr1Store.inputAnalysisResult) {
-    return {
-      success: slr1Store.inputAnalysisResult.info_res === '字符串匹配成功',
-      message: slr1Store.inputAnalysisResult.info_res,
-    }
-  }
-  return null
-})
-
-const grammarData = computed(() => slr1Store.analysisResult)
+const grammarData = ref<any>(null)
 
 // 计算属性
 const currentStep = computed(() => {
@@ -326,28 +291,43 @@ const analyzeString = async () => {
 
   isAnalyzing.value = true
   errorMessage.value = ''
+  analysisResult.value = null
   analysisSteps.value = []
   currentStepIndex.value = 0
 
   try {
-    const success = await slr1Store.analyzeInputString()
+    // 获取产生式列表
+    const productions = grammarData.value.formulas_list?.map((item: any) => item.text || item) || []
 
-    if (success && slr1Store.inputAnalysisResult) {
+    const response = await analyseInputString(productions, inputString.value.trim())
+
+    if (response.data) {
+      analysisResult.value = {
+        success: response.data.info_res === '字符串匹配成功',
+        message: response.data.info_res
+      }
+
       // 构造分析步骤
       const steps: AnalysisStep[] = []
-      const result = slr1Store.inputAnalysisResult
-
-      for (let i = 0; i < result.info_step.length; i++) {
+      for (let i = 0; i < response.data.info_step.length; i++) {
         steps.push({
-          stateStack: result.info_stack[i] || '',
-          symbolStack: result.info_stack[i] || '', // 如果有独立的符号栈数据可以在这里使用
-          inputString: result.info_str[i] || '',
-          action: result.info_action[i] || '',
+          stateStack: response.data.info_state[i] || '',
+          symbolStack: response.data.info_symbol[i] || '',
+          inputString: response.data.info_str[i] || '',
+          action: response.data.info_msg[i] || ''
         })
       }
 
       analysisSteps.value = steps
       currentStepIndex.value = 0
+
+      // 保存分析结果
+      localStorage.setItem('slr1_analysis_data', JSON.stringify({
+        inputString: inputString.value,
+        result: analysisResult.value,
+        steps: analysisSteps.value,
+        timestamp: Date.now()
+      }))
     } else {
       errorMessage.value = '分析失败：未获取到分析结果'
     }
@@ -383,77 +363,42 @@ const complete = () => {
     inputString: inputString.value,
     analysisResult: analysisResult.value,
     analysisSteps: analysisSteps.value,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   }
 
+  localStorage.setItem('slr1-step5-data', JSON.stringify(stepData))
   emit('complete', stepData)
 }
 
-// 监听分析结果变化，自动构造步骤
-watch(
-  () => slr1Store.inputAnalysisResult,
-  (newResult) => {
-    if (newResult && newResult.info_step) {
-      const steps: AnalysisStep[] = []
+// 加载数据
+const loadData = () => {
+  // 从localStorage加载前面步骤的数据
+  const grammarStorageData = localStorage.getItem('slr1_grammar_data')
 
-      for (let i = 0; i < newResult.info_step.length; i++) {
-        steps.push({
-          stateStack: newResult.info_stack[i] || '',
-          symbolStack: newResult.info_stack[i] || '',
-          inputString: newResult.info_str[i] || '',
-          action: newResult.info_action[i] || '',
-        })
-      }
+  if (grammarStorageData) {
+    grammarData.value = JSON.parse(grammarStorageData)
+  }
 
-      analysisSteps.value = steps
-      currentStepIndex.value = 0
-    }
-  },
-  { immediate: true },
-)
-
-// 组件挂载时的初始化
-onMounted(() => {
-  // 如果已经有分析结果，构造步骤
-  if (slr1Store.inputAnalysisResult) {
-    const steps: AnalysisStep[] = []
-    const result = slr1Store.inputAnalysisResult
-
-    for (let i = 0; i < result.info_step.length; i++) {
-      steps.push({
-        stateStack: result.info_stack[i] || '',
-        symbolStack: result.info_stack[i] || '',
-        inputString: result.info_str[i] || '',
-        action: result.info_action[i] || '',
-      })
-    }
-
-    analysisSteps.value = steps
+  // 加载之前保存的分析数据
+  const savedAnalysisData = localStorage.getItem('slr1_analysis_data')
+  if (savedAnalysisData) {
+    const analysisData = JSON.parse(savedAnalysisData)
+    inputString.value = analysisData.inputString || ''
+    analysisResult.value = analysisData.result
+    analysisSteps.value = analysisData.steps || []
     currentStepIndex.value = 0
   }
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadData()
 })
 </script>
 
 <style scoped>
-.step-header {
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-.step-icon {
-  width: 3rem;
-  height: 3rem;
-  background: #dcfce7;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step-content {
-  padding: 2rem;
-}
-.step-actions {
-  padding: 1rem 2rem 2rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
+.step-header { padding: 2rem 2rem 1rem; border-bottom: 1px solid #e5e7eb; }
+.step-icon { width: 3rem; height: 3rem; background: #dcfce7; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+.step-content { padding: 2rem; }
+.step-actions { padding: 1rem 2rem 2rem; border-top: 1px solid #e5e7eb; background: #f9fafb; }
 </style>
