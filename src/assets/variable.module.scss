@@ -1,0 +1,11 @@
+$onlyRead_bgColor: rgb(117, 220, 220);
+$waitCheck_bgColor: #EEEC89;
+$isCorrect_bgColor: rgb(113, 237, 113);
+$isError_bgColor: rgb(235, 123, 123);
+
+:export {
+  onlyRead_bgColor: $onlyRead_bgColor;
+  waitCheck_bgColor: $waitCheck_bgColor;
+  isCorrect_bgColor: $isCorrect_bgColor;
+  isError_bgColor: $isError_bgColor;
+}

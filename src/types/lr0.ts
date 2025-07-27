@@ -62,3 +62,6 @@ export interface LR0AnalysisStepInfo {
   info_str: string[]
   info_action: string[]
 }
+
+export type dfa_item =  { id: string, category: string, state: string, check:string, text: string }
+export type dfa_gotoVt =  { id: string, category: string, state: string, check:string, text: string }

@@ -82,7 +82,8 @@
           <div class="bg-white border border-gray-200 rounded-lg">
             <!-- 用户画布 -->
             <div class="h-[700px]">
-              <LRCanvas ref="canvasRef" />
+              <!-- <LRCanvas ref="canvasRef" /> -->
+              <LR0DrawDFA :check_DFA="lr0Store.dfaStates"></LR0DrawDFA>
             </div>
           </div>
 
@@ -202,6 +203,8 @@
 import { ref, computed, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import LRCanvas from '@/components/flow/canvas/LRCanvas.vue'
+// import aTest from '@/components/aTest.vue'
+import LR0DrawDFA from '@/components/lr/LR0DrawDFA.vue'
 import { useLR0Store } from '@/stores/lr0'
 import { instance } from '@viz-js/viz'
 

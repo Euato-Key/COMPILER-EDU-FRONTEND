@@ -329,11 +329,27 @@ export const useLR0Store = defineStore('lr0', () => {
           // 更新相关状态
           actionTable.value = result.actions || {}
           gotoTable.value = result.gotos || {}
-          dfaStates.value = result.all_dfa || []
+          // dfaStates.value = result.all_dfa || []
+          dfaStates.value = result.all_dfa.map((item, index)=>{
+            return {
+              id:"Item"+item.id,
+              pros: item.pros.map((x:any,idx:any)=>{
+                return{
+                  id:"Item"+item.id+"_pro"+idx,
+                  text:x,
+                }
+              }),
+              next_ids: item.next_ids
+            }
+          })
+
+
+
           dotItems.value = result.dot_items || []
           isLR0Grammar.value = result.isLR0 ?? null
           dotString.value = result.LR0_dot_str || ''
 
+          console.log("dfaStates",dfaStates)
           // 检测冲突并设置警告
           if (!result.isLR0) {
             validationWarnings.value = [

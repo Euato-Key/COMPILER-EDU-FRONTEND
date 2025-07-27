@@ -58,8 +58,8 @@
 S -> A a
 A -> B D
 B -> b
-D -> d</pre
-              >
+D -> d
+</pre>
               <button
                 @click="loadExample(1)"
                 class="mt-2 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -73,10 +73,11 @@ D -> d</pre
             <h4 class="font-medium text-gray-900 mb-2">示例文法2</h4>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
               <pre class="text-xs font-mono text-gray-700">
-S -> a A
-A -> B c
-B -> b
-B -> ε</pre
+                S -> a A
+                A -> B c
+                B -> b
+                B -> ε
+              </pre
               >
               <button
                 @click="loadExample(2)"
@@ -311,13 +312,13 @@ const onInputChange = () => {
 const loadExample = (exampleId: number) => {
   const examples = {
     1: `S -> Aa
-A -> BD
-B -> b
-D -> d`,
+        A -> BD
+        B -> b
+        D -> d`,
     2: `S -> aA
-A -> Bc
-B -> b
-B -> ε`,
+        A -> Bc
+        B -> b
+        B -> ε`,
   }
 
   grammarInput.value = examples[exampleId as keyof typeof examples] || ''
