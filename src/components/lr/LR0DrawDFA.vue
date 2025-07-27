@@ -2,6 +2,7 @@
 import { ref, type PropType, type Ref, computed, watch } from 'vue';
 import type { dataDfaType} from '@/utils/type/LR0type';
 import { VueFlow,Handle,Position,useVueFlow,MarkerType, type NodeChange} from "@vue-flow/core"
+import { Background } from '@vue-flow/background'
 const { onConnect,addEdges,addNodes,onNodeClick,onEdgeClick,findNode,findEdge,getNodes,getEdges,
   onNodesChange,onEdgesChange,applyNodeChanges,applyEdgeChanges,updateEdge,onEdgeUpdate,onPaneReady,setViewport,removeNodes } = useVueFlow()
 
@@ -47,7 +48,7 @@ watch(next_step_open.value, (newValue:boolean[], oldValue:boolean[])=>{
     emit('open_step4')
     if(showAnswer_cnt<=1) return
 
-    ElMessage({message:"DFA正确！",type:'success'})
+    alert("成功: DFA正确！")
     for(const node of getNodes.value){ // 确保不能删除node，但能拖动 dragable
       node.selectable = false
     }
@@ -133,7 +134,7 @@ const addNode =  () => {
   // })
   if(next_step_open.value[0] && next_step_open.value[1]) return
 
-  if(addNode_remainCnt.value<=0) return ElMessage({message:"添加次数不足，请确保当前 Item 校验正确",type:"error"})
+  if(addNode_remainCnt.value<=0) return alert("错误: 添加次数不足，请确保当前 Item 校验正确")
   addNode_remainCnt.value--
   addNodes({
     id: "node" + Date.now(),
@@ -175,7 +176,7 @@ const checkItem = () => {
         )
       {// check Right
         NodeMatchRight_cnt++
-        for(let x of node.data.pros){
+        for(const x of node.data.pros){
           if(x.category === 'blank') x.check='isCorrect'
         }
         node.data.label = answerItem.id
@@ -197,7 +198,7 @@ const checkItem = () => {
   // console.log('成功匹配的node数量 NodeMatchRight_cnt=  '+NodeMatchRight_cnt)
   // console.log('当前新增node数量限制 addNodeLimit=  '+addNodeLimit)
   if(checkRight_Items.length>=answerItem_totalNum.value) {
-    ElMessage({message:"所有 Item 校验正确！",type:'success'})
+    alert("成功: 所有 Item 校验正确！")
     next_step_open.value[0]=true
     return
   }
@@ -216,13 +217,13 @@ const checkItem = () => {
     forEachEpoch_AllNum += addNodeLimit
     NodeMatchRight_cnt = 0
     everyEpooch_Items.clear()
-    return ElMessage({message:`当前所有 Item 检测成功，可继续添加${addNodeLimit}个 Item`, type:'success'})
+    return alert(`成功: 当前所有 Item 检测成功，可继续添加${addNodeLimit}个 Item`)
   }
 
   if(NodeMatchRight_cnt > 0){
-    return ElMessage({message:`${NodeMatchRight_cnt}个 Item 校验成功！`,type:'success'})
+    return alert(`成功: ${NodeMatchRight_cnt}个 Item 校验成功！`)
   }else{
-    return ElMessage({message:`无 Item 校验成功`,type:'error'})
+    return alert(`错误: 无 Item 校验成功`)
   }
 
 }
@@ -232,7 +233,7 @@ const checkGoto = () => {
   // 将 edge 与 item.next_ids 匹配
   let edgeMatchRight_cnt = 0
 
-  for(let edge of getEdges.value){
+  for(const edge of getEdges.value){
     if(checkRight_local_edge.includes(edge.id)) continue
 
     const sourceId_local = edge.source
@@ -261,15 +262,15 @@ const checkGoto = () => {
   }
 
   if( checkRIght_Gotos.length>=answerGotos_totalNum.value ) {
-    ElMessage({message:"所有 Goto 校验正确！",type:"success"})
+    alert("成功: 所有 Goto 校验正确！")
     next_step_open.value[1]=true
     return
   }
 
   if(edgeMatchRight_cnt > 0){
-    return ElMessage({message:`${edgeMatchRight_cnt}条 Goto 连线校验成功！`,type:'success'})
+    return alert(`成功: ${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
   }else{
-    return ElMessage({message:`无 Goto 连线校验成功`,type:'error'})
+    return alert(`错误: 无 Goto 连线校验成功`)
   }
 }
 const handleRemoveInput = (nodeId, index) =>{
@@ -292,11 +293,11 @@ const reset = () => {
   // console.log(visiableDialog.value)
   // visiableDialog.value.dialogVisble = true
   // if(dialogIsConfirm.value) return
-  ElMessageBox.confirm('确定要初始化吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
+  if (confirm('确定要初始化吗?')) {
+    // 确认按钮已替换为原生confirm
+    // 取消按钮已替换为原生confirm
+    // 警告类型已替换为原生confirm
+    // 确认回调
     // 重置
 
     nodes.value = [
@@ -327,13 +328,14 @@ const reset = () => {
     next_step_open.value[1] = false
 
     setViewport({ x: 0, y: 0, zoom: 1 })
-  }).catch(() => {
+  } else {
     console.log("no!")
-  })
+  }
+
 
 }
 const showAnswer = () => {
-  if(showAnswer_cnt>1) return ElMessage({message:`请再努力尝试！（剩余${--showAnswer_cnt}次直接展示答案）`,type:'error'})
+  if(showAnswer_cnt>1) return alert(`错误: 请再努力尝试！（剩余${--showAnswer_cnt}次直接展示答案）`)
 
 
   removeNodes(getNodes.value,true) // 删除当前所有node，true: 及它们的edges
@@ -503,7 +505,7 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
     // console.log(checkRIght_Gotos)
 
     // ---------------------修改check信息：获取新连接后的 edge --------------------------
-    let edge = findEdge('vueflow__edge-' + params.connection.source + params.connection.sourceHandle + '-' + params.connection.target + params.connection.targetHandle)
+    const edge = findEdge('vueflow__edge-' + params.connection.source + params.connection.sourceHandle + '-' + params.connection.target + params.connection.targetHandle)
     if(edge) {
       edge.data.check='normal'
     }
@@ -517,6 +519,7 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
   <div id="flow_wrapper">
     <!-- apply-default: 自动更新 useVueflow 和 user-opeartion 的change ，默认为true-->
     <VueFlow :nodes="nodes" :edges="edges" class="flow" fit-view-on-init :apply-default="true">
+      <Background pattern="dots" :gap="20"/>
       <template #node-custom="customNodeProps">
         <custom-node
           :node="customNodeProps"
