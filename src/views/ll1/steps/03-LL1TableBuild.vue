@@ -21,10 +21,12 @@
       </div>
       <div v-else class="max-w-7xl mx-auto">
         <!-- 说明指引 -->
-        <div class="bg-green-50 rounded-lg p-6 mb-6">
+        <div class="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-xl p-6 mb-6 border border-green-100 shadow-sm">
           <div class="flex items-center mb-4">
-            <Icon icon="lucide:info" class="w-5 h-5 text-green-600 mr-2" />
-            <h3 class="text-lg font-semibold text-gray-900">构建说明</h3>
+            <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center mr-3">
+              <Icon icon="lucide:info" class="w-4 h-4 text-white" />
+            </div>
+            <h3 class="text-lg font-semibold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">构建说明</h3>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div class="flex items-center gap-2">
@@ -32,7 +34,7 @@
               <span class="text-sm text-gray-700">已知信息</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-yellow-200 rounded"></div>
+              <div class="w-4 h-4 bg-gradient-to-r from-amber-300 to-orange-300 rounded"></div>
               <span class="text-sm text-gray-700">待填写</span>
             </div>
             <div class="flex items-center gap-2">
@@ -44,10 +46,18 @@
               <span class="text-sm text-gray-700">校验错误</span>
             </div>
           </div>
-          <div class="text-sm text-gray-600">
-            <p>根据 First 集合和 Follow 集合，填写产生式，构造 LL1 分析表</p>
-            <p class="mt-1">• 对于产生式 A → α，将 A → α 填入 M[A, a]，其中 a ∈ First(α)</p>
-            <p>• 如果 ε ∈ First(α)，将 A → α 填入 M[A, b]，其中 b ∈ Follow(A)</p>
+          <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-green-200/50">
+            <div class="text-sm text-gray-700 space-y-2">
+              <p>根据 First 集合和 Follow 集合，填写产生式，构造 LL1 分析表</p>
+              <div class="flex items-start">
+                <span class="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>对于产生式 A → α，将 <span class="font-mono text-green-600">A->α</span> 填入 <span class="font-mono text-green-600">M[A, a]</span>，其中 <span class="font-mono text-green-600">a ∈ First(α)</span></span>
+              </div>
+              <div class="flex items-start">
+                <span class="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>如果 <span class="font-mono text-green-600">ε ∈ First(α)</span>，将 <span class="font-mono text-green-600">A->α</span> 填入 <span class="font-mono text-green-600">M[A, b]</span>，其中 <span class="font-mono text-green-600">b ∈ Follow(A)</span></span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -77,44 +87,81 @@
         </div>
 
         <!-- 调试面板 -->
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <h4 class="text-sm font-medium text-yellow-800 mb-2">调试信息</h4>
-          <div class="text-xs text-yellow-700 space-y-1">
-            <div><strong>Table 数据类型:</strong> {{ typeof originalData?.table }}</div>
-            <div><strong>Table 内容:</strong> {{ JSON.stringify(originalData?.table) }}</div>
-            <div><strong>所需填写项数量:</strong> {{ getRequiredTableEntries().length }}</div>
-            <div>
-              <strong>所需填写项:</strong> {{ getRequiredTableEntries().join(', ') || '无' }}
+        <div class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-xl p-4 mb-6 border border-orange-100 shadow-sm">
+          <div class="flex items-center mb-3">
+            <div class="w-6 h-6 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-lg flex items-center justify-center mr-2">
+              <Icon icon="lucide:bug" class="w-3 h-3 text-white" />
             </div>
-            <div><strong>全部完成状态:</strong> {{ allCompleted }}</div>
+            <h4 class="text-sm font-semibold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">调试信息</h4>
+          </div>
+          <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-orange-200/50">
+            <div class="text-xs text-gray-700 space-y-1">
+              <div><strong>Table 数据类型:</strong> {{ typeof originalData?.table }}</div>
+              <div><strong>Table 内容:</strong> {{ JSON.stringify(originalData?.table) }}</div>
+              <div><strong>所需填写项数量:</strong> {{ getRequiredTableEntries().length }}</div>
+              <div>
+                <strong>所需填写项:</strong> {{ getRequiredTableEntries().join(', ') || '无' }}
+              </div>
+              <div><strong>全部完成状态:</strong> {{ allCompleted }}</div>
+            </div>
           </div>
         </div>
 
         <!-- 主要内容区域 -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
           <!-- 左侧：产生式列表 -->
-          <div class="lg:col-span-4">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Icon icon="lucide:list" class="w-5 h-5 mr-2 text-blue-600" />
-                产生式
-              </h3>
-              <div class="space-y-2">
+          <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <Icon icon="lucide:list" class="w-5 h-5 mr-2 text-blue-500" />
+                  产生式
+                </h3>
+                <div class="text-xs text-gray-500 flex items-center gap-2">
+                  <span class="flex items-center gap-1">
+                    <Icon icon="lucide:grip-vertical" class="w-3 h-3 text-blue-400" />
+                    <span>拖拽到表格</span>
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <Icon icon="lucide:copy" class="w-3 h-3 text-blue-400" />
+                    <span>双击复制</span>
+                  </span>
+                </div>
+              </div>
+              <div class="space-y-1.5">
                 <div
                   v-for="(productions, nonTerminal) in originalData.formulas_dict"
                   :key="nonTerminal"
-                  class="border border-gray-200 rounded-lg p-3"
+                  class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-md border border-blue-200/50 p-1.5 shadow-sm"
                 >
-                  <div class="font-mono text-sm text-blue-600 font-medium mb-2">
+                  <div class="font-mono text-xs text-blue-700 font-medium mb-1 flex items-center">
+                    <Icon icon="lucide:tag" class="w-2.5 h-2.5 mr-1 text-blue-500" />
                     {{ nonTerminal }}
                   </div>
-                  <div class="space-y-1">
+                  <div class="space-y-0.5">
                     <div
                       v-for="(production, index) in productions"
                       :key="index"
-                      class="text-sm text-gray-700 pl-4 border-l-2 border-gray-300"
+                      class="flex items-center"
                     >
-                      <span class="font-mono">{{ nonTerminal }} → {{ production }}</span>
+                      <div
+                        class="flex-1 bg-white/80 backdrop-blur-sm rounded border border-blue-200/60 px-1.5 py-1 hover:border-blue-300 hover:bg-blue-50/80 hover:shadow-md transition-all duration-150 cursor-move select-none group shadow-sm"
+                        draggable="true"
+                        @dragstart="onProductionDragStart(`${nonTerminal}->${production}`, $event)"
+                        @dblclick="onProductionDblClick(`${nonTerminal}->${production}`)"
+                      >
+                        <div class="flex items-center justify-between">
+                          <span class="font-mono text-xs text-gray-700">
+                            <span class="text-blue-700 font-semibold">{{ nonTerminal }}</span>
+                            <span class="text-blue-400 mx-0.5">→</span>
+                            <span class="text-gray-700">{{ production }}</span>
+                          </span>
+                          <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Icon icon="lucide:grip-vertical" class="w-2 h-2 text-blue-400" title="拖拽" />
+                            <Icon icon="lucide:copy" class="w-2 h-2 text-blue-400" title="双击复制" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -123,7 +170,7 @@
           </div>
 
           <!-- 右侧：LL1分析表 -->
-          <div class="lg:col-span-8">
+          <div class="lg:col-span-9">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
@@ -138,6 +185,20 @@
                   <Icon v-if="checking" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
                   校验分析表
                 </button>
+              </div>
+
+              <!-- 操作提示 -->
+              <div class="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                <div class="text-xs text-blue-700 flex items-center gap-4">
+                  <span class="flex items-center gap-1">
+                    <Icon icon="lucide:mouse-pointer" class="w-3 h-3" />
+                    <span>从左侧拖拽产生式到表格中</span>
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <Icon icon="lucide:keyboard" class="w-3 h-3" />
+                    <span>或直接手动输入产生式</span>
+                  </span>
+                </div>
               </div>
 
               <!-- LL1分析表 -->
@@ -174,12 +235,14 @@
                         <input
                           v-model="userTable[`${nonTerminal}|${terminal}`]"
                           type="text"
-                          placeholder=""
+                          placeholder="拖拽产生式到此处或手动输入"
                           :class="[
                             'w-full px-2 py-1 text-xs text-center border-0 focus:ring-2 focus:ring-green-500 transition-colors',
                             getTableCellClass(nonTerminal, terminal),
                           ]"
                           @focus="clearTableValidation(nonTerminal, terminal)"
+                          @dragover.prevent
+                          @drop="onTableDrop($event, nonTerminal, terminal)"
                         />
                       </td>
                     </tr>
@@ -258,17 +321,36 @@
         </div>
 
         <!-- 构建规则提示 -->
-        <div class="bg-yellow-50 rounded-lg p-6 mb-6">
-          <h4 class="text-md font-semibold text-gray-900 mb-3">构建规则</h4>
-          <div class="text-sm text-gray-600 space-y-2">
-            <div><strong>步骤 1：</strong>对于每个产生式 A → α，执行以下步骤：</div>
-            <div class="ml-4">
-              <div>• 对于 First(α) 中的每个终结符 a，将 A → α 加入到 M[A, a]</div>
-              <div>
-                • 如果 ε ∈ First(α)，对于 Follow(A) 中的每个终结符 b，将 A → α 加入到 M[A, b]
+        <div class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 mb-6 border border-indigo-100 shadow-sm">
+          <div class="flex items-center mb-4">
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+              <Icon icon="lucide:book-open" class="w-4 h-4 text-white" />
+            </div>
+            <h4 class="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">构建规则</h4>
+          </div>
+          <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-indigo-200/50">
+            <div class="text-sm text-gray-700 space-y-3">
+              <div class="flex items-start">
+                <span class="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <div>
+                  <span class="font-semibold text-indigo-800">步骤 1：</span>对于每个产生式 A → α，执行以下步骤：
+                  <div class="ml-4 mt-2 space-y-2">
+                    <div class="flex items-start">
+                      <span class="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                      <span>对于 <span class="font-mono text-indigo-600">First(α)</span> 中的每个终结符 <span class="font-mono text-indigo-600">a</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, a]</span></span>
+                    </div>
+                    <div class="flex items-start">
+                      <span class="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                      <span>如果 <span class="font-mono text-indigo-600">ε ∈ First(α)</span>，对于 <span class="font-mono text-indigo-600">Follow(A)</span> 中的每个终结符 <span class="font-mono text-indigo-600">b</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, b]</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><span class="font-semibold text-indigo-800">步骤 2：</span>将所有无定义的条目标记为错误</span>
               </div>
             </div>
-            <div><strong>步骤 2：</strong>将所有无定义的条目标记为错误</div>
           </div>
         </div>
       </div>
@@ -299,6 +381,18 @@
         </button>
       </div>
     </div>
+
+    <transition
+      enter-active-class="transition-opacity duration-300"
+      leave-active-class="transition-opacity duration-300"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="copyTip" class="fixed top-8 right-8 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 bg-green-600 text-white">
+        <Icon icon="lucide:copy" class="w-5 h-5" />
+        <span>{{ copyTip }}</span>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -328,8 +422,8 @@ defineEmits<{
 const nonTerminals = computed(() => originalData.value?.Vn || [])
 const terminals = computed(() => {
   if (!originalData.value?.Vt) return []
-  // 添加 # 符号
-  const terminalSet = new Set([...originalData.value.Vt, '#'])
+  // 添加 $ 符号
+  const terminalSet = new Set([...originalData.value.Vt, '$'])
   return Array.from(terminalSet).sort()
 })
 
@@ -366,6 +460,54 @@ const allCompleted = computed(() => {
   return requiredEntries.every((key) => tableValidation.value[key] === 'correct')
 })
 
+// 复制提示
+const copyTip = ref('')
+let copyTipTimer: number | null = null
+
+// 拖拽事件处理函数
+function onProductionDragStart(production: string, event: DragEvent) {
+  // 将产生式内容写入拖拽数据
+  event.dataTransfer?.setData('text/plain', production)
+}
+
+// 双击产生式卡片复制到剪贴板并弹出提示
+function onProductionDblClick(production: string) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(production).then(() => {
+      showCopyTip(`已复制：${production}`)
+    })
+  } else {
+    // 兼容性处理
+    const textarea = document.createElement('textarea')
+    textarea.value = production
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    showCopyTip(`已复制：${production}`)
+  }
+}
+
+function showCopyTip(msg: string) {
+  copyTip.value = msg
+  if (copyTipTimer) clearTimeout(copyTipTimer)
+  copyTipTimer = window.setTimeout(() => {
+    copyTip.value = ''
+  }, 1200)
+}
+
+// 拖拽放置处理函数
+function onTableDrop(event: DragEvent, nonTerminal: string, terminal: string) {
+  event.preventDefault()
+  const production = event.dataTransfer?.getData('text/plain')
+  if (production) {
+    const key = `${nonTerminal}|${terminal}`
+    userTable.value[key] = production
+    // 清除验证状态，让用户重新校验
+    tableValidation.value[key] = ''
+  }
+}
+
 // 工具函数
 const getRequiredTableEntries = (): string[] => {
   if (!originalData.value?.table) return []
@@ -379,7 +521,14 @@ const getCorrectTableEntry = (nonTerminal: string, terminal: string): string => 
 
   // 后端使用 | 作为分隔符
   const key = `${nonTerminal}|${terminal}`
-  return originalData.value.table[key] || ''
+  const rawValue = originalData.value.table[key] || ''
+
+  // 如果后端返回的是产生式的右部（如 "AB"），需要转换为产生式格式（如 "S->AB"）
+  if (rawValue && !rawValue.includes('->')) {
+    return `${nonTerminal}->${rawValue}`
+  }
+
+  return rawValue
 }
 
 const getTableCellClass = (nonTerminal: string, terminal: string): string => {
@@ -396,7 +545,7 @@ const getTableCellClass = (nonTerminal: string, terminal: string): string => {
   // 检查是否为需要填写的项
   const correctEntry = getCorrectTableEntry(nonTerminal, terminal)
   if (correctEntry) {
-    return 'bg-yellow-50 border-yellow-300' // 待填写
+    return 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300' // 待填写
   }
 
   return 'bg-gray-100' // 不需要填写
@@ -443,7 +592,16 @@ const checkTable = async () => {
         continue
       }
 
-      if (userInput === correctEntry) {
+      // 标准化用户输入和正确答案进行比较
+      const normalizedUserInput = userInput.trim()
+      const normalizedCorrectEntry = correctEntry.trim()
+
+      // 检查用户输入是否匹配正确答案（支持多种格式）
+      const isCorrect = normalizedUserInput === normalizedCorrectEntry ||
+                       normalizedUserInput === correctEntry.replace('->', '') ||
+                       normalizedUserInput === `${nonTerminal}->${correctEntry.replace('->', '')}`
+
+      if (isCorrect) {
         tableValidation.value[key] = 'correct'
       } else {
         tableValidation.value[key] = 'incorrect'
@@ -463,7 +621,7 @@ const checkTable = async () => {
         for (const key of requiredEntries) {
           const [nonTerminal, terminal] = key.split('|')
           const correctEntry = getCorrectTableEntry(nonTerminal, terminal)
-          userTable.value[key] = correctEntry
+          userTable.value[key] = correctEntry // 显示产生式格式
           tableValidation.value[key] = 'correct'
         }
         showAnswer.value = true
