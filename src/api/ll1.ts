@@ -1,5 +1,6 @@
 import request from '@/lib/request'
-import type { ApiResponse, LL1AnalysisResult, AnalysisStepInfo } from '@/types'
+import type { ApiResponse } from '@/types/common'
+import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types/ll1'
 
 /**
  * LL1语法分析

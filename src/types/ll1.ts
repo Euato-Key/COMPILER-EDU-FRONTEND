@@ -41,6 +41,15 @@ export interface LL1AnalysisStepInfo {
   info_str: LL1InfoStr[]
 }
 
+// 简化的LL1输入串分析结果（用于API响应）
+export interface AnalysisStepInfo {
+  info_res: string
+  info_step: number[]
+  info_msg: string[]
+  info_stack: string[]
+  info_str: string[]
+}
+
 // LL1分析过程中的符号栈
 export interface LL1InfoSymbol {
   id: string

@@ -247,7 +247,7 @@
                       <th
                         v-for="terminal in terminals"
                         :key="terminal"
-                        class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase"
+                        class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700"
                       >
                         {{ terminal }}
                       </th>
@@ -505,9 +505,10 @@ defineEmits<{
 const nonTerminals = computed(() => originalData.value?.Vn || [])
 const terminals = computed(() => {
   if (!originalData.value?.Vt) return []
-  // 添加 $ 符号
-  const terminalSet = new Set([...originalData.value.Vt, '$'])
-  return Array.from(terminalSet).sort()
+
+  // 先对Vt进行排序，然后将#放到最后
+  const sortedVt = [...originalData.value.Vt].sort()
+  return [...sortedVt, '#']
 })
 
 // 用户输入的分析表

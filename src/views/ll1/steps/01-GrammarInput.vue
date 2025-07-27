@@ -296,16 +296,16 @@
                   {{ example.name }}
                 </h5>
                 <div class="w-6 h-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center group-hover:from-purple-200 group-hover:to-pink-200 transition-all duration-300">
-                  <Icon
-                    icon="lucide:copy"
+                <Icon
+                  icon="lucide:copy"
                     class="w-3 h-3 text-purple-600 group-hover:text-purple-700 transition-colors"
-                  />
+                />
                 </div>
               </div>
               <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200 mb-3">
                 <pre class="text-xs text-gray-700 font-mono leading-tight whitespace-pre-wrap">{{
-                  example.grammar
-                }}</pre>
+                example.grammar
+              }}</pre>
               </div>
               <div class="pt-2 border-t border-gray-200">
                 <span class="text-xs text-gray-600">{{ example.description }}</span>
@@ -347,9 +347,9 @@
                       <Icon icon="lucide:play" class="w-4 h-4 text-white" />
                     </div>
                     <span class="text-sm font-semibold text-gray-800">起始符号</span>
-                  </div>
+              </div>
                   <p class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-mono">{{ originalData.S }}</p>
-                </div>
+            </div>
 
                 <div class="bg-white rounded-lg p-4 border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <div class="flex items-center gap-2 mb-3">
@@ -357,10 +357,10 @@
                       <Icon icon="lucide:tag" class="w-4 h-4 text-white" />
                     </div>
                     <span class="text-sm font-semibold text-gray-800">非终结符</span>
-                  </div>
+              </div>
                   <p class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent font-mono">{{ originalData.Vn.length }}</p>
                   <p class="text-xs text-gray-600 mt-1 font-mono">{{ originalData.Vn.join(', ') }}</p>
-                </div>
+            </div>
 
                 <div class="bg-white rounded-lg p-4 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <div class="flex items-center gap-2 mb-3">
@@ -368,10 +368,10 @@
                       <Icon icon="lucide:hash" class="w-4 h-4 text-white" />
                     </div>
                     <span class="text-sm font-semibold text-gray-800">终结符</span>
-                  </div>
+              </div>
                   <p class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent font-mono">{{ originalData.Vt.length }}</p>
                   <p class="text-xs text-gray-600 mt-1 font-mono">{{ originalData.Vt.join(', ') }}</p>
-                </div>
+            </div>
 
                 <div class="bg-white rounded-lg p-4 border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <div class="flex items-center gap-2 mb-3">
@@ -379,13 +379,13 @@
                       <Icon icon="lucide:list" class="w-4 h-4 text-white" />
                     </div>
                     <span class="text-sm font-semibold text-gray-800">产生式数</span>
-                  </div>
-                  <p class="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text text-transparent font-mono">
-                    {{ Object.keys(originalData.formulas_dict).length }}
-                  </p>
-                </div>
               </div>
+                  <p class="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text text-transparent font-mono">
+                {{ Object.keys(originalData.formulas_dict).length }}
+              </p>
+                </div>
             </div>
+          </div>
 
             <!-- 右侧文法信息 -->
             <div class="lg:col-span-1">
@@ -402,9 +402,9 @@
                   </div>
                 </div>
                 <div class="space-y-1.5">
-                  <div
-                    v-for="(productions, nonTerminal) in originalData.formulas_dict"
-                    :key="nonTerminal"
+              <div
+                v-for="(productions, nonTerminal) in originalData.formulas_dict"
+                :key="nonTerminal"
                     class="flex items-center gap-2 p-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-md border border-gray-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300 transition-all duration-200"
                   >
                     <span class="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-mono">{{ nonTerminal }}</span>

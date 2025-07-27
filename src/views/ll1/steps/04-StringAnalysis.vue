@@ -14,83 +14,278 @@
 
     <div class="step-content">
       <div class="max-w-6xl mx-auto">
-        <!-- 输入字符串区域 -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">输入待分析字符串</h3>
-          <div class="space-y-4">
+        <!-- 当前文法分析结果 -->
+        <div
+          v-if="originalData"
+          class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 shadow-xl mb-6"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <Icon icon="lucide:zap" class="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h4 class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  当前文法分析结果
+                </h4>
+                <p class="text-xs text-gray-600 mt-0.5">LL(1)文法分析完成</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg">
+              <Icon icon="lucide:check-circle" class="w-3 h-3 text-white" />
+              <span class="text-xs font-semibold text-white">LL(1)文法</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 左侧统计信息 -->
+            <div class="lg:col-span-1 flex flex-col">
+              <div class="grid grid-cols-2 gap-4 flex-1">
+                <div class="bg-white rounded-lg p-4 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col justify-center">
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:play" class="w-4 h-4 text-white" />
+                    </div>
+                    <span class="text-sm font-semibold text-gray-800">起始符号</span>
+                  </div>
+                  <p class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-mono">{{ originalData.S }}</p>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col justify-center">
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:tag" class="w-4 h-4 text-white" />
+                    </div>
+                    <span class="text-sm font-semibold text-gray-800">非终结符</span>
+                  </div>
+                  <p class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent font-mono">{{ originalData.Vn.length }}</p>
+                  <p class="text-xs text-gray-600 mt-1 font-mono">{{ originalData.Vn.join(', ') }}</p>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col justify-center">
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:hash" class="w-4 h-4 text-white" />
+                    </div>
+                    <span class="text-sm font-semibold text-gray-800">终结符</span>
+                  </div>
+                  <p class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent font-mono">{{ originalData.Vt.length }}</p>
+                  <p class="text-xs text-gray-600 mt-1 font-mono">{{ originalData.Vt.join(', ') }}</p>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col justify-center">
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:list" class="w-4 h-4 text-white" />
+                    </div>
+                    <span class="text-sm font-semibold text-gray-800">产生式数</span>
+                  </div>
+                  <p class="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text text-transparent font-mono">
+                    {{ Object.keys(originalData.formulas_dict).length }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右侧文法信息 -->
+            <div class="lg:col-span-1">
+              <div class="bg-white rounded-lg border-2 border-blue-200 p-4 shadow-lg h-full flex flex-col">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <Icon icon="lucide:file-text" class="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h5 class="text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                      文法信息
+                    </h5>
+                    <p class="text-xs text-gray-500">Grammar Information</p>
+                  </div>
+                </div>
+                <div class="space-y-1.5 flex-1">
+                  <div
+                    v-for="(productions, nonTerminal) in originalData.formulas_dict"
+                    :key="nonTerminal"
+                    class="flex items-center gap-2 p-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-md border border-gray-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300 transition-all duration-200"
+                  >
+                    <span class="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-mono">{{ nonTerminal }}</span>
+                    <span class="text-gray-400 font-mono text-sm">→</span>
+                    <span class="font-mono text-gray-700 text-xs flex-1">{{ productions.join(' | ') }}</span>
+                  </div>
+                </div>
+
+                <!-- 当前输入串信息 -->
+                <div v-if="inputString && inputAnalysisResult" class="mt-4 pt-4 border-t border-gray-200">
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:play" class="w-3 h-3 text-white" />
+                    </div>
+                    <h6 class="text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      当前输入串分析结果
+                    </h6>
+                  </div>
+                  <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
+                    <!-- 输入串显示 -->
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-medium text-gray-600">输入串：</span>
+                        <span class="text-sm font-mono text-green-700 bg-white px-2 py-1 rounded border">{{ inputString }}</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <Icon
+                          :icon="inputAnalysisResult.info_res === 'Success!' ? 'lucide:check-circle' : 'lucide:x-circle'"
+                          class="w-4 h-4"
+                          :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-600' : 'text-red-600'"
+                        />
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full"
+                              :class="inputAnalysisResult.info_res === 'Success!' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                          {{ inputAnalysisResult.info_res === 'Success!' ? '分析成功' : '分析失败' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- 分析详情 -->
+                    <div class="space-y-2">
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-600">分析步骤：</span>
+                        <span class="font-mono font-medium text-gray-800">{{ inputAnalysisResult.info_step.length }} 步</span>
+                      </div>
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-600">最终结果：</span>
+                        <span class="font-mono font-medium"
+                              :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-700' : 'text-red-700'">
+                          {{ inputAnalysisResult.info_res }}
+                        </span>
+                      </div>
+                      <div v-if="inputAnalysisResult.info_res !== 'Success!'" class="flex items-center justify-between text-xs">
+                        <span class="text-gray-600">错误信息：</span>
+                        <span class="font-mono font-medium text-red-700 max-w-32 truncate" :title="inputAnalysisResult.info_res">
+                          {{ inputAnalysisResult.info_res }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 输入串分析区域 -->
+        <div v-if="originalData" class="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-xl shadow-lg border border-green-100 p-6 mb-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <Icon icon="lucide:play-circle" class="w-5 h-5 text-white" />
+              </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <h3 class="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  输入串分析
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">使用LL1分析表分析输入字符串</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-green-100 rounded-full">
+              <Icon icon="lucide:info" class="w-3 h-3 text-green-600" />
+              <span class="text-xs font-medium text-green-700">自动添加结束符#</span>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <!-- 输入区域 -->
+            <div class="bg-white rounded-lg border border-green-200 p-4 shadow-sm">
+              <label class="block text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:keyboard" class="w-4 h-4 text-green-500" />
                 字符串输入
-                <span class="text-xs text-gray-500 ml-2">(结束符 # 会自动添加)</span>
+                <span class="text-xs font-normal text-gray-500 ml-2">(结束符 # 会自动添加)</span>
               </label>
               <div class="flex gap-4">
                 <input
                   v-model="inputString"
                   type="text"
                   placeholder="例如: ab (不需要输入结束符#)"
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  class="flex-1 px-4 py-3 border-2 border-green-200 rounded-lg focus:ring-4 focus:ring-green-100 focus:border-green-400 transition-all duration-200 font-mono text-sm"
                   @keyup.enter="analyzeString"
                 />
                 <button
                   @click="analyzeString"
                   :disabled="!inputString.trim() || analyzing"
-                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <Icon v-if="analyzing" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
                   {{ analyzing ? '分析中...' : '开始分析' }}
                 </button>
+                <button
+                  @click="resetAnalysis"
+                  class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold"
+                >
+                  重置
+                </button>
               </div>
-              <div class="mt-2 text-xs text-blue-600">
-                <p>💡 提示：输入的字符串末尾会自动添加结束符 # 进行LL1分析</p>
+              <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start gap-2 text-sm text-blue-700">
+                  <Icon icon="lucide:lightbulb" class="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-1">💡 分析提示</p>
+                    <p class="text-xs">• 输入的字符串末尾会自动添加结束符 # 进行LL1分析</p>
+                    <p class="text-xs">• 系统会根据LL1分析表逐步分析字符串的推导过程</p>
+                    <p class="text-xs">• 分析结果将显示详细的栈操作和推导步骤</p>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- 示例字符串 -->
+            <div class="bg-white rounded-lg border border-green-200 p-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-3">
+                <Icon icon="lucide:list" class="w-4 h-4 text-green-500" />
+                <span class="text-sm font-semibold text-gray-800">示例字符串</span>
+                <span class="text-xs text-gray-500">(点击使用)</span>
+              </div>
             <div class="flex flex-wrap gap-2">
-              <span class="text-sm text-gray-600">示例:</span>
               <button
                 v-for="example in exampleStrings"
                 :key="example"
                 @click="inputString = example"
-                class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-200 border border-gray-200 hover:border-gray-300 font-mono"
               >
                 {{ example }}
               </button>
             </div>
+            </div>
+
+            <!-- 分析结果 -->
+            <div v-if="inputAnalysisResult" class="bg-white rounded-lg border border-green-200 p-4 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <Icon
+                    :icon="inputAnalysisResult.info_res === 'Success!' ? 'lucide:check-circle' : 'lucide:x-circle'"
+                    class="w-6 h-6"
+                    :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-600' : 'text-red-600'"
+                  />
+                  <h4 class="text-lg font-semibold" :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-700' : 'text-red-700'">
+                    {{ inputAnalysisResult.info_res === 'Success!' ? '字符串分析成功！' : '字符串分析失败！' }}
+                  </h4>
+                </div>
+                <div class="text-sm text-gray-500">
+                  分析结果：{{ inputAnalysisResult.info_res }}
           </div>
         </div>
 
-        <!-- 分析过程 -->
-        <div
-          v-if="inputAnalysisResult || analysisSteps.length > 0"
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
-        >
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">分析过程</h3>
-
-          <!-- 真实分析结果显示 -->
-          <div v-if="inputAnalysisResult" class="mb-6">
+              <!-- 分析过程表格 -->
             <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-300 text-sm">
                 <thead class="bg-green-50">
                   <tr>
-                    <th
-                      class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                    >
+                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
                       步骤
                     </th>
-                    <th
-                      class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                    >
+                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
                       栈
                     </th>
-                    <th
-                      class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                    >
+                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
                       输入
                     </th>
-                    <th
-                      class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                    >
+                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
                       动作
                     </th>
                   </tr>
@@ -99,10 +294,10 @@
                   <tr v-for="(step, index) in inputAnalysisResult.info_step" :key="index">
                     <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
                     <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                      {{ getStackDisplay(index) }}
+                        {{ inputAnalysisResult.info_stack[index] }}
                     </td>
                     <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                      {{ getInputDisplay(index) }}
+                        {{ inputAnalysisResult.info_str[index] }}
                     </td>
                     <td class="border border-gray-300 px-3 py-2 text-center">
                       {{ inputAnalysisResult.info_msg[index] }}
@@ -110,95 +305,187 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
+            </div>
             </div>
           </div>
 
-          <!-- 模拟分析结果显示（向后兼容） -->
-          <div v-else-if="analysisSteps.length > 0" class="overflow-x-auto">
-            <table class="min-w-full border border-gray-300 text-sm">
-              <thead class="bg-green-50">
-                <tr>
-                  <th
-                    class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                  >
-                    步骤
+        <!-- LL1分析表和答题区域 -->
+        <div v-if="originalData?.table && inputString && inputAnalysisResult" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- 左侧：LL1分析表 -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Icon icon="lucide:table" class="w-5 h-5 mr-2 text-blue-600" />
+              LL1 分析表
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full border border-gray-300">
+                <thead class="bg-blue-50">
+                  <tr>
+                    <th class="border border-gray-300 px-3 py-2 text-left text-xs font-medium text-gray-700">
+                      非终结符
                   </th>
                   <th
-                    class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                  >
-                    栈
-                  </th>
-                  <th
-                    class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                  >
-                    输入
-                  </th>
-                  <th
-                    class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
-                  >
-                    动作
+                      v-for="terminal in VtAll"
+                      :key="terminal"
+                      class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700"
+                    >
+                      {{ terminal }}
                   </th>
                 </tr>
               </thead>
               <tbody class="bg-white">
-                <tr
-                  v-for="(step, index) in analysisSteps"
-                  :key="index"
-                  :class="{ 'bg-red-50': step.error }"
-                >
-                  <td class="border border-gray-300 px-3 py-2 text-center">{{ index + 1 }}</td>
-                  <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                    {{ step.stack }}
-                  </td>
-                  <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                    {{ step.input }}
+                  <tr v-for="nonTerminal in originalData.Vn" :key="nonTerminal">
+                    <td class="border border-gray-300 px-3 py-2 font-mono font-semibold text-blue-700">
+                      {{ nonTerminal }}
                   </td>
                   <td
-                    class="border border-gray-300 px-3 py-2 text-center"
-                    :class="{ 'text-red-600': step.error }"
-                  >
-                    {{ step.action }}
+                       v-for="terminal in VtAll"
+                       :key="`${nonTerminal}-${terminal}`"
+                       class="border border-gray-300 px-3 py-2 text-center text-xs font-mono cursor-pointer hover:bg-blue-50 transition-colors"
+                       @dblclick="onLL1CellDblClick(nonTerminal, terminal)"
+                       :class="{ 'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintRow === nonTerminal && hintCol === terminal }"
+                     >
+                       <span v-if="originalData?.table && originalData.table[`${nonTerminal}|${terminal}`]" class="text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded border">
+                         {{ nonTerminal }}->{{ originalData.table[`${nonTerminal}|${terminal}`] }}
+                       </span>
+                       <span v-else class="text-gray-400">-</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-start gap-2 text-sm text-blue-700">
+                <Icon icon="lucide:info" class="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p class="font-medium mb-1">💡 操作提示</p>
+                  <p class="text-xs">• <span class="font-bold">双击</span>表格中的产生式可进行推导操作</p>
+                  <p class="text-xs">• 根据当前栈顶符号和输入串首字符选择正确的操作</p>
         </div>
-
-        <!-- 分析结果 -->
-        <div
-          v-if="computedAnalysisResult"
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
-        >
-          <div class="flex items-center space-x-3 mb-4">
-            <div class="flex-shrink-0">
-              <Icon
-                :icon="computedAnalysisResult.success ? 'lucide:check-circle' : 'lucide:x-circle'"
-                class="w-6 h-6"
-                :class="computedAnalysisResult.success ? 'text-green-600' : 'text-red-600'"
-              />
             </div>
-            <div>
-              <h3
-                class="text-lg font-semibold"
-                :class="computedAnalysisResult.success ? 'text-green-900' : 'text-red-900'"
-              >
-                {{ computedAnalysisResult.message }}
-              </h3>
             </div>
           </div>
 
-          <!-- 详细信息 -->
-          <div
-            v-if="computedAnalysisResult.details && computedAnalysisResult.details.length > 0"
-            class="text-sm text-gray-600"
-          >
-            <div
-              v-for="(detail, index) in computedAnalysisResult.details"
-              :key="index"
-              class="mb-1"
-            >
-              • {{ detail }}
+          <!-- 右侧：答题区域 -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="mb-4">
+              <div class="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3 flex items-start gap-2 text-yellow-800 text-sm">
+                <Icon icon="lucide:info" class="w-5 h-5 flex-shrink-0 mt-0.5 text-yellow-500" />
+                <div>
+                  <div class="font-bold mb-1">操作指引：</div>
+                  <ul class="list-disc list-inside space-y-1">
+                    <li>每一步请根据当前"分析栈"和"输入串"判断操作。</li>
+                    <li>若栈顶为非终结符，双击左侧 LL1 分析表对应单元格进行推导。</li>
+                    <li>若栈顶与输入串首字符相同，点击 <span class="font-bold text-green-700">匹配</span> 按钮。</li>
+                    <li>如操作失误可点击 <span class="font-bold text-gray-700">回退</span>，重新开始可点 <span class="font-bold text-gray-700">重做</span>。</li>
+                    <li>遇到不会做时可点击 <span class="font-bold text-yellow-700">提示</span>，系统会高亮推荐操作。</li>
+                    <li>点击 <span class="font-bold text-blue-700">查看答案</span> 可显示完整标准分析过程。</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">输入串分析表（答题区）</h3>
+
+            <!-- 操作按钮 -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button
+                @click="onMatch"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                匹配
+              </button>
+              <button
+                @click="onUndo"
+                :disabled="userSteps.length <= 1"
+                class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                回退
+              </button>
+              <button
+                @click="onShowAnswer"
+                class="px-4 py-2 border border-blue-300 text-blue-700 bg-white rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+              >
+                查看答案
+              </button>
+              <button
+                @click="onResetUserSteps"
+                class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              >
+                重做
+              </button>
+              <button
+                @click="onHint"
+                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium"
+              >
+                提示
+              </button>
+            </div>
+
+            <!-- 答题表格 -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full border border-gray-300 text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">步骤</th>
+                    <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">分析栈</th>
+                    <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">输入串</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white">
+                                     <template v-if="!showAnswer">
+                     <tr v-for="(step, idx) in userSteps" :key="idx">
+                       <td class="border border-gray-300 px-3 py-2 text-center">{{ idx + 1 }}</td>
+                                             <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                         <template v-if="idx === userSteps.length - 1 && hintActive && hintType === 'match'">
+                           <span v-for="(ch, i) in (step.stack || '')" :key="i"
+                                 :class="i === (step.stack.length || 1) - 1 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                             {{ ch }}
+                           </span>
+                         </template>
+                         <template v-else-if="idx === userSteps.length - 1 && hintActive && hintType === 'll1'">
+                           <span v-for="(ch, i) in (step.stack || '')" :key="i"
+                                 :class="i === (step.stack.length || 1) - 1 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                             {{ ch }}
+                           </span>
+                         </template>
+                         <template v-else>
+                           {{ step.stack }}
+                         </template>
+                       </td>
+                       <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                         <template v-if="idx === userSteps.length - 1 && hintActive && hintType === 'match'">
+                           <span v-for="(ch, i) in (step.input || '')" :key="i"
+                                 :class="i === 0 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                             {{ ch }}
+                           </span>
+                         </template>
+                         <template v-else-if="idx === userSteps.length - 1 && hintActive && hintType === 'll1'">
+                           <span v-for="(ch, i) in (step.input || '')" :key="i"
+                                 :class="i === 0 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                             {{ ch }}
+                           </span>
+                         </template>
+                         <template v-else>
+                           {{ step.input }}
+                         </template>
+                       </td>
+                    </tr>
+                  </template>
+                  <template v-else>
+                    <tr v-for="(step, idx) in inputAnalysisResult?.info_step || []" :key="idx">
+                      <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
+                      <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                        {{ inputAnalysisResult && inputAnalysisResult.info_stack ? inputAnalysisResult.info_stack[idx] : '' }}
+                      </td>
+                      <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                        {{ inputAnalysisResult && inputAnalysisResult.info_str ? inputAnalysisResult.info_str[idx] : '' }}
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -224,6 +511,15 @@
         </button>
       </div>
     </div>
+
+    <!-- 消息提示 -->
+    <transition name="fade">
+      <div v-if="message" class="fixed bottom-8 right-8 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
+        :class="messageType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'">
+        <Icon :icon="messageType === 'success' ? 'lucide:check-circle' : 'lucide:alert-circle'" class="w-5 h-5" />
+        <span>{{ message }}</span>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -234,19 +530,6 @@ import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
 import { Icon } from '@iconify/vue'
 
-interface AnalysisStep {
-  stack: string
-  input: string
-  action: string
-  error?: boolean
-}
-
-interface AnalysisResult {
-  success: boolean
-  message: string
-  details?: string[]
-}
-
 // 组件事件
 const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: any] }>()
 
@@ -255,75 +538,40 @@ const ll1Store = useLL1Store()
 const commonStore = useCommonStore()
 
 // 从 Store 获取数据
-const { inputString, inputAnalysisResult } = storeToRefs(ll1Store)
+const { originalData, inputString, inputAnalysisResult } = storeToRefs(ll1Store)
 const { loading } = storeToRefs(commonStore)
 
-// 本地状态 - 用于向后兼容和临时显示
-const analysisSteps = ref<AnalysisStep[]>([])
-const analysisResult = ref<AnalysisResult | null>(null)
-
-// 分析状态
+// 本地状态
 const analyzing = computed(() => loading.value)
 
 // 示例字符串 (不包含结束符，系统会自动添加#)
 const exampleStrings = ['a', 'ab', 'aab', 'b']
 
-// 监听输入字符串变化，自动触发分析
-watch(
-  () => inputString.value,
-  (newValue) => {
-    if (newValue && newValue.trim()) {
-      handleAnalyze()
-    }
-  },
-  { immediate: false },
-)
+// 答题相关状态
+const userSteps = ref<{ stack: string; input: string }[]>([])
+const showAnswer = ref(false)
+const hintActive = ref(false)
+const hintRow = ref('')
+const hintCol = ref('')
+const hintType = ref<'ll1' | 'match' | ''>('')
+const message = ref<string | null>(null)
+const messageType = ref<'success' | 'error'>('success')
+let messageTimer: number | null = null
 
-// 计算分析结果状态
-const computedAnalysisResult = computed(() => {
-  if (inputAnalysisResult.value) {
-    return {
-      success: inputAnalysisResult.value.result,
-      message: inputAnalysisResult.value.result ? '字符串分析成功！' : '字符串分析失败！',
-      details: inputAnalysisResult.value.info_msg || [],
-    }
-  }
-
-  // 向后兼容模拟分析结果
-  if (analysisResult.value) {
-    return analysisResult.value
-  }
-
-  return null
+// 计算属性
+const VtAll = computed(() => {
+  const vt = originalData.value?.Vt || []
+  return [...vt, '#'] // 添加结束符
 })
 
-// 从真实分析结果获取栈状态显示
-const getStackDisplay = (index: number) => {
-  if (!inputAnalysisResult.value?.info_stack) return ''
-
-  // 如果有专门的栈信息数组，直接使用
-  if (inputAnalysisResult.value.info_stack[index]) {
-    return Array.isArray(inputAnalysisResult.value.info_stack[index])
-      ? inputAnalysisResult.value.info_stack[index].join('')
-      : String(inputAnalysisResult.value.info_stack[index])
+// 监听分析结果变化，自动初始化用户步骤
+watch(inputAnalysisResult, (newResult) => {
+  if (newResult && inputString.value) {
+    initUserSteps()
   }
+}, { immediate: true })
 
-  return '栈状态未知'
-}
-
-// 从真实分析结果获取输入状态显示
-const getInputDisplay = (index: number) => {
-  if (!inputAnalysisResult.value?.info_str) return ''
-
-  // 如果有专门的输入信息数组，直接使用
-  if (inputAnalysisResult.value.info_str[index]) {
-    return String(inputAnalysisResult.value.info_str[index])
-  }
-
-  return '输入状态未知'
-}
-
-// 执行分析 - 使用 Store 的真实分析功能
+// 分析字符串
 const analyzeString = async () => {
   if (!inputString.value?.trim()) {
     commonStore.setError('请输入要分析的字符串')
@@ -333,41 +581,151 @@ const analyzeString = async () => {
   try {
     const success = await ll1Store.analyzeInputString()
 
-    if (success && inputAnalysisResult.value?.result) {
-      analysisResult.value = {
-        success: true,
-        message: '字符串分析成功！',
-        details: inputAnalysisResult.value.info_msg || [],
-      }
-    } else {
-      analysisResult.value = {
-        success: false,
-        message: '字符串分析失败！',
-        details: inputAnalysisResult.value?.info_msg || ['分析未通过'],
-      }
+    if (success) {
+      console.log('字符串分析完成！')
+      // 初始化用户答题步骤
+      initUserSteps()
     }
   } catch (error) {
     console.error('分析失败:', error)
     commonStore.setError('分析过程中发生错误')
-    analysisResult.value = {
-      success: false,
-      message: '分析过程中发生错误',
-      details: [String(error)],
-    }
   }
 }
 
-// 简化版分析函数（向后兼容）
-const handleAnalyze = () => {
-  analyzeString()
+// 重置分析
+const resetAnalysis = () => {
+  ll1Store.setInputString('')
+  commonStore.clearError()
+  userSteps.value = []
+  showAnswer.value = false
+  hintActive.value = false
 }
 
-// 清除分析结果
-const clearAnalysis = () => {
-  inputAnalysisResult.value = null
-  analysisSteps.value = []
-  analysisResult.value = null
-  inputString.value = ''
+// 初始化用户答题步骤
+const initUserSteps = () => {
+  showAnswer.value = false
+  if (originalData.value && inputString.value) {
+    // 初始分析栈和输入串
+    const startSymbol = originalData.value.Vn[0] || ''
+    userSteps.value = [{ stack: '#' + startSymbol, input: inputString.value + '#' }]
+  } else {
+    userSteps.value = []
+  }
+}
+
+// LL1表双击
+const onLL1CellDblClick = (row: string, col: string) => {
+  if (showAnswer.value) return
+  if (hintActive.value) {
+    hintActive.value = false
+    hintRow.value = ''
+    hintCol.value = ''
+    hintType.value = ''
+  }
+  const prod = originalData.value?.table?.[row + '|' + col]
+  if (!prod) return
+  const last = userSteps.value[userSteps.value.length - 1]
+  if (!last) return
+  // 判断栈顶和当前输入符号
+  const stackArr = last.stack.split('')
+  const top = stackArr[stackArr.length - 1]
+  if (top !== row) {
+    showMessage('请先处理栈顶符号: ' + top, 'error')
+    return
+  }
+  // 推导产生式
+  stackArr.pop()
+  if (prod !== 'ε') {
+    for (let i = prod.length - 1; i >= 0; i--) {
+      stackArr.push(prod[i])
+    }
+  }
+  userSteps.value.push({ stack: stackArr.join(''), input: last.input })
+}
+
+// 匹配按钮
+const onMatch = () => {
+  if (showAnswer.value) return
+  const last = userSteps.value[userSteps.value.length - 1]
+  if (!last) return
+  const stackArr = last.stack.split('')
+  const inputArr = last.input.split('')
+  const top = stackArr[stackArr.length - 1]
+  const cur = inputArr[0]
+  if (top === cur) {
+    stackArr.pop()
+    inputArr.shift()
+    userSteps.value.push({ stack: stackArr.join(''), input: inputArr.join('') })
+  } else {
+    showMessage('栈顶符号与输入串首字符不匹配！', 'error')
+  }
+}
+
+// 回退按钮
+const onUndo = () => {
+  if (showAnswer.value) return
+  if (userSteps.value.length > 1) {
+    userSteps.value.pop()
+  }
+}
+
+// 查看答案
+const onShowAnswer = () => {
+  showAnswer.value = true
+}
+
+// 重做
+const onResetUserSteps = () => {
+  initUserSteps()
+}
+
+// 提示按钮
+const onHint = () => {
+  if (showAnswer.value) return
+  const last = userSteps.value[userSteps.value.length - 1]
+  if (!last) return
+  const stackArr = last.stack.split('')
+  const inputArr = last.input.split('')
+  const top = stackArr[stackArr.length - 1]
+  const cur = inputArr[0]
+  // 匹配情形
+  if (top === cur) {
+    hintActive.value = true
+    hintType.value = 'match'
+    setTimeout(() => {
+      onMatch()
+      hintActive.value = false
+      hintType.value = ''
+    }, 800)
+    return
+  }
+  // LL1表推导情形
+  const prod = originalData.value?.table?.[top + '|' + cur]
+  if (prod) {
+    hintActive.value = true
+    hintRow.value = top
+    hintCol.value = cur
+    hintType.value = 'll1'
+    setTimeout(() => {
+      onLL1CellDblClick(top, cur)
+      hintActive.value = false
+      hintRow.value = ''
+      hintCol.value = ''
+      hintType.value = ''
+    }, 800)
+    return
+  }
+  showMessage('当前无法提示！', 'error')
+}
+
+// 显示消息
+const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+  message.value = msg
+  messageType.value = type
+  if (messageTimer) clearTimeout(messageTimer)
+  messageTimer = window.setTimeout(() => {
+    message.value = null
+  }, 2000)
 }
 
 // 完成步骤
@@ -375,9 +733,10 @@ const complete = () => {
   const data = {
     inputString: inputString.value,
     analysisResult: inputAnalysisResult.value,
-    success: inputAnalysisResult.value?.result || false,
+    success: inputAnalysisResult.value?.info_res === 'Success!',
     steps: inputAnalysisResult.value?.info_step || [],
     messages: inputAnalysisResult.value?.info_msg || [],
+    userSteps: userSteps.value,
   }
 
   emit('complete', data)
@@ -405,5 +764,23 @@ const complete = () => {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* 提示高亮样式 */
+.hint-highlight {
+  background: #facc15;
+  color: #b45309;
+  border-radius: 0.25rem;
+  padding: 0 2px;
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
