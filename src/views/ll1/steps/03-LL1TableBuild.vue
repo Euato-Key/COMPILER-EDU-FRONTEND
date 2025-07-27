@@ -70,7 +70,12 @@
               <div class="space-y-1 text-sm">
                 <div v-for="(symbols, symbol) in firstSets" :key="`first-${symbol}`" class="flex">
                   <span class="w-16 font-mono text-emerald-700">{{ symbol }}:</span>
-                  <span class="text-emerald-600">{ {{ symbols.join(', ') }} }</span>
+                  <span
+                    class="text-emerald-600"
+                    :class="{ 'bg-yellow-200 px-1 rounded': symbolHighlightState[symbol] }"
+                  >
+                    { {{ symbols.join(', ') }} }
+                  </span>
                 </div>
               </div>
             </div>
@@ -79,7 +84,12 @@
               <div class="space-y-1 text-sm">
                 <div v-for="(symbols, symbol) in followSets" :key="`follow-${symbol}`" class="flex">
                   <span class="w-16 font-mono text-blue-700">{{ symbol }}:</span>
-                  <span class="text-blue-600">{ {{ symbols.join(', ') }} }</span>
+                  <span
+                    class="text-blue-600"
+                    :class="{ 'bg-yellow-200 px-1 rounded': symbolHighlightState[symbol] }"
+                  >
+                    { {{ symbols.join(', ') }} }
+                  </span>
                 </div>
               </div>
             </div>
@@ -146,7 +156,9 @@
                     >
                       <div
                         class="flex-1 bg-white/80 backdrop-blur-sm rounded border border-blue-200/60 px-1.5 py-1 hover:border-blue-300 hover:bg-blue-50/80 hover:shadow-md transition-all duration-150 cursor-move select-none group shadow-sm"
+                        :class="{ 'ring-2 ring-orange-400 ring-opacity-50': productionHighlightState[`${nonTerminal}->${production}`] }"
                         draggable="true"
+                        :data-production="`${nonTerminal}->${production}`"
                         @dragstart="onProductionDragStart(`${nonTerminal}->${production}`, $event)"
                         @dblclick="onProductionDblClick(`${nonTerminal}->${production}`)"
                       >
@@ -177,14 +189,24 @@
                   <Icon icon="lucide:table" class="w-5 h-5 mr-2 text-green-600" />
                   LL1 分析表
                 </h3>
-                <button
-                  @click="checkTable"
-                  :disabled="checking"
-                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
-                >
-                  <Icon v-if="checking" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
-                  校验分析表
-                </button>
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="executeTableHintAnimation"
+                    :disabled="hintState.isActive || checking"
+                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-orange-600 bg-white border border-orange-300 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    <Icon icon="lucide:lightbulb" class="w-4 h-4 mr-1.5" />
+                    提示
+                  </button>
+                  <button
+                    @click="checkTable"
+                    :disabled="checking"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                  >
+                    <Icon v-if="checking" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
+                    校验分析表
+                  </button>
+                </div>
               </div>
 
               <!-- 操作提示 -->
@@ -239,7 +261,9 @@
                           :class="[
                             'w-full px-2 py-1 text-xs text-center border-0 focus:ring-2 focus:ring-green-500 transition-colors',
                             getTableCellClass(nonTerminal, terminal),
+                            { 'ring-2 ring-orange-400 ring-opacity-50': tableCellHighlightState[`${nonTerminal}|${terminal}`] }
                           ]"
+                          :data-table-cell="`${nonTerminal}|${terminal}`"
                           @focus="clearTableValidation(nonTerminal, terminal)"
                           @dragover.prevent
                           @drop="onTableDrop($event, nonTerminal, terminal)"
@@ -337,11 +361,15 @@
                   <div class="ml-4 mt-2 space-y-2">
                     <div class="flex items-start">
                       <span class="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                      <span>对于 <span class="font-mono text-indigo-600">First(α)</span> 中的每个终结符 <span class="font-mono text-indigo-600">a</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, a]</span></span>
+                      <span :class="{ 'bg-yellow-200 px-1 rounded': ruleHighlightState['对于First(α)中的每个终结符a，将A->α加入到M[A, a]'] }">
+                        对于 <span class="font-mono text-indigo-600">First(α)</span> 中的每个终结符 <span class="font-mono text-indigo-600">a</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, a]</span>
+                      </span>
                     </div>
                     <div class="flex items-start">
                       <span class="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                      <span>如果 <span class="font-mono text-indigo-600">ε ∈ First(α)</span>，对于 <span class="font-mono text-indigo-600">Follow(A)</span> 中的每个终结符 <span class="font-mono text-indigo-600">b</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, b]</span></span>
+                      <span :class="{ 'bg-yellow-200 px-1 rounded': ruleHighlightState['如果ε ∈ First(α)，对于Follow(A)中的每个终结符b，将A->α加入到M[A, b]'] }">
+                        如果 <span class="font-mono text-indigo-600">ε ∈ First(α)</span>，对于 <span class="font-mono text-indigo-600">Follow(A)</span> 中的每个终结符 <span class="font-mono text-indigo-600">b</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, b]</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -393,6 +421,34 @@
         <span>{{ copyTip }}</span>
       </div>
     </transition>
+
+    <!-- 飞行动画元素 -->
+    <div v-for="flyingSymbol in flyingSymbols" :key="`${flyingSymbol.symbol}-${flyingSymbol.target}`"
+         class="fixed z-50 pointer-events-none"
+         :style="{
+           left: flyingSymbol.x + 'px',
+           top: flyingSymbol.y + 'px',
+           transform: 'translate(-50%, -50%)'
+         }">
+      <div class="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-mono shadow-lg border border-orange-600">
+        {{ flyingSymbol.symbol }}
+      </div>
+    </div>
+
+    <!-- 提示动画状态显示 -->
+    <transition
+      enter-active-class="transition-all duration-300"
+      leave-active-class="transition-all duration-300"
+      enter-from-class="opacity-0 transform translate-y-4"
+      leave-to-class="opacity-0 transform translate-y-4"
+    >
+      <div v-if="hintState.isActive" class="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg bg-orange-500 text-white text-sm">
+        <div class="flex items-center gap-2">
+          <Icon icon="lucide:lightbulb" class="w-4 h-4" />
+          <span>提示动画进行中... ({{ hintState.currentStep }}/{{ hintState.totalSteps }})</span>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -437,6 +493,27 @@ const tableValidated = ref(false)
 const showAnswer = ref(false)
 const attempts = ref(0)
 const maxAttempts = 3
+
+// 提示动画状态
+const hintState = ref({
+  isActive: false,
+  currentStep: 0,
+  totalSteps: 0
+})
+
+// 高亮状态
+const productionHighlightState = ref<Record<string, boolean>>({})
+const ruleHighlightState = ref<Record<string, boolean>>({})
+const symbolHighlightState = ref<Record<string, boolean>>({})
+const tableCellHighlightState = ref<Record<string, boolean>>({})
+
+// 飞行动画状态
+const flyingSymbols = ref<Array<{
+  symbol: string,
+  target: string,
+  x: number,
+  y: number
+}>>([])
 
 // 计算属性
 const hasTableErrors = computed(() => {
@@ -665,6 +742,237 @@ watch(
 onMounted(() => {
   initializeState()
 })
+
+// 计算LL1表格提示
+const calculateTableHint = () => {
+  if (!originalData.value) return null
+
+  const result = {
+    steps: [] as Array<{
+      type: 'first' | 'follow',
+      description: string,
+      productions: string[],
+      rules: string[],
+      symbols: string[],
+      tableEntries: Array<{ nonTerminal: string, terminal: string, production: string }>
+    }>
+  }
+
+  // 遍历所有产生式
+  for (const [nonTerminal, rightParts] of Object.entries(originalData.value.formulas_dict)) {
+    for (const rightPart of rightParts) {
+      const production = `${nonTerminal}->${rightPart}`
+
+      // 计算First(α)
+      const firstSet = calculateFirstSetForProduction(rightPart)
+
+      // 规则1：对于First(α)中的每个终结符a，将A->α加入到M[A, a]
+      const terminals = firstSet.filter(s => s !== 'ε')
+      if (terminals.length > 0) {
+        result.steps.push({
+          type: 'first',
+          description: `产生式${production}：First(${rightPart})中终结符 ∈ M[${nonTerminal}, a]`,
+          productions: [production],
+          rules: ['对于First(α)中的每个终结符a，将A->α加入到M[A, a]'],
+          symbols: [...terminals, nonTerminal],
+          tableEntries: terminals.map(terminal => ({
+            nonTerminal,
+            terminal,
+            production
+          }))
+        })
+      }
+
+      // 规则2：如果ε ∈ First(α)，对于Follow(A)中的每个终结符b，将A->α加入到M[A, b]
+      if (firstSet.includes('ε')) {
+        const followSet = originalData.value.follow[nonTerminal] || []
+        if (followSet.length > 0) {
+          result.steps.push({
+            type: 'follow',
+            description: `产生式${production}：ε ∈ First(${rightPart})，Follow(${nonTerminal})中终结符 ∈ M[${nonTerminal}, b]`,
+            productions: [production],
+            rules: ['如果ε ∈ First(α)，对于Follow(A)中的每个终结符b，将A->α加入到M[A, b]'],
+            symbols: [...followSet, nonTerminal, 'ε'],
+            tableEntries: followSet.map(terminal => ({
+              nonTerminal,
+              terminal,
+              production
+            }))
+          })
+        }
+      }
+    }
+  }
+
+  return result
+}
+
+// 计算产生式的First集
+const calculateFirstSetForProduction = (production: string): string[] => {
+  if (!originalData.value) return []
+
+  const result = new Set<string>()
+
+  // 如果产生式为空，返回ε
+  if (production === 'ε') {
+    result.add('ε')
+    return Array.from(result)
+  }
+
+  // 处理产生式的第一个符号
+  const firstChar = production[0]
+
+  // 如果是终结符
+  if (originalData.value.Vt.includes(firstChar)) {
+    result.add(firstChar)
+    return Array.from(result)
+  }
+
+  // 如果是非终结符
+  if (originalData.value.Vn.includes(firstChar)) {
+    const firstSet = originalData.value.first[firstChar] || []
+    for (const symbol of firstSet) {
+      if (symbol === 'ε') {
+        // 如果包含ε，需要继续处理后续符号
+        if (production.length > 1) {
+          const remainingProduction = production.substring(1)
+          const remainingFirstSet = calculateFirstSetForProduction(remainingProduction)
+          for (const remainingSymbol of remainingFirstSet) {
+            result.add(remainingSymbol)
+          }
+        } else {
+          result.add('ε')
+        }
+      } else {
+        result.add(symbol)
+      }
+    }
+  }
+
+  return Array.from(result)
+}
+
+// 执行表格提示动画
+const executeTableHintAnimation = async () => {
+  if (!originalData.value) return
+
+  hintState.value.isActive = true
+  hintState.value.currentStep = 0
+
+  const hint = calculateTableHint()
+  if (!hint || hint.steps.length === 0) {
+    hintState.value.isActive = false
+    return
+  }
+
+  hintState.value.totalSteps = hint.steps.length
+
+  // 逐步执行每个步骤
+  for (let i = 0; i < hint.steps.length; i++) {
+    const step = hint.steps[i]
+    hintState.value.currentStep = i + 1
+
+    // 高亮相关产生式
+    step.productions.forEach(prod => {
+      productionHighlightState.value[prod] = true
+    })
+
+    // 高亮相关规则
+    step.rules.forEach(rule => {
+      ruleHighlightState.value[rule] = true
+    })
+
+    // 高亮相关符号
+    step.symbols.forEach(sym => {
+      symbolHighlightState.value[sym] = true
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    // 执行表格项飞行动画
+    for (const entry of step.tableEntries) {
+      // 高亮目标表格单元格
+      tableCellHighlightState.value[`${entry.nonTerminal}|${entry.terminal}`] = true
+      await executeTableFlyingAnimation(entry.nonTerminal, entry.terminal, entry.production)
+      // 清除表格单元格高亮
+      tableCellHighlightState.value[`${entry.nonTerminal}|${entry.terminal}`] = false
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+
+    // 清除高亮
+    step.productions.forEach(prod => {
+      productionHighlightState.value[prod] = false
+    })
+    step.rules.forEach(rule => {
+      ruleHighlightState.value[rule] = false
+    })
+    step.symbols.forEach(sym => {
+      symbolHighlightState.value[sym] = false
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 800))
+  }
+
+  // 清除所有高亮
+  Object.keys(productionHighlightState.value).forEach(key => {
+    productionHighlightState.value[key] = false
+  })
+  Object.keys(ruleHighlightState.value).forEach(key => {
+    ruleHighlightState.value[key] = false
+  })
+  Object.keys(symbolHighlightState.value).forEach(key => {
+    symbolHighlightState.value[key] = false
+  })
+
+  hintState.value.isActive = false
+}
+
+// 执行表格飞行动画
+const executeTableFlyingAnimation = async (nonTerminal: string, terminal: string, production: string) => {
+  // 查找产生式卡片元素
+  const productionElement = document.querySelector(`[data-production="${production}"]`) as HTMLElement
+  const tableCellElement = document.querySelector(`[data-table-cell="${nonTerminal}|${terminal}"]`) as HTMLElement
+
+  if (!productionElement || !tableCellElement) {
+    // 如果找不到元素，直接填写答案
+    const key = `${nonTerminal}|${terminal}`
+    userTable.value[key] = production
+    return
+  }
+
+  const productionRect = productionElement.getBoundingClientRect()
+  const tableCellRect = tableCellElement.getBoundingClientRect()
+
+  // 添加飞行动画状态
+  flyingSymbols.value.push({
+    symbol: production,
+    target: `${nonTerminal}|${terminal}`,
+    x: productionRect.left + productionRect.width / 2,
+    y: productionRect.top + productionRect.height / 2
+  })
+
+  // 等待一小段时间让元素出现
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // 更新位置到目标位置
+  const flyingSymbolData = flyingSymbols.value.find(fs => fs.symbol === production && fs.target === `${nonTerminal}|${terminal}`)
+  if (flyingSymbolData) {
+    flyingSymbolData.x = tableCellRect.left + tableCellRect.width / 2
+    flyingSymbolData.y = tableCellRect.top + tableCellRect.height / 2
+  }
+
+  // 等待飞行动画完成
+  await new Promise(resolve => setTimeout(resolve, 2000))
+
+  // 动画完成后自动填写
+  const key = `${nonTerminal}|${terminal}`
+  userTable.value[key] = production
+
+  // 清除飞行动画状态
+  flyingSymbols.value = flyingSymbols.value.filter(
+    fs => !(fs.symbol === production && fs.target === `${nonTerminal}|${terminal}`)
+  )
+}
 </script>
 
 <style scoped>
@@ -688,5 +996,24 @@ onMounted(() => {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* 飞行动画过渡效果 */
+.fixed {
+  transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 高亮动画效果 */
+@keyframes highlight-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.ring-orange-400 {
+  animation: highlight-pulse 1s ease-in-out infinite;
 }
 </style>
