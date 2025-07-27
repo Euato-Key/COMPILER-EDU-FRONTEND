@@ -239,6 +239,157 @@ export const useLL1Store = defineStore('ll1', () => {
     return productionList
   }
 
+  // 文法验证函数（从Merge版本移植）
+  const validateGrammar = (inputText: string): { isValid: boolean; errorMessage: string; processedProductions: string[] } => {
+    let errorMessage = ''
+    let processedProductions: string[] = []
+
+    try {
+      // 1. 输入基本检查
+      // 检查输入是否为空（仅包含空白字符）
+      const emptyPattern = /^\s*$/
+      if (emptyPattern.test(inputText)) {
+        return { isValid: false, errorMessage: '请输入产生式！', processedProductions: [] }
+      }
+
+      // 检查是否包含中文字符
+      const chinesePattern = /[\u4e00-\u9fa5]/
+      if (chinesePattern.test(inputText)) {
+        return { isValid: false, errorMessage: '输入不能包含中文字符！', processedProductions: [] }
+      }
+
+      // 去除所有空格，但保留换行符
+      let processedText = inputText.replace(/ +/g, '')
+
+      // 2. 产生式分割与重复检查
+      processedProductions = processedText.split('\n').filter(item => item.trim() !== '')
+
+      // 检查重复项
+      const productionSet = new Set(processedProductions)
+      if (processedProductions.length !== productionSet.size) {
+        return { isValid: false, errorMessage: '产生式含重复项，请重新输入！', processedProductions: [] }
+      }
+
+      // 3. 产生式格式检查
+      // 检查每个产生式
+      for (let i = 0; i < processedProductions.length; i++) {
+        const production = processedProductions[i]
+
+        // 检查 -> 数量
+        const arrowCount = (production.match(/->/g) || []).length
+        if (arrowCount > 1) {
+          return { isValid: false, errorMessage: `第${i + 1}行产生式包含多个"->"，格式错误！`, processedProductions: [] }
+        }
+        if (arrowCount === 0) {
+          return { isValid: false, errorMessage: `第${i + 1}行产生式缺少"->"，格式错误！`, processedProductions: [] }
+        }
+
+        // 检查产生式格式：X->Y，其中X为大写字母，Y为任意字符（除|）和|分隔的序列
+        const formatMatch = production.match(/^([A-Z])->((?:[^|]+\|)*[^|]+)$/)
+        if (!formatMatch) {
+          return { isValid: false, errorMessage: `第${i + 1}行产生式格式错误！应为"大写字母->右部"格式`, processedProductions: [] }
+        }
+      }
+
+      // 4. 构建产生式字典
+      const formulasDict: Record<string, string[]> = {}
+      for (const production of processedProductions) {
+        const [left, right] = production.split('->')
+        if (right.includes('|')) {
+          const rightParts = right.split('|')
+          if (!formulasDict[left]) {
+            formulasDict[left] = []
+          }
+          for (const part of rightParts) {
+            if (!formulasDict[left].includes(part)) {
+              formulasDict[left].push(part)
+            }
+          }
+        } else {
+          if (!formulasDict[left]) {
+            formulasDict[left] = []
+          }
+          formulasDict[left].push(right)
+        }
+      }
+
+      // 5. 检查非终结符是否有候选式
+      const allNonTerminals = Array.from(processedProductions.join('').match(/[A-Z]/g) || [])
+      for (const nonTerminal of allNonTerminals) {
+        if (!formulasDict[nonTerminal]) {
+          return { isValid: false, errorMessage: `非终结符"${nonTerminal}"没有定义产生式！`, processedProductions: [] }
+        }
+      }
+
+      // 6. 检查左递归
+      const visited = new Set<string>()
+      const recursionStack = new Set<string>()
+
+      const hasLeftRecursion = (nonTerminal: string): boolean => {
+        if (recursionStack.has(nonTerminal)) {
+          return true // 发现左递归
+        }
+        if (visited.has(nonTerminal)) {
+          return false // 已经检查过，无左递归
+        }
+
+        visited.add(nonTerminal)
+        recursionStack.add(nonTerminal)
+
+        for (const rightPart of formulasDict[nonTerminal] || []) {
+          const firstSymbol = rightPart[0]
+          if (/[A-Z]/.test(firstSymbol) && formulasDict[firstSymbol]) {
+            if (hasLeftRecursion(firstSymbol)) {
+              return true
+            }
+          }
+        }
+
+        recursionStack.delete(nonTerminal)
+        return false
+      }
+
+      for (const nonTerminal of allNonTerminals) {
+        if (!visited.has(nonTerminal)) {
+          if (hasLeftRecursion(nonTerminal)) {
+            return { isValid: false, errorMessage: '存在直接或间接左递归，请输入消除左递归后的文法！', processedProductions: [] }
+          }
+        }
+      }
+
+      // 7. 检查终结符连续出现
+      for (let i = 0; i < processedProductions.length; i++) {
+        const production = processedProductions[i]
+        const [left, right] = production.split('->')
+        const rightParts = right.split('|')
+
+        for (const part of rightParts) {
+          // 跳过ε
+          if (part === 'ε') continue
+
+          // 检查是否有连续的终结符
+          for (let j = 0; j < part.length - 1; j++) {
+            const current = part[j]
+            const next = part[j + 1]
+
+            // 如果当前字符和下一个字符都不是大写字母、|、空格，则可能是连续的终结符
+            const isCurrentTerminal = !/[A-Z| ]/.test(current)
+            const isNextTerminal = !/[A-Z| ]/.test(next)
+
+            if (isCurrentTerminal && isNextTerminal) {
+              return { isValid: false, errorMessage: `第${i + 1}行：终结符不能连续出现，如"${current}${next}"`, processedProductions: [] }
+            }
+          }
+        }
+      }
+
+      return { isValid: true, errorMessage: '', processedProductions }
+
+    } catch (error) {
+      return { isValid: false, errorMessage: '文法验证过程中发生错误', processedProductions: [] }
+    }
+  }
+
   // 从原始输入文本执行LL1语法分析
   const performLL1AnalysisFromText = async (inputText: string) => {
     try {
@@ -285,11 +436,25 @@ export const useLL1Store = defineStore('ll1', () => {
     }
   }
 
-  // 执行LL1语法分析（使用已设置的产生式）
-  const performLL1Analysis = async () => {
-    if (productions.value.length === 0) {
+  // 执行LL1语法分析（增强版，包含验证）
+  const performLL1Analysis = async (processedProductions?: string[]) => {
+    // 如果没有传入处理后的产生式，使用store中的productions
+    const productionsToUse = processedProductions || productions.value
+
+    if (productionsToUse.length === 0) {
       commonStore.setError('请至少输入一个产生式')
       return false
+    }
+
+    // 如果没有传入处理后的产生式，则进行验证
+    if (!processedProductions) {
+      const inputText = productions.value.join('\n')
+      const validation = validateGrammar(inputText)
+
+      if (!validation.isValid) {
+        commonStore.setError(validation.errorMessage)
+        return false
+      }
     }
 
     try {
@@ -301,7 +466,9 @@ export const useLL1Store = defineStore('ll1', () => {
       validationData.value = null
       inputAnalysisResult.value = null
 
-      const response = await getLL1AnalyseAPI(productions.value)
+      // 使用传入的处理后产生式或验证后的产生式数组
+      const validatedProductions = processedProductions || productions.value
+      const response = await getLL1AnalyseAPI(validatedProductions)
 
       // 修复：后端返回的成功码是 0，不是 200
       if (response.data.code === 0 && response.data.data) {
@@ -448,8 +615,8 @@ export const useLL1Store = defineStore('ll1', () => {
   })
 
   // 增强的Actions，添加历史记录功能
-  const enhancedPerformLL1Analysis = async () => {
-    const success = await performLL1Analysis()
+  const enhancedPerformLL1Analysis = async (processedProductions?: string[]) => {
+    const success = await performLL1Analysis(processedProductions)
     if (success) {
       history.addToHistory(`LL1分析: ${productions.value.join(', ')}`)
     }
@@ -484,6 +651,7 @@ export const useLL1Store = defineStore('ll1', () => {
     // 工具方法
     transformToValidationData,
     validateAndFormatInput, // 新增：输入验证和格式化
+    validateGrammar, // 新增：文法验证
 
     // 持久化功能
     persistence: {

@@ -18,27 +18,9 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">输入产生式</h3>
-            <div class="flex items-center gap-3">
-              <div class="flex items-center gap-1.5">
-                <Icon icon="lucide:info" class="w-4 h-4 text-blue-500" />
-                <span class="text-sm text-gray-600">支持格式：A->α|β</span>
-              </div>
-              <button
-                @click="handleAnalyzeGrammar"
-                :disabled="!grammarInput.trim() || loading"
-                :class="[
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  !grammarInput.trim() || loading
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700',
-                ]"
-              >
-                <Icon
-                  :icon="loading ? 'lucide:loader-2' : 'lucide:play'"
-                  :class="['w-4 h-4', loading ? 'animate-spin' : '']"
-                />
-                <span>{{ loading ? '分析中...' : '分析文法' }}</span>
-              </button>
+            <div class="flex items-center gap-1.5">
+              <Icon icon="lucide:info" class="w-4 h-4 text-blue-500" />
+              <span class="text-sm text-gray-600">支持格式：A->α|β</span>
             </div>
           </div>
           <div class="space-y-4">
@@ -51,7 +33,7 @@
                 v-model="grammarInput"
                 placeholder="请输入文法产生式，例如：&#10;S->AB&#10;A->a|ε&#10;B->b"
                 class="w-full h-32 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-y transition-colors"
-                @input="handleGrammarInput"
+                @input="handleInput"
               />
               <div class="mt-2 text-xs text-gray-500">
                 <div class="flex items-center justify-between mb-1">
@@ -62,53 +44,114 @@
                   <p><strong>重要规范：</strong></p>
                   <p>• 开始符：第一个产生式的左侧大写字母为开始符</p>
                   <p>• 字符规定：每个符号必须是单个字符（如A、B、C，而非E1、id等）</p>
-                  <p>• 产生式：每行一个产生式，确保文法符合LL1要求（无左递归、无回溯）</p>
-                  <p>• 结束符：系统使用 # 作为输入串结束符（会自动添加）</p>
-                  <p class="text-green-600 mt-2">
-                    • <strong>输入完成后，点击"分析文法"按钮进行验证</strong>
-                  </p>
+                  <p>• 产生式格式：必须为"大写字母->右部"格式（如：S->AB）</p>
+                  <p>• 右部格式：可以是单个符号或由"|"分隔的多个候选式（如：A->a|ε）</p>
+                  <p>• 限制条件：不能有左递归，每个非终结符必须有产生式定义</p>
+                  <p>• 终结符规则：终结符不能连续出现，如A->ab是错误的，应为A->aB,B->b（ε除外）</p>
+                  <p>• ε符号：ε只能单独作为一个候选式，如G->+TG|ε是正确的</p>
                 </div>
               </div>
             </div>
 
-            <!-- 加载状态 -->
-            <div v-if="loading" class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-              <div class="flex items-center gap-2">
-                <Icon
-                  icon="lucide:loader-2"
-                  class="w-4 h-4 text-yellow-500 animate-spin flex-shrink-0"
-                />
-                <p class="text-sm text-yellow-700">正在分析文法...</p>
-              </div>
-            </div>
-
-            <!-- 错误提示 -->
-            <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-3">
+            <!-- 输入时错误提示 -->
+            <div v-if="inputErrors.length > 0" class="bg-red-50 border border-red-200 rounded-md p-3">
               <div class="flex gap-2">
                 <Icon
                   icon="lucide:alert-circle"
-                  class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
                 />
                 <div>
-                  <p class="text-sm text-red-700 font-medium">输入错误</p>
-                  <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+                  <p class="text-sm text-red-700 font-medium">输入格式错误</p>
+                  <div class="text-sm text-red-600 mt-1">
+                    <ul class="list-disc list-inside space-y-1">
+                      <li v-for="error in inputErrors" :key="error">{{ error }}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 成功提示 -->
-            <div
-              v-else-if="isLL1Grammar && grammarInput.trim()"
-              class="bg-green-50 border border-green-200 rounded-md p-3"
-            >
-              <div class="flex gap-2">
+            <!-- 验证按钮 -->
+            <div class="flex justify-center">
+              <button
+                @click="handleValidateGrammar"
+                :disabled="!canValidate || isValidating"
+                :class="[
+                  'flex items-center gap-2 px-8 py-3 rounded-lg font-medium transition-all duration-200',
+                  canValidate && !isValidating
+                    ? 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ]"
+              >
                 <Icon
+                  v-if="isValidating"
+                  icon="lucide:loader-2"
+                  class="w-4 h-4 animate-spin"
+                />
+                <Icon
+                  v-else
                   icon="lucide:check-circle"
-                  class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"
+                  class="w-4 h-4"
+                />
+                <span>{{ isValidating ? '验证中...' : '验证文法' }}</span>
+              </button>
+            </div>
+
+            <!-- 验证状态提示 -->
+            <div v-if="validationStatus !== 'none'" class="rounded-md p-4 border">
+              <!-- 准备验证状态 -->
+              <div v-if="validationStatus === 'ready'" class="bg-blue-50 border-blue-200">
+                <div class="flex gap-2">
+                  <Icon
+                    icon="lucide:info"
+                    class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
+                  />
+                  <div>
+                    <p class="text-sm text-blue-700 font-medium">{{ validationMessage }}</p>
+                    <p class="text-sm text-blue-600 mt-1">点击"验证文法"按钮进行深度校验</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 验证成功状态 -->
+              <div v-else-if="validationStatus === 'success'" class="bg-green-50 border-green-200">
+                <div class="flex gap-2">
+                  <Icon
+                    icon="lucide:check-circle"
+                    class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
+                  />
+                  <div>
+                    <p class="text-sm text-green-700 font-medium">{{ validationMessage }}</p>
+                    <p class="text-sm text-green-600 mt-1">可以进入下一步</p>
+                    <div class="text-xs text-green-600 mt-2">
+                      <p><strong>文法信息：</strong></p>
+                      <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>开始符号：{{ originalData?.S || '未确定' }}</li>
+                        <li>非终结符：{{ originalData?.Vn?.join(', ') || '未确定' }}</li>
+                        <li>终结符：{{ originalData?.Vt?.join(', ') || '未确定' }}</li>
+                        <li>产生式数量：{{ productions.length }} 个</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 验证失败状态 -->
+              <div v-else-if="validationStatus === 'failed'" class="bg-red-50 border-red-200">
+                <div class="flex gap-2">
+                  <Icon
+                    icon="lucide:x-circle"
+                    class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
                 />
                 <div>
-                  <p class="text-sm text-green-700 font-medium">文法验证成功</p>
-                  <p class="text-sm text-green-600 mt-1">符合LL(1)文法规范，可以进入下一步</p>
+                    <p class="text-sm text-red-700 font-medium">{{ validationMessage }}</p>
+                    <div v-if="submitErrors.length > 0" class="text-sm text-red-600 mt-1">
+                      <p><strong>具体错误：</strong></p>
+                      <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li v-for="error in submitErrors" :key="error">{{ error }}</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -158,7 +201,7 @@
           <div class="flex items-center mb-4">
             <div class="flex items-center gap-2">
               <Icon icon="lucide:zap" class="w-5 h-5 text-blue-600" />
-              <h4 class="text-lg font-semibold text-gray-900">文法分析结果</h4>
+              <h4 class="text-lg font-semibold text-gray-900">当前文法分析结果</h4>
             </div>
             <span
               class="ml-auto px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
@@ -166,55 +209,79 @@
             >
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div class="bg-white rounded-lg p-4 border border-blue-100">
-              <div class="flex items-center gap-2 mb-2">
-                <Icon icon="lucide:play" class="w-4 h-4 text-blue-500" />
-                <span class="text-sm font-medium text-gray-700">起始符号</span>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 左侧统计信息 -->
+            <div class="lg:col-span-1">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-lg p-5 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:play" class="w-5 h-5 text-blue-600" />
+                    </div>
+                    <span class="text-base font-semibold text-gray-700">起始符号</span>
               </div>
-              <p class="text-lg font-bold text-blue-600">{{ originalData.S }}</p>
+                  <p class="text-3xl font-bold text-blue-600 font-mono">{{ originalData.S }}</p>
             </div>
 
-            <div class="bg-white rounded-lg p-4 border border-blue-100">
-              <div class="flex items-center gap-2 mb-2">
-                <Icon icon="lucide:tag" class="w-4 h-4 text-purple-500" />
-                <span class="text-sm font-medium text-gray-700">非终结符</span>
+                <div class="bg-white rounded-lg p-5 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:tag" class="w-5 h-5 text-purple-600" />
+                    </div>
+                    <span class="text-base font-semibold text-gray-700">非终结符</span>
               </div>
-              <p class="text-lg font-bold text-purple-600">{{ originalData.Vn.length }} 个</p>
-              <p class="text-xs text-gray-500 mt-1">{{ originalData.Vn.join(', ') }}</p>
+                  <p class="text-3xl font-bold text-purple-600 font-mono">{{ originalData.Vn.length }}</p>
+                  <p class="text-sm text-gray-500 mt-2 font-mono">{{ originalData.Vn.join(', ') }}</p>
             </div>
 
-            <div class="bg-white rounded-lg p-4 border border-blue-100">
-              <div class="flex items-center gap-2 mb-2">
-                <Icon icon="lucide:hash" class="w-4 h-4 text-green-500" />
-                <span class="text-sm font-medium text-gray-700">终结符</span>
+                <div class="bg-white rounded-lg p-5 border border-green-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:hash" class="w-5 h-5 text-green-600" />
+                    </div>
+                    <span class="text-base font-semibold text-gray-700">终结符</span>
               </div>
-              <p class="text-lg font-bold text-green-600">{{ originalData.Vt.length }} 个</p>
-              <p class="text-xs text-gray-500 mt-1">{{ originalData.Vt.join(', ') }}</p>
+                  <p class="text-3xl font-bold text-green-600 font-mono">{{ originalData.Vt.length }}</p>
+                  <p class="text-sm text-gray-500 mt-2 font-mono">{{ originalData.Vt.join(', ') }}</p>
             </div>
 
-            <div class="bg-white rounded-lg p-4 border border-blue-100">
-              <div class="flex items-center gap-2 mb-2">
-                <Icon icon="lucide:list" class="w-4 h-4 text-orange-500" />
-                <span class="text-sm font-medium text-gray-700">产生式数</span>
+                <div class="bg-white rounded-lg p-5 border border-orange-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <Icon icon="lucide:list" class="w-5 h-5 text-orange-600" />
+                    </div>
+                    <span class="text-base font-semibold text-gray-700">产生式数</span>
               </div>
-              <p class="text-lg font-bold text-orange-600">
+                  <p class="text-3xl font-bold text-orange-600 font-mono">
                 {{ Object.keys(originalData.formulas_dict).length }}
               </p>
+                </div>
             </div>
           </div>
 
-          <!-- 产生式详情 -->
-          <div class="bg-white rounded-lg border border-blue-100 p-4">
-            <h5 class="font-medium text-gray-700 mb-2">产生式列表：</h5>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <!-- 右侧文法信息 -->
+            <div class="lg:col-span-1">
+              <div class="bg-white rounded-lg border border-blue-100 p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Icon icon="lucide:file-text" class="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h5 class="text-lg font-semibold text-gray-800">文法信息</h5>
+                    <p class="text-sm text-gray-500">Grammar Information</p>
+                  </div>
+                </div>
+                                <div class="space-y-1">
               <div
                 v-for="(productions, nonTerminal) in originalData.formulas_dict"
                 :key="nonTerminal"
-              >
-                <span class="font-mono text-blue-600">{{ nonTerminal }}</span>
-                <span class="text-gray-500 mx-1">→</span>
-                <span class="font-mono text-gray-700">{{ productions.join(' | ') }}</span>
+                    class="flex items-center gap-2 p-1.5 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
+                  >
+                    <span class="text-sm font-bold text-blue-700 font-mono">{{ nonTerminal }}</span>
+                    <span class="text-gray-400 font-mono text-sm">-></span>
+                    <span class="font-mono text-gray-700 text-sm">{{ productions.join(' | ') }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -251,7 +318,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import { useLL1Store } from '@/stores/ll1'
@@ -271,133 +338,282 @@ const emit = defineEmits<{
   'prev-step': []
 }>()
 
-// 将 productions 数组转换为字符串用于显示
-const grammarInput = computed({
-  get: () => productions.value.join('\n'),
-  set: (value: string) => {
-    const newProductions = value
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-    ll1Store.setProductions(newProductions)
-  },
-})
+// 本地状态
+const grammarInput = ref('')
+const inputErrors = ref<string[]>([])
+const submitErrors = ref<string[]>([])
+const isValidating = ref(false)
+const validationStatus = ref<'none' | 'ready' | 'success' | 'failed'>('none')
+const validationMessage = ref('')
 
-// 从 Store 计算属性获取状态
+// 计算属性
 const isLL1Grammar = computed(() => ll1Store.isLL1Grammar)
+const canValidate = computed(() => inputErrors.value.length === 0 && grammarInput.value.trim().length > 0)
+const canProceed = computed(() => {
+  return validationStatus.value === 'success' && productions.value.length > 0 && originalData.value !== null
+})
 
 // 示例文法数据
 const exampleGrammars = [
   {
     name: '基础文法1',
     grammar: 'S->AB\nA->a|ε\nB->b',
-    description: '最简单的LL(1)文法示例，适合初学者，结束符使用#',
+    description: '最简单的LL(1)文法示例，适合初学者',
   },
   {
     name: '基础文法2',
     grammar: 'S->aS|b',
-    description: '简单的递归文法，生成a*b形式的字符串，结束符使用#',
+    description: '简单的递归文法，生成a*b形式的字符串',
   },
   {
     name: '基础文法3',
     grammar: 'S->AB\nA->aA|ε\nB->bB|c',
-    description: '生成a*bc+形式字符串的文法，结束符使用#',
+    description: '生成a*bc+形式字符串的文法',
   },
 ]
 
-// 计算是否可以进入下一步
-const canProceed = computed(() => {
-  return isLL1Grammar.value === true && productions.value.length > 0 && originalData.value !== null
-})
+// 输入时基础校验
+function validateOnInput(text: string): string[] {
+  const errors: string[] = []
 
-// 处理文法输入变化（现在直接使用 computed setter）
-const handleGrammarInput = () => {
-  // 输入处理逻辑已经在 computed setter 中处理
-  // 移除这里的重复触发，因为 watch 已经会监听 productions 变化
+  // 检查是否有中文
+  if (/[\u4e00-\u9fa5]/.test(text)) {
+    errors.push('不能包含中文字符')
+  }
+
+  // 检查每一行（非空行）是否包含->
+  const lines = text.split('\n')
+  lines.forEach((line, idx) => {
+    if (line.trim() && !line.includes('->')) {
+      errors.push(`第${idx + 1}行缺少->`)
+    }
+  })
+
+  return errors
 }
 
-// 防抖分析
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
-let isAnalyzing = false // 添加标志防止重复分析
+// 点击按钮后的深度校验
+function validateOnSubmit(text: string): string[] {
+  const errors: string[] = []
 
-// 手动分析文法
-const handleAnalyzeGrammar = async () => {
-  // 如果正在分析，跳过
-  if (isAnalyzing) {
-    return
+  // 1. 检查是否为空
+  if (!text.trim()) {
+    errors.push('文法不能为空')
+    return errors
   }
 
-  // 清除之前的定时器
-  if (debounceTimer) {
-    clearTimeout(debounceTimer)
+  // 2. 检查是否有中文
+  if (/[\u4e00-\u9fa5]/.test(text)) {
+    errors.push('不能包含中文字符')
+    return errors
   }
 
-  // 清除之前的错误
-  commonStore.clearError()
+  // 3. 去除所有空格（保留换行符）
+  const noSpaceText = text.replace(/ +/g, '')
 
-  if (!grammarInput.value.trim()) {
-    commonStore.setError('请输入文法产生式')
-    return
+  // 4. 进行分割
+  const lines = noSpaceText.split('\n').filter(line => line.trim())
+
+  // 5. 检查是否分割后每一行含有->
+  lines.forEach((line, idx) => {
+    if (!line.includes('->')) {
+      errors.push(`第${idx + 1}行缺少->`)
+    }
+  })
+
+  if (errors.length > 0) return errors
+
+  // 6. 检查重复项（行）
+  const lineSet = new Set(lines)
+  if (lineSet.size !== lines.length) {
+    errors.push('存在重复产生式')
+    return errors
   }
 
-  isAnalyzing = true
+  // 7. 检查是否符合产生式要求
+  lines.forEach((line, idx) => {
+    // 检查格式：X->Y，其中X为大写字母，Y为任意字符（除|）和|分隔的序列
+    if (!/^([A-Z])->((?:[^|]+\|)*[^|]+)$/.test(line)) {
+      errors.push(`第${idx + 1}行格式错误，应为"大写字母->右部"格式`)
+    }
+  })
+
+  if (errors.length > 0) return errors
+
+  // 8. 检查非终结符是否有候选式
+  const leftNonTerminals = new Set(lines.map(line => line.split('->')[0]))
+  const allNonTerminals = new Set<string>()
+
+  // 收集所有右部出现的非终结符
+  lines.forEach(line => {
+    const right = line.split('->')[1]
+    const rightParts = right.split('|')
+    rightParts.forEach(part => {
+      if (/^[A-Z]/.test(part)) {
+        allNonTerminals.add(part[0])
+      }
+    })
+  })
+
+  // 检查右部的非终结符是否都有定义
+  allNonTerminals.forEach(nonTerminal => {
+    if (!leftNonTerminals.has(nonTerminal)) {
+      errors.push(`右部非终结符${nonTerminal}未定义`)
+    }
+  })
+
+  if (errors.length > 0) return errors
+
+  // 9. 检查是否含有左递归
+  lines.forEach((line, idx) => {
+    const [left, right] = line.split('->')
+    const rightParts = right.split('|')
+    rightParts.forEach(part => {
+      if (part[0] === left) {
+        errors.push(`第${idx + 1}行存在左递归`)
+      }
+    })
+  })
+
+  if (errors.length > 0) return errors
+
+  // 10. 检查ε符号
+  lines.forEach((line, idx) => {
+    const [left, right] = line.split('->')
+    const rightParts = right.split('|')
+    rightParts.forEach(part => {
+      if (part.includes('ε') && part !== 'ε') {
+        errors.push(`第${idx + 1}行：ε只能单独作为一个候选式`)
+      }
+    })
+  })
+
+  if (errors.length > 0) return errors
+
+    // 11. 检查终结符连续出现
+  lines.forEach((line, idx) => {
+    const [left, right] = line.split('->')
+    const rightParts = right.split('|')
+    rightParts.forEach(part => {
+      // 跳过ε
+      if (part === 'ε') return
+
+      // 检查是否有连续的终结符（除了大写字母、|、空格、非终结符以外的字符）
+      for (let i = 0; i < part.length - 1; i++) {
+        const current = part[i]
+        const next = part[i + 1]
+
+        // 如果当前字符和下一个字符都不是大写字母、|、空格，则可能是连续的终结符
+        const isCurrentTerminal = !/[A-Z| ]/.test(current)
+        const isNextTerminal = !/[A-Z| ]/.test(next)
+
+        if (isCurrentTerminal && isNextTerminal) {
+          errors.push(`第${idx + 1}行：终结符不能连续出现，如"${current}${next}"`)
+          return // 一个候选式中只报一次错误
+        }
+      }
+    })
+  })
+
+  return errors
+}
+
+// 处理输入变化
+function handleInput() {
+  inputErrors.value = validateOnInput(grammarInput.value)
+
+  // 根据输入状态更新验证状态
+  if (inputErrors.value.length > 0) {
+    validationStatus.value = 'none'
+    validationMessage.value = ''
+  } else if (grammarInput.value.trim()) {
+    validationStatus.value = 'ready'
+    validationMessage.value = '符合文法验证条件：可以进行文法验证'
+  } else {
+    validationStatus.value = 'none'
+    validationMessage.value = ''
+  }
+
+  // 清除提交错误
+  submitErrors.value = []
+}
+
+// 处理验证文法按钮点击
+async function handleValidateGrammar() {
+  if (!canValidate.value || isValidating.value) return
+
+  submitErrors.value = []
+  isValidating.value = true
+  validationStatus.value = 'none'
+  validationMessage.value = ''
+
   try {
-    // 使用原始输入文本进行完整的验证和格式化处理
-    const inputText = grammarInput.value
-    console.log('前端原始输入:', inputText)
-    console.log('是否包含空格:', inputText.includes(' '))
+    // 深度校验
+    const errors = validateOnSubmit(grammarInput.value)
+    if (errors.length > 0) {
+      submitErrors.value = errors
+      validationStatus.value = 'failed'
+      validationMessage.value = '不符合文法验证条件：' + errors.join('；')
+      return
+    }
 
-    await ll1Store.performLL1AnalysisFromText(inputText)
+    // 处理输入：去除空格，分割
+    const noSpaceText = grammarInput.value.replace(/ +/g, '')
+    const processedLines = noSpaceText.split('\n').filter(line => line.trim())
+
+    // 提交后端
+    const success = await ll1Store.performLL1Analysis(processedLines)
+
+    // 检查后端验证结果
+    if (success && ll1Store.isLL1Grammar === true) {
+      // 后端验证通过，存储用户输入和后端数据
+      ll1Store.setProductions(processedLines)
+      validationStatus.value = 'success'
+      validationMessage.value = '文法验证成功：符合LL(1)文法规范'
+      // 清除错误
+      submitErrors.value = []
+    } else {
+      // 后端验证失败
+      validationStatus.value = 'failed'
+      validationMessage.value = '文法验证失败：不符合LL(1)文法要求'
+      submitErrors.value = ['后端验证失败：不符合LL(1)文法要求']
+    }
   } catch (error) {
-    console.error('Analysis failed:', error)
+    console.error('验证失败:', error)
+    validationStatus.value = 'failed'
+    validationMessage.value = '文法验证失败：验证过程中发生错误，请重试'
+    submitErrors.value = ['验证过程中发生错误，请重试']
   } finally {
-    isAnalyzing = false
+    isValidating.value = false
   }
-}
-
-const performAnalysisWithDebounce = () => {
-  // 移除自动分析逻辑 - 现在只有手动触发
-  return
 }
 
 // 使用示例文法
-const useExample = (example: any) => {
+function useExample(example: any) {
   grammarInput.value = example.grammar
-  // 清除之前的分析结果，等待用户手动分析
-  ll1Store.resetAll()
-  commonStore.setError('已加载示例文法，请点击"分析文法"按钮进行验证')
+  // 触发输入校验
+  handleInput()
+  // 重置验证状态
+  validationStatus.value = 'none'
+  validationMessage.value = ''
+  submitErrors.value = []
 }
 
 // 处理下一步
-const handleNextStep = () => {
+function handleNextStep() {
   if (canProceed.value) {
-    // 不需要传递数据，Store 中已经有了
     emit('next-step')
   }
 }
 
-// 监听 productions 变化，但不自动触发分析
-watch(
-  () => productions.value,
-  (newProductions) => {
-    if (newProductions.length === 0) {
-      // 只在清空时重置状态
-      commonStore.clearError()
-      isAnalyzing = false // 重置分析状态
-      if (debounceTimer) {
-        clearTimeout(debounceTimer)
-        debounceTimer = null
-      }
-    }
-    // 移除自动分析 - 现在需要用户手动点击按钮
-  },
-  { deep: true },
-)
-
-// 组件挂载时初始化
-onMounted(() => {
-  // 移除自动分析 - 现在需要用户手动点击按钮
-  console.log('LL1 组件已挂载，等待用户手动分析文法')
+// 监听grammarInput变化，同步到store（用于显示）
+watch(grammarInput, (newValue) => {
+  if (newValue.trim()) {
+    const lines = newValue.split('\n').filter(line => line.trim())
+    ll1Store.setProductions(lines)
+    } else {
+    ll1Store.setProductions([])
+  }
 })
 </script>
 
