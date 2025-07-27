@@ -167,10 +167,31 @@
           <div class="lg:col-span-9">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                  <Icon icon="lucide:table" class="w-5 h-5 mr-2 text-green-600" />
-                  LL1 分析表
-                </h3>
+                <div class="flex items-center gap-6">
+                  <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <Icon icon="lucide:table" class="w-5 h-5 mr-2 text-green-600" />
+                    LL1 分析表
+                  </h3>
+                  <!-- 表格状态说明 -->
+                  <div class="flex items-center gap-4 text-xs text-gray-600">
+                    <div class="flex items-center gap-1">
+                      <div class="w-3 h-3 bg-gray-100 rounded border border-gray-300"></div>
+                      <span>已知信息</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <div class="w-3 h-3 bg-gradient-to-br from-amber-50 to-orange-50 rounded border border-amber-300"></div>
+                      <span>待填写</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <div class="w-3 h-3 bg-green-50 rounded border border-green-300"></div>
+                      <span>校验正确</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <div class="w-3 h-3 bg-red-50 rounded border border-red-300"></div>
+                      <span>校验错误</span>
+                    </div>
+                  </div>
+                </div>
                 <div class="flex items-center gap-2">
                   <button
                     @click="executeTableHintAnimation"
@@ -242,22 +263,38 @@
                       <td
                         v-for="terminal in terminals"
                         :key="`${nonTerminal}-${terminal}`"
-                        class="border border-gray-300 px-1 py-1"
+                        class="border border-gray-300 px-1 py-1 relative"
                       >
                         <input
                           v-model="userTable[`${nonTerminal}|${terminal}`]"
                           type="text"
                           placeholder="拖拽产生式到此处或手动输入"
                           :class="[
-                            'w-full px-2 py-1 text-xs text-center border-0 focus:ring-2 focus:ring-green-500 transition-colors',
+                            'w-full px-2 py-1 text-xs text-center border-0 focus:ring-2 focus:ring-green-500 transition-colors pr-6',
                             getTableCellClass(nonTerminal, terminal),
                             { 'ring-2 ring-orange-400 ring-opacity-50': tableCellHighlightState[`${nonTerminal}|${terminal}`] }
                           ]"
                           :data-table-cell="`${nonTerminal}|${terminal}`"
                           @focus="clearTableValidation(nonTerminal, terminal)"
+                          @input="validateTableCell(nonTerminal, terminal)"
+                          @blur="validateTableCell(nonTerminal, terminal)"
                           @dragover.prevent
                           @drop="onTableDrop($event, nonTerminal, terminal)"
                         />
+                        <!-- 校验状态图标 -->
+                        <div v-if="userTable[`${nonTerminal}|${terminal}`] && tableValidation[`${nonTerminal}|${terminal}`]"
+                             class="absolute right-1 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <Icon
+                            v-if="tableValidation[`${nonTerminal}|${terminal}`] === 'correct'"
+                            icon="lucide:check-circle"
+                            class="w-3 h-3 text-green-600"
+                          />
+                          <Icon
+                            v-else-if="tableValidation[`${nonTerminal}|${terminal}`] === 'incorrect'"
+                            icon="lucide:x-circle"
+                            class="w-3 h-3 text-red-600"
+                          />
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -570,8 +607,8 @@ function onTableDrop(event: DragEvent, nonTerminal: string, terminal: string) {
   if (production) {
     const key = `${nonTerminal}|${terminal}`
     userTable.value[key] = production
-    // 清除验证状态，让用户重新校验
-    tableValidation.value[key] = ''
+    // 立即进行校验
+    validateTableCell(nonTerminal, terminal)
   }
 }
 
@@ -623,6 +660,43 @@ const clearTableValidation = (nonTerminal: string, terminal: string) => {
   const key = `${nonTerminal}|${terminal}`
   if (tableValidation.value[key] !== 'correct') {
     tableValidation.value[key] = ''
+  }
+}
+
+// 校验单个表格单元格
+const validateTableCell = (nonTerminal: string, terminal: string) => {
+  const key = `${nonTerminal}|${terminal}`
+  const userValue = userTable.value[key] || ''
+  const correctValue = originalData.value?.table[key] || ''
+
+  // 如果用户输入为空，不进行校验
+  if (!userValue.trim()) {
+    tableValidation.value[key] = ''
+    return
+  }
+
+  // 检查这个单元格是否应该填写内容
+  const shouldHaveContent = correctValue && correctValue.trim() !== ''
+
+  // 如果这个单元格不应该有内容，但用户输入了内容，则标记为错误
+  if (!shouldHaveContent) {
+    tableValidation.value[key] = 'incorrect'
+    return
+  }
+
+  // 标准化用户输入和正确答案进行比较
+  const normalizedUserInput = userValue.trim()
+  const normalizedCorrectValue = correctValue.trim()
+
+  // 检查用户输入是否匹配正确答案（支持多种格式）
+  const isCorrect = normalizedUserInput === normalizedCorrectValue ||
+                   normalizedUserInput === correctValue.replace('->', '') ||
+                   normalizedUserInput === `${nonTerminal}->${correctValue.replace('->', '')}`
+
+  if (isCorrect) {
+    tableValidation.value[key] = 'correct'
+  } else {
+    tableValidation.value[key] = 'incorrect'
   }
 }
 
@@ -957,6 +1031,9 @@ const executeTableFlyingAnimation = async (nonTerminal: string, terminal: string
   // 动画完成后自动填写
   const key = `${nonTerminal}|${terminal}`
   userTable.value[key] = production
+
+  // 立即进行校验
+  validateTableCell(nonTerminal, terminal)
 
   // 清除飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
