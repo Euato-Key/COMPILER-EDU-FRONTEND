@@ -97,25 +97,7 @@
         </div>
 
         <!-- 调试面板 -->
-        <div class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-xl p-4 mb-6 border border-orange-100 shadow-sm">
-          <div class="flex items-center mb-3">
-            <div class="w-6 h-6 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-lg flex items-center justify-center mr-2">
-              <Icon icon="lucide:bug" class="w-3 h-3 text-white" />
-            </div>
-            <h4 class="text-sm font-semibold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">调试信息</h4>
-          </div>
-          <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-orange-200/50">
-            <div class="text-xs text-gray-700 space-y-1">
-              <div><strong>Table 数据类型:</strong> {{ typeof originalData?.table }}</div>
-              <div><strong>Table 内容:</strong> {{ JSON.stringify(originalData?.table) }}</div>
-              <div><strong>所需填写项数量:</strong> {{ getRequiredTableEntries().length }}</div>
-              <div>
-                <strong>所需填写项:</strong> {{ getRequiredTableEntries().join(', ') || '无' }}
-              </div>
-              <div><strong>全部完成状态:</strong> {{ allCompleted }}</div>
-            </div>
-          </div>
-        </div>
+
 
         <!-- 主要内容区域 -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
@@ -197,6 +179,14 @@
                   >
                     <Icon icon="lucide:lightbulb" class="w-4 h-4 mr-1.5" />
                     提示
+                  </button>
+                  <button
+                    @click="clearAllStates"
+                    :disabled="hintState.isActive || checking"
+                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    <Icon icon="lucide:trash-2" class="w-4 h-4 mr-1.5" />
+                    清空状态
                   </button>
                   <button
                     @click="checkTable"
@@ -972,6 +962,46 @@ const executeTableFlyingAnimation = async (nonTerminal: string, terminal: string
   flyingSymbols.value = flyingSymbols.value.filter(
     fs => !(fs.symbol === production && fs.target === `${nonTerminal}|${terminal}`)
   )
+}
+
+// 一键清空所有状态
+const clearAllStates = () => {
+  // 清空用户输入的分析表
+  userTable.value = {}
+
+  // 清空校验状态
+  tableValidation.value = {}
+  tableValidated.value = false
+  attempts.value = 0
+  showAnswer.value = false
+
+  // 清空提示动画状态
+  hintState.value.isActive = false
+  hintState.value.currentStep = 0
+  hintState.value.totalSteps = 0
+
+  // 清空所有高亮状态
+  Object.keys(productionHighlightState.value).forEach(key => {
+    productionHighlightState.value[key] = false
+  })
+  Object.keys(ruleHighlightState.value).forEach(key => {
+    ruleHighlightState.value[key] = false
+  })
+  Object.keys(symbolHighlightState.value).forEach(key => {
+    symbolHighlightState.value[key] = false
+  })
+  Object.keys(tableCellHighlightState.value).forEach(key => {
+    tableCellHighlightState.value[key] = false
+  })
+
+  // 清空飞行动画状态
+  flyingSymbols.value = []
+
+  // 显示清空成功提示
+  copyTip.value = '状态已清空'
+  setTimeout(() => {
+    copyTip.value = ''
+  }, 2000)
 }
 </script>
 
