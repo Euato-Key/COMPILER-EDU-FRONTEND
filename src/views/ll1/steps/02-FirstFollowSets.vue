@@ -214,84 +214,87 @@
         <!-- First集和Follow集填写区域 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- First集 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                <Icon icon="lucide:arrow-right" class="w-5 h-5 mr-2 text-blue-600" />
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold text-gray-900 flex items-center">
+                <Icon icon="lucide:arrow-right" class="w-4 h-4 mr-2 text-blue-600" />
                 First集合
               </h3>
               <div class="flex gap-2">
                 <button
                   @click="clearFirstSets"
-                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                 >
-                  <Icon icon="lucide:refresh-cw" class="w-4 h-4 mr-1.5" />
+                  <Icon icon="lucide:refresh-cw" class="w-3 h-3 mr-1" />
                   清空重填
                 </button>
                 <button
                   @click="checkFirstSets"
                   :disabled="loading.first"
-                  class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                  class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-xs"
                 >
-                  <Icon v-if="loading.first" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
-                  <Icon v-else icon="lucide:check-circle" class="w-4 h-4 mr-2" />
+                  <Icon v-if="loading.first" icon="lucide:loader-2" class="w-3 h-3 animate-spin mr-1" />
+                  <Icon v-else icon="lucide:check-circle" class="w-3 h-3 mr-1" />
                   校验
                 </button>
                 <button
                   @click="showFirstAnswer = !showFirstAnswer"
-                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                 >
-                  <Icon v-if="showFirstAnswer" icon="lucide:eye-off" class="w-4 h-4 mr-1.5" />
-                  <Icon v-else icon="lucide:eye" class="w-4 h-4 mr-1.5" />
+                  <Icon v-if="showFirstAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
+                  <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
                   {{ showFirstAnswer ? '隐藏答案' : '显示答案' }}
                 </button>
               </div>
             </div>
 
-            <div class="space-y-3">
+            <div class="space-y-2">
               <!-- 非终结符的First集 -->
-              <div class="mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">非终结符：</h4>
-                <div class="space-y-2">
-              <div
-                v-for="symbol in originalData.Vn"
+              <div class="mb-3">
+                <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Icon icon="lucide:tag" class="w-3 h-3 text-blue-500" />
+                  非终结符
+                </h4>
+                <div class="space-y-1.5">
+                  <div
+                    v-for="symbol in originalData.Vn"
                     :key="'first-vn-' + symbol"
-                class="flex items-center gap-3"
-              >
-                <span class="w-20 text-sm font-medium text-gray-700">
-                  first(<span class="font-mono text-blue-600">{{ symbol }}</span>) =
-                </span>
-                <div class="flex-1 relative">
-                  <input
-                    v-model="userFirstSets[symbol]"
-                    type="text"
-                    placeholder="输入First集，用空格分隔"
-                    :class="[
-                      'w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors',
-                      getInputClass('first', symbol)
-                    ]"
-                    @focus="clearValidation('first', symbol)"
+                    class="flex items-center gap-2"
+                  >
+                    <span class="w-16 text-xs font-medium text-gray-600">
+                      first(<span class="font-mono text-blue-600">{{ symbol }}</span>) =
+                    </span>
+                    <div class="flex-1 relative">
+                      <input
+                        v-model="userFirstSets[symbol]"
+                        type="text"
+                        placeholder="输入First集，用空格分隔"
+                        :class="[
+                          'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
+                          getInputClass('first', symbol)
+                        ]"
+                        @focus="clearValidation('first', symbol)"
                         :data-input="symbol"
-                  />
-                  <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <Icon
-                      v-if="firstValidation[symbol] === 'correct'"
-                      icon="lucide:check"
-                      class="w-5 h-5 text-green-500"
-                    />
-                    <Icon
-                      v-else-if="firstValidation[symbol] === 'incorrect'"
-                      icon="lucide:x"
-                      class="w-5 h-5 text-red-500"
-                    />
+                      />
+                      <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+                        <Icon
+                          v-if="firstValidation[symbol] === 'correct'"
+                          icon="lucide:check"
+                          class="w-3.5 h-3.5 text-green-500"
+                        />
+                        <Icon
+                          v-else-if="firstValidation[symbol] === 'incorrect'"
+                          icon="lucide:x"
+                          class="w-3.5 h-3.5 text-red-500"
+                        />
                       </div>
                     </div>
                     <button
                       @click="executeHintAnimation(symbol)"
                       :disabled="hintState.isActive || firstValidation[symbol] === 'correct'"
-                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-300 rounded shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      class="inline-flex items-center px-1.5 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
-                      <Icon icon="lucide:lightbulb" class="w-3 h-3 mr-1" />
+                      <Icon icon="lucide:lightbulb" class="w-2.5 h-2.5 mr-0.5" />
                       提示
                     </button>
                   </div>
@@ -299,19 +302,22 @@
               </div>
 
               <!-- 终结符的First集（只读显示） -->
-              <div class="mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">终结符：</h4>
-                <div class="space-y-2">
+              <div class="mb-3">
+                <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Icon icon="lucide:hash" class="w-3 h-3 text-green-500" />
+                  终结符
+                </h4>
+                <div class="space-y-1.5">
                   <div
                     v-for="symbol in originalData.Vt"
                     :key="'first-vt-' + symbol"
-                    class="flex items-center gap-3"
+                    class="flex items-center gap-2"
                   >
-                    <span class="w-20 text-sm font-medium text-gray-700">
+                    <span class="w-16 text-xs font-medium text-gray-600">
                       first(<span class="font-mono text-green-600">{{ symbol }}</span>) =
                     </span>
                     <div class="flex-1">
-                      <div class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 font-mono text-sm shadow-sm">
+                      <div class="w-full px-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-mono shadow-sm">
                         {{ correctFirstSets[symbol]?.join(' ') || symbol }}
                       </div>
                     </div>
@@ -320,15 +326,18 @@
               </div>
 
               <!-- 其他符号的First集（只读显示） -->
-              <div v-if="correctFirstSets['ε']" class="mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">其他符号：</h4>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-3">
-                    <span class="w-20 text-sm font-medium text-gray-700">
+              <div v-if="correctFirstSets['ε']" class="mb-3">
+                <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Icon icon="lucide:circle" class="w-3 h-3 text-pink-500" />
+                  其他符号
+                </h4>
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-16 text-xs font-medium text-gray-600">
                       first(<span class="font-mono text-pink-600">ε</span>) =
                     </span>
                     <div class="flex-1">
-                      <div class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 font-mono text-sm shadow-sm">
+                      <div class="w-full px-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-mono shadow-sm">
                         {{ correctFirstSets['ε']?.join(' ') || 'ε' }}
                       </div>
                     </div>
@@ -338,31 +347,31 @@
             </div>
 
             <!-- First集答案提示 -->
-            <div v-if="showFirstAnswer" class="mt-4 p-4 bg-blue-50 rounded-lg">
-              <h4 class="text-sm font-medium text-blue-800 mb-2">正确答案：</h4>
-              <div class="space-y-2">
+            <div v-if="showFirstAnswer" class="mt-3 p-3 bg-blue-50 rounded-lg">
+              <h4 class="text-xs font-medium text-blue-800 mb-2">正确答案：</h4>
+              <div class="space-y-1.5">
                 <!-- 非终结符答案 -->
                 <div>
                   <h5 class="text-xs font-medium text-blue-700 mb-1">非终结符：</h5>
-              <div class="space-y-1">
-                <div
-                  v-for="symbol in originalData.Vn"
+                  <div class="space-y-0.5">
+                    <div
+                      v-for="symbol in originalData.Vn"
                       :key="'answer-first-vn-' + symbol"
-                  class="text-sm"
-                >
-                  <span class="font-mono text-blue-600">{{ symbol }}:</span>
-                  <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
+                      class="text-xs"
+                    >
+                      <span class="font-mono text-blue-600">{{ symbol }}:</span>
+                      <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
                     </div>
                   </div>
                 </div>
                 <!-- 终结符答案 -->
                 <div>
                   <h5 class="text-xs font-medium text-blue-700 mb-1">终结符：</h5>
-                  <div class="space-y-1">
+                  <div class="space-y-0.5">
                     <div
                       v-for="symbol in originalData.Vt"
                       :key="'answer-first-vt-' + symbol"
-                      class="text-sm"
+                      class="text-xs"
                     >
                       <span class="font-mono text-green-600">{{ symbol }}:</span>
                       <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || symbol }}</span>
@@ -372,7 +381,7 @@
                 <!-- 其他符号答案 -->
                 <div v-if="correctFirstSets['ε']">
                   <h5 class="text-xs font-medium text-blue-700 mb-1">其他符号：</h5>
-                  <div class="text-sm">
+                  <div class="text-xs">
                     <span class="font-mono text-pink-600">ε:</span>
                     <span class="ml-2 text-blue-700">{{ correctFirstSets['ε']?.join(' ') || 'ε' }}</span>
                   </div>
@@ -382,50 +391,50 @@
           </div>
 
           <!-- Follow集 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between mb-4">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
-              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                <Icon icon="lucide:arrow-left" class="w-5 h-5 mr-2 text-green-600" />
+              <h3 class="text-base font-semibold text-gray-900 flex items-center">
+                <Icon icon="lucide:arrow-left" class="w-4 h-4 mr-2 text-green-600" />
                 Follow集合
               </h3>
               </div>
               <div class="flex gap-2">
                 <button
                   @click="clearFollowSets"
-                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200"
                 >
-                  <Icon icon="lucide:refresh-cw" class="w-4 h-4 mr-1.5" />
+                  <Icon icon="lucide:refresh-cw" class="w-3 h-3 mr-1" />
                   清空重填
                 </button>
                 <button
                   @click="checkFollowSets"
                   :disabled="loading.follow || !firstStepCompleted"
-                  class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                  class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 transition-colors text-xs"
                 >
-                  <Icon v-if="loading.follow" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
-                  <Icon v-else icon="lucide:check-circle" class="w-4 h-4 mr-2" />
+                  <Icon v-if="loading.follow" icon="lucide:loader-2" class="w-3 h-3 animate-spin mr-1" />
+                  <Icon v-else icon="lucide:check-circle" class="w-3 h-3 mr-1" />
                   校验
                 </button>
                 <button
                   @click="showFollowAnswer = !showFollowAnswer"
                   :disabled="!firstStepCompleted"
-                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
-                  <Icon v-if="showFollowAnswer" icon="lucide:eye-off" class="w-4 h-4 mr-1.5" />
-                  <Icon v-else icon="lucide:eye" class="w-4 h-4 mr-1.5" />
+                  <Icon v-if="showFollowAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
+                  <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
                   {{ showFollowAnswer ? '隐藏答案' : '显示答案' }}
                 </button>
               </div>
             </div>
 
-            <div class="space-y-3">
+            <div class="space-y-1.5">
               <div
                 v-for="symbol in originalData.Vn"
                 :key="'follow-' + symbol"
-                class="flex items-center gap-3"
+                class="flex items-center gap-2"
               >
-                <span class="w-20 text-sm font-medium text-gray-700">
+                <span class="w-16 text-xs font-medium text-gray-600">
                   follow(<span class="font-mono text-green-600">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
@@ -435,7 +444,7 @@
                     placeholder="输入Follow集，用空格分隔"
                     :disabled="!firstStepCompleted"
                     :class="[
-                      'w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors',
+                      'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
                       getInputClass('follow', symbol),
                       !firstStepCompleted && 'bg-gray-100 cursor-not-allowed'
                     ]"
@@ -446,34 +455,34 @@
                     <Icon
                       v-if="followValidation[symbol] === 'correct'"
                       icon="lucide:check"
-                      class="w-5 h-5 text-green-500"
+                      class="w-3.5 h-3.5 text-green-500"
                     />
                     <Icon
                       v-else-if="followValidation[symbol] === 'incorrect'"
                       icon="lucide:x"
-                      class="w-5 h-5 text-red-500"
+                      class="w-3.5 h-3.5 text-red-500"
                     />
                   </div>
                 </div>
                 <button
                   @click="executeFollowHintAnimation(symbol)"
                   :disabled="hintState.isActive || !firstStepCompleted || followValidation[symbol] === 'correct'"
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-300 rounded shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  class="inline-flex items-center px-1.5 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
-                  <Icon icon="lucide:lightbulb" class="w-3 h-3 mr-1" />
+                  <Icon icon="lucide:lightbulb" class="w-2.5 h-2.5 mr-0.5" />
                   提示
                 </button>
               </div>
             </div>
 
             <!-- Follow集答案提示 -->
-            <div v-if="showFollowAnswer" class="mt-4 p-4 bg-green-50 rounded-lg">
-              <h4 class="text-sm font-medium text-green-800 mb-2">正确答案：</h4>
-              <div class="space-y-1">
+            <div v-if="showFollowAnswer" class="mt-3 p-3 bg-green-50 rounded-lg">
+              <h4 class="text-xs font-medium text-green-800 mb-2">正确答案：</h4>
+              <div class="space-y-0.5">
                 <div
                   v-for="symbol in originalData.Vn"
                   :key="'answer-follow-' + symbol"
-                  class="text-sm"
+                  class="text-xs"
                 >
                   <span class="font-mono text-green-600">{{ symbol }}:</span>
                   <span class="ml-2 text-green-700">{{ correctFollowSets[symbol]?.join(' ') || '$' }}</span>
