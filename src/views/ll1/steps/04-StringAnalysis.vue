@@ -342,9 +342,14 @@
                   <td
                        v-for="terminal in VtAll"
                        :key="`${nonTerminal}-${terminal}`"
-                       class="border border-gray-300 px-3 py-2 text-center text-xs font-mono cursor-pointer hover:bg-blue-50 transition-colors"
-                       @dblclick="onLL1CellDblClick(nonTerminal, terminal)"
-                       :class="{ 'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintRow === nonTerminal && hintCol === terminal }"
+                       :data-table-cell="`${nonTerminal}|${terminal}`"
+                       class="border border-gray-300 px-3 py-2 text-center text-xs font-mono transition-colors"
+                       :class="{
+                         'cursor-pointer hover:bg-blue-50': !isAnalysisComplete,
+                         'cursor-not-allowed opacity-50': isAnalysisComplete,
+                         'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintRow === nonTerminal && hintCol === terminal
+                       }"
+                       @dblclick="!isAnalysisComplete && onLL1CellDblClick(nonTerminal, terminal)"
                      >
                        <span v-if="originalData?.table && originalData.table[`${nonTerminal}|${terminal}`]" class="text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded border">
                          {{ nonTerminal }}->{{ originalData.table[`${nonTerminal}|${terminal}`] }}
@@ -362,8 +367,55 @@
                   <p class="font-medium mb-1">💡 操作提示</p>
                   <p class="text-xs">• <span class="font-bold">双击</span>表格中的产生式可进行推导操作</p>
                   <p class="text-xs">• 根据当前栈顶符号和输入串首字符选择正确的操作</p>
+          </div>
         </div>
             </div>
+
+            <!-- 符号卡片显示 -->
+            <div class="mt-4 grid grid-cols-2 gap-4">
+              <!-- 非终结符卡片 -->
+              <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-200 p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Icon icon="lucide:tag" class="w-3 h-3 text-white" />
+                  </div>
+                  <span class="text-sm font-semibold text-purple-800">非终结符 Vn</span>
+                </div>
+                <div class="flex flex-wrap gap-2 justify-center">
+                  <span
+                    v-for="nonTerminal in originalData.Vn"
+                    :key="nonTerminal"
+                    :data-symbol="nonTerminal"
+                    class="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-mono font-semibold border border-purple-200 shadow-sm"
+                  >
+                    {{ nonTerminal }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 终结符卡片 -->
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200 p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                    <Icon icon="lucide:hash" class="w-3 h-3 text-white" />
+                  </div>
+                  <span class="text-sm font-semibold text-green-800">终结符 Vt</span>
+                </div>
+                <div class="flex flex-wrap gap-2 justify-center">
+                  <span
+                    v-for="terminal in originalData.Vt"
+                    :key="terminal"
+                    :data-symbol="terminal"
+                    class="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-mono font-semibold border border-green-200 shadow-sm"
+                  >
+                    {{ terminal }}
+                  </span>
+                  <!-- 结束符 # -->
+                  <span data-symbol="#" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-mono font-semibold border border-blue-200 shadow-sm">
+                    #
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -392,7 +444,8 @@
             <div class="flex flex-wrap gap-2 mb-4">
               <button
                 @click="onMatch"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                :disabled="isAnalysisComplete"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               >
                 匹配
               </button>
@@ -417,7 +470,8 @@
               </button>
               <button
                 @click="onHint"
-                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium"
+                :disabled="isAnalysisComplete"
+                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               >
                 提示
               </button>
@@ -425,7 +479,7 @@
 
             <!-- 答题表格 -->
             <div class="overflow-x-auto">
-              <table class="min-w-full border border-gray-300 text-sm">
+              <table class="min-w-full border border-gray-300 text-sm user-steps-table">
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">步骤</th>
@@ -520,6 +574,19 @@
         <span>{{ message }}</span>
       </div>
     </transition>
+
+    <!-- 飞行动画元素 -->
+    <div v-for="flyingSymbol in flyingSymbols" :key="`${flyingSymbol.symbol}-${flyingSymbol.target}`"
+         class="fixed z-50 pointer-events-none"
+         :style="{
+           left: flyingSymbol.x + 'px',
+           top: flyingSymbol.y + 'px',
+           transform: 'translate(-50%, -50%)'
+         }">
+      <div class="bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-mono shadow-lg border border-orange-600">
+        {{ flyingSymbol.symbol }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -558,10 +625,25 @@ const message = ref<string | null>(null)
 const messageType = ref<'success' | 'error'>('success')
 let messageTimer: number | null = null
 
+// 飞行动画状态
+const flyingSymbols = ref<Array<{
+  symbol: string,
+  target: string,
+  x: number,
+  y: number
+}>>([])
+
 // 计算属性
 const VtAll = computed(() => {
   const vt = originalData.value?.Vt || []
   return [...vt, '#'] // 添加结束符
+})
+
+// 检查分析是否完成
+const isAnalysisComplete = computed(() => {
+  if (userSteps.value.length === 0) return false
+  const last = userSteps.value[userSteps.value.length - 1]
+  return last.stack === '#' && last.input === '#'
 })
 
 // 监听分析结果变化，自动初始化用户步骤
@@ -599,6 +681,10 @@ const resetAnalysis = () => {
   userSteps.value = []
   showAnswer.value = false
   hintActive.value = false
+  hintRow.value = ''
+  hintCol.value = ''
+  hintType.value = ''
+  flyingSymbols.value = []
 }
 
 // 初始化用户答题步骤
@@ -640,7 +726,13 @@ const onLL1CellDblClick = (row: string, col: string) => {
       stackArr.push(prod[i])
     }
   }
-  userSteps.value.push({ stack: stackArr.join(''), input: last.input })
+  const newStack = stackArr.join('')
+  userSteps.value.push({ stack: newStack, input: last.input })
+
+  // 检查是否完成分析（虽然这里通常不会完成，但为了完整性）
+  if (newStack === '#' && last.input === '#') {
+    showMessage('分析完成！', 'success')
+  }
 }
 
 // 匹配按钮
@@ -655,7 +747,14 @@ const onMatch = () => {
   if (top === cur) {
     stackArr.pop()
     inputArr.shift()
-    userSteps.value.push({ stack: stackArr.join(''), input: inputArr.join('') })
+    const newStack = stackArr.join('')
+    const newInput = inputArr.join('')
+    userSteps.value.push({ stack: newStack, input: newInput })
+
+    // 检查是否完成分析
+    if (newStack === '#' && newInput === '#') {
+      showMessage('分析完成！', 'success')
+    }
   } else {
     showMessage('栈顶符号与输入串首字符不匹配！', 'error')
   }
@@ -677,21 +776,38 @@ const onShowAnswer = () => {
 // 重做
 const onResetUserSteps = () => {
   initUserSteps()
+  hintActive.value = false
+  hintRow.value = ''
+  hintCol.value = ''
+  hintType.value = ''
+  flyingSymbols.value = []
 }
 
 // 提示按钮
-const onHint = () => {
+const onHint = async () => {
   if (showAnswer.value) return
   const last = userSteps.value[userSteps.value.length - 1]
   if (!last) return
+
+  // 检查是否已经完成分析
+  if (last.stack === '#' && last.input === '#') {
+    showMessage('分析已完成！', 'success')
+    return
+  }
+
   const stackArr = last.stack.split('')
   const inputArr = last.input.split('')
   const top = stackArr[stackArr.length - 1]
   const cur = inputArr[0]
+
   // 匹配情形
   if (top === cur) {
     hintActive.value = true
     hintType.value = 'match'
+
+    // 执行匹配飞行动画
+    await executeMatchFlyingAnimation(top, cur)
+
     setTimeout(() => {
       onMatch()
       hintActive.value = false
@@ -699,6 +815,7 @@ const onHint = () => {
     }, 800)
     return
   }
+
   // LL1表推导情形
   const prod = originalData.value?.table?.[top + '|' + cur]
   if (prod) {
@@ -706,6 +823,10 @@ const onHint = () => {
     hintRow.value = top
     hintCol.value = cur
     hintType.value = 'll1'
+
+    // 执行LL1推导飞行动画
+    await executeLL1FlyingAnimation(top, cur, prod)
+
     setTimeout(() => {
       onLL1CellDblClick(top, cur)
       hintActive.value = false
@@ -715,7 +836,113 @@ const onHint = () => {
     }, 800)
     return
   }
-  showMessage('当前无法提示！', 'error')
+  showMessage('提示已完成', 'success')
+}
+
+// 执行匹配飞行动画
+const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
+  // 查找符号卡片元素（从符号卡片区域）
+  const symbolElement = document.querySelector(`[data-symbol="${symbol}"]`) as HTMLElement
+  const stackElement = document.querySelector('.user-steps-table tbody tr:last-child td:nth-child(2)') as HTMLElement
+  const inputElement = document.querySelector('.user-steps-table tbody tr:last-child td:nth-child(3)') as HTMLElement
+
+  if (!symbolElement || !stackElement || !inputElement) {
+    return
+  }
+
+  const symbolRect = symbolElement.getBoundingClientRect()
+  const stackRect = stackElement.getBoundingClientRect()
+  const inputRect = inputElement.getBoundingClientRect()
+
+  // 创建飞行动画：从符号卡片飞到栈顶
+  flyingSymbols.value.push({
+    symbol: symbol,
+    target: 'stack',
+    x: symbolRect.left + symbolRect.width / 2,
+    y: symbolRect.top + symbolRect.height / 2
+  })
+
+  // 等待一小段时间让元素出现
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // 更新位置到栈顶
+  const flyingSymbolData = flyingSymbols.value.find(fs => fs.symbol === symbol && fs.target === 'stack')
+  if (flyingSymbolData) {
+    flyingSymbolData.x = stackRect.left + stackRect.width / 2
+    flyingSymbolData.y = stackRect.top + stackRect.height / 2
+  }
+
+  // 等待飞行动画完成
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  // 清除飞行动画状态
+  flyingSymbols.value = flyingSymbols.value.filter(
+    fs => !(fs.symbol === symbol && fs.target === 'stack')
+  )
+
+  // 创建第二个飞行动画：从输入串首字符飞出
+  flyingSymbols.value.push({
+    symbol: target,
+    target: 'input',
+    x: inputRect.left + inputRect.width / 2,
+    y: inputRect.top + inputRect.height / 2
+  })
+
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // 飞出到屏幕外
+  const flyingSymbolData2 = flyingSymbols.value.find(fs => fs.symbol === target && fs.target === 'input')
+  if (flyingSymbolData2) {
+    flyingSymbolData2.x = inputRect.left + inputRect.width / 2
+    flyingSymbolData2.y = -100 // 飞出到屏幕上方
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 1000))
+
+  // 清除第二个飞行动画状态
+  flyingSymbols.value = flyingSymbols.value.filter(
+    fs => !(fs.symbol === target && fs.target === 'input')
+  )
+}
+
+// 执行LL1推导飞行动画
+const executeLL1FlyingAnimation = async (nonTerminal: string, terminal: string, production: string) => {
+  // 查找LL1表格中的产生式元素
+  const tableCellElement = document.querySelector(`[data-table-cell="${nonTerminal}|${terminal}"]`) as HTMLElement
+  const stackElement = document.querySelector('.user-steps-table tbody tr:last-child td:nth-child(2)') as HTMLElement
+
+  if (!tableCellElement || !stackElement) {
+    return
+  }
+
+  const tableCellRect = tableCellElement.getBoundingClientRect()
+  const stackRect = stackElement.getBoundingClientRect()
+
+  // 创建飞行动画：从LL1表格飞到栈顶
+  flyingSymbols.value.push({
+    symbol: production,
+    target: 'stack',
+    x: tableCellRect.left + tableCellRect.width / 2,
+    y: tableCellRect.top + tableCellRect.height / 2
+  })
+
+  // 等待一小段时间让元素出现
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // 更新位置到栈顶
+  const flyingSymbolData = flyingSymbols.value.find(fs => fs.symbol === production && fs.target === 'stack')
+  if (flyingSymbolData) {
+    flyingSymbolData.x = stackRect.left + stackRect.width / 2
+    flyingSymbolData.y = stackRect.top + stackRect.height / 2
+  }
+
+  // 等待飞行动画完成
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  // 清除飞行动画状态
+  flyingSymbols.value = flyingSymbols.value.filter(
+    fs => !(fs.symbol === production && fs.target === 'stack')
+  )
 }
 
 // 显示消息
@@ -782,5 +1009,24 @@ const complete = () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* 飞行动画过渡效果 */
+.fixed {
+  transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 高亮动画效果 */
+@keyframes highlight-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.ring-yellow-400 {
+  animation: highlight-pulse 1s ease-in-out infinite;
 }
 </style>
