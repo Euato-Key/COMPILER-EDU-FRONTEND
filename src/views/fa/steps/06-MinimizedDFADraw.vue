@@ -14,12 +14,88 @@
 
     <div class="step-content">
       <div class="space-y-6">
+        <!-- 🟢 新增区域：最小化状态转换矩阵参考 -->
+        <div class="minimized-transition-matrix-reference">
+          <div class="bg-white border border-gray-200 rounded-lg">
+            <div class="border-b border-gray-200 p-4">
+              <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                <Icon icon="lucide:table" class="w-5 h-5 text-green-600" />
+                最小化状态转换矩阵（来自第五步）
+              </h3>
+              <p class="text-sm text-gray-600 mt-1">根据这个矩阵绘制最小化 DFA 图</p>
+            </div>
+            <div class="p-6">
+              <!-- 矩阵显示区域 -->
+              <div v-if="matrixStateColumns.length && originalStateCount > 0" class="minimized-matrix">
+                <h4 class="font-medium text-gray-800 mb-3">最小化状态转换矩阵</h4>
+                            <TransitionTable
+              :data="{
+                headers: matrixStateColumns,
+                rows: matrixData
+              }"
+              :columns="matrixStateColumns.map(state => ({
+                key: state,
+                title: state,
+                type: state === 'S' ? 'state' : 'transition',
+                editable: false
+              }))"
+              :editable="false"
+              :show-answer="true"
+              :final-state-config="{
+                isFinalState: (row, col, value) => minimizedAcceptingStates.has(String(value))
+              }"
+            />
+              </div>
+
+              <!-- 无数据状态 -->
+              <div v-else class="text-center py-8 text-gray-500">
+                <Icon icon="lucide:table-2" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>暂无最小化矩阵数据</p>
+                <p class="text-sm mt-1">请先完成第五步的 DFA 最小化</p>
+              </div>
+
+              <!-- 🟢 新增：高亮说明 - 与第四步保持一致 -->
+              <div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-start gap-3">
+                  <Icon icon="lucide:zap" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 class="font-medium text-green-800">高亮说明</h4>
+                    <div class="text-sm text-green-700 mt-2 space-y-1">
+                      <p>• <span class="font-semibold">绿色发光单元格</span>：表示终态（接受状态）</p>
+                      <p>• 最小化矩阵中的终态会高亮显示</p>
+                      <p>• 这些高亮状态在最小化DFA中应标记为接受状态</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 上方：最小化DFA画布区域 -->
         <div class="minimized-dfa-draw-area">
           <div class="bg-white border border-gray-200 rounded-lg">
             <!-- 画布主体 -->
             <div class="h-[700px] p-4">
               <FACanvas ref="minimizedDFACanvasRef" mode="dfa" title="最小化 DFA" />
+            </div>
+          </div>
+
+          <!-- 🟢 修改：简化的绘制提示区域 -->
+          <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 class="font-medium text-indigo-800">最小化 DFA 绘制提示</h4>
+                <div class="text-sm text-indigo-700 mt-2 space-y-1">
+                  <ul class="space-y-1">
+                    <li>• 根据上方最小化状态转换矩阵绘制 DFA</li>
+                    <li>• 确保每个状态的转换都按照矩阵中的数据进行连接</li>
+                    <li>• 标记初始状态和接受状态（注意高亮的终态）</li>
+                    <li>• 验证最小化 DFA 的正确性</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -104,6 +180,7 @@ import { Icon } from '@iconify/vue'
 import FACanvas from '@/components/flow/canvas/FACanvas.vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
+import { TransitionTable } from '@/components/fa'
 
 const emit = defineEmits<{
   'next-step': []
@@ -118,12 +195,22 @@ const faStore = useFAStore()
 const dfaStateCount = ref(0)
 const minimizedStateCount = ref(0)
 
+// 🟢 新增：与第四步保持一致的矩阵相关状态
+const originalStateCount = ref(0)
+const matrixStateColumns = ref<string[]>([]) // 矩阵列标题 ['S', 'a', 'b']
+const matrixData = ref<string[][]>([]) // 矩阵数据
+
+// 🟢 新增：最小化DFA的接受状态映射
+const minimizedAcceptingStates = ref<Set<string>>(new Set())
+
 // 状态管理
 const showAnswer = ref(false)
 
 // 最小化DFA画布引用
 const minimizedDFACanvasRef = ref<InstanceType<typeof FACanvas>>()
 const answerSvgContainer = ref<HTMLElement>()
+
+
 
 onMounted(() => {
   if (!faStore.hasResult()) {
@@ -136,7 +223,7 @@ onMounted(() => {
     const faResult = faStore.originalData
     if (faResult) {
       console.log('Step 6 loaded data from store')
-      console.log('Minimized DFA DOT string:', faStore.minDfaDotString)
+      console.log('原始数据:', faResult)
 
       // 从后端数据中获取状态数量
       if (faResult.table_to_num) {
@@ -149,12 +236,125 @@ onMounted(() => {
           ),
         )
         minimizedStateCount.value = minStates
+        originalStateCount.value = minStates
       }
+
+      // 🟢 修改：先构建矩阵数据，再构建接受状态集合
+      buildMinimizedTransitionMatrix()
+
+      // 🟢 修改：基于最小化数据构建接受状态集合
+      buildMinimizedAcceptingStatesSet(faResult)
     }
   } catch (error) {
     console.error('处理FA数据失败：', error)
   }
 })
+
+// 🟢 新增：构建最小化DFA的接受状态集合
+const buildMinimizedAcceptingStatesSet = (faData: any) => {
+  console.log('开始构建最小化DFA接受状态集合')
+  console.log('原始FA数据:', faData)
+
+  // 方法1: 从后端数据中查找最小化DFA的接受状态信息
+  if (faData.min_accepting_states && Array.isArray(faData.min_accepting_states)) {
+    const minAcceptingStates = faData.min_accepting_states.map(String)
+    minimizedAcceptingStates.value = new Set(minAcceptingStates)
+    console.log('从 min_accepting_states 获取最小化接受状态:', minimizedAcceptingStates.value)
+    return
+  }
+
+  // 方法2: 从最小化状态转换矩阵中推断终态
+  if (faData.table_to_num_min && faData.accepting_states) {
+    const originalAcceptingStates = new Set(faData.accepting_states.map(String))
+    const minimizedStates = new Set<string>()
+
+    console.log('原始接受状态:', originalAcceptingStates)
+    console.log('最小化转换矩阵:', faData.table_to_num_min)
+
+    // 检查最小化矩阵中的每个状态
+    if (faData.table_to_num_min.S && Array.isArray(faData.table_to_num_min.S)) {
+      faData.table_to_num_min.S.forEach((state: any, index: number) => {
+        const stateStr = String(state)
+        console.log(`检查最小化状态 ${index}: ${stateStr}`)
+
+        // 如果这个最小化状态对应的原始状态是接受状态，则它也是接受状态
+        if (originalAcceptingStates.has(stateStr)) {
+          minimizedStates.add(stateStr)
+          console.log(`状态 ${stateStr} 是最小化DFA的接受状态`)
+        }
+      })
+    }
+
+    minimizedAcceptingStates.value = minimizedStates
+    console.log('推断的最小化接受状态:', minimizedAcceptingStates.value)
+    return
+  }
+
+  // 方法3: 尝试分析DOT字符串获取接受状态信息
+  if (faStore.minDfaDotString) {
+    const dotString = faStore.minDfaDotString
+    const doubleCircleRegex = /(\w+)\s*\[.*shape\s*=\s*doublecircle.*\]/gi
+    const matches = [...dotString.matchAll(doubleCircleRegex)]
+
+    if (matches.length > 0) {
+      const statesFromDot = matches.map(match => match[1])
+      minimizedAcceptingStates.value = new Set(statesFromDot)
+      console.log('从DOT字符串提取的最小化接受状态:', minimizedAcceptingStates.value)
+      return
+    }
+  }
+
+  // 方法4: 保守方法 - 假设状态编号连续，检查哪些状态应该是终态
+  // 这需要更多的业务逻辑分析，先记录日志
+  console.warn('无法确定最小化DFA的接受状态，请检查后端数据结构')
+  console.log('可用的数据字段:', Object.keys(faData))
+}
+
+
+
+// 🟢 新增：构建最小化状态转换矩阵（与第四步保持一致的结构）
+const buildMinimizedTransitionMatrix = () => {
+  if (!faStore.hasResult() || !faStore.originalData?.table_to_num_min) return
+
+  console.log('Building minimized transition matrix from backend data:', faStore.originalData.table_to_num_min)
+
+  const tableToNumMin = faStore.originalData.table_to_num_min
+
+  // 🟢 获取所有状态标题，按照与第四步相同的逻辑排序
+  const allStates = Object.keys(tableToNumMin)
+  const sKeys = allStates.filter((x) => x === 'S')
+  const nonSKeys = allStates.filter((x) => x !== 'S').sort()
+  const stateKeys = [...sKeys, ...nonSKeys]
+
+  console.log('Matrix state keys:', stateKeys)
+
+  // 设置矩阵列标题
+  matrixStateColumns.value = stateKeys
+
+  // 获取矩阵行数（以S状态的数组长度为准）
+  const matrixRowCount = tableToNumMin['S'] ? tableToNumMin['S'].length : 0
+  console.log('矩阵行数（状态数量）:', matrixRowCount)
+
+
+
+  // 构建矩阵数据（与第四步保持一致的结构）
+  matrixData.value = []
+  for (let rowIndex = 0; rowIndex < matrixRowCount; rowIndex++) {
+    const row: string[] = []
+
+    stateKeys.forEach((state) => {
+      const stateArray = tableToNumMin[state] || []
+      const cellValue = stateArray[rowIndex]
+      row.push(cellValue !== undefined ? String(cellValue) : '-')
+    })
+
+    matrixData.value.push(row)
+    console.log(`行 ${rowIndex}:`, row)
+  }
+
+  console.log('Built minimized matrix:', matrixData.value)
+  console.log('Matrix state columns:', matrixStateColumns.value)
+}
 
 // 切换答案显示
 const toggleAnswer = async () => {
@@ -236,4 +436,5 @@ const complete = () => {
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
 }
+
 </style>
