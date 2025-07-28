@@ -74,10 +74,49 @@
 
         <!-- 上方：最小化DFA画布区域 -->
         <div class="minimized-dfa-draw-area">
-          <div class="bg-white border border-gray-200 rounded-lg">
-            <!-- 画布主体 -->
+          <!-- 画图工具选择 -->
+          <div class="mb-4">
+            <div class="flex space-x-2">
+              <button
+                @click="activeCanvas = 'original'"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  activeCanvas === 'original'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ]"
+              >
+                <Icon icon="lucide:edit-3" class="w-4 h-4 inline mr-2" />
+                原始编辑器
+              </button>
+              <button
+                @click="activeCanvas = 'new'"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  activeCanvas === 'new'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ]"
+              >
+                <Icon icon="lucide:git-branch" class="w-4 h-4 inline mr-2" />
+                新FA画图组件
+              </button>
+            </div>
+          </div>
+
+          <!-- 原始编辑器 -->
+          <div v-if="activeCanvas === 'original'" class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <FACanvas ref="minimizedDFACanvasRef" mode="dfa" title="最小化 DFA" />
+            </div>
+          </div>
+
+          <!-- 新FA画图组件 -->
+          <div v-if="activeCanvas === 'new'" class="bg-white border border-gray-200 rounded-lg">
+            <div class="h-[700px] p-4">
+              <div class="w-full h-full">
+                <FA_vueflow ref="newMinimizedDFACanvasRef" FA_type="Min_DFA" />
+              </div>
             </div>
           </div>
 
@@ -95,6 +134,21 @@
                     <li>• 验证最小化 DFA 的正确性</li>
                   </ul>
                 </div>
+              </div>
+            </div>
+
+            <!-- 新FA画图组件使用说明 -->
+            <div v-if="activeCanvas === 'new'" class="mt-4 pt-4 border-t border-indigo-200">
+              <h5 class="font-medium text-indigo-800 mb-3">新FA画图工具使用说明</h5>
+              <div class="text-xs text-indigo-600 space-y-1">
+                <p>• 使用画布上方的工具栏按钮进行操作</p>
+                <p>• 点击"添加节点"按钮或双击画布添加新状态</p>
+                <p>• 选择节点后点击"设置初态"或"设置终态"</p>
+                <p>• 拖拽节点边缘的连接点创建转换</p>
+                <p>• 点击边上的输入框编辑转换标签</p>
+                <p>• 支持自环和复杂的最小化DFA结构</p>
+                <p>• 使用鼠标滚轮缩放画布，拖拽平移画布</p>
+                <p>• 右下角控制面板可快速调整视图</p>
               </div>
             </div>
           </div>
@@ -180,7 +234,7 @@ import { Icon } from '@iconify/vue'
 import FACanvas from '@/components/flow/canvas/FACanvas.vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
-import { TransitionTable } from '@/components/fa'
+import { TransitionTable, FA_vueflow } from '@/components/fa'
 
 const emit = defineEmits<{
   'next-step': []
@@ -206,8 +260,12 @@ const minimizedAcceptingStates = ref<Set<string>>(new Set())
 // 状态管理
 const showAnswer = ref(false)
 
+// 画布选择状态
+const activeCanvas = ref<'original' | 'new'>('new')
+
 // 最小化DFA画布引用
 const minimizedDFACanvasRef = ref<InstanceType<typeof FACanvas>>()
+const newMinimizedDFACanvasRef = ref<InstanceType<typeof FA_vueflow>>()
 const answerSvgContainer = ref<HTMLElement>()
 
 

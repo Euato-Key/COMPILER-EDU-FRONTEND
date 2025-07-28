@@ -1,5 +1,7 @@
 // FA组件导出
 export { default as TransitionTable } from './TransitionTable.vue'
+export { default as FA_vueflow } from './FA_vueflow.vue'
+export { default as FA_customEdge } from './FA_custom-edge.vue'
 
 // 类型导出
 export type {

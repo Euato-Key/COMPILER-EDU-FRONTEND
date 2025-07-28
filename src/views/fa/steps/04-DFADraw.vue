@@ -113,10 +113,49 @@
 
         <!-- 上方：用户画图区域 -->
         <div class="user-draw-area">
-          <div class="bg-white border border-gray-200 rounded-lg">
-            <!-- 用户画布 -->
+          <!-- 画图工具选择 -->
+          <div class="mb-4">
+            <div class="flex space-x-2">
+              <button
+                @click="activeCanvas = 'original'"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  activeCanvas === 'original'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ]"
+              >
+                <Icon icon="lucide:edit-3" class="w-4 h-4 inline mr-2" />
+                原始编辑器
+              </button>
+              <button
+                @click="activeCanvas = 'new'"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  activeCanvas === 'new'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ]"
+              >
+                <Icon icon="lucide:git-branch" class="w-4 h-4 inline mr-2" />
+                新FA画图组件
+              </button>
+            </div>
+          </div>
+
+          <!-- 原始编辑器 -->
+          <div v-if="activeCanvas === 'original'" class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <FACanvas ref="dfaCanvasRef" mode="dfa" />
+            </div>
+          </div>
+
+          <!-- 新FA画图组件 -->
+          <div v-if="activeCanvas === 'new'" class="bg-white border border-gray-200 rounded-lg">
+            <div class="h-[700px] p-4">
+              <div class="w-full h-full">
+                <FA_vueflow ref="newDFACanvasRef" FA_type="DFA" />
+              </div>
             </div>
           </div>
 
@@ -131,6 +170,21 @@
                   <p>• 根据转换表添加状态和转换</p>
                   <p>• 完成绘制后可进入下一步</p>
                 </div>
+              </div>
+            </div>
+
+            <!-- 新FA画图组件使用说明 -->
+            <div v-if="activeCanvas === 'new'" class="mt-4 pt-4 border-t border-orange-200">
+              <h5 class="font-medium text-orange-800 mb-3">新FA画图工具使用说明</h5>
+              <div class="text-xs text-orange-600 space-y-1">
+                <p>• 使用画布上方的工具栏按钮进行操作</p>
+                <p>• 点击"添加节点"按钮或双击画布添加新状态</p>
+                <p>• 选择节点后点击"设置初态"或"设置终态"</p>
+                <p>• 拖拽节点边缘的连接点创建转换</p>
+                <p>• 点击边上的输入框编辑转换标签</p>
+                <p>• 支持自环和复杂的DFA结构</p>
+                <p>• 使用鼠标滚轮缩放画布，拖拽平移画布</p>
+                <p>• 右下角控制面板可快速调整视图</p>
               </div>
             </div>
           </div>
@@ -319,7 +373,7 @@ import { Icon } from '@iconify/vue'
 import FACanvas from '@/components/flow/canvas/FACanvas.vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
-import { TransitionTable } from '@/components/fa'
+import { TransitionTable, FA_vueflow } from '@/components/fa'
 
 // 转换表数据结构 - 按列组织（每个输入符号对应一列）
 interface ConversionTableData {
@@ -352,8 +406,12 @@ const showDotString = ref(false)
 const showAnswer = ref(false) // 默认隐藏答案
 const hasRenderedAnswer = ref(false) // 记录是否已经渲染过答案
 
+// 画布选择状态
+const activeCanvas = ref<'original' | 'new'>('new')
+
 // DFA 画布引用
 const dfaCanvasRef = ref<InstanceType<typeof FACanvas>>()
+const newDFACanvasRef = ref<InstanceType<typeof FA_vueflow>>()
 const answerSvgContainer = ref<HTMLElement>()
 
 // 计算属性

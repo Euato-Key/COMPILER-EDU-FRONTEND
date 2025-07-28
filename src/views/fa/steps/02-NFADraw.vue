@@ -25,10 +25,49 @@
       <div class="space-y-6">
         <!-- 上方：用户画图区域 -->
         <div class="user-draw-area">
-          <div class="bg-white border border-gray-200 rounded-lg">
-            <!-- 用户画布 -->
+          <!-- 画图工具选择 -->
+          <div class="mb-4">
+            <div class="flex space-x-2">
+              <button
+                @click="activeCanvas = 'original'"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  activeCanvas === 'original'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ]"
+              >
+                <Icon icon="lucide:edit-3" class="w-4 h-4 inline mr-2" />
+                原始编辑器
+              </button>
+              <button
+                @click="activeCanvas = 'new'"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  activeCanvas === 'new'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ]"
+              >
+                <Icon icon="lucide:git-branch" class="w-4 h-4 inline mr-2" />
+                新FA画图组件
+              </button>
+            </div>
+          </div>
+
+          <!-- 原始编辑器 -->
+          <div v-if="activeCanvas === 'original'" class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <FACanvas ref="userCanvasRef" mode="nfa" :readonly="false" />
+            </div>
+          </div>
+
+          <!-- 新FA画图组件 -->
+          <div v-if="activeCanvas === 'new'" class="bg-white border border-gray-200 rounded-lg">
+            <div class="h-[700px] p-4">
+              <div class="w-full h-full">
+                <FA_vueflow ref="newFACanvasRef" FA_type="NFA" />
+              </div>
             </div>
           </div>
 
@@ -46,6 +85,22 @@
                 </ul>
               </div>
             </div>
+
+            <!-- 新FA画图组件使用说明 -->
+            <div v-if="activeCanvas === 'new'" class="mt-4 pt-4 border-t border-blue-200">
+              <h5 class="font-medium text-blue-800 mb-3">新FA画图工具使用说明</h5>
+              <div class="text-xs text-blue-600 space-y-1">
+                <p>• 使用画布上方的工具栏按钮进行操作</p>
+                <p>• 点击"添加节点"按钮或双击画布添加新状态</p>
+                <p>• 选择节点后点击"设置初态"或"设置终态"</p>
+                <p>• 拖拽节点边缘的连接点创建转换</p>
+                <p>• 点击边上的输入框编辑转换标签</p>
+                <p>• 支持自环和复杂的NFA结构</p>
+                <p>• 使用鼠标滚轮缩放画布，拖拽平移画布</p>
+                <p>• 右下角控制面板可快速调整视图</p>
+              </div>
+            </div>
+
             <!-- 集成ThompsonRules可视化 -->
             <!-- <div class="mt-6">
               <ThompsonRules />
@@ -159,6 +214,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import FACanvas from '@/components/flow/canvas/FACanvas.vue'
+import { FA_vueflow } from '@/components/fa'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
 
@@ -173,7 +229,9 @@ const faStore = useFAStore()
 
 // 本地状态
 const showAnswer = ref(false)
+const activeCanvas = ref<'original' | 'new'>('new')
 const userCanvasRef = ref<InstanceType<typeof FACanvas>>()
+const newFACanvasRef = ref<InstanceType<typeof FA_vueflow>>()
 const answerSvgContainer = ref<HTMLElement>()
 
 // 计算属性
@@ -183,7 +241,9 @@ const hasNFAData = computed(() => faStore.hasResult())
 // 是否构造完成（用户查看答案后就可以进行下一步）
 const isConstructionComplete = computed(() => {
   return (
-    showAnswer.value || (userCanvasRef.value?.getNodes && userCanvasRef.value.getNodes().length > 0)
+    showAnswer.value ||
+    (userCanvasRef.value?.getNodes && userCanvasRef.value.getNodes().length > 0) ||
+    (newFACanvasRef.value?.getNodes && newFACanvasRef.value.getNodes().length > 0)
   )
 })
 
@@ -244,6 +304,10 @@ const proceedToNext = () => {
       userDraw: {
         nodes: userCanvasRef.value?.getNodes() || [],
         edges: userCanvasRef.value?.getEdges() || [],
+      },
+      newUserDraw: {
+        nodes: newFACanvasRef.value?.getNodes() || [],
+        edges: newFACanvasRef.value?.getEdges() || [],
       },
       timestamp: new Date().toISOString(),
     },
