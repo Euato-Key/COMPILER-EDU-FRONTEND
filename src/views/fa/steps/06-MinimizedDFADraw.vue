@@ -185,7 +185,7 @@
                 <div
                   v-if="faStore.minDfaDotString"
                   ref="answerSvgContainer"
-                  class="w-full h-full overflow-auto bg-gray-50 rounded border"
+                  class="w-full h-full overflow-auto bg-gray-50 rounded border flex items-center justify-center"
                 >
                   <!-- SVG 将在这里渲染 -->
                 </div>
@@ -438,6 +438,14 @@ const renderSvgAnswer = async () => {
     // 清空容器并添加SVG
     answerSvgContainer.value.innerHTML = ''
     if (svg) {
+      // 设置SVG样式以适配容器
+      svg.style.maxWidth = '100%'
+      svg.style.maxHeight = '100%'
+      svg.style.width = 'auto'
+      svg.style.height = 'auto'
+      svg.style.display = 'block'
+      svg.style.margin = 'auto'
+
       answerSvgContainer.value.appendChild(svg)
     }
   } catch (error) {
@@ -493,6 +501,20 @@ const complete = () => {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* 标准答案SVG容器样式 */
+.answer-area .bg-white {
+  overflow: hidden;
+}
+
+.answer-area svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: auto;
 }
 
 </style>
