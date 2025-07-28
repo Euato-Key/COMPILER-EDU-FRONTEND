@@ -248,7 +248,7 @@
               </div>
             </div>
 
-            <div class="space-y-2">
+                <div class="space-y-2">
               <!-- 非终结符的First集 -->
               <div class="mb-3">
                 <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -256,37 +256,37 @@
                   非终结符
                 </h4>
                 <div class="space-y-1.5">
-                  <div
-                    v-for="symbol in originalData.Vn"
+              <div
+                v-for="symbol in originalData.Vn"
                     :key="'first-vn-' + symbol"
                     class="flex items-center gap-2"
-                  >
+              >
                     <span class="w-16 text-xs font-medium text-gray-600">
-                      first(<span class="font-mono text-blue-600">{{ symbol }}</span>) =
-                    </span>
-                    <div class="flex-1 relative">
-                      <input
-                        v-model="userFirstSets[symbol]"
-                        type="text"
-                        placeholder="输入First集，用空格分隔"
-                        :class="[
+                  first(<span class="font-mono text-blue-600">{{ symbol }}</span>) =
+                </span>
+                <div class="flex-1 relative">
+                  <input
+                    v-model="userFirstSets[symbol]"
+                    type="text"
+                    placeholder="输入First集，用空格分隔"
+                    :class="[
                           'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
-                          getInputClass('first', symbol)
-                        ]"
-                        @focus="clearValidation('first', symbol)"
+                      getInputClass('first', symbol)
+                    ]"
+                    @focus="clearValidation('first', symbol)"
                         :data-input="symbol"
-                      />
-                      <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                        <Icon
-                          v-if="firstValidation[symbol] === 'correct'"
-                          icon="lucide:check"
+                  />
+                  <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <Icon
+                      v-if="firstValidation[symbol] === 'correct'"
+                      icon="lucide:check"
                           class="w-3.5 h-3.5 text-green-500"
-                        />
-                        <Icon
-                          v-else-if="firstValidation[symbol] === 'incorrect'"
-                          icon="lucide:x"
+                    />
+                    <Icon
+                      v-else-if="firstValidation[symbol] === 'incorrect'"
+                      icon="lucide:x"
                           class="w-3.5 h-3.5 text-red-500"
-                        />
+                    />
                       </div>
                     </div>
                     <button
@@ -354,13 +354,13 @@
                 <div>
                   <h5 class="text-xs font-medium text-blue-700 mb-1">非终结符：</h5>
                   <div class="space-y-0.5">
-                    <div
-                      v-for="symbol in originalData.Vn"
+                <div
+                  v-for="symbol in originalData.Vn"
                       :key="'answer-first-vn-' + symbol"
                       class="text-xs"
-                    >
-                      <span class="font-mono text-blue-600">{{ symbol }}:</span>
-                      <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
+                >
+                  <span class="font-mono text-blue-600">{{ symbol }}:</span>
+                  <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
                     </div>
                   </div>
                 </div>
