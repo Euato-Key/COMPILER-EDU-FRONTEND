@@ -296,7 +296,7 @@
                          'cursor-not-allowed opacity-50': isAnalysisComplete,
                          'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintRow === nonTerminal && hintCol === terminal
                        }"
-                       @dblclick="!isAnalysisComplete && onLL1CellDblClick(nonTerminal, terminal)"
+                       @dblclick="onLL1CellDblClick(nonTerminal, terminal)"
                      >
                        <span v-if="originalData?.table && originalData.table[`${nonTerminal}|${terminal}`]" class="text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded border">
                          {{ nonTerminal }}->{{ originalData.table[`${nonTerminal}|${terminal}`] }}
@@ -391,8 +391,7 @@
             <div class="flex flex-wrap gap-2 mb-4">
               <button
                 @click="onMatch"
-                :disabled="isAnalysisComplete"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
               >
                 匹配
               </button>
@@ -417,8 +416,7 @@
               </button>
               <button
                 @click="onHint"
-                :disabled="isAnalysisComplete"
-                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium"
               >
                 提示
               </button>
@@ -435,56 +433,43 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white">
-                                     <template v-if="!showAnswer">
-                     <tr v-for="(step, idx) in userSteps" :key="idx">
-                       <td class="border border-gray-300 px-3 py-2 text-center">{{ idx + 1 }}</td>
-                                             <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                         <template v-if="idx === userSteps.length - 1 && hintActive && hintType === 'match'">
-                           <span v-for="(ch, i) in (step.stack || '')" :key="i"
-                                 :class="i === (step.stack.length || 1) - 1 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
-                             {{ ch }}
-                           </span>
-                         </template>
-                         <template v-else-if="idx === userSteps.length - 1 && hintActive && hintType === 'll1'">
-                           <span v-for="(ch, i) in (step.stack || '')" :key="i"
-                                 :class="i === (step.stack.length || 1) - 1 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
-                             {{ ch }}
-                           </span>
-                         </template>
-                         <template v-else>
-                           {{ step.stack }}
-                         </template>
-                       </td>
-                       <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                         <template v-if="idx === userSteps.length - 1 && hintActive && hintType === 'match'">
-                           <span v-for="(ch, i) in (step.input || '')" :key="i"
-                                 :class="i === 0 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
-                             {{ ch }}
-                           </span>
-                         </template>
-                         <template v-else-if="idx === userSteps.length - 1 && hintActive && hintType === 'll1'">
-                           <span v-for="(ch, i) in (step.input || '')" :key="i"
-                                 :class="i === 0 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
-                             {{ ch }}
-                           </span>
-                         </template>
-                         <template v-else>
-                           {{ step.input }}
-                         </template>
-                       </td>
-                    </tr>
-                  </template>
-                  <template v-else>
-                    <tr v-for="(step, idx) in inputAnalysisResult?.info_step || []" :key="idx">
-                      <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
-                      <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                        {{ inputAnalysisResult && inputAnalysisResult.info_stack ? inputAnalysisResult.info_stack[idx] : '' }}
-                      </td>
-                      <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                        {{ inputAnalysisResult && inputAnalysisResult.info_str ? inputAnalysisResult.info_str[idx] : '' }}
-                      </td>
-                    </tr>
-                  </template>
+                  <tr v-for="(step, idx) in userSteps" :key="idx">
+                    <td class="border border-gray-300 px-3 py-2 text-center">{{ idx + 1 }}</td>
+                    <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                      <template v-if="idx === userSteps.length - 1 && hintActive && hintType === 'match'">
+                        <span v-for="(ch, i) in (step.stack || '')" :key="i"
+                              :class="i === (step.stack.length || 1) - 1 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                          {{ ch }}
+                        </span>
+                      </template>
+                      <template v-else-if="idx === userSteps.length - 1 && hintActive && hintType === 'll1'">
+                        <span v-for="(ch, i) in (step.stack || '')" :key="i"
+                              :class="i === (step.stack.length || 1) - 1 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                          {{ ch }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        {{ step.stack }}
+                      </template>
+                    </td>
+                    <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                      <template v-if="idx === userSteps.length - 1 && hintActive && hintType === 'match'">
+                        <span v-for="(ch, i) in (step.input || '')" :key="i"
+                              :class="i === 0 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                          {{ ch }}
+                        </span>
+                      </template>
+                      <template v-else-if="idx === userSteps.length - 1 && hintActive && hintType === 'll1'">
+                        <span v-for="(ch, i) in (step.input || '')" :key="i"
+                              :class="i === 0 ? 'bg-yellow-200 text-yellow-800 px-1 rounded' : ''">
+                          {{ ch }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        {{ step.input }}
+                      </template>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -725,7 +710,6 @@ const initUserSteps = () => {
 
 // LL1表双击
 const onLL1CellDblClick = (row: string, col: string) => {
-  if (showAnswer.value) return
   if (hintActive.value) {
     hintActive.value = false
     hintRow.value = ''
@@ -736,6 +720,13 @@ const onLL1CellDblClick = (row: string, col: string) => {
   if (!prod) return
   const last = userSteps.value[userSteps.value.length - 1]
   if (!last) return
+
+  // 检查是否已经完成分析
+  if (last.stack === '#' && last.input === '#') {
+    showMessage('分析已完成！', 'success')
+    return
+  }
+
   // 判断栈顶和当前输入符号
   const stackArr = last.stack.split('')
   const top = stackArr[stackArr.length - 1]
@@ -761,9 +752,15 @@ const onLL1CellDblClick = (row: string, col: string) => {
 
 // 匹配按钮
 const onMatch = () => {
-  if (showAnswer.value) return
   const last = userSteps.value[userSteps.value.length - 1]
   if (!last) return
+
+  // 检查是否已经完成分析
+  if (last.stack === '#' && last.input === '#') {
+    showMessage('分析已完成！', 'success')
+    return
+  }
+
   const stackArr = last.stack.split('')
   const inputArr = last.input.split('')
   const top = stackArr[stackArr.length - 1]
@@ -786,7 +783,6 @@ const onMatch = () => {
 
 // 回退按钮
 const onUndo = () => {
-  if (showAnswer.value) return
   if (userSteps.value.length > 1) {
     userSteps.value.pop()
   }
@@ -809,7 +805,6 @@ const onResetUserSteps = () => {
 
 // 提示按钮
 const onHint = async () => {
-  if (showAnswer.value) return
   const last = userSteps.value[userSteps.value.length - 1]
   if (!last) return
 
