@@ -38,15 +38,15 @@
             <div class="flex-1">
               <h3 class="text-lg font-semibold text-blue-900 mb-2">当前文法</h3>
               <div v-if="grammarInfo" class="space-y-2">
-                                <div class="bg-white/60 rounded-lg p-3 border border-blue-200">
+                <div class="bg-white/60 rounded-lg p-3 border border-blue-200">
                   <div class="text-sm text-blue-800 font-medium mb-2">产生式：</div>
                   <div class="space-y-1">
                     <div
-                      v-for="production in grammarInfo.formulas_list"
+                      v-for="(production, index) in numberedProductions"
                       :key="production"
                       class="text-xs font-mono text-blue-700"
                     >
-                      {{ production }}
+                      r{{ index + 1 }}: {{ production }}
                     </div>
                   </div>
                 </div>
@@ -68,6 +68,8 @@
           </div>
         </div>
       </div>
+
+
 
       <!-- 检查前置条件 -->
       <div v-if="!analysisData" class="text-center py-20">
@@ -147,6 +149,257 @@
           </div>
         </div>
 
+        <!-- LR0分析表 -->
+        <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">LR0分析表</h3>
+            <p class="text-sm text-gray-600 mt-1">用于字符串分析的Action表和Goto表</p>
+          </div>
+
+          <div class="p-6">
+            <!-- 分析表 -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full border border-gray-300">
+                <!-- 表头 -->
+                <thead class="bg-gray-50">
+                  <!-- 分组表头行 -->
+                  <tr>
+                    <th
+                      rowspan="2"
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
+                    >
+                      State
+                    </th>
+                    <th
+                      :colspan="terminals.length + 1"
+                      class="px-3 py-2 border border-gray-300 text-xs font-bold text-blue-900 bg-blue-100 text-center"
+                    >
+                      ACTION
+                    </th>
+                    <th
+                      :colspan="nonterminals.length"
+                      class="px-3 py-2 border border-gray-300 text-xs font-bold text-green-900 bg-green-100 text-center"
+                    >
+                      GOTO
+                    </th>
+                  </tr>
+                  <!-- 具体列名行 -->
+                  <tr>
+                    <!-- ACTION列 -->
+                    <th
+                      v-for="terminal in terminals"
+                      :key="terminal"
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50"
+                    >
+                      {{ terminal }}
+                    </th>
+                    <th
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50"
+                    >
+                      #
+                    </th>
+                    <!-- GOTO列 -->
+                    <th
+                      v-for="nonterminal in nonterminals"
+                      :key="nonterminal"
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50"
+                    >
+                      {{ nonterminal }}
+                    </th>
+                  </tr>
+                </thead>
+
+                <!-- 表体 -->
+                <tbody>
+                  <tr v-for="stateIndex in stateCount" :key="stateIndex - 1" class="hover:bg-gray-50">
+                    <td
+                      class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
+                    >
+                      I{{ stateIndex - 1 }}
+                    </td>
+
+                    <!-- ACTION单元格 -->
+                    <td
+                      v-for="terminal in [...terminals, '#']"
+                      :key="`action-${stateIndex - 1}-${terminal}`"
+                      class="px-2 py-1 border border-gray-300 text-xs text-center"
+                    >
+                      {{ getActionValue(stateIndex - 1, terminal) }}
+                    </td>
+
+                    <!-- GOTO单元格 -->
+                    <td
+                      v-for="nonterminal in nonterminals"
+                      :key="`goto-${stateIndex - 1}-${nonterminal}`"
+                      class="px-2 py-1 border border-gray-300 text-xs text-center"
+                    >
+                      {{ getGotoValue(stateIndex - 1, nonterminal) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 表说明 -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div class="bg-blue-50 p-3 rounded">
+                <h4 class="font-medium text-blue-900 mb-1">ACTION动作</h4>
+                <ul class="text-xs text-blue-700 space-y-1">
+                  <li>• Si: 移进到状态i</li>
+                  <li>• rj: 用产生式j规约</li>
+                  <li>• acc: 接受</li>
+                </ul>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <h4 class="font-medium text-green-900 mb-1">GOTO函数</h4>
+                <ul class="text-xs text-green-700 space-y-1">
+                  <li>• 数字: 转移到对应状态</li>
+                  <li>• 空白: 无转移</li>
+                </ul>
+              </div>
+              <div class="bg-purple-50 p-3 rounded">
+                <h4 class="font-medium text-purple-900 mb-1">产生式编号</h4>
+                <ul class="text-xs text-purple-700 space-y-1">
+                  <li v-for="(production, index) in numberedProductions" :key="production">
+                    • r{{ index + 1 }}: {{ production }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LR0移进-规约分析答题表 -->
+        <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">LR0移进-规约分析答题表</h3>
+            <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
+          </div>
+
+          <div class="p-6">
+            <!-- 答题表 -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full border border-gray-300">
+                <!-- 表头 -->
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                      步骤
+                    </th>
+                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                      状态栈
+                    </th>
+                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                      符号栈
+                    </th>
+                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                      输入串
+                    </th>
+                  </tr>
+                </thead>
+
+                <!-- 表体 -->
+                <tbody>
+                  <tr v-for="(step, index) in analysisSteps" :key="index" class="hover:bg-gray-50">
+                    <!-- 步骤 -->
+                    <td class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center">
+                      {{ index + 1 }}
+                    </td>
+
+                    <!-- 状态栈 -->
+                    <td class="px-2 py-1 border border-gray-300 text-xs">
+                      <input
+                        v-model="userAnswers.stateStack[index]"
+                        @blur="validateCell(index, 'stateStack')"
+                        @input="clearValidation(index, 'stateStack')"
+                        :class="getCellStyle(index, 'stateStack')"
+                        class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-blue-500 rounded transition-colors"
+                        placeholder="如: 0"
+                      />
+                    </td>
+
+                    <!-- 符号栈 -->
+                    <td class="px-2 py-1 border border-gray-300 text-xs">
+                      <input
+                        v-model="userAnswers.symbolStack[index]"
+                        @blur="validateCell(index, 'symbolStack')"
+                        @input="clearValidation(index, 'symbolStack')"
+                        :class="getCellStyle(index, 'symbolStack')"
+                        class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-blue-500 rounded transition-colors"
+                        placeholder="如: #"
+                      />
+                    </td>
+
+                    <!-- 输入串 -->
+                    <td class="px-2 py-1 border border-gray-300 text-xs">
+                      <input
+                        v-model="userAnswers.inputString[index]"
+                        @blur="validateCell(index, 'inputString')"
+                        @input="clearValidation(index, 'inputString')"
+                        :class="getCellStyle(index, 'inputString')"
+                        class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-blue-500 rounded transition-colors"
+                        placeholder="如: abb#"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 验证状态说明 -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div class="bg-yellow-50 p-3 rounded">
+                <h4 class="font-medium text-yellow-900 mb-1">验证状态</h4>
+                <div class="text-xs text-yellow-700 space-y-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded"></div>
+                    <span>未填写</span>
+                  </div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 bg-red-200 border border-red-400 rounded"></div>
+                    <span>错误</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-200 border border-green-400 rounded"></div>
+                    <span>正确</span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-blue-50 p-3 rounded">
+                <h4 class="font-medium text-blue-900 mb-1">填写说明</h4>
+                <ul class="text-xs text-blue-700 space-y-1">
+                  <li>• 状态栈：当前状态序列</li>
+                  <li>• 符号栈：当前符号序列</li>
+                  <li>• 输入串：剩余输入字符串</li>
+                </ul>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <h4 class="font-medium text-green-900 mb-1">操作</h4>
+                <div class="space-y-2">
+                  <button
+                    @click="validateAll"
+                    class="w-full px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                  >
+                    验证答案
+                  </button>
+                  <button
+                    @click="showCorrectAnswers"
+                    class="w-full px-3 py-1.5 text-xs border border-green-300 text-green-700 rounded hover:bg-green-50 transition-colors"
+                  >
+                    {{ showAnswers ? '隐藏答案' : '查看答案' }}
+                  </button>
+                  <button
+                    @click="clearAll"
+                    class="w-full px-3 py-1.5 text-xs border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors"
+                  >
+                    一键清除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 分析结果 -->
         <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg p-6">
           <div
@@ -176,14 +429,14 @@
           </div>
         </div>
 
-        <!-- 分析过程表 -->
+        <!-- 分析过程表（答案参考） -->
         <div
-          v-if="analysisSteps.length > 0"
+          v-if="analysisSteps.length > 0 && showAnswers"
           class="bg-white border border-gray-200 rounded-lg overflow-hidden"
         >
           <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">分析过程</h3>
-            <p class="text-sm text-gray-600 mt-1">LR0移进-规约分析表</p>
+            <h3 class="text-lg font-semibold text-gray-900">标准答案参考</h3>
+            <p class="text-sm text-gray-600 mt-1">LR0移进-规约分析过程</p>
           </div>
 
           <div class="overflow-x-auto">
@@ -275,7 +528,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useLR0Store } from '@/stores/lr0'
 import { useCommonStore } from '@/stores/common'
@@ -308,6 +561,31 @@ const inputString = ref('')
 
 // 示例字符串（单字符格式，不包含#）
 const exampleStrings = ['ab', 'a+b', 'a*b', '(a)', 'a', 'b']
+
+// 答题相关状态
+const userAnswers = ref<{
+  stateStack: string[]
+  symbolStack: string[]
+  inputString: string[]
+}>({
+  stateStack: [],
+  symbolStack: [],
+  inputString: []
+})
+
+// 验证状态
+const validationStatus = ref<{
+  stateStack: { [key: number]: 'empty' | 'correct' | 'error' }
+  symbolStack: { [key: number]: 'empty' | 'correct' | 'error' }
+  inputString: { [key: number]: 'empty' | 'correct' | 'error' }
+}>({
+  stateStack: {},
+  symbolStack: {},
+  inputString: {}
+})
+
+// 是否显示正确答案
+const showAnswers = ref(false)
 
 // 从store获取状态
 const analysisData = computed(() => lr0Store.analysisResult)
@@ -346,6 +624,178 @@ const analysisSteps = computed(() => {
 })
 
 const isStepComplete = computed(() => lr0Store.inputAnalysisResult !== null)
+
+// 带编号的产生式（去除S'->S）
+const numberedProductions = computed(() => {
+  if (!grammarInfo.value?.formulas_list) return []
+  return grammarInfo.value.formulas_list.filter(production => {
+    // 过滤掉S'->S的产生式
+    return !production.includes("'") && !production.includes('S->S')
+  })
+})
+
+// 状态数量
+const stateCount = computed(() => {
+  if (!lr0Store.actionTable) return 0
+  const states = new Set<string>()
+  Object.keys(lr0Store.actionTable).forEach(key => {
+    const state = key.split('|')[0]  // 使用 | 分隔符
+    states.add(state)
+  })
+  return Math.max(...Array.from(states).map(s => parseInt(s))) + 1
+})
+
+// 终结符
+const terminals = computed(() => {
+  if (!grammarInfo.value?.Vt) return []
+  return Array.isArray(grammarInfo.value.Vt)
+    ? grammarInfo.value.Vt.map((item: string | { text?: string; value?: string }) =>
+        typeof item === 'object' ? item.text || item.value || '' : item
+      )
+    : []
+})
+
+// 非终结符（去除S'）
+const nonterminals = computed(() => {
+  if (!grammarInfo.value?.Vn) return []
+  return Array.isArray(grammarInfo.value.Vn)
+    ? grammarInfo.value.Vn
+        .filter((item: string | { text?: string; value?: string }) => {
+          const text = typeof item === 'object' ? item.text || item.value || '' : item
+          return text !== (grammarInfo.value?.S || '') + "'"
+        })
+        .map((item: string | { text?: string; value?: string }) =>
+          typeof item === 'object' ? item.text || item.value || '' : item
+        )
+    : []
+})
+
+// 获取Action值
+const getActionValue = (state: number, terminal: string) => {
+  // 使用正确的键格式：用 | 分隔符
+  const key = `${state}|${terminal}`
+  // 尝试从store的actionTable获取
+  let value = lr0Store.actionTable[key]
+
+  // 如果store中没有，尝试从analysisResult中获取
+  if (!value && grammarInfo.value?.actions) {
+    value = grammarInfo.value.actions[key]
+  }
+
+  return value || '-'
+}
+
+// 获取Goto值
+const getGotoValue = (state: number, nonterminal: string) => {
+  // 使用正确的键格式：用 | 分隔符
+  const key = `${state}|${nonterminal}`
+  // 尝试从store的gotoTable获取
+  let value = lr0Store.gotoTable[key]
+
+  // 如果store中没有，尝试从analysisResult中获取
+  if (!value && grammarInfo.value?.gotos) {
+    value = grammarInfo.value.gotos[key]
+  }
+
+  return value || '-'
+}
+
+// 验证单个单元格
+const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inputString') => {
+  if (!analysisSteps.value[index]) return
+
+  const userValue = userAnswers.value[field][index] || ''
+  const correctValue = analysisSteps.value[index][field] || ''
+
+  if (!userValue.trim()) {
+    validationStatus.value[field][index] = 'empty'
+  } else if (userValue.trim() === correctValue.trim()) {
+    validationStatus.value[field][index] = 'correct'
+  } else {
+    validationStatus.value[field][index] = 'error'
+  }
+}
+
+// 清除验证状态
+const clearValidation = (index: number, field: 'stateStack' | 'symbolStack' | 'inputString') => {
+  delete validationStatus.value[field][index]
+}
+
+// 获取单元格样式
+const getCellStyle = (index: number, field: 'stateStack' | 'symbolStack' | 'inputString') => {
+  const status = validationStatus.value[field][index]
+
+  if (showAnswers.value) {
+    return 'bg-green-100 border-green-300'
+  }
+
+  switch (status) {
+    case 'correct':
+      return 'bg-green-100 border-green-300'
+    case 'error':
+      return 'bg-red-100 border-red-300'
+    case 'empty':
+      return 'bg-yellow-100 border-yellow-300'
+    default:
+      return 'bg-white border-gray-300'
+  }
+}
+
+// 验证所有答案
+const validateAll = () => {
+  analysisSteps.value.forEach((_, index) => {
+    validateCell(index, 'stateStack')
+    validateCell(index, 'symbolStack')
+    validateCell(index, 'inputString')
+  })
+}
+
+// 显示正确答案
+const showCorrectAnswers = () => {
+  showAnswers.value = !showAnswers.value
+}
+
+// 一键清除所有答案
+const clearAll = () => {
+  // 清空用户答案
+  userAnswers.value = {
+    stateStack: new Array(analysisSteps.value.length).fill(''),
+    symbolStack: new Array(analysisSteps.value.length).fill(''),
+    inputString: new Array(analysisSteps.value.length).fill('')
+  }
+
+  // 清空验证状态
+  validationStatus.value = {
+    stateStack: {},
+    symbolStack: {},
+    inputString: {}
+  }
+
+  // 隐藏答案
+  showAnswers.value = false
+}
+
+// 监听分析步骤变化，初始化答题数组
+const initUserAnswers = () => {
+  if (analysisSteps.value.length > 0) {
+    userAnswers.value = {
+      stateStack: new Array(analysisSteps.value.length).fill(''),
+      symbolStack: new Array(analysisSteps.value.length).fill(''),
+      inputString: new Array(analysisSteps.value.length).fill('')
+    }
+    validationStatus.value = {
+      stateStack: {},
+      symbolStack: {},
+      inputString: {}
+    }
+    showAnswers.value = false
+  }
+}
+
+// 监听分析步骤变化
+watch(analysisSteps, () => {
+  initUserAnswers()
+}, { immediate: true })
 
 // 分析字符串
 const analyzeString = async () => {
