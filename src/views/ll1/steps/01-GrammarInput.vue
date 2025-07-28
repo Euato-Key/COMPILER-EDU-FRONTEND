@@ -452,15 +452,12 @@ import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import { useLL1Store } from '@/stores/ll1'
-import { useCommonStore } from '@/stores/common'
 
 // 获取 Store 实例
 const ll1Store = useLL1Store()
-const commonStore = useCommonStore()
 
 // 解构响应式状态（用于模板绑定）
-const { productions, originalData, inputString } = storeToRefs(ll1Store)
-const { loading, error } = storeToRefs(commonStore)
+const { productions, originalData } = storeToRefs(ll1Store)
 
 // 定义 emits
 const emit = defineEmits<{
@@ -477,7 +474,6 @@ const validationStatus = ref<'none' | 'ready' | 'success' | 'failed'>('none')
 const validationMessage = ref('')
 
 // 计算属性
-const isLL1Grammar = computed(() => ll1Store.isLL1Grammar)
 const canValidate = computed(() => inputErrors.value.length === 0 && grammarInput.value.trim().length > 0)
 const canProceed = computed(() => {
   return validationStatus.value === 'success' && productions.value.length > 0 && originalData.value !== null
@@ -579,8 +575,11 @@ function validateOnSubmit(text: string): string[] {
     const right = line.split('->')[1]
     const rightParts = right.split('|')
     rightParts.forEach(part => {
-      if (/^[A-Z]/.test(part)) {
-        allNonTerminals.add(part[0])
+      // 检查整个右部字符串中的所有大写字母（非终结符）
+      for (let i = 0; i < part.length; i++) {
+        if (/[A-Z]/.test(part[i])) {
+          allNonTerminals.add(part[i])
+        }
       }
     })
   })
@@ -609,7 +608,7 @@ function validateOnSubmit(text: string): string[] {
 
   // 10. 检查ε符号
   lines.forEach((line, idx) => {
-    const [left, right] = line.split('->')
+    const [, right] = line.split('->')
     const rightParts = right.split('|')
     rightParts.forEach(part => {
       if (part.includes('ε') && part !== 'ε') {
@@ -622,7 +621,7 @@ function validateOnSubmit(text: string): string[] {
 
     // 11. 检查终结符连续出现
   lines.forEach((line, idx) => {
-    const [left, right] = line.split('->')
+    const [, right] = line.split('->')
     const rightParts = right.split('|')
     rightParts.forEach(part => {
       // 跳过ε
@@ -719,7 +718,7 @@ async function handleValidateGrammar() {
 }
 
 // 使用示例文法
-function useExample(example: any) {
+function useExample(example: { name: string; grammar: string; description: string }) {
   grammarInput.value = example.grammar
   // 触发输入校验
   handleInput()
