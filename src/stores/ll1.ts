@@ -31,7 +31,7 @@ export const useLL1Store = defineStore('ll1', () => {
       const emptyPattern = /^\s*$/
       if (emptyPattern.test(inputText)) {
         return { isValid: false, errorMessage: '请输入产生式！', processedProductions: [] }
-      }
+    }
 
       // 检查是否包含中文字符
       const chinesePattern = /[\u4e00-\u9fa5]/
@@ -70,7 +70,7 @@ export const useLL1Store = defineStore('ll1', () => {
         if (!formatMatch) {
           return { isValid: false, errorMessage: `第${i + 1}行产生式格式错误！应为"大写字母->右部"格式`, processedProductions: [] }
         }
-      }
+    }
 
       // 4. 构建产生式字典
       const formulasDict: Record<string, string[]> = {}
@@ -100,7 +100,7 @@ export const useLL1Store = defineStore('ll1', () => {
         if (!formulasDict[nonTerminal]) {
           return { isValid: false, errorMessage: `非终结符"${nonTerminal}"没有定义产生式！`, processedProductions: [] }
         }
-      }
+    }
 
       // 6. 检查左递归
       const visited = new Set<string>()
@@ -136,7 +136,7 @@ export const useLL1Store = defineStore('ll1', () => {
             return { isValid: false, errorMessage: '存在直接或间接左递归，请输入消除左递归后的文法！', processedProductions: [] }
           }
         }
-      }
+    }
 
       // 7. 检查终结符连续出现
       for (let i = 0; i < processedProductions.length; i++) {
@@ -281,14 +281,12 @@ export const useLL1Store = defineStore('ll1', () => {
     let cleanedInputString = inputString.value.replace(/ +/g, '') // 移除空格
     if (/^\s*$/.test(cleanedInputString)) {
       commonStore.setError('请先输入字符串')
+      cleanedInputString +='#'
       return false
     }
 
-    // 确保输入串以 # 结尾（LL1分析的结束符）
-    if (!cleanedInputString.endsWith('#')) {
-      cleanedInputString += '#'
-      console.log('自动为输入串添加结束符 #:', cleanedInputString)
-    }
+    // 不添加结束符#，让后端处理
+    // 后端会自动添加结束符进行LL1分析
 
     if (productions.value.length === 0) {
       commonStore.setError('请先设置产生式')
@@ -299,7 +297,7 @@ export const useLL1Store = defineStore('ll1', () => {
       commonStore.setLoading(true)
       commonStore.clearError()
 
-      // 使用清理后的字符串发送请求
+      // 直接使用清理后的字符串发送请求，不添加#
       const response = await LL1AnalyseInpStrAPI(productions.value, cleanedInputString)
 
       if (response.data.code === 0 && response.data.data) {

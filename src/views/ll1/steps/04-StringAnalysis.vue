@@ -250,63 +250,10 @@
               >
                 {{ example }}
               </button>
-            </div>
-            </div>
-
-            <!-- 分析结果 -->
-            <div v-if="inputAnalysisResult" class="bg-white rounded-lg border border-green-200 p-4 shadow-sm">
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3">
-                  <Icon
-                    :icon="inputAnalysisResult.info_res === 'Success!' ? 'lucide:check-circle' : 'lucide:x-circle'"
-                    class="w-6 h-6"
-                    :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-600' : 'text-red-600'"
-                  />
-                  <h4 class="text-lg font-semibold" :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-700' : 'text-red-700'">
-                    {{ inputAnalysisResult.info_res === 'Success!' ? '字符串分析成功！' : '字符串分析失败！' }}
-                  </h4>
-                </div>
-                <div class="text-sm text-gray-500">
-                  分析结果：{{ inputAnalysisResult.info_res }}
           </div>
         </div>
 
-              <!-- 分析过程表格 -->
-            <div class="overflow-x-auto">
-              <table class="min-w-full border border-gray-300 text-sm">
-                <thead class="bg-green-50">
-                  <tr>
-                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
-                      步骤
-                    </th>
-                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
-                      栈
-                    </th>
-                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
-                      输入
-                    </th>
-                      <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
-                      动作
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white">
-                  <tr v-for="(step, index) in inputAnalysisResult.info_step" :key="index">
-                    <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
-                    <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                        {{ inputAnalysisResult.info_stack[index] }}
-                    </td>
-                    <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                        {{ inputAnalysisResult.info_str[index] }}
-                    </td>
-                    <td class="border border-gray-300 px-3 py-2 text-center">
-                      {{ inputAnalysisResult.info_msg[index] }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              </div>
-            </div>
+
             </div>
           </div>
 
@@ -546,6 +493,81 @@
       </div>
     </div>
 
+    <!-- 分析结果表格（答案）- 只在点击查看答案时显示 -->
+    <div v-if="inputAnalysisResult && showAnswer" class="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-xl shadow-lg border border-green-100 p-6 mb-6">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+            <Icon icon="lucide:check-circle" class="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 class="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              标准答案分析表
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">完整的LL1分析过程</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-green-100 rounded-full">
+          <Icon icon="lucide:eye" class="w-3 h-3 text-green-600" />
+          <span class="text-xs font-medium text-green-700">查看答案模式</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-green-200 p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <Icon
+              :icon="inputAnalysisResult.info_res === 'Success!' ? 'lucide:check-circle' : 'lucide:x-circle'"
+              class="w-6 h-6"
+              :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-600' : 'text-red-600'"
+            />
+            <h4 class="text-lg font-semibold" :class="inputAnalysisResult.info_res === 'Success!' ? 'text-green-700' : 'text-red-700'">
+              {{ inputAnalysisResult.info_res === 'Success!' ? '字符串分析成功！' : '字符串分析失败！' }}
+            </h4>
+          </div>
+          <div class="text-sm text-gray-500">
+            分析结果：{{ inputAnalysisResult.info_res }}
+          </div>
+        </div>
+
+        <!-- 分析过程表格 -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-300 text-sm">
+            <thead class="bg-green-50">
+              <tr>
+                <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
+                  步骤
+                </th>
+                <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
+                  栈
+                </th>
+                <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
+                  输入
+                </th>
+                <th class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700">
+                  动作
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white">
+              <tr v-for="(step, index) in inputAnalysisResult.info_step" :key="index">
+                <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
+                <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                  {{ inputAnalysisResult.info_stack[index] }}
+                </td>
+                <td class="border border-gray-300 px-3 py-2 font-mono text-center">
+                  {{ inputAnalysisResult.info_str[index] }}
+                </td>
+                <td class="border border-gray-300 px-3 py-2 text-center">
+                  {{ inputAnalysisResult.info_msg[index] }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div class="step-actions">
       <div class="flex justify-between items-center">
         <button
@@ -690,10 +712,12 @@ const resetAnalysis = () => {
 // 初始化用户答题步骤
 const initUserSteps = () => {
   showAnswer.value = false
-  if (originalData.value && inputString.value) {
+  if (originalData.value && inputString.value && inputAnalysisResult.value) {
     // 初始分析栈和输入串
     const startSymbol = originalData.value.Vn[0] || ''
-    userSteps.value = [{ stack: '#' + startSymbol, input: inputString.value + '#' }]
+    // 直接使用后端返回的第一个输入串，确保格式一致
+    const initialInput = inputAnalysisResult.value.info_str[0] || ''
+    userSteps.value = [{ stack: '#' + startSymbol, input: initialInput }]
   } else {
     userSteps.value = []
   }
@@ -944,6 +968,8 @@ const executeLL1FlyingAnimation = async (nonTerminal: string, terminal: string, 
     fs => !(fs.symbol === production && fs.target === 'stack')
   )
 }
+
+
 
 // 显示消息
 const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
