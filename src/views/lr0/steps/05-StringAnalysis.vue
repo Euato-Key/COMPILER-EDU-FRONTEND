@@ -309,6 +309,7 @@
                     <!-- 状态栈 -->
                     <td class="px-2 py-1 border border-gray-300 text-xs">
                       <input
+                        v-if="index > 0"
                         v-model="userAnswers.stateStack[index]"
                         @blur="validateCell(index, 'stateStack')"
                         @input="clearValidation(index, 'stateStack')"
@@ -316,11 +317,15 @@
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-blue-500 rounded transition-colors"
                         placeholder="如: 0"
                       />
+                      <span v-else class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full">
+                        {{ step.stateStack }}
+                      </span>
                     </td>
 
                     <!-- 符号栈 -->
                     <td class="px-2 py-1 border border-gray-300 text-xs">
                       <input
+                        v-if="index > 0"
                         v-model="userAnswers.symbolStack[index]"
                         @blur="validateCell(index, 'symbolStack')"
                         @input="clearValidation(index, 'symbolStack')"
@@ -328,11 +333,15 @@
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-blue-500 rounded transition-colors"
                         placeholder="如: #"
                       />
+                      <span v-else class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full">
+                        {{ step.symbolStack }}
+                      </span>
                     </td>
 
                     <!-- 输入串 -->
                     <td class="px-2 py-1 border border-gray-300 text-xs">
                       <input
+                        v-if="index > 0"
                         v-model="userAnswers.inputString[index]"
                         @blur="validateCell(index, 'inputString')"
                         @input="clearValidation(index, 'inputString')"
@@ -340,6 +349,9 @@
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-blue-500 rounded transition-colors"
                         placeholder="如: abb#"
                       />
+                      <span v-else class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full">
+                        {{ step.inputString }}
+                      </span>
                     </td>
                   </tr>
                 </tbody>
@@ -368,6 +380,7 @@
               <div class="bg-blue-50 p-3 rounded">
                 <h4 class="font-medium text-blue-900 mb-1">填写说明</h4>
                 <ul class="text-xs text-blue-700 space-y-1">
+                  <li>• 第一行：初始状态（固定显示）</li>
                   <li>• 状态栈：当前状态序列</li>
                   <li>• 符号栈：当前符号序列</li>
                   <li>• 输入串：剩余输入字符串</li>
@@ -702,7 +715,7 @@ const getGotoValue = (state: number, nonterminal: string) => {
 
 // 验证单个单元格
 const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inputString') => {
-  if (!analysisSteps.value[index]) return
+  if (!analysisSteps.value[index] || index === 0) return // 第一行不参与验证
 
   const userValue = userAnswers.value[field][index] || ''
   const correctValue = analysisSteps.value[index][field] || ''
@@ -718,11 +731,14 @@ const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
 
 // 清除验证状态
 const clearValidation = (index: number, field: 'stateStack' | 'symbolStack' | 'inputString') => {
+  if (index === 0) return // 第一行不参与验证
   delete validationStatus.value[field][index]
 }
 
 // 获取单元格样式
 const getCellStyle = (index: number, field: 'stateStack' | 'symbolStack' | 'inputString') => {
+  if (index === 0) return 'bg-gray-50 border-gray-200' // 第一行固定样式
+
   const status = validationStatus.value[field][index]
 
   if (showAnswers.value) {
@@ -744,9 +760,11 @@ const getCellStyle = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
 // 验证所有答案
 const validateAll = () => {
   analysisSteps.value.forEach((_, index) => {
-    validateCell(index, 'stateStack')
-    validateCell(index, 'symbolStack')
-    validateCell(index, 'inputString')
+    if (index > 0) { // 跳过第一行
+      validateCell(index, 'stateStack')
+      validateCell(index, 'symbolStack')
+      validateCell(index, 'inputString')
+    }
   })
 }
 
