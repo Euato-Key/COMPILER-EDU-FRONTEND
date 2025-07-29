@@ -1,5 +1,5 @@
 // 通用API响应格式
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number
   data?: T
   message?: string
@@ -22,7 +22,8 @@ export interface AnalysisStepInfo {
   info_res: string
   info_step: number[]
   info_msg: string[]
-  info_stack: string[]
+  info_state_stack: string[]
   info_str: string[]
-  [key: string]: any
+  info_symbol_stack: string[]
+  info_action?: string[]
 }

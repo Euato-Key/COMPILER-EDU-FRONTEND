@@ -5,11 +5,31 @@ export interface SLR1AnalysisResult {
   Vt: string[]
   formulas_list: string[]
   dot_items: string[]
-  all_dfa: any[]
+  all_dfa: SLR1DFAState[]
   actions: Record<string, string>
   gotos: Record<string, string>
   isSLR1: boolean
   SLR1_dot_str: string
+}
+
+// SLR1 DFA状态类型
+export interface SLR1DFAState {
+  id: number
+  next_ids: Record<string, number>
+  pros: string[]
+}
+
+// SLR1 DFA数据类型（用于画图组件）
+export interface SLR1DataDfaType {
+  id: string
+  pros: SLR1ProItem[]
+  next_ids: Record<string, number>
+}
+
+// SLR1项目项类型
+export interface SLR1ProItem {
+  id: string
+  text: string
 }
 
 // SLR1校验数据项接口 (与LR0共享类似结构但独立管理)
@@ -19,7 +39,17 @@ export interface SLR1ValidationItem {
   state: string
   check: boolean
   coords?: { x: number; y: number }
-  data: any
+  data: SLR1ValidationData
+}
+
+// SLR1校验数据类型
+export interface SLR1ValidationData {
+  key?: string
+  value?: string
+  type?: 'action' | 'goto'
+  item?: string
+  index?: number
+  dfa?: SLR1DFAState
 }
 
 // SLR1校验数据结构
@@ -35,7 +65,8 @@ export interface SLR1AnalysisStepInfo {
   info_res: string
   info_step: number[]
   info_msg: string[]
-  info_stack: string[]
+  info_state_stack: string[]
   info_str: string[]
-  info_action: string[]
+  info_symbol_stack: string[]
+  info_action?: string[]
 }

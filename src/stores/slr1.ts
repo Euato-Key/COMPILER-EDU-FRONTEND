@@ -26,7 +26,7 @@ export const useSLR1Store = defineStore('slr1', () => {
   const validationData = ref<SLR1ValidationItem[]>([])
   const actionTable = ref<Record<string, string>>({})
   const gotoTable = ref<Record<string, string>>({})
-  const dfaStates = ref<any[]>([])
+  const dfaStates = ref<Record<string, unknown>[]>([])
   const dotItems = ref<string[]>([])
   const isSLR1Grammar = ref<boolean | null>(null)
 
@@ -113,7 +113,7 @@ export const useSLR1Store = defineStore('slr1', () => {
         state: `I${index}`,
         check: true,
         coords: { x: index * 100, y: index * 80 },
-        data: dfa,
+        data: { dfa },
       })
     })
 
@@ -186,10 +186,24 @@ export const useSLR1Store = defineStore('slr1', () => {
           // 更新相关状态
           actionTable.value = result.actions || {}
           gotoTable.value = result.gotos || {}
-          dfaStates.value = result.all_dfa || []
+          // dfaStates.value = result.all_dfa || []
+          dfaStates.value = result.all_dfa.map((item) => {
+            return {
+              id: "Item" + item.id,
+              pros: item.pros.map((x: string, idx: number) => {
+                return {
+                  id: "Item" + item.id + "_pro" + idx,
+                  text: x,
+                }
+              }),
+              next_ids: item.next_ids
+            }
+          })
           dotItems.value = result.dot_items || []
           isSLR1Grammar.value = result.isSLR1 ?? null
           dotString.value = result.SLR1_dot_str || ''
+
+          console.log("dfaStates", dfaStates)
 
           // 转换为校验数据
           validationData.value = transformToValidationData(result)

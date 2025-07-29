@@ -11,7 +11,7 @@
  */
 
 // 通用API响应格式
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number
   data?: T
   message?: string
@@ -37,7 +37,7 @@ export interface LRAnalysisResult {
   Vt: string[]
   formulas_list: string[]
   dot_items: string[]
-  all_dfa: any[]
+  all_dfa: Record<string, unknown>[]
   actions: Record<string, string>
   gotos: Record<string, string>
   isLR0?: boolean
@@ -48,11 +48,11 @@ export interface LRAnalysisResult {
 
 // 有限自动机分析结果类型
 export interface FAResult {
-  table: any
-  table_to_num: any
-  table_to_num_min: any
-  P: any
-  P_change: any
+  table: Record<string, unknown>
+  table_to_num: Record<string, unknown>
+  table_to_num_min: Record<string, unknown>
+  P: Record<string, unknown>
+  P_change: Record<string, unknown>
   NFA_dot_str: string
   DFA_dot_str: string
   Min_DFA_dot_str: string
@@ -60,5 +60,11 @@ export interface FAResult {
 
 // 分析步骤信息类型（用于输入串分析）
 export interface AnalysisStepInfo {
-  [key: string]: any
+  info_res: string
+  info_step: number[]
+  info_msg: string[]
+  info_state_stack: string[]
+  info_str: string[]
+  info_symbol_stack: string[]
+  info_action?: string[]
 }
