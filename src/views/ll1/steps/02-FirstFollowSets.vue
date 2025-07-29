@@ -347,26 +347,26 @@
             </div>
 
             <!-- First集答案提示 -->
-            <div v-if="showFirstAnswer" class="mt-3 p-3 bg-blue-50 rounded-lg">
-              <h4 class="text-xs font-medium text-blue-800 mb-2">正确答案：</h4>
+            <div v-if="showFirstAnswer" class="mt-3 p-3 bg-green-50 rounded-lg">
+              <h4 class="text-xs font-medium text-green-800 mb-2">正确答案：</h4>
               <div class="space-y-1.5">
                 <!-- 非终结符答案 -->
                 <div>
-                  <h5 class="text-xs font-medium text-blue-700 mb-1">非终结符：</h5>
+                  <h5 class="text-xs font-medium text-green-700 mb-1">非终结符：</h5>
                   <div class="space-y-0.5">
                 <div
                   v-for="symbol in originalData.Vn"
                       :key="'answer-first-vn-' + symbol"
                       class="text-xs"
                 >
-                  <span class="font-mono text-blue-600">{{ symbol }}:</span>
-                  <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
+                  <span class="font-mono text-green-600">{{ symbol }}:</span>
+                  <span class="ml-2 text-green-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
                     </div>
                   </div>
                 </div>
                 <!-- 终结符答案 -->
                 <div>
-                  <h5 class="text-xs font-medium text-blue-700 mb-1">终结符：</h5>
+                  <h5 class="text-xs font-medium text-green-700 mb-1">终结符：</h5>
                   <div class="space-y-0.5">
                     <div
                       v-for="symbol in originalData.Vt"
@@ -374,16 +374,16 @@
                       class="text-xs"
                     >
                       <span class="font-mono text-green-600">{{ symbol }}:</span>
-                      <span class="ml-2 text-blue-700">{{ correctFirstSets[symbol]?.join(' ') || symbol }}</span>
+                      <span class="ml-2 text-green-700">{{ correctFirstSets[symbol]?.join(' ') || symbol }}</span>
                     </div>
                   </div>
                 </div>
                 <!-- 其他符号答案 -->
                 <div v-if="correctFirstSets['ε']">
-                  <h5 class="text-xs font-medium text-blue-700 mb-1">其他符号：</h5>
+                  <h5 class="text-xs font-medium text-green-700 mb-1">其他符号：</h5>
                   <div class="text-xs">
-                    <span class="font-mono text-pink-600">ε:</span>
-                    <span class="ml-2 text-blue-700">{{ correctFirstSets['ε']?.join(' ') || 'ε' }}</span>
+                    <span class="font-mono text-green-600">ε:</span>
+                    <span class="ml-2 text-green-700">{{ correctFirstSets['ε']?.join(' ') || 'ε' }}</span>
                   </div>
                 </div>
               </div>
