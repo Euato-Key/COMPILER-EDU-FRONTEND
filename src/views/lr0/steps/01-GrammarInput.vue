@@ -50,13 +50,13 @@
         </div>
 
         <!-- 示例文法 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="flex flex-col">
             <h4 class="font-medium text-gray-900 mb-2">示例文法1</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <pre class="text-xs font-mono text-gray-700">
-S -> A a
-A -> B D
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex-1 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
+S -> Aa
+A -> BD
 B -> b
 D -> d
 </pre>
@@ -69,18 +69,54 @@ D -> d
             </div>
           </div>
 
-          <div>
+          <div class="flex flex-col">
             <h4 class="font-medium text-gray-900 mb-2">示例文法2</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <pre class="text-xs font-mono text-gray-700">
-                S -> a A
-                A -> B c
-                B -> b
-                B -> ε
-              </pre
-              >
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex-1 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
+S -> BB
+B -> aB
+B -> b
+</pre>
               <button
                 @click="loadExample(2)"
+                class="mt-2 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                使用此示例
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <h4 class="font-medium text-gray-900 mb-2">示例文法3</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex-1 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
+S -> aSd
+S -> bAc
+A -> e
+A -> f
+</pre>
+              <button
+                @click="loadExample(3)"
+                class="mt-2 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                使用此示例
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <h4 class="font-medium text-gray-900 mb-2">示例文法4</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex-1 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
+S -> aX
+S -> bY
+X -> c
+X -> dS
+Y -> c
+Y -> eS
+</pre>
+              <button
+                @click="loadExample(4)"
                 class="mt-2 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 使用此示例
@@ -311,14 +347,31 @@ const onInputChange = () => {
 // 加载示例文法
 const loadExample = (exampleId: number) => {
   const examples = {
-    1: `S -> Aa
-        A -> BD
-        B -> b
-        D -> d`,
-    2: `S -> aA
-        A -> Bc
-        B -> b
-        B -> ε`,
+    1: [
+      'S -> Aa',
+      'A -> BD',
+      'B -> b',
+      'D -> d'
+    ].join('\n'),
+    2: [
+      'S -> BB',
+      'B -> aB',
+      'B -> b'
+    ].join('\n'),
+    3: [
+      'S -> aSd',
+      'S -> bAc',
+      'A -> e',
+      'A -> f'
+    ].join('\n'),
+    4: [
+      'S -> aX',
+      'S -> bY',
+      'X -> c',
+      'X -> dS',
+      'Y -> c',
+      'Y -> eS'
+    ].join('\n'),
   }
 
   grammarInput.value = examples[exampleId as keyof typeof examples] || ''
@@ -338,9 +391,10 @@ const analyzeGrammar = async () => {
     } else {
       console.error('LR0 analysis failed - validation errors or analysis issues')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Grammar analysis error:', error)
-    commonStore.setError(error.message || '文法分析失败，请检查输入格式')
+    const errorMessage = error instanceof Error ? error.message : '文法分析失败，请检查输入格式'
+    commonStore.setError(errorMessage)
   }
 }
 
