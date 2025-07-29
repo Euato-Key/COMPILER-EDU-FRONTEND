@@ -388,14 +388,14 @@
                   <div class="ml-4 mt-2 space-y-2">
                     <div class="flex items-start">
                       <span class="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                      <span :class="{ 'bg-yellow-200 px-1 rounded': ruleHighlightState['对于First(α)中的每个终结符a，将A->α加入到M[A, a]'] }">
-                        对于 <span class="font-mono text-indigo-600">First(α)</span> 中的每个终结符 <span class="font-mono text-indigo-600">a</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, a]</span>
+                      <span :class="{ 'bg-yellow-200 px-1 rounded': ruleHighlightState['对每个终结符a ∈ First(A)，将A->α加入到M[A, a]'] }">
+                        对每个终结符 <span class="font-mono text-indigo-600">a ∈ First(A)</span> ，将 <span class="font-mono text-indigo-600">A->α </span>加入到  <span class="font-mono text-indigo-600">M[A, a]</span>
                       </span>
                     </div>
                     <div class="flex items-start">
                       <span class="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                      <span :class="{ 'bg-yellow-200 px-1 rounded': ruleHighlightState['如果ε ∈ First(α)，对于Follow(A)中的每个终结符b，将A->α加入到M[A, b]'] }">
-                        如果 <span class="font-mono text-indigo-600">ε ∈ First(α)</span>，对于 <span class="font-mono text-indigo-600">Follow(A)</span> 中的每个终结符 <span class="font-mono text-indigo-600">b</span>，将 <span class="font-mono text-indigo-600">A->α</span> 加入到 <span class="font-mono text-indigo-600">M[A, b]</span>
+                      <span :class="{ 'bg-yellow-200 px-1 rounded': ruleHighlightState['如果ε ∈ First(A)，对于Follow(A)中的每个终结符b，将A->ε加入到M[A, b]'] }">
+                        如果 <span class="font-mono text-indigo-600">ε ∈ First(A)</span>，对于 <span class="font-mono text-indigo-600">Follow(A)</span> 中的每个终结符 <span class="font-mono text-indigo-600">b</span>，将 <span class="font-mono text-indigo-600">A->ε</span> 加入到 <span class="font-mono text-indigo-600">M[A, b]</span>
                       </span>
                     </div>
                   </div>
