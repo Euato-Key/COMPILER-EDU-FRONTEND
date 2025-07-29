@@ -80,10 +80,50 @@
         <!-- 用户画图区域 -->
         <div class="user-draw-area">
           <div class="bg-white border border-gray-200 rounded-lg">
-            <!-- 用户画布 -->
-            <div class="h-[700px]">
-              <!-- <LRCanvas ref="canvasRef" /> -->
-              <LR0DrawDFA :check_DFA="lr0Store.dfaStates"></LR0DrawDFA>
+            <!-- 操作按钮区域 -->
+            <div class="border-b border-gray-200 p-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-gray-900">LR0项目集构造</h3>
+                <div class="flex items-center gap-3">
+                  <button
+                    @click="addItem"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    <Icon icon="lucide:plus" class="w-4 h-4 inline mr-2" />
+                    添加Item
+                  </button>
+                  <button
+                    @click="validateItem"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  >
+                    <Icon icon="lucide:check" class="w-4 h-4 inline mr-2" />
+                    校验Item
+                  </button>
+                  <button
+                    @click="validateGoto"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    <Icon icon="lucide:arrow-right" class="w-4 h-4 inline mr-2" />
+                    校验Goto
+                  </button>
+                  <button
+                    @click="resetCanvas"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                  >
+                    <Icon icon="lucide:refresh-cw" class="w-4 h-4 inline mr-2" />
+                    重置
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 用户画布容器 -->
+            <div class="p-4">
+              <div class="border border-gray-300 rounded-lg overflow-hidden">
+                <div class="h-[600px] relative">
+                  <LR0DrawDFA :check_DFA="lr0Store.dfaStates" ref="lr0DrawDFARef"></LR0DrawDFA>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -211,7 +251,11 @@ import { instance } from '@viz-js/viz'
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
-  complete: [data: any]
+  complete: [data: {
+    nodes: unknown[]
+    edges: unknown[]
+    timestamp: string
+  }]
 }>()
 
 const lr0Store = useLR0Store()
@@ -223,6 +267,7 @@ const hasRendered = ref(false) // 防重复渲染
 // 画布相关
 const canvasRef = ref<InstanceType<typeof LRCanvas>>()
 const answerCanvasContainer = ref<HTMLElement>()
+const lr0DrawDFARef = ref<InstanceType<typeof LR0DrawDFA>>()
 
 // 计算属性
 const lr0DotString = computed(() => lr0Store.dotString)
@@ -303,6 +348,31 @@ const toggleAnswer = async () => {
 const isConstructionComplete = computed(() => {
   return lr0Store.analysisResult !== null
 })
+
+// 按钮操作函数
+const addItem = () => {
+  console.log('添加Item')
+  // TODO: 实现添加Item的逻辑
+}
+
+const validateItem = () => {
+  console.log('校验Item')
+  // TODO: 实现校验Item的逻辑
+}
+
+const validateGoto = () => {
+  console.log('校验Goto')
+  // TODO: 实现校验Goto的逻辑
+}
+
+const resetCanvas = () => {
+  console.log('重置画布')
+  // TODO: 实现重置画布的逻辑
+  if (lr0DrawDFARef.value) {
+    // 调用LR0DrawDFA组件的重置方法
+    // lr0DrawDFARef.value.reset()
+  }
+}
 
 // 进入下一步
 const proceedToNext = () => {
