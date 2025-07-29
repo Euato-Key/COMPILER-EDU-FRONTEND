@@ -22,10 +22,9 @@
             <ul class="space-y-1 text-sm text-pink-800">
               <li>• 每行一个产生式，格式：A → αβγ</li>
               <li>• 左侧为非终结符，右侧为产生式体</li>
-              <li>• 使用 → 或 -> 表示产生</li>
+              <li>• 使用 -> 表示产生</li>
               <li>• 使用 | 表示或者关系</li>
-              <li>• 使用 ε 或 epsilon 表示空串</li>
-              <li>• SLR1要求文法无二义性，无左递归</li>
+              <li>• 使用 ε 表示空串</li>
             </ul>
           </div>
         </div>
@@ -34,7 +33,12 @@
       <!-- 文法输入区域 -->
       <div class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"> 输入SLR1文法产生式 </label>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+              <Icon icon="lucide:edit-3" class="w-5 h-5 text-pink-600" />
+            </div>
+            <label class="text-xl font-bold text-pink-900"> 输入SLR1文法产生式 </label>
+          </div>
           <textarea
             v-model="grammarInput"
             placeholder="请输入文法产生式，例如：&#10;S -> E&#10;E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | i"
@@ -44,11 +48,11 @@
         </div>
 
         <!-- 示例文法 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <h4 class="font-medium text-gray-900 mb-2">示例文法1（算术表达式）</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <pre class="text-xs font-mono text-gray-700">
+            <h4 class="font-medium text-gray-900 mb-2">算术表达式</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
 S -> E
 E -> E + T | T
 T -> T * F | F
@@ -56,7 +60,7 @@ F -> ( E ) | i</pre
               >
               <button
                 @click="loadExample(1)"
-                class="mt-2 text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors"
+                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
               >
                 使用此示例
               </button>
@@ -64,15 +68,49 @@ F -> ( E ) | i</pre
           </div>
 
           <div>
-            <h4 class="font-medium text-gray-900 mb-2">示例文法2（简单文法）</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <pre class="text-xs font-mono text-gray-700">
+            <h4 class="font-medium text-gray-900 mb-2">简单文法</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
 S -> A a | b
 A -> c</pre
               >
               <button
                 @click="loadExample(2)"
-                class="mt-2 text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors"
+                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
+              >
+                使用此示例
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">赋值语句</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
+S -> A
+A -> i = E | E
+E -> E + i | i | ( A )</pre
+              >
+              <button
+                @click="loadExample(3)"
+                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
+              >
+                使用此示例
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">列表文法</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
+              <pre class="text-xs font-mono text-gray-700 flex-1">
+S -> L
+L -> a
+L -> L , a</pre
+              >
+              <button
+                @click="loadExample(4)"
+                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
               >
                 使用此示例
               </button>
@@ -238,6 +276,12 @@ T -> T * F | F
 F -> ( E ) | i`,
     2: `S -> A a | b
 A -> c`,
+    3: `S -> A
+A -> i = E | E
+E -> E + i | i | ( A )`,
+    4: `S -> L
+L -> a
+L -> L , a`,
   }
 
   grammarInput.value = examples[exampleId as keyof typeof examples] || ''
@@ -264,9 +308,9 @@ const analyzeGrammar = async () => {
     if (!success) {
       console.error('SLR1 analysis failed')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Grammar analysis error:', error)
-    commonStore.setError(error.message || '文法分析失败，请检查输入格式')
+    commonStore.setError(error instanceof Error ? error.message : '文法分析失败，请检查输入格式')
   }
 }
 
