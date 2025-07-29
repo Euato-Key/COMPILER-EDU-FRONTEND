@@ -878,6 +878,9 @@ const clearAll = () => {
 
   // 隐藏答案
   showAnswers.value = false
+
+  // 重置动画状态
+  resetHint()
 }
 
 // 监听分析步骤变化，初始化答题数组
@@ -1309,6 +1312,11 @@ function fillShiftAnswer(rowIndex: number, symbol: string, newState: string) {
   userAnswers.value.inputString[rowIndex] = currentInputString.slice(1)
   userAnswers.value.stateStack[rowIndex] = currentStateStack + ' ' + newState
 
+  // 立即验证当前行
+  validateCell(rowIndex, 'stateStack')
+  validateCell(rowIndex, 'symbolStack')
+  validateCell(rowIndex, 'inputString')
+
   // 自动进入下一步
   if (hintStepIndex.value < analysisSteps.value.length) {
     hintStepIndex.value++
@@ -1338,6 +1346,11 @@ function fillReduceAnswer(rowIndex: number, production: string, gotoState: strin
     userAnswers.value.stateStack[rowIndex] = states.join(' ')
   }
 
+  // 立即验证当前行
+  validateCell(rowIndex, 'stateStack')
+  validateCell(rowIndex, 'symbolStack')
+  validateCell(rowIndex, 'inputString')
+
   // 自动进入下一步
   if (hintStepIndex.value < analysisSteps.value.length) {
     hintStepIndex.value++
@@ -1349,6 +1362,11 @@ function fillAcceptAnswer(rowIndex: number) {
 
   // 只更新用户答案，不修改标准答案
   // 接受状态不需要修改数据，只是标记完成
+
+  // 立即验证当前行
+  validateCell(rowIndex, 'stateStack')
+  validateCell(rowIndex, 'symbolStack')
+  validateCell(rowIndex, 'inputString')
 
   // 分析完成，不再自动进入下一步
 }
