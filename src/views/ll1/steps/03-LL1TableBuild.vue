@@ -838,7 +838,7 @@ const calculateTableHint = () => {
           type: 'first',
           description: `产生式${production}：First(${rightPart})中终结符 ∈ M[${nonTerminal}, a]`,
           productions: [production],
-          rules: ['对于First(α)中的每个终结符a，将A->α加入到M[A, a]'],
+          rules: ['对每个终结符a ∈ First(A)，将A->α加入到M[A, a]'],
           symbols: [...terminals, nonTerminal],
           tableEntries: terminals.map(terminal => ({
             nonTerminal,
@@ -856,7 +856,7 @@ const calculateTableHint = () => {
             type: 'follow',
             description: `产生式${production}：ε ∈ First(${rightPart})，Follow(${nonTerminal})中终结符 ∈ M[${nonTerminal}, b]`,
             productions: [production],
-            rules: ['如果ε ∈ First(α)，对于Follow(A)中的每个终结符b，将A->α加入到M[A, b]'],
+            rules: ['如果ε ∈ First(A)，对于Follow(A)中的每个终结符b，将A->ε加入到M[A, b]'],
             symbols: [...followSet, nonTerminal, 'ε'],
             tableEntries: followSet.map(terminal => ({
               nonTerminal,
