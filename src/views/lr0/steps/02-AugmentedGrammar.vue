@@ -6,29 +6,29 @@
           <Icon icon="lucide:file-plus" class="w-6 h-6 text-purple-600" />
         </div>
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">写出增广文法</h2>
-          <p class="text-gray-600 mt-1">第二步：构造增广文法和拓展产生式</p>
+          <h2 class="text-2xl font-bold text-gray-900">增广文法</h2>
+          <p class="text-gray-600 mt-1">第二步：构造增广文法</p>
         </div>
       </div>
     </div>
 
     <div class="step-content">
-      <div v-if="!stepData" class="text-center py-20">
-        <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成第一步</h3>
-        <p class="text-gray-500">需要先输入并验证文法才能进行增广文法构造</p>
-      </div>
-
-      <div v-else class="space-y-8">
-        <!-- 说明区域 -->
+      <!-- 说明区域和原文法并排显示 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 左侧：增广文法构造规则 -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <div class="flex items-start">
             <Icon icon="lucide:info" class="w-5 h-5 text-blue-600 mt-0.5 mr-3" />
             <div>
-              <h3 class="text-lg font-semibold text-blue-900 mb-2">增广文法构造规则</h3>
-              <ul class="space-y-2 text-sm text-blue-800">
-                <li>• 为原文法添加新的开始符号 S'</li>
-                <li>• 添加新的产生式：S' → S（其中S是原文法的开始符号）</li>
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:file-text" class="w-5 h-5 text-blue-600" />
+                </div>
+                <h3 class="text-xl font-bold text-blue-900">增广文法构造规则</h3>
+              </div>
+              <ul class="space-y-1 text-sm text-blue-800">
+                <li>• 为原文法添加新的开始符号{{ startSymbol }}'</li>
+                <li>• 添加产生式：{{ startSymbol }}' -> {{ startSymbol }}</li>
                 <li>• 保持原有产生式不变</li>
                 <li>• 增广文法用于LR分析器的构造</li>
               </ul>
@@ -36,144 +36,158 @@
           </div>
         </div>
 
-        <!-- 原文法展示 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div class="flex flex-col">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">原文法</h3>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-1">
-              <div class="space-y-2">
-                <div class="text-sm text-gray-600 mb-2">
-                  开始符号：{{ stepData.analysisResult.S }}
-                </div>
-                <div class="font-mono text-sm">
-                  <div
-                    v-for="(production, index) in originalProductions"
-                    :key="index"
-                    class="py-1"
-                  >
-                    {{ production }}
-                  </div>
-                </div>
-              </div>
+        <!-- 右侧：原文法显示 -->
+        <div
+          v-if="originalGrammar.length > 0"
+          class="bg-white border border-gray-200 rounded-lg p-6"
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Icon icon="lucide:list" class="w-5 h-5 text-blue-600" />
             </div>
+            <h3 class="text-xl font-bold text-blue-900">原文法</h3>
+          </div>
+          <div class="space-y-2">
+            <div
+              v-for="(production, index) in originalGrammar"
+              :key="index"
+              class="font-mono text-sm bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800"
+            >
+              {{ production }}
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <div class="mt-4 grid grid-cols-2 gap-4">
-              <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">非终结符 (Vn)</h4>
-                <div class="bg-white border rounded p-3">
-                  <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="vn in stepData.analysisResult.Vn"
-                      :key="vn"
-                      class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-mono"
-                    >
-                      {{ vn }}
-                    </span>
-                  </div>
+      <!-- 从前面步骤获取数据 -->
+      <div v-if="!grammarData" class="text-center py-20">
+        <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成前面的步骤</h3>
+        <p class="text-gray-500">需要先完成文法输入才能构造增广文法</p>
+      </div>
+
+      <div v-else class="space-y-6">
+        <!-- 增广文法输入区域 -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
+              <Icon icon="lucide:edit-3" class="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-blue-900">增广文法产生式</h3>
+              <p class="text-blue-600 text-sm">请填写增广后的文法产生式（包含新增的增广产生式）</p>
+            </div>
+          </div>
+
+          <!-- 答题区域 -->
+          <div class="bg-white rounded-lg p-4 border border-blue-100 shadow-inner">
+            <div class="space-y-4">
+              <div
+                v-for="(formula, index) in augmentedFormulas"
+                :key="formula.id"
+                class="flex items-center gap-3 group"
+              >
+                <!-- 序号标签 -->
+                <div class="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                  {{ index + 1 }}
                 </div>
-              </div>
-              <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">终结符 (Vt)</h4>
-                <div class="bg-white border rounded p-3">
-                  <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="vt in stepData.analysisResult.Vt"
-                      :key="vt"
-                      class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-mono"
-                    >
-                      {{ vt }}
-                    </span>
-                  </div>
+
+                <!-- 产生式输入框 -->
+                <div class="flex-1">
+                  <input
+                    v-model="formula.text"
+                    type="text"
+                    :placeholder="`请输入产生式 ${index + 1}，例如：S' -> S`"
+                    :class="[
+                      'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-sm',
+                      'focus:ring-4 focus:ring-blue-100 focus:border-blue-400',
+                      getInputClass(formula.status),
+                    ]"
+                    @input="checkFormCompletion"
+                    :readonly="formula.readonly"
+                  />
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    @click="removeFormula(index)"
+                    :disabled="augmentedFormulas.length <= 1 || formula.readonly"
+                    class="w-8 h-8 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg shadow-sm"
+                    title="删除产生式"
+                  >
+                    ×
+                  </button>
+                  <button
+                    @click="addFormula(index)"
+                    :disabled="isStepComplete"
+                    class="w-8 h-8 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 transition-colors flex items-center justify-center text-lg shadow-sm"
+                    title="添加产生式"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 增广文法展示 -->
-          <div class="flex flex-col">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">增广文法</h3>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex-1">
-              <div class="space-y-2">
-                <div class="text-sm text-yellow-700 mb-2">新开始符号：S'</div>
-                <div class="font-mono text-sm">
-                  <!-- 新增的产生式 -->
-                  <div class="py-1 bg-yellow-100 px-2 rounded mb-2 border border-yellow-300">
-                    <span class="text-yellow-800 font-medium"
-                      >S' -> {{ stepData.analysisResult.S }}</span
-                    >
-                    <span class="text-xs text-yellow-600 ml-2">(新增)</span>
-                  </div>
-                  <!-- 原有产生式 -->
-                  <div
-                    v-for="(production, index) in originalProductions"
-                    :key="index"
-                    class="py-1"
-                  >
-                    {{ production }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-4 grid grid-cols-2 gap-4">
+          <!-- 提示信息 -->
+          <div class="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">增广非终结符 (Vn')</h4>
-                <div class="bg-white border rounded p-3">
-                  <div class="flex flex-wrap gap-2">
-                    <span
-                      class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-mono border border-yellow-300"
-                    >
-                      S'
-                    </span>
-                    <span
-                      v-for="vn in stepData.analysisResult.Vn"
-                      :key="vn"
-                      class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-mono"
-                    >
-                      {{ vn }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">终结符 (Vt)</h4>
-                <div class="bg-white border rounded p-3">
-                  <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="vt in stepData.analysisResult.Vt"
-                      :key="vt"
-                      class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-mono"
-                    >
-                      {{ vt }}
-                    </span>
-                  </div>
-                </div>
+                <p class="font-semibold text-purple-900 mb-2">填写提示：</p>
+                <ul class="space-y-1 text-sm text-purple-800">
+                  <li>• 首先添加增广产生式：<code class="bg-purple-100 px-1 rounded">{{ startSymbol }}' -> {{ startSymbol }}</code></li>
+                  <li>• 然后按顺序添加所有原有产生式</li>
+                  <li>• 保持原有产生式的格式不变</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 产生式编号 -->
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">编号后的产生式</h3>
-          <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div
-                v-for="(production, index) in augmentedProductions"
-                :key="index"
-                class="flex items-center space-x-3 p-2 rounded"
-                :class="index === 0 ? 'bg-yellow-50' : 'bg-gray-50'"
-              >
-                <span
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  :class="
-                    index === 0 ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-700'
-                  "
-                >
-                  {{ index }}
-                </span>
-                <span class="font-mono text-sm">{{ production }}</span>
-                <span v-if="index === 0" class="text-xs text-yellow-600">(增广)</span>
+        <!-- 验证按钮 -->
+        <div class="flex justify-center gap-4">
+          <button
+            @click="validateFormulas"
+            :disabled="isValidating"
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+          >
+            <Icon
+              :icon="isValidating ? 'lucide:loader-2' : 'lucide:check-circle'"
+              :class="['w-4 h-4 inline mr-2', isValidating ? 'animate-spin' : '']"
+            />
+            {{ isValidating ? '验证中...' : '验证增广文法' }}
+          </button>
+
+          <button
+            @click="showAnswer"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Icon icon="lucide:eye" class="w-4 h-4 inline mr-2" />
+            显示答案
+          </button>
+        </div>
+
+        <!-- 验证结果 -->
+        <div v-if="validationMessage" class="mt-4">
+          <div
+            :class="[
+              'p-4 rounded-lg border',
+              validationSuccess
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800',
+            ]"
+          >
+            <div class="flex items-start gap-2">
+              <Icon
+                :icon="validationSuccess ? 'lucide:check-circle' : 'lucide:alert-circle'"
+                class="w-5 h-5 mt-0.5 flex-shrink-0"
+              />
+              <div>
+                <p class="font-medium">{{ validationSuccess ? '验证成功' : '验证失败' }}</p>
+                <p class="text-sm mt-1">{{ validationMessage }}</p>
               </div>
             </div>
           </div>
@@ -193,8 +207,13 @@
         <div class="text-sm text-gray-500">步骤 2 / 5</div>
         <button
           @click="nextStep"
-          :disabled="!stepData"
-          class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          :disabled="!isStepComplete"
+          :class="[
+            'px-6 py-2 rounded-lg transition-colors',
+            isStepComplete
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+          ]"
         >
           下一步
           <Icon icon="lucide:chevron-right" class="w-4 h-4 inline ml-2" />
@@ -205,9 +224,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useLR0Store } from '@/stores/lr0'
+
+interface AugmentedFormula {
+  id: string
+  text: string
+  status: 'normal' | 'correct' | 'error'
+  readonly: boolean
+}
 
 const emit = defineEmits<{
   'next-step': []
@@ -216,42 +242,185 @@ const emit = defineEmits<{
 
 const lr0Store = useLR0Store()
 
-// 从store获取分析结果
-const stepData = computed(() => {
-  if (lr0Store.analysisResult) {
-    return {
-      analysisResult: lr0Store.analysisResult,
-    }
+// 响应式数据
+const augmentedFormulas = ref<AugmentedFormula[]>([])
+const formulaCounter = ref(1)
+const isValidating = ref(false)
+const validationMessage = ref('')
+const validationSuccess = ref(false)
+
+// 计算属性
+const startSymbol = computed(() => {
+  return lr0Store.analysisResult?.S || 'S'
+})
+
+const grammarData = computed(() => lr0Store.analysisResult)
+
+const originalGrammar = computed(() => {
+  return lr0Store.productions || []
+})
+
+const isStepComplete = computed(() => {
+  return validationSuccess.value
+})
+
+// 获取输入框样式类
+const getInputClass = (status: string) => {
+  switch (status) {
+    case 'correct':
+      return 'border-green-500 bg-green-50 focus:ring-green-100 focus:border-green-400'
+    case 'error':
+      return 'border-red-500 bg-red-50 focus:ring-red-100 focus:border-red-400'
+    default:
+      return 'border-gray-300'
   }
-  return null
-})
+}
 
-// 原文法产生式列表（过滤掉增广产生式）
-const originalProductions = computed(() => {
-  if (!stepData.value) return []
+// 检查表单完成度
+const checkFormCompletion = () => {
+  // 重置验证状态
+  validationMessage.value = ''
+  validationSuccess.value = false
+  augmentedFormulas.value.forEach((formula) => {
+    formula.status = 'normal'
+  })
+}
 
-  // 过滤掉包含 S' 的产生式（增广产生式）
-  return stepData.value.analysisResult.formulas_list.filter(
-    production => !production.includes("'")
-  )
-})
+// 添加产生式
+const addFormula = (index: number) => {
+  if (isStepComplete.value) return
 
-// 增广产生式列表
-const augmentedProductions = computed(() => {
-  if (!stepData.value) return []
+  augmentedFormulas.value.splice(index + 1, 0, {
+    id: `formula_${formulaCounter.value++}`,
+    text: '',
+    status: 'normal',
+    readonly: false,
+  })
+}
 
-  const productions = [
-    `S' -> ${stepData.value.analysisResult.S}`,
-    ...originalProductions.value,
-  ]
-  return productions
-})
+// 删除产生式
+const removeFormula = (index: number) => {
+  if (augmentedFormulas.value.length <= 1 || augmentedFormulas.value[index].readonly) return
 
+  augmentedFormulas.value.splice(index, 1)
+  checkFormCompletion()
+}
+
+// 验证增广文法
+const validateFormulas = async () => {
+  if (!grammarData.value || !grammarData.value.formulas_list) return
+
+  isValidating.value = true
+  validationMessage.value = ''
+
+  try {
+    // 获取正确答案
+    const correctFormulas = grammarData.value.formulas_list
+    const userFormulas = augmentedFormulas.value.map((f) => f.text.trim()).filter((t) => t)
+
+    // 验证每个产生式
+    const correctSet = new Set(correctFormulas)
+    let allCorrect = true
+
+    for (const formula of augmentedFormulas.value) {
+      const trimmedText = formula.text.trim()
+      if (!trimmedText) {
+        formula.status = 'error'
+        allCorrect = false
+        continue
+      }
+
+      if (correctSet.has(trimmedText)) {
+        formula.status = 'correct'
+        correctSet.delete(trimmedText)
+      } else {
+        formula.status = 'error'
+        allCorrect = false
+      }
+    }
+
+    if (allCorrect && correctSet.size === 0 && userFormulas.length === correctFormulas.length) {
+      validationSuccess.value = true
+      validationMessage.value = '增广文法构造正确！'
+    } else {
+      validationSuccess.value = false
+      if (correctSet.size > 0) {
+        validationMessage.value = `还缺少 ${correctSet.size} 个产生式，或某些产生式不正确`
+      } else if (userFormulas.length !== correctFormulas.length) {
+        validationMessage.value = '产生式数量不正确'
+      } else {
+        validationMessage.value = '某些产生式不正确，请检查'
+      }
+    }
+  } catch (error) {
+    console.error('验证失败:', error)
+    validationSuccess.value = false
+    validationMessage.value = '验证失败，请检查输入'
+  } finally {
+    isValidating.value = false
+  }
+}
+
+// 显示答案
+const showAnswer = () => {
+  if (!grammarData.value || !grammarData.value.formulas_list) return
+
+  const correctFormulas = grammarData.value.formulas_list
+
+  // 清空当前输入
+  augmentedFormulas.value = []
+
+  // 填充正确答案
+  correctFormulas.forEach((formula: string) => {
+    augmentedFormulas.value.push({
+      id: `formula_${formulaCounter.value++}`,
+      text: formula,
+      status: 'correct',
+      readonly: false,
+    })
+  })
+
+  validationMessage.value = '已显示标准答案'
+  validationSuccess.value = true
+}
+
+// 下一步
 const nextStep = () => {
-  if (stepData.value) {
+  if (isStepComplete.value) {
     emit('next-step')
   }
 }
+
+// 初始化
+const initializeFormulas = () => {
+  if (augmentedFormulas.value.length === 0) {
+    // 添加第一个空的产生式
+    augmentedFormulas.value.push({
+      id: `formula_${formulaCounter.value++}`,
+      text: startSymbol.value ? `${startSymbol.value}' -> ${startSymbol.value}` : '',
+      status: 'normal',
+      readonly: false,
+    })
+  }
+}
+
+// 监听store中的分析结果变化
+watch(
+  () => lr0Store.analysisResult,
+  (newValue) => {
+    if (newValue && augmentedFormulas.value.length === 0) {
+      initializeFormulas()
+    }
+  },
+  { immediate: true },
+)
+
+// 组件挂载时初始化
+onMounted(() => {
+  if (lr0Store.analysisResult) {
+    initializeFormulas()
+  }
+})
 </script>
 
 <style scoped>

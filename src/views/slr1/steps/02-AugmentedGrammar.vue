@@ -13,35 +13,48 @@
     </div>
 
     <div class="step-content">
-      <!-- 说明区域 -->
-      <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-6">
-        <div class="flex items-start">
-          <Icon icon="lucide:info" class="w-5 h-5 text-purple-600 mt-0.5 mr-3" />
-          <div>
-            <h3 class="text-lg font-semibold text-purple-900 mb-2">增广文法构造规则</h3>
-            <ul class="space-y-1 text-sm text-purple-800">
-              <li>• 为原文法添加新的开始符号{{ startSymbol }}'</li>
-              <li>• 添加产生式：{{ startSymbol }}' → {{ startSymbol }}</li>
-              <li>• 将含有多个候选式的产生式分解为多个单独的产生式</li>
-              <li>• 例如：A → α|β 分解为 A → α 和 A → β</li>
-            </ul>
+      <!-- 说明区域和原文法并排显示 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 左侧：增广文法构造规则 -->
+        <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+          <div class="flex items-start">
+            <Icon icon="lucide:info" class="w-5 h-5 text-purple-600 mt-0.5 mr-3" />
+            <div>
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:file-text" class="w-5 h-5 text-purple-600" />
+                </div>
+                <h3 class="text-xl font-bold text-purple-900">增广文法构造规则</h3>
+              </div>
+              <ul class="space-y-1 text-sm text-purple-800">
+                <li>• 为原文法添加新的开始符号{{ startSymbol }}'</li>
+                <li>• 添加产生式：{{ startSymbol }}' -> {{ startSymbol }}</li>
+                <li>• 将含有多个候选式的产生式分解为多个单独的产生式</li>
+                <li>• 例如：A -> α|β 分解为 A -> α 和 A -> β</li>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 原文法显示 -->
-      <div
-        v-if="originalGrammar.length > 0"
-        class="bg-white border border-gray-200 rounded-lg p-6 mb-6"
-      >
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">原文法</h3>
-        <div class="space-y-2">
-          <div
-            v-for="(production, index) in originalGrammar"
-            :key="index"
-            class="font-mono text-sm bg-gray-50 px-3 py-2 rounded border"
-          >
-            {{ production }}
+        <!-- 右侧：原文法显示 -->
+        <div
+          v-if="originalGrammar.length > 0"
+          class="bg-white border border-gray-200 rounded-lg p-6"
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Icon icon="lucide:list" class="w-5 h-5 text-purple-600" />
+            </div>
+            <h3 class="text-xl font-bold text-purple-900">原文法</h3>
+          </div>
+          <div class="space-y-2">
+            <div
+              v-for="(production, index) in originalGrammar"
+              :key="index"
+              class="font-mono text-sm bg-purple-50 border border-purple-200 px-3 py-2 rounded-lg text-purple-800"
+            >
+              {{ production }}
+            </div>
           </div>
         </div>
       </div>
@@ -55,63 +68,82 @@
 
       <div v-else class="space-y-6">
         <!-- 增广文法输入区域 -->
-        <div class="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">增广文法产生式</h3>
-          <p class="text-sm text-gray-600 mb-4">
-            请填写增广后的文法产生式（每个产生式右侧只有一个候选式）
-          </p>
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+              <Icon icon="lucide:edit-3" class="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-purple-900">增广文法产生式</h3>
+              <p class="text-purple-600 text-sm">请填写增广后的文法产生式（每个产生式右侧只有一个候选式）</p>
+            </div>
+          </div>
 
-          <div class="space-y-3">
-            <div
-              v-for="(formula, index) in augmentedFormulas"
-              :key="formula.id"
-              class="flex items-center gap-3"
-            >
-              <!-- 产生式输入框 -->
-              <div class="flex-1">
-                <input
-                  v-model="formula.text"
-                  type="text"
-                  :placeholder="`产生式 ${index + 1}`"
-                  :class="[
-                    'w-full px-3 py-2 border rounded-lg transition-colors',
-                    getInputClass(formula.status),
-                  ]"
-                  @input="checkFormCompletion"
-                  :readonly="formula.readonly"
-                />
-              </div>
+          <!-- 答题区域 -->
+          <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-inner">
+            <div class="space-y-4">
+              <div
+                v-for="(formula, index) in augmentedFormulas"
+                :key="formula.id"
+                class="flex items-center gap-3 group"
+              >
+                <!-- 序号标签 -->
+                <div class="w-8 h-8 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                  {{ index + 1 }}
+                </div>
 
-              <!-- 操作按钮 -->
-              <div class="flex items-center gap-1">
-                <button
-                  @click="removeFormula(index)"
-                  :disabled="augmentedFormulas.length <= 1 || formula.readonly"
-                  class="w-8 h-8 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg"
-                  title="删除产生式"
-                >
-                  ×
-                </button>
-                <button
-                  @click="addFormula(index)"
-                  :disabled="isStepComplete"
-                  class="w-8 h-8 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 transition-colors flex items-center justify-center text-lg"
-                  title="添加产生式"
-                >
-                  +
-                </button>
+                <!-- 产生式输入框 -->
+                <div class="flex-1">
+                  <input
+                    v-model="formula.text"
+                    type="text"
+                    :placeholder="`请输入产生式 ${index + 1}，例如：S' -> S`"
+                    :class="[
+                      'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-sm',
+                      'focus:ring-4 focus:ring-purple-100 focus:border-purple-400',
+                      getInputClass(formula.status),
+                    ]"
+                    @input="checkFormCompletion"
+                    :readonly="formula.readonly"
+                  />
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    @click="removeFormula(index)"
+                    :disabled="augmentedFormulas.length <= 1 || formula.readonly"
+                    class="w-8 h-8 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg shadow-sm"
+                    title="删除产生式"
+                  >
+                    ×
+                  </button>
+                  <button
+                    @click="addFormula(index)"
+                    :disabled="isStepComplete"
+                    class="w-8 h-8 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 transition-colors flex items-center justify-center text-lg shadow-sm"
+                    title="添加产生式"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- 提示信息 -->
-          <div class="mt-4 text-sm text-gray-600">
-            <p><strong>填写提示：</strong></p>
-            <ul class="mt-1 space-y-1">
-              <li>• 首先添加增广产生式：{{ startSymbol }}' → {{ startSymbol }}</li>
-              <li>• 然后将多候选式产生式分解为单个候选式</li>
-              <li>• 例如：S → aB|bA 分解为 S → aB 和 S → bA</li>
-            </ul>
+          <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p class="font-semibold text-blue-900 mb-2">填写提示：</p>
+                <ul class="space-y-1 text-sm text-blue-800">
+                  <li>• 首先添加增广产生式：<code class="bg-blue-100 px-1 rounded">{{ startSymbol }}' -> {{ startSymbol }}</code></li>
+                  <li>• 然后将多候选式产生式分解为单个候选式</li>
+                  <li>• 例如：<code class="bg-blue-100 px-1 rounded">S -> aB|bA</code> 分解为 <code class="bg-blue-100 px-1 rounded">S -> aB</code> 和 <code class="bg-blue-100 px-1 rounded">S -> bA</code></li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -236,11 +268,11 @@ const isStepComplete = computed(() => {
 const getInputClass = (status: string) => {
   switch (status) {
     case 'correct':
-      return 'border-green-500 bg-green-50'
+      return 'border-green-500 bg-green-50 focus:ring-green-100 focus:border-green-400'
     case 'error':
-      return 'border-red-500 bg-red-50'
+      return 'border-red-500 bg-red-50 focus:ring-red-100 focus:border-red-400'
     default:
-      return 'border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'
+      return 'border-gray-300'
   }
 }
 
@@ -339,7 +371,7 @@ const showAnswer = () => {
   augmentedFormulas.value = []
 
   // 填充正确答案
-  correctFormulas.forEach((formula: string, index: number) => {
+  correctFormulas.forEach((formula: string) => {
     augmentedFormulas.value.push({
       id: `formula_${formulaCounter.value++}`,
       text: formula,
