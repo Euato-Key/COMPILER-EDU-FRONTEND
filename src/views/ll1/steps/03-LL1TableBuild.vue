@@ -51,11 +51,11 @@
               <p>根据 First 集合和 Follow 集合，填写产生式，构造 LL1 分析表</p>
               <div class="flex items-start">
                 <span class="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span>对于产生式 A → α，将 <span class="font-mono text-green-600">A->α</span> 填入 <span class="font-mono text-green-600">M[A, a]</span>，其中 <span class="font-mono text-green-600">a ∈ First(α)</span></span>
+                <span>对于产生式 A → α，将 <span class="font-mono text-green-600">A->α</span> 填入 <span class="font-mono text-green-600">M[A, a]</span>，其中 <span class="font-mono text-green-600">a ∈ First(A)</span></span>
               </div>
               <div class="flex items-start">
                 <span class="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span>如果 <span class="font-mono text-green-600">ε ∈ First(α)</span>，将 <span class="font-mono text-green-600">A->α</span> 填入 <span class="font-mono text-green-600">M[A, b]</span>，其中 <span class="font-mono text-green-600">b ∈ Follow(A)</span></span>
+                <span>如果 <span class="font-mono text-green-600">ε ∈ First(A)</span>，将 <span class="font-mono text-green-600">A->ε</span> 填入 <span class="font-mono text-green-600">M[A, b]</span>，其中 <span class="font-mono text-green-600">b ∈ Follow(A)</span></span>
               </div>
             </div>
           </div>
