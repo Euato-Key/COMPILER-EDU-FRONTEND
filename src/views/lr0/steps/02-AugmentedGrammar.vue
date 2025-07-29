@@ -38,16 +38,16 @@
 
         <!-- 原文法展示 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
+          <div class="flex flex-col">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">原文法</h3>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-1">
               <div class="space-y-2">
                 <div class="text-sm text-gray-600 mb-2">
                   开始符号：{{ stepData.analysisResult.S }}
                 </div>
                 <div class="font-mono text-sm">
                   <div
-                    v-for="(production, index) in stepData.analysisResult.formulas_list"
+                    v-for="(production, index) in originalProductions"
                     :key="index"
                     class="py-1"
                   >
@@ -90,9 +90,9 @@
           </div>
 
           <!-- 增广文法展示 -->
-          <div>
+          <div class="flex flex-col">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">增广文法</h3>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex-1">
               <div class="space-y-2">
                 <div class="text-sm text-yellow-700 mb-2">新开始符号：S'</div>
                 <div class="font-mono text-sm">
@@ -105,7 +105,7 @@
                   </div>
                   <!-- 原有产生式 -->
                   <div
-                    v-for="(production, index) in stepData.analysisResult.formulas_list"
+                    v-for="(production, index) in originalProductions"
                     :key="index"
                     class="py-1"
                   >
@@ -226,13 +226,23 @@ const stepData = computed(() => {
   return null
 })
 
+// 原文法产生式列表（过滤掉增广产生式）
+const originalProductions = computed(() => {
+  if (!stepData.value) return []
+
+  // 过滤掉包含 S' 的产生式（增广产生式）
+  return stepData.value.analysisResult.formulas_list.filter(
+    production => !production.includes("'")
+  )
+})
+
 // 增广产生式列表
 const augmentedProductions = computed(() => {
   if (!stepData.value) return []
 
   const productions = [
     `S' -> ${stepData.value.analysisResult.S}`,
-    ...stepData.value.analysisResult.formulas_list,
+    ...originalProductions.value,
   ]
   return productions
 })
