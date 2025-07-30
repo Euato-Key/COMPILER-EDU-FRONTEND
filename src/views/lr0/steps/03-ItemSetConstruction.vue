@@ -131,7 +131,7 @@
             </div>
 
             <!-- 答案内容 -->
-            <div class="h-80 p-4">
+            <div class="h-120 p-4">
               <div v-if="!showAnswerFlag" class="h-full flex items-center justify-center">
                 <div class="text-center text-gray-500">
                   <Icon icon="lucide:lock" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
@@ -143,7 +143,11 @@
               <div v-else class="h-full">
                 <!-- 答案DFA -->
                 <div class="h-full">
-                  <div ref="answerCanvasContainer" class="h-full w-full bg-gray-50 rounded"></div>
+                  <div 
+                    ref="answerCanvasContainer" 
+                    class="h-full w-full flex items-center justify-center bg-gray-50 rounded"
+                  >
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,7 +215,7 @@ import { instance } from '@viz-js/viz'
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
-  complete: [data: any]
+  complete: [data: unknown]
 }>()
 
 const lr0Store = useLR0Store()
