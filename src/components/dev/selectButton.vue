@@ -78,7 +78,7 @@ const handerFocus = ()=>{
     background-color: $isError_bgColor;
   }
   .writing{
-    border: 5px dashed rgb(255, 255, 255);
+    border: 4px dashed rgb(255, 255, 255);
   }
 }
 </style>
