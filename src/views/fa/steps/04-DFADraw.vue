@@ -74,11 +74,17 @@
               :show-answer="true"
               :final-state-config="{
                 isFinalState: (row: number, col: string, value: any) => {
-                  const columnMapping: Record<string, string> = {
-                    'S': 'I', 'a': 'Ia', 'b': 'Ib', 'c': 'Ic'
-                  }
+                  // 动态生成列映射，支持任意数量的符号
+                  const columnMapping: Record<string, string> = {}
+                  columnMapping['S'] = 'I'
+                  alphabetSymbols.forEach(symbol => {
+                    columnMapping[symbol] = `I${symbol}`
+                  })
+                  
                   const mappedColumn = columnMapping[col] || col
-                  return finalStatePositions.some((pos: {row: number, col: string}) => pos.row === row && pos.col === mappedColumn)
+                  const isFinal = finalStatePositions.some((pos: {row: number, col: string}) => pos.row === row && pos.col === mappedColumn)
+                  
+                  return isFinal
                 }
               }"
             />
@@ -97,12 +103,8 @@
                 <div class="flex items-start gap-3">
                   <Icon icon="lucide:zap" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 class="font-medium text-green-800">高亮说明</h4>
                     <div class="text-sm text-green-700 mt-2 space-y-1">
-                      <p>• <span class="font-semibold">绿色发光单元格</span>：表示终态（包含Y的状态集合）</p>
-                      <p>• 转换表中含Y的单元格会高亮显示</p>
-                      <p>• 状态转换矩阵中对应位置的单元格也会高亮</p>
-                      <p>• 这些高亮状态在DFA中应标记为接受状态</p>
+                      <p><span class="font-semibold">绿色发光单元格</span>：表示终态（包含Y的状态集合），这些高亮状态在DFA中应标记为接受状态</p>
                     </div>
                   </div>
                 </div>
@@ -166,57 +168,9 @@
               <div>
                 <h4 class="font-medium text-orange-800">DFA 绘制区域</h4>
                 <div class="text-sm text-orange-700 mt-2 space-y-1">
-                  <p>• 在上方画布中手动绘制DFA</p>
-                  <p>• 根据转换表添加状态和转换</p>
-                  <p>• 完成绘制后可进入下一步</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- 新FA画图组件使用说明 -->
-            <div v-if="activeCanvas === 'new'" class="mt-4 pt-4 border-t border-orange-200">
-              <h5 class="font-medium text-orange-800 mb-3">新FA画图工具使用说明</h5>
-              <div class="text-xs text-orange-600 space-y-1">
-                <p>• 使用画布上方的工具栏按钮进行操作</p>
-                <p>• 点击"添加节点"按钮或双击画布添加新状态</p>
-                <p>• 选择节点后点击"设置初态"或"设置终态"</p>
-                <p>• 拖拽节点边缘的连接点创建转换</p>
-                <p>• 点击边上的输入框编辑转换标签</p>
-                <p>• 支持自环和复杂的DFA结构</p>
-                <p>• 使用鼠标滚轮缩放画布，拖拽平移画布</p>
-                <p>• 右下角控制面板可快速调整视图</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 绘制提示 -->
-          <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-start gap-3">
-              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 class="font-medium text-blue-800">绘制提示</h4>
-                <div class="text-sm text-blue-700 mt-2 space-y-1">
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <p class="font-medium">正则表达式:</p>
-                      <code class="block mt-1 p-2 bg-white rounded border font-mono text-xs">{{
-                        faStore.inputRegex
-                      }}</code>
-                    </div>
-                    <div>
-                      <p class="font-medium">DFA 状态数: {{ dfaStates.length }}</p>
-                      <p>转换数: {{ totalTransitions }}</p>
-                    </div>
-                    <div>
-                      <p class="font-medium">字母表: {{ alphabetSymbols.join(', ') }}</p>
-                    </div>
-                  </div>
-                  <ul class="mt-3 space-y-1">
-                    <li>• 根据第三步的转换表构造 DFA</li>
-                    <li>• 确保每个状态都有明确的转换</li>
-                    <li>• 标记初始状态和接受状态</li>
-                    <li>• 验证 DFA 的确定性</li>
-                  </ul>
+                  <p>• 请根据第三步的状态转换矩阵构造DFA</p>
+                  <p>• 根据状态转换矩阵添加状态和转换</p>
+                  <p>• 完成绘制后可点击右下方 "查看答案" 按钮，显示正确答案后，请自行检验DFA构造的正确性</p>
                 </div>
               </div>
             </div>
@@ -505,12 +459,15 @@ const extractAlphabetFromFAData = (data: any) => {
   if (data.table) {
     Object.keys(data.table).forEach((symbol) => {
       if (symbol !== 'I' && symbol !== 'ε' && symbol !== 'epsilon') {
-        symbols.add(symbol)
+        // 从 Ia, Ib 中提取 a, b
+        const extractedSymbol = symbol.replace('I', '')
+        symbols.add(extractedSymbol)
       }
     })
   }
 
   alphabetSymbols.value = Array.from(symbols).sort()
+  console.log('提取的字母表符号:', alphabetSymbols.value)
 }
 
 // 从后端数据构建标准答案的状态转换矩阵
