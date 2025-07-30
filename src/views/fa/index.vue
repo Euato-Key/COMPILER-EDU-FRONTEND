@@ -52,6 +52,9 @@
         </Transition>
       </div>
     </main>
+
+    <!-- 返回顶部按钮 -->
+    <ScrollToTop theme="blue" />
   </div>
 </template>
 
@@ -60,6 +63,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFAStore } from '@/stores'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
+import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 
 // 导入步骤组件
 import RegexInput from './steps/01-RegexInput.vue'
