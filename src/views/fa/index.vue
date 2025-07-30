@@ -83,7 +83,7 @@ const faStore = useFAStore()
 const faSteps = [
   {
     id: 1,
-    name: 'REGEX',
+    name: '正则表达式',
     title: '正则表达式',
     description: '输入正则表达式',
     color: '#3B82F6',
@@ -91,7 +91,7 @@ const faSteps = [
   },
   {
     id: 2,
-    name: 'NFA',
+    name: '构造NFA',
     title: '非确定有限自动机',
     description: 'Thompson构造',
     color: '#8B5CF6',
@@ -99,7 +99,7 @@ const faSteps = [
   },
   {
     id: 3,
-    name: 'TABLE',
+    name: '子集构造',
     title: '转换表和状态矩阵',
     description: '子集构造法',
     color: '#10B981',
@@ -107,7 +107,7 @@ const faSteps = [
   },
   {
     id: 4,
-    name: 'DFA',
+    name: '构造DFA',
     title: '确定有限自动机',
     description: '转换构造',
     color: '#F59E0B',
@@ -115,7 +115,7 @@ const faSteps = [
   },
   {
     id: 5,
-    name: 'MIN-DFA',
+    name: 'DFA最小化',
     title: '最小化DFA',
     description: 'Hopcroft算法',
     color: '#EF4444',
@@ -123,7 +123,7 @@ const faSteps = [
   },
   {
     id: 6,
-    name: 'RESULT',
+    name: '最小化结果',
     title: '最小化DFA图',
     description: '可视化绘制',
     color: '#6366F1',

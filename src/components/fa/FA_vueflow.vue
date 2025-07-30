@@ -1,31 +1,69 @@
 <script setup lang="ts">
-import { ref, type Ref,type CSSProperties, type PropType,computed, watch, nextTick, onMounted } from 'vue';
-import { VueFlow,Handle,Position,useVueFlow,MarkerType, getBezierPath, type NodeChange} from "@vue-flow/core"
+import {
+  ref,
+  type Ref,
+  type CSSProperties,
+  type PropType,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+} from 'vue'
+import {
+  VueFlow,
+  Handle,
+  Position,
+  useVueFlow,
+  MarkerType,
+  getBezierPath,
+  type NodeChange,
+} from '@vue-flow/core'
+import { Icon } from '@iconify/vue'
 // 移除Element Plus消息组件，避免样式冲突
 import FA_customEdge from './FA_custom-edge.vue'
 
-const { onConnect,addEdges,addNodes,onNodeClick,onEdgeClick,findNode,findEdge,getNodes,getEdges,
-  onNodesChange,onEdgesChange,applyNodeChanges,applyEdgeChanges,updateEdge,onEdgeUpdate,onPaneReady,setViewport,removeNodes, screenToFlowCoordinate, vueFlowRef } = useVueFlow()
+const {
+  onConnect,
+  addEdges,
+  addNodes,
+  onNodeClick,
+  onEdgeClick,
+  findNode,
+  findEdge,
+  getNodes,
+  getEdges,
+  onNodesChange,
+  onEdgesChange,
+  applyNodeChanges,
+  applyEdgeChanges,
+  updateEdge,
+  onEdgeUpdate,
+  onPaneReady,
+  setViewport,
+  removeNodes,
+  screenToFlowCoordinate,
+  vueFlowRef,
+} = useVueFlow()
 
 // 添加初态标记
 const props = defineProps({
   FA_type: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const nodes = ref([
   {
     id: 'state1',
     data: {
-      text:"0",
+      text: '0',
       isInitial: false,
-      isFinal: false
+      isFinal: false,
     },
     type: 'custom',
     position: { x: 50, y: 50 },
-    label:"0",
+    label: '0',
   },
 ])
 const edges = ref([])
@@ -34,59 +72,60 @@ addEdges(edges.value)
 
 // 设置初态的方法
 const setInitialState = () => {
-  const selectedNodes = getNodes.value.filter(node => node.selected);
+  const selectedNodes = getNodes.value.filter((node) => node.selected)
 
-  if(props.FA_type === 'DFA' || props.FA_type === 'Min_DFA'){
+  if (props.FA_type === 'DFA' || props.FA_type === 'Min_DFA') {
     if (selectedNodes.length == 1) {
       // 清除之前的初态
-      getNodes.value.forEach(node => {
-        node.data.isInitial = false;
-      });
+      getNodes.value.forEach((node) => {
+        node.data.isInitial = false
+      })
       // 设置新的初态
-      selectedNodes[0].data.isInitial = true;
-      selectedNodes[0].data.isFinal = false;
-      selectedNodes[0].selected = false;
-    }else{
+      selectedNodes[0].data.isInitial = true
+      selectedNodes[0].data.isFinal = false
+      selectedNodes[0].selected = false
+    } else {
       // 移除消息提示，避免样式冲突
-      console.log("DFA只有一个初态!")
+      console.log('DFA只有一个初态!')
     }
-  }
-
-  else if(props.FA_type === 'NFA'){
+  } else if (props.FA_type === 'NFA') {
     if (selectedNodes) {
       // 设置新的初态
-      selectedNodes.forEach(node => {
-        node.data.isInitial = true;
-        node.data.isFinal = false;
-        node.selected = false;
-      });
+      selectedNodes.forEach((node) => {
+        node.data.isInitial = true
+        node.data.isFinal = false
+        node.selected = false
+      })
     }
   }
-
 }
 // 设置终态的方法
 const setFinalState = () => {
-  const selectedNodes = getNodes.value.filter(node => node.selected);
-  selectedNodes.forEach(node => {
-    node.selected = false;
+  const selectedNodes = getNodes.value.filter((node) => node.selected)
+  selectedNodes.forEach((node) => {
+    node.selected = false
 
-    if(node.data.isFinal) return
-    node.data.isFinal = true;
-    node.data.isInitial = false;
-  });
+    if (node.data.isFinal) return
+    node.data.isFinal = true
+    node.data.isInitial = false
+  })
 }
 
-const addStates = ()=>{
+const addStates = () => {
   // 提取所有已使用的编号
   // 过滤非数字 + 去重 + 排序
-  const usedNumbers = Array.from(new Set(getNodes.value
-    .map(node => {
+  const usedNumbers = Array.from(
+    new Set(
+      getNodes.value
+        .map((node) => {
           const num = Number(node.data.text)
           // console.log(num)
-          return isNaN(num)? null : num
-      })
-    .filter((num): num is number => num!== null))) // 显式断言num is number
-    .sort((a,b)=> a-b)
+          return isNaN(num) ? null : num
+        })
+        .filter((num): num is number => num !== null),
+    ),
+  ) // 显式断言num is number
+    .sort((a, b) => a - b)
   // 暴力法找到最小的未被使用的编号
   // let newNumber = 0;
   // for (let i = 0; i < usedNumbers.length; i++) {
@@ -98,30 +137,30 @@ const addStates = ()=>{
   // }
   // console.log(usedNumbers)
 
-
   // 二分查找最小的未被使用的编号
-  let left = 0;
-  let right = usedNumbers.length;
+  let left = 0
+  let right = usedNumbers.length
   while (left < right) {
-      const mid = Math.floor((left + right) / 2);
-      if (usedNumbers[mid] === mid) { // 说明 0 到 mid 都被使用
-          left = mid + 1;
-      } else {
-          right = mid;
-      }
+    const mid = Math.floor((left + right) / 2)
+    if (usedNumbers[mid] === mid) {
+      // 说明 0 到 mid 都被使用
+      left = mid + 1
+    } else {
+      right = mid
+    }
   }
-  const newNumber = left;
+  const newNumber = left
 
   // console.log(newNumber)
   addNodes({
-    id: "state" + Date.now(),
-    data:{
-      text:newNumber.toString(), // 使用找到的编号
+    id: 'state' + Date.now(),
+    data: {
+      text: newNumber.toString(), // 使用找到的编号
       isInitial: false,
-      isFinal: false
+      isFinal: false,
     },
     position: { x: Math.random() * 400, y: Math.random() * 200 },
-    type:'custom',
+    type: 'custom',
   })
 }
 const reset = () => {
@@ -130,13 +169,13 @@ const reset = () => {
     {
       id: 'state1',
       data: {
-        text:"0",
+        text: '0',
         isInitial: false,
-        isFinal: false
+        isFinal: false,
       },
       type: 'custom',
       position: { x: 50, y: 50 },
-      label:"0",
+      label: '0',
     },
   ]
   edges.value = []
@@ -152,29 +191,40 @@ onPaneReady((instance) => {
   // console.log(instance.getViewport())
 })
 
-const neighbar_handle: Record<string, string[]> = { // 相邻的handle
-  'a':['b','d'],
-  'b':['a','c'],
-  'c':['b','e'],
-  'd':['a','f'],
-  'e':['c','h'],
-  'f':['d','g'],
-  'g':['f','h'],
-  'h':['e','g']
+const neighbar_handle: Record<string, string[]> = {
+  // 相邻的handle
+  a: ['b', 'd'],
+  b: ['a', 'c'],
+  c: ['b', 'e'],
+  d: ['a', 'f'],
+  e: ['c', 'h'],
+  f: ['d', 'g'],
+  g: ['f', 'h'],
+  h: ['e', 'g'],
 }
 
-onConnect( params =>{ // 创建连线
+onConnect((params) => {
+  // 创建连线
   console.log(params)
   // 如果源节点和目标节点相同，且源节点和目标节点的handle相邻，则不创建连线
-  if(params.source == params.target && neighbar_handle[params.sourceHandle as string].includes(params.targetHandle as string)){
+  if (
+    params.source == params.target &&
+    neighbar_handle[params.sourceHandle as string].includes(params.targetHandle as string)
+  ) {
     return
   }
   const newEdge = {
     ...params,
-    id:'vueflow__edge-' + params.source + params.sourceHandle + '-' + params.target + params.targetHandle,
+    id:
+      'vueflow__edge-' +
+      params.source +
+      params.sourceHandle +
+      '-' +
+      params.target +
+      params.targetHandle,
     type: 'button',
-    data:{
-      text:""
+    data: {
+      text: '',
     },
     markerEnd: {
       type: MarkerType.Arrow,
@@ -183,16 +233,17 @@ onConnect( params =>{ // 创建连线
       color: '#ff0072',
       strokeWidth: 1,
     },
-    updatable: true
+    updatable: true,
   }
   addEdges([newEdge])
 })
 
-onEdgeUpdate(params => { // 更换箭头指向
+onEdgeUpdate((params) => {
+  // 更换箭头指向
   updateEdge(params.edge, params.connection)
 })
 
-onNodeClick(params=>{
+onNodeClick((params) => {
   // console.log('click')
   // console.log(params)
   // params.selected = true // 有自己的选择样式
@@ -225,7 +276,7 @@ const handlePaneDoubleClick = (event: Event) => {
     // 使用 screenToFlowCoordinate 转换坐标
     const position = screenToFlowCoordinate({
       x: mouseEvent.clientX,
-      y: mouseEvent.clientY
+      y: mouseEvent.clientY,
     })
 
     console.log('转换后的坐标:', position)
@@ -237,7 +288,7 @@ const handlePaneDoubleClick = (event: Event) => {
     const rect = flowContainer.getBoundingClientRect()
     const position = {
       x: mouseEvent.clientX - rect.left,
-      y: mouseEvent.clientY - rect.top
+      y: mouseEvent.clientY - rect.top,
     }
 
     console.log('使用备用坐标:', position)
@@ -248,37 +299,40 @@ const handlePaneDoubleClick = (event: Event) => {
 // 在指定位置添加节点
 const addNodeAtPosition = (x: number, y: number) => {
   // 提取所有已使用的编号
-  const usedNumbers = Array.from(new Set(getNodes.value
-    .map(node => {
+  const usedNumbers = Array.from(
+    new Set(
+      getNodes.value
+        .map((node) => {
           const num = Number(node.data.text)
-          return isNaN(num)? null : num
-      })
-    .filter((num): num is number => num!== null)))
-    .sort((a,b)=> a-b)
+          return isNaN(num) ? null : num
+        })
+        .filter((num): num is number => num !== null),
+    ),
+  ).sort((a, b) => a - b)
 
   // 二分查找最小的未被使用的编号
-  let left = 0;
-  let right = usedNumbers.length;
+  let left = 0
+  let right = usedNumbers.length
   while (left < right) {
-      const mid = Math.floor((left + right) / 2);
-      if (usedNumbers[mid] === mid) {
-          left = mid + 1;
-      } else {
-          right = mid;
-      }
+    const mid = Math.floor((left + right) / 2)
+    if (usedNumbers[mid] === mid) {
+      left = mid + 1
+    } else {
+      right = mid
+    }
   }
-  const newNumber = left;
+  const newNumber = left
 
   // 添加节点到指定位置
   addNodes({
-    id: "state" + Date.now(),
-    data:{
-      text:newNumber.toString(),
+    id: 'state' + Date.now(),
+    data: {
+      text: newNumber.toString(),
       isInitial: false,
-      isFinal: false
+      isFinal: false,
     },
     position: { x, y },
-    type:'custom',
+    type: 'custom',
   })
 }
 
@@ -305,9 +359,9 @@ watch(
     }
   },
   {
-    immediate: true,  // 立即执行一次
-    flush: 'post'     // 在 DOM 更新后执行
-  }
+    immediate: true, // 立即执行一次
+    flush: 'post', // 在 DOM 更新后执行
+  },
 )
 
 // 移除事件监听器，现在使用直接按钮调用
@@ -329,7 +383,7 @@ defineExpose({
   addStates,
   reset,
   setInitialState,
-  setFinalState
+  setFinalState,
 })
 </script>
 
@@ -338,24 +392,24 @@ defineExpose({
     <!-- 工具栏 -->
     <div class="toolbar">
       <button class="tool-btn add-node" @click="addStates" title="添加节点">
-        <span class="icon">+</span>
+        <Icon icon="material-symbols:add" class="icon" />
         <span class="text">添加节点</span>
       </button>
       <button class="tool-btn set-initial" @click="setInitialState" title="设置初态">
-        <span class="icon">▶</span>
+        <Icon icon="material-symbols:play-arrow" class="icon" />
         <span class="text">设置初态</span>
       </button>
       <button class="tool-btn set-final" @click="setFinalState" title="设置终态">
-        <span class="icon">●</span>
+        <Icon icon="material-symbols:circle" class="icon" />
         <span class="text">设置终态</span>
       </button>
       <button class="tool-btn reset-canvas" @click="reset" title="重置画布">
-        <span class="icon">↻</span>
+        <Icon icon="material-symbols:refresh" class="icon" />
         <span class="text">重置画布</span>
       </button>
     </div>
 
-        <div id="FA_flow_wrapper">
+    <div id="FA_flow_wrapper">
       <!-- 双击提示 -->
       <div class="double-click-hint">
         <span class="hint-text">💡 双击画布添加节点</span>
@@ -373,51 +427,65 @@ defineExpose({
         :pan-on-drag="true"
         :zoom-on-scroll="true"
       >
-      <template #node-custom="customNodeProps">
-        <div id="state" :class="{active:customNodeProps.selected, initial:customNodeProps.data.isInitial, final:customNodeProps.data.isFinal}">
-          <input id="state_id" type="text" v-model="customNodeProps.data.text">
-          <Handle id="a" type="source" :position="Position.Top" style="left: 15%; top:20%"/>
-          <Handle id="b" type="source" :position="Position.Top" style="left: 50%;"/>
-          <Handle id="c" type="source" :position="Position.Top" style="left: 85%; top:20%"/>
-          <Handle id="d" type="source" :position="Position.Left" style="top: 50%;"/>
-          <Handle id="e" type="source" :position="Position.Right" style="top: 50%;"/>
-          <Handle id="f" type="source" :position="Position.Bottom" style="left: 15%; bottom: 20%;"/>
-          <Handle id="g" type="source" :position="Position.Bottom" style="left: 50%;"/>
-          <Handle id="h" type="source" :position="Position.Bottom" style="left: 85%; bottom:  20%;"/>
-        </div>
-      </template>
-      <template #edge-button="customEdgeProps">
-        <FA_customEdge
-          :id="customEdgeProps.id"
-          :source-x="customEdgeProps.sourceX"
-          :source-y="customEdgeProps.sourceY"
-          :target-x="customEdgeProps.targetX"
-          :target-y="customEdgeProps.targetY"
-          :source-position="customEdgeProps.sourcePosition"
-          :target-position="customEdgeProps.targetPosition"
-          :source-handle-id="customEdgeProps.sourceHandleId as string"
-          :target-handle-id="customEdgeProps.targetHandleId as string"
-          :source-node="customEdgeProps.sourceNode"
-          :target-node="customEdgeProps.targetNode"
-          :marker-end="customEdgeProps.markerEnd"
-          :style="customEdgeProps.style"
-          v-model:edgeLabel="customEdgeProps.data.text"
-        />
-      </template>
-
-
-
-    </VueFlow>
+        <template #node-custom="customNodeProps">
+          <div
+            id="state"
+            :class="{
+              active: customNodeProps.selected,
+              initial: customNodeProps.data.isInitial,
+              final: customNodeProps.data.isFinal,
+            }"
+          >
+            <input id="state_id" type="text" v-model="customNodeProps.data.text" />
+            <Handle id="a" type="source" :position="Position.Top" style="left: 15%; top: 20%" />
+            <Handle id="b" type="source" :position="Position.Top" style="left: 50%" />
+            <Handle id="c" type="source" :position="Position.Top" style="left: 85%; top: 20%" />
+            <Handle id="d" type="source" :position="Position.Left" style="top: 50%" />
+            <Handle id="e" type="source" :position="Position.Right" style="top: 50%" />
+            <Handle
+              id="f"
+              type="source"
+              :position="Position.Bottom"
+              style="left: 15%; bottom: 20%"
+            />
+            <Handle id="g" type="source" :position="Position.Bottom" style="left: 50%" />
+            <Handle
+              id="h"
+              type="source"
+              :position="Position.Bottom"
+              style="left: 85%; bottom: 20%"
+            />
+          </div>
+        </template>
+        <template #edge-button="customEdgeProps">
+          <FA_customEdge
+            :id="customEdgeProps.id"
+            :source-x="customEdgeProps.sourceX"
+            :source-y="customEdgeProps.sourceY"
+            :target-x="customEdgeProps.targetX"
+            :target-y="customEdgeProps.targetY"
+            :source-position="customEdgeProps.sourcePosition"
+            :target-position="customEdgeProps.targetPosition"
+            :source-handle-id="customEdgeProps.sourceHandleId as string"
+            :target-handle-id="customEdgeProps.targetHandleId as string"
+            :source-node="customEdgeProps.sourceNode"
+            :target-node="customEdgeProps.targetNode"
+            :marker-end="customEdgeProps.markerEnd"
+            :style="customEdgeProps.style"
+            v-model:edgeLabel="customEdgeProps.data.text"
+          />
+        </template>
+      </VueFlow>
     </div>
   </div>
 </template>
 
 <style lang="scss">
 /* import the necessary styles for Vue Flow to work */
-@import "@vue-flow/core/dist/style.css";
+@import '@vue-flow/core/dist/style.css';
 
 /* import the default theme, this is optional but generally recommended */
-@import "@vue-flow/core/dist/theme-default.css";
+@import '@vue-flow/core/dist/theme-default.css';
 
 /* 自定义Vue Flow样式以适配容器 */
 .vue-flow {
@@ -445,7 +513,8 @@ defineExpose({
   overflow: hidden;
 }
 
-.vue-flow__handle { // Handle样式
+.vue-flow__handle {
+  // Handle样式
   width: 4px; /* 改变大小 */
   height: 4px; /* 改变大小 */
   background-color: #34495e; /* 改变颜色 */
@@ -507,23 +576,23 @@ defineExpose({
   }
 
   &.add-node {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
+    background: linear-gradient(135deg, #4caf50, #45a049);
   }
 
   &.set-initial {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
+    background: linear-gradient(135deg, #2196f3, #1976d2);
   }
 
   &.set-final {
-    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
   }
 
   &.reset-canvas {
-    background: linear-gradient(135deg, #F44336, #D32F2F);
+    background: linear-gradient(135deg, #f44336, #d32f2f);
   }
 }
 
-#FA_flow_wrapper{
+#FA_flow_wrapper {
   position: relative;
   width: 100%;
   flex: 1;
@@ -551,8 +620,13 @@ defineExpose({
   }
 
   @keyframes fadeInOut {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
+    0%,
+    100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
   }
 
   .hint-text {
@@ -561,12 +635,12 @@ defineExpose({
     gap: 4px;
   }
 
-  .FA_flow{
+  .FA_flow {
     height: 100%;
     width: 100%;
     position: relative;
   }
-  #state{
+  #state {
     border: 2px solid #2c3e50;
     width: 40px;
     height: 40px;
@@ -579,33 +653,35 @@ defineExpose({
     align-items: center;
     justify-content: center;
 
-
-    &.initial{
-      border:   3px solid rgb(224, 93, 93)!important;
+    &.initial {
+      border: 3px solid rgb(224, 93, 93) !important;
     }
-    &.final{
-      border: 5px double rgb(224, 93, 93)!important;
+    &.final {
+      border: 5px double rgb(224, 93, 93) !important;
     }
-    &.active{ /*节点被选中active*/
+    &.active {
+      /*节点被选中active*/
       border: none !important;
     }
-    &.active::before, &.active::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border: 3px solid rgb(227, 152, 4);
-        transition: all .5s;
-        border-radius: 50%;
-        animation: clippath 3s infinite linear;
+    &.active::before,
+    &.active::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 3px solid rgb(227, 152, 4);
+      transition: all 0.5s;
+      border-radius: 50%;
+      animation: clippath 3s infinite linear;
     }
     &.active::after {
-        animation: clippath 3s infinite -1.5s linear;
+      animation: clippath 3s infinite -1.5s linear;
     }
     @keyframes clippath {
-      0%, 100% {
+      0%,
+      100% {
         clip-path: inset(0 0 95% 0);
         opacity: 0.5;
       }
@@ -622,7 +698,7 @@ defineExpose({
         opacity: 1;
       }
     }
-    #state_id{
+    #state_id {
       width: 90%;
       border: none;
       text-align: center;
@@ -648,7 +724,6 @@ defineExpose({
       transform: translateY(-1px);
       transition: all 0.3s ease;
     }
-
   }
 }
 </style>
