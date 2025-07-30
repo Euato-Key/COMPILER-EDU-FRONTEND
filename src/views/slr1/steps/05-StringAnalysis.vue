@@ -17,16 +17,16 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- SLR1分析过程说明 -->
         <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-          <div class="flex items-start">
-            <Icon icon="lucide:info" class="w-5 h-5 text-green-600 mt-0.5 mr-3" />
-            <div>
+        <div class="flex items-start">
+          <Icon icon="lucide:info" class="w-5 h-5 text-green-600 mt-0.5 mr-3" />
+          <div>
               <h3 class="text-lg font-semibold text-green-900 mb-2">SLR1分析过程</h3>
-              <ul class="space-y-1 text-sm text-green-800">
+            <ul class="space-y-1 text-sm text-green-800">
                 <li>• <strong>移进：</strong>将输入符号压入符号栈，状态压入状态栈</li>
                 <li>• <strong>规约：</strong>根据产生式弹出栈中符号和状态，压入左部符号</li>
                 <li>• <strong>接受：</strong>当遇到接受动作时，输入串被成功分析</li>
                 <li>• <strong>错误：</strong>无对应动作时，分析失败</li>
-              </ul>
+            </ul>
             </div>
           </div>
         </div>
@@ -82,29 +82,29 @@
         <div class="bg-white border border-gray-200 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">输入待分析字符串</h3>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
                 输入字符串（单字符，系统自动添加结束符#）
-              </label>
+            </label>
               <div class="flex gap-2">
                 <input
-                  v-model="inputString"
+              v-model="inputString"
                   placeholder="例如: ab"
                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   @keydown.enter="analyzeString"
                 />
-                <button
-                  @click="analyzeString"
-                  :disabled="!inputString.trim() || isAnalyzing"
+            <button
+              @click="analyzeString"
+              :disabled="!inputString.trim() || isAnalyzing"
                   class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
-                >
-                  <Icon
-                    :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
+            >
+              <Icon
+                :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
                     :class="['w-4 h-4', isAnalyzing ? 'animate-spin' : '']"
-                  />
-                  {{ isAnalyzing ? '分析中...' : '开始分析' }}
-                </button>
+              />
+              {{ isAnalyzing ? '分析中...' : '开始分析' }}
+            </button>
                 <button
                   @click="resetAnalysis"
                   class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -135,23 +135,23 @@
                 <span class="text-xs text-gray-500">(点击使用)</span>
               </div>
               <div class="flex flex-wrap gap-2">
-                <button
+            <button
                   v-for="example in exampleStrings"
                   :key="example"
                   @click="inputString = example"
                   class="px-3 py-1.5 text-sm bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200 hover:border-gray-300 font-mono"
                 >
                   {{ example }}
-                </button>
+            </button>
               </div>
-            </div>
           </div>
         </div>
+      </div>
 
         <!-- 分析结果 -->
         <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg p-6">
-          <div
-            :class="[
+            <div
+              :class="[
               'p-4 rounded-lg border',
               analysisResult.info_res === 'Success!'
                 ? 'bg-green-50 border-green-200 text-green-800'
@@ -186,25 +186,25 @@
 
           <div class="p-6">
             <!-- 分析表 -->
-            <div class="overflow-x-auto">
+          <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-300">
                 <!-- 表头 -->
-                <thead class="bg-gray-50">
+              <thead class="bg-gray-50">
                   <!-- 分组表头行 -->
-                  <tr>
-                    <th
+                <tr>
+                  <th
                       rowspan="2"
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
-                    >
+                  >
                       State
-                    </th>
-                    <th
+                  </th>
+                  <th
                       :colspan="terminals.length + 1"
                       class="px-3 py-2 border border-gray-300 text-xs font-bold text-purple-900 bg-purple-100 text-center"
-                    >
+                  >
                       ACTION
-                    </th>
-                    <th
+                  </th>
+                  <th
                       :colspan="nonterminals.length"
                       class="px-3 py-2 border border-gray-300 text-xs font-bold text-green-900 bg-green-100 text-center"
                     >
@@ -220,22 +220,22 @@
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-purple-50"
                     >
                       {{ terminal }}
-                    </th>
-                    <th
+                  </th>
+                  <th
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-purple-50"
-                    >
+                  >
                       #
-                    </th>
+                  </th>
                     <!-- GOTO列 -->
-                    <th
+                  <th
                       v-for="nonterminal in nonterminals"
                       :key="nonterminal"
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50"
-                    >
+                  >
                       {{ nonterminal }}
-                    </th>
-                  </tr>
-                </thead>
+                  </th>
+                </tr>
+              </thead>
 
                 <!-- 表体 -->
                 <tbody>
@@ -265,10 +265,10 @@
                     >
                       {{ getGotoValue(stateIndex - 1, nonterminal) }}
                     </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
             <!-- 表说明 -->
             <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -286,7 +286,7 @@
                   <li>• 数字: 转移到对应状态</li>
                   <li>• 空白: 无转移</li>
                 </ul>
-              </div>
+        </div>
               <div class="bg-purple-50 p-3 rounded">
                 <h4 class="font-medium text-purple-900 mb-1">产生式编号</h4>
                 <ul class="text-xs text-purple-700 space-y-1">
@@ -299,13 +299,13 @@
                     • r{{ index + 1 }}: {{ production }}
                   </li>
                 </ul>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
         <!-- SLR1移进-规约分析答题表 -->
-        <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div v-if="analysisSteps.length > 0" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900">SLR1移进-规约分析答题表</h3>
             <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
@@ -360,7 +360,7 @@
                       </span>
                     </td>
 
-                    <!-- 符号栈 -->
+            <!-- 符号栈 -->
                     <td class="px-2 py-1 border border-gray-300 text-xs">
                       <input
                         v-if="index > 0"
@@ -411,7 +411,7 @@
                   <div class="flex items-center gap-2 mb-1">
                     <div class="w-3 h-3 bg-red-200 border border-red-400 rounded"></div>
                     <span>错误</span>
-                  </div>
+                    </div>
                   <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-green-200 border border-green-400 rounded"></div>
                     <span>正确</span>
@@ -426,31 +426,96 @@
                   <li>• 符号栈：当前符号序列</li>
                   <li>• 输入串：剩余输入字符串</li>
                 </ul>
-              </div>
+            </div>
               <div class="bg-green-50 p-3 rounded">
                 <h4 class="font-medium text-green-900 mb-1">操作</h4>
                 <div class="space-y-2">
-                  <button
+            <button
                     @click="validateAll"
                     class="w-full px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                  >
+            >
                     验证答案
-                  </button>
-                  <button
+            </button>
+            <button
                     @click="showCorrectAnswers"
                     class="w-full px-3 py-1.5 text-xs border border-green-300 text-green-700 rounded hover:bg-green-50 transition-colors"
                   >
                     {{ showAnswers ? '隐藏答案' : '查看答案' }}
-                  </button>
-                  <button
+            </button>
+            <button
                     @click="clearAll"
                     class="w-full px-3 py-1.5 text-xs border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors"
-                  >
+            >
                     一键清除
-                  </button>
-                </div>
-              </div>
-            </div>
+            </button>
+          </div>
+        </div>
+      </div>
+          </div>
+        </div>
+
+        <!-- 分析过程表（答案参考） -->
+        <div
+          v-if="analysisSteps.length > 0 && showAnswers"
+          class="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        >
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">标准答案参考</h3>
+            <p class="text-sm text-gray-600 mt-1">SLR1移进-规约分析过程</p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-900 border-b">
+                    步骤
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-900 border-b">
+                    状态栈
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-900 border-b">
+                    符号栈
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-900 border-b">
+                    输入串
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-900 border-b">
+                    动作
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(step, index) in analysisSteps"
+                  :key="index"
+                  :class="[
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50',
+                    step.isAccept ? 'bg-green-50' : '',
+                    step.isError ? 'bg-red-50' : '',
+                  ]"
+                >
+                  <td class="px-4 py-3 text-sm border-b">{{ index + 1 }}</td>
+                  <td class="px-4 py-3 text-sm font-mono border-b">{{ step.stateStack }}</td>
+                  <td class="px-4 py-3 text-sm font-mono border-b">{{ step.symbolStack }}</td>
+                  <td class="px-4 py-3 text-sm font-mono border-b">{{ step.inputString }}</td>
+                  <td class="px-4 py-3 text-sm border-b">
+                    <span
+                      :class="[
+                        'px-2 py-1 rounded text-xs font-medium',
+                        step.isAccept
+                          ? 'bg-green-100 text-green-800'
+                          : step.isError
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-purple-100 text-purple-800',
+                      ]"
+                    >
+                      {{ step.action }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
