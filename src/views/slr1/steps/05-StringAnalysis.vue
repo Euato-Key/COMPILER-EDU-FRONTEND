@@ -251,7 +251,10 @@
                       v-for="terminal in [...terminals, '#']"
                       :key="`action-${stateIndex - 1}-${terminal}`"
                       :data-action-cell="`${stateIndex - 1}|${terminal}`"
-                      class="px-2 py-1 border border-gray-300 text-xs text-center"
+                      :class="[
+                        'px-2 py-1 border border-gray-300 text-xs text-center',
+                        highlightCell.row === stateIndex - 1 && highlightCell.col === terminal ? 'bg-orange-300 ring-4 ring-orange-500' : ''
+                      ]"
                     >
                       {{ getActionValue(stateIndex - 1, terminal) }}
                     </td>
@@ -261,7 +264,10 @@
                       v-for="nonterminal in nonterminals"
                       :key="`goto-${stateIndex - 1}-${nonterminal}`"
                       :data-goto-cell="`${stateIndex - 1}|${nonterminal}`"
-                      class="px-2 py-1 border border-gray-300 text-xs text-center"
+                      :class="[
+                        'px-2 py-1 border border-gray-300 text-xs text-center',
+                        highlightGoto.row === stateIndex - 1 && highlightGoto.col === nonterminal ? 'bg-orange-300 ring-4 ring-orange-500' : ''
+                      ]"
                     >
                       {{ getGotoValue(stateIndex - 1, nonterminal) }}
                     </td>
@@ -294,7 +300,10 @@
                     v-for="(production, index) in numberedProductions"
                     :key="production"
                     :data-production="index + 1"
-                    class="text-xs font-mono text-purple-700"
+                    :class="[
+                      'text-xs font-mono text-purple-700',
+                      highlightProduction === index + 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded' : ''
+                    ]"
                   >
                     • r{{ index + 1 }}: {{ production }}
                   </li>
@@ -348,13 +357,19 @@
                         v-model="userAnswers.stateStack[index]"
                         @blur="validateCell(index, 'stateStack')"
                         @input="clearValidation(index, 'stateStack')"
-                        :class="getCellStyle(index, 'stateStack')"
+                        :class="[
+                          getCellStyle(index, 'stateStack'),
+                          highlightTableBasis.stateStack && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400' : ''
+                        ]"
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-purple-500 rounded transition-colors"
                         placeholder="如: 0"
                       />
                       <span
                         v-else
-                        class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full"
+                        :class="[
+                          'w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full',
+                          highlightTableBasis.stateStack && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 rounded' : ''
+                        ]"
                       >
                         {{ step.stateStack }}
                       </span>
@@ -383,13 +398,19 @@
                         v-model="userAnswers.inputString[index]"
                         @blur="validateCell(index, 'inputString')"
                         @input="clearValidation(index, 'inputString')"
-                        :class="getCellStyle(index, 'inputString')"
+                        :class="[
+                          getCellStyle(index, 'inputString'),
+                          highlightTableBasis.inputString && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400' : ''
+                        ]"
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-purple-500 rounded transition-colors"
                         placeholder="如: abb#"
                       />
                       <span
                         v-else
-                        class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full"
+                        :class="[
+                          'w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full',
+                          highlightTableBasis.inputString && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 rounded' : ''
+                        ]"
                       >
                         {{ step.inputString }}
                       </span>
@@ -415,6 +436,19 @@
                   <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-green-200 border border-green-400 rounded"></div>
                     <span>正确</span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-orange-50 p-3 rounded">
+                <h4 class="font-medium text-orange-900 mb-1">查表依据</h4>
+                <div class="text-xs text-orange-700 space-y-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded"></div>
+                    <span>高亮状态栈顶</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded"></div>
+                    <span>高亮输入串首</span>
                   </div>
                 </div>
               </div>
@@ -448,6 +482,9 @@
             >
                     一键清除
             </button>
+                  <button @click="onHintClick" class="w-full px-3 py-1.5 text-xs border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
+                    提示
+                  </button>
           </div>
         </div>
       </div>
@@ -549,6 +586,15 @@
         </button>
       </div>
     </div>
+
+    <!-- 动画弹窗 -->
+    <div v-if="hintActive" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+      {{ hintMessage }}
+    </div>
+    <!-- 飞行动画卡片 -->
+    <div v-for="item in flyingSymbols" :key="item.symbol + item.from" class="fixed z-50 transition-all duration-700" :style="{ left: item.x + 'px', top: item.y + 'px', transform: 'translate(-50%, -50%)' }">
+      <span class="bg-green-500 text-white px-2 py-1 rounded shadow font-mono">{{ item.symbol }}</span>
+    </div>
   </div>
 </template>
 
@@ -598,6 +644,25 @@ const validationStatus = ref<{
 // 是否显示正确答案
 const showAnswers = ref(false)
 
+// 1. 新增动画相关状态变量
+const hintActive = ref(false)
+const hintStepIndex = ref(1)
+const highlightRow = ref(-1)
+const highlightCol = ref('')
+const highlightCell = ref({row: -1, col: ''})
+const highlightGoto = ref({row: -1, col: ''})
+const highlightProduction = ref(-1)
+const flyingSymbols = ref<Array<{symbol: string, from: string, to: string, x: number, y: number}>>([])
+const hintMessage = ref('')
+
+// 新增查表依据高亮状态
+const highlightTableBasis = ref({
+  stateStack: false,
+  inputString: false,
+  stateStackCell: '',
+  inputStringCell: ''
+})
+
 // 从store获取状态
 const analysisData = computed(() => slr1Store.analysisResult)
 const isAnalyzing = computed(() => commonStore.loading)
@@ -618,11 +683,60 @@ const analysisSteps = computed(() => {
     const result = slr1Store.inputAnalysisResult
 
     for (let i = 0; i < result.info_step.length; i++) {
-      // 确保状态栈用空格间隔
+      // 修复：正确处理状态栈，添加空格分隔
       let stateStack = result.info_state_stack?.[i] || ''
-      // 如果状态栈没有空格，添加空格分隔
-      if (stateStack && !stateStack.includes(' ')) {
-        stateStack = stateStack.split('').join(' ')
+
+      // 如果状态栈是数组格式，转换为空格分隔的字符串
+      if (Array.isArray(stateStack)) {
+        stateStack = stateStack.join(' ')
+      } else if (typeof stateStack === 'string') {
+        // 如果是字符串，需要添加空格分隔
+        stateStack = stateStack.trim()
+        // 如果状态栈没有空格分隔，需要添加空格分隔
+        if (stateStack && !stateStack.includes(' ')) {
+          // 智能分割状态栈：根据Action表中的状态来判断
+          // 从Action表中获取所有可能的状态
+          const allStates = new Set<string>()
+          if (slr1Store.actionTable) {
+            Object.keys(slr1Store.actionTable).forEach(key => {
+              const state = key.split('|')[0]
+              allStates.add(state)
+            })
+          }
+          if (grammarInfo.value?.actions) {
+            Object.keys(grammarInfo.value.actions).forEach(key => {
+              const state = key.split('|')[0]
+              allStates.add(state)
+            })
+          }
+
+          // 将状态栈字符串按可能的状态进行分割
+          const states = []
+          let remaining = stateStack
+
+          while (remaining.length > 0) {
+            let found = false
+            // 从最长到最短尝试匹配状态
+            const sortedStates = Array.from(allStates).sort((a, b) => b.length - a.length)
+
+            for (const state of sortedStates) {
+              if (remaining.startsWith(state)) {
+                states.push(state)
+                remaining = remaining.slice(state.length)
+                found = true
+                break
+              }
+            }
+
+            if (!found) {
+              // 如果没有匹配到，按单个字符处理
+              states.push(remaining[0])
+              remaining = remaining.slice(1)
+            }
+          }
+
+          stateStack = states.join(' ')
+        }
       }
 
       steps.push({
@@ -844,6 +958,9 @@ const clearAll = () => {
 
   // 隐藏答案
   showAnswers.value = false
+
+  // 重置动画状态
+  resetHint()
 }
 
 // 监听分析步骤变化，初始化答题数组
@@ -867,6 +984,592 @@ const initUserAnswers = () => {
 watch(analysisSteps, () => {
   initUserAnswers()
 }, { immediate: true })
+
+// 2. 新增动画相关函数
+const sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
+
+// 添加缺失的函数
+const showErrorHint = async () => {
+  if (hintActive.value) return
+  hintActive.value = true
+
+  const step = analysisSteps.value[hintStepIndex.value - 1]
+  const stateStack = step.stateStack.trim()
+  const stateStackStr = String(stateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const state = states[states.length - 1] || '0'
+  const symbol = step.inputString[0]
+  hintMessage.value = `Action[${state},${symbol}]=错误: 无对应动作`
+
+  await sleep(2000)
+
+  hintActive.value = false
+  hintMessage.value = ''
+}
+
+function clearHighlight() {
+  highlightRow.value = -1
+  highlightCol.value = ''
+  highlightCell.value = {row: -1, col: ''}
+  highlightGoto.value = {row: -1, col: ''}
+  highlightProduction.value = -1
+  highlightTableBasis.value = {
+    stateStack: false,
+    inputString: false,
+    stateStackCell: '',
+    inputStringCell: ''
+  }
+}
+
+// 暴露动画函数到模板
+function onHintClick() {
+  // 自动判断当前action类型并调用对应动画
+  if (!analysisSteps.value.length || hintStepIndex.value >= analysisSteps.value.length) {
+    return
+  }
+
+  const step = analysisSteps.value[hintStepIndex.value - 1]
+  // 修复状态栈解析：正确提取栈顶状态
+  const stateStack = step.stateStack.trim()
+  const stateStackStr = String(stateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const state = states[states.length - 1] || '0'
+  const symbol = step.inputString[0]
+  const action = getActionValue(Number(state), symbol)
+
+  if (action.startsWith('s')) {
+    executeShiftAnimation()
+  } else if (action.startsWith('r')) {
+    executeReduceAnimation()
+  } else if (action === 'acc') {
+    executeAcceptAnimation()
+  } else {
+    // 错误或无动作
+    showErrorHint()
+  }
+}
+
+// 修改动画逻辑，动画结束后自动填写答案
+const executeShiftAnimation = async () => {
+  if (hintActive.value) return
+  hintActive.value = true
+
+  const step = analysisSteps.value[hintStepIndex.value - 1]
+  const stateStack = step.stateStack.trim()
+  // 修复状态栈顶解析：正确处理空格分隔的状态
+  const stateStackStr = String(stateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const state = states[states.length - 1] || '0'  // 取最后一个状态作为栈顶
+  const symbol = step.inputString[0]
+  const action = getActionValue(Number(state), symbol)
+  const newState = action.replace('s', '')
+
+  // 1. 先填写数据到答题行（复制上一行数据）
+  await copyDataToAnswerRow(hintStepIndex.value)
+  await sleep(500)
+
+  // 2. 高亮查表依据：状态栈顶状态和输入串首字符
+  highlightTableBasis.value = {
+    stateStack: true,
+    inputString: true,
+    stateStackCell: state,
+    inputStringCell: symbol
+  }
+  hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
+  await sleep(1000)
+
+  // 3. 高亮Action表对应单元格
+  highlightRow.value = Number(state)
+  highlightCol.value = symbol
+  highlightCell.value = {row: Number(state), col: symbol}
+  hintMessage.value = `Action[${state},${symbol}]=${action}: 状态${newState}入栈`
+
+  await sleep(1000)
+
+  // 4. 符号移进动画
+  await executeSymbolShiftAnimation(symbol, hintStepIndex.value)
+  await sleep(500)
+
+  // 5. 状态移进动画
+  await executeStateShiftAnimation(newState, hintStepIndex.value)
+  await sleep(500)
+
+  // 6. 动画结束后自动填写答案
+  setTimeout(() => {
+    fillShiftAnswer(hintStepIndex.value, symbol, newState)
+    hintActive.value = false
+    hintMessage.value = ''
+    clearHighlight()
+    highlightTableBasis.value = {
+      stateStack: false,
+      inputString: false,
+      stateStackCell: '',
+      inputStringCell: ''
+    }
+  }, 800)
+}
+
+// 修改规约动画
+const executeReduceAnimation = async () => {
+  if (hintActive.value) return
+  hintActive.value = true
+
+  const step = analysisSteps.value[hintStepIndex.value - 1]
+  const stateStack = step.stateStack.trim()
+  // 修复状态栈顶解析：正确处理空格分隔的状态
+  const stateStackStr = String(stateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const state = states[states.length - 1] || '0'  // 取最后一个状态作为栈顶
+  const symbol = step.inputString[0]
+  const action = getActionValue(Number(state), symbol)
+  const productionNum = action.replace('r', '')
+
+  // 1. 先填写数据到答题行（复制上一行数据）
+  await copyDataToAnswerRow(hintStepIndex.value)
+  await sleep(500)
+
+  // 2. 高亮查表依据：状态栈顶状态和输入串首字符
+  highlightTableBasis.value = {
+    stateStack: true,
+    inputString: true,
+    stateStackCell: state,
+    inputStringCell: symbol
+  }
+  hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
+  await sleep(500)
+
+  // 3. 高亮Action表
+  highlightRow.value = Number(state)
+  highlightCol.value = symbol
+  highlightCell.value = {row: Number(state), col: symbol}
+  hintMessage.value = `Action[${state},${symbol}]=${action}: 用产生式${productionNum}归约`
+
+  await sleep(1000)
+
+  // 4. 高亮产生式
+  highlightProduction.value = Number(productionNum)
+  await sleep(500)
+
+  // 5. 规约动画
+  const production = numberedProductions.value[Number(productionNum) - 1]
+  if (production) {
+    const [left, right] = production.split('->')
+    await executeReduceSymbolAnimation(right, left, hintStepIndex.value)
+  }
+
+  await sleep(500)
+
+  // 6. 状态栈出栈动画（弹出右部符号对应数量的状态）
+  if (production) {
+    const [, right] = production.split('->')
+    await executeStatePopAnimation(right.length, hintStepIndex.value)
+  }
+
+  await sleep(500)
+
+  // 7. Goto表查询和动画
+  const nextStep = analysisSteps.value[hintStepIndex.value]
+  let gotoState = ''
+  if (nextStep && production) {
+    const [left] = production.split('->')
+    // 修复：确保状态栈是字符串格式，然后按空格分割
+    const nextStateStackStr = String(nextStep.stateStack)
+    const nextStateStack = nextStateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+    const prevState = nextStateStack[nextStateStack.length - 2]
+    gotoState = nextStateStack[nextStateStack.length - 1]
+
+    highlightGoto.value = {row: Number(prevState), col: left}
+    hintMessage.value = `Goto[${prevState},${left}]=${gotoState}入栈`
+    await sleep(500)
+    await executeGotoAnimation(gotoState, hintStepIndex.value)
+  }
+
+  await sleep(500)
+
+  // 8. 动画结束后自动填写答案
+  setTimeout(() => {
+    fillReduceAnswer(hintStepIndex.value, production, gotoState)
+    hintActive.value = false
+    hintMessage.value = ''
+    clearHighlight()
+    highlightTableBasis.value = {
+      stateStack: false,
+      inputString: false,
+      stateStackCell: '',
+      inputStringCell: ''
+    }
+  }, 800)
+}
+
+// 修改规约符号动画，支持多符号规约
+const executeReduceSymbolAnimation = async (rightSymbol: string, leftSymbol: string, rowIndex: number) => {
+  // 查找符号栈和产生式单元格
+  const symbolStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`) as HTMLElement
+  const productionCell = document.querySelector(`[data-production="${highlightProduction.value}"]`) as HTMLElement
+
+  if (!symbolStackCell || !productionCell) return
+
+  const symbolStackRect = symbolStackCell.getBoundingClientRect()
+  const productionRect = productionCell.getBoundingClientRect()
+
+  // 右部符号飞出（支持多符号）
+  for (let i = rightSymbol.length - 1; i >= 0; i--) {
+    const symbol = rightSymbol[i]
+    flyingSymbols.value.push({
+      symbol: symbol,
+      from: 'symbolStack',
+      to: 'production',
+      x: symbolStackRect.left + symbolStackRect.width / 2,
+      y: symbolStackRect.top + symbolStackRect.height / 2
+    })
+  }
+
+  await new Promise(resolve => requestAnimationFrame(resolve))
+
+  // 动画到目标位置
+  const flyingSymbols1 = flyingSymbols.value.filter(fs => fs.from === 'symbolStack')
+  flyingSymbols1.forEach((fs) => {
+    fs.x = productionRect.left + productionRect.width / 2
+    fs.y = productionRect.top + productionRect.height / 2
+  })
+
+  await sleep(500)
+
+  // 移除右部符号动画
+  flyingSymbols.value = flyingSymbols.value.filter(fs => fs.from !== 'symbolStack')
+
+  // 左部符号飞入
+  flyingSymbols.value.push({
+    symbol: leftSymbol,
+    from: 'production',
+    to: 'symbolStack',
+    x: productionRect.left + productionRect.width / 2,
+    y: productionRect.top + productionRect.height / 2
+  })
+
+  await new Promise(resolve => requestAnimationFrame(resolve))
+
+  const flyingSymbol2 = flyingSymbols.value.find(fs => fs.symbol === leftSymbol && fs.from === 'production')
+  if (flyingSymbol2) {
+    flyingSymbol2.x = symbolStackRect.left + symbolStackRect.width / 2
+    flyingSymbol2.y = symbolStackRect.top + symbolStackRect.height / 2
+  }
+
+  await sleep(500)
+
+  // 移除左部符号动画（不更新数据，数据在最后统一更新）
+  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === leftSymbol && fs.from === 'production'))
+}
+
+// 添加状态栈出栈动画
+async function executeStatePopAnimation(popCount: number, rowIndex: number) {
+  // 查找状态栈单元格
+  const stateStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`) as HTMLElement
+
+  if (!stateStackCell) return
+
+  const stateStackRect = stateStackCell.getBoundingClientRect()
+
+  // 获取当前状态栈 - 修复：正确处理空格分隔的状态
+  const currentStateStack = userAnswers.value.stateStack[rowIndex]
+  // 确保状态栈是字符串格式，然后按空格分割
+  const stateStackStr = String(currentStateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+
+  // 弹出对应数量的状态
+  const poppedStates = states.slice(-popCount)
+
+  // 为每个弹出的状态创建飞行动画
+  for (let i = 0; i < poppedStates.length; i++) {
+    const state = poppedStates[i]
+    flyingSymbols.value.push({
+      symbol: state,
+      from: 'stateStack',
+      to: 'pop',
+      x: stateStackRect.left + stateStackRect.width / 2,
+      y: stateStackRect.top + stateStackRect.height / 2
+    })
+  }
+
+  await new Promise(resolve => requestAnimationFrame(resolve))
+
+  // 动画到屏幕外（表示出栈）
+  const flyingStates = flyingSymbols.value.filter(fs => fs.from === 'stateStack')
+  flyingStates.forEach((fs) => {
+    fs.x = stateStackRect.left + stateStackRect.width / 2
+    fs.y = stateStackRect.top - 50  // 向上飞出
+  })
+
+  await sleep(500)
+
+  // 移除出栈动画（不更新数据，数据在最后统一更新）
+  flyingSymbols.value = flyingSymbols.value.filter(fs => fs.from !== 'stateStack')
+}
+
+// 执行Goto动画，不修改标准答案数据
+async function executeGotoAnimation(state: string, rowIndex: number) {
+  // 查找Goto表和状态栈单元格
+  const gotoCell = document.querySelector(`[data-goto-cell="${highlightGoto.value.row}|${highlightGoto.value.col}"]`) as HTMLElement
+  const stateStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`) as HTMLElement
+
+  if (!gotoCell || !stateStackCell) return
+
+  const gotoRect = gotoCell.getBoundingClientRect()
+  const stateStackRect = stateStackCell.getBoundingClientRect()
+
+  // 创建飞行动画
+  flyingSymbols.value.push({
+    symbol: state,
+    from: 'gotoTable',
+    to: 'stateStack',
+    x: gotoRect.left + gotoRect.width / 2,
+    y: gotoRect.top + gotoRect.height / 2
+  })
+
+  await new Promise(resolve => requestAnimationFrame(resolve))
+
+  // 动画到目标位置
+  const flyingSymbol = flyingSymbols.value.find(fs => fs.symbol === state && fs.from === 'gotoTable')
+  if (flyingSymbol) {
+    flyingSymbol.x = stateStackRect.left + stateStackRect.width / 2
+    flyingSymbol.y = stateStackRect.top + stateStackRect.height / 2
+  }
+
+  await sleep(700)
+
+  // 移除飞行动画（不更新数据，数据在最后统一更新）
+  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === state && fs.from === 'gotoTable'))
+}
+
+// 添加自动填写答案的函数
+function fillShiftAnswer(rowIndex: number, symbol: string, newState: string) {
+  if (rowIndex >= analysisSteps.value.length) return
+
+  // 只更新用户答案，不修改标准答案
+  const currentStateStack = userAnswers.value.stateStack[rowIndex]
+  const currentSymbolStack = userAnswers.value.symbolStack[rowIndex]
+  const currentInputString = userAnswers.value.inputString[rowIndex]
+
+  // 更新数据：符号移进和状态移进（加空格分隔状态）
+  userAnswers.value.symbolStack[rowIndex] = currentSymbolStack + symbol
+  userAnswers.value.inputString[rowIndex] = currentInputString.slice(1)
+  userAnswers.value.stateStack[rowIndex] = currentStateStack + ' ' + newState
+
+  // 立即验证当前行
+  validateCell(rowIndex, 'stateStack')
+  validateCell(rowIndex, 'symbolStack')
+  validateCell(rowIndex, 'inputString')
+
+  // 自动进入下一步
+  if (hintStepIndex.value < analysisSteps.value.length) {
+    hintStepIndex.value++
+  }
+}
+
+// 修改自动填写答案的函数，确保正确的规约逻辑
+function fillReduceAnswer(rowIndex: number, production: string, gotoState: string) {
+  if (rowIndex >= analysisSteps.value.length) return
+
+  // 只更新用户答案，不修改标准答案
+  const currentStateStack = userAnswers.value.stateStack[rowIndex]
+  const currentSymbolStack = userAnswers.value.symbolStack[rowIndex]
+
+  // 规约操作
+  if (production) {
+    const [left, right] = production.split('->')
+
+    // 符号栈：只出栈产生式右部的符号，保留其他符号
+    // 例如：#aB，右部是B（1个符号），则出栈1个符号，变成#a，然后压入left
+    userAnswers.value.symbolStack[rowIndex] = currentSymbolStack.slice(0, -right.length) + left
+
+    // 状态栈：出栈对应数量的状态，然后压入goto状态
+    // 修复：确保状态栈是字符串格式，然后按空格分割
+    const stateStackStr = String(currentStateStack)
+    const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+    // 出栈right.length个状态
+    states.splice(-right.length, right.length, gotoState)
+    userAnswers.value.stateStack[rowIndex] = states.join(' ')
+  }
+
+  // 立即验证当前行
+  validateCell(rowIndex, 'stateStack')
+  validateCell(rowIndex, 'symbolStack')
+  validateCell(rowIndex, 'inputString')
+
+  // 自动进入下一步
+  if (hintStepIndex.value < analysisSteps.value.length) {
+    hintStepIndex.value++
+  }
+}
+
+function fillAcceptAnswer(rowIndex: number) {
+  if (rowIndex >= analysisSteps.value.length) return
+
+  // 只更新用户答案，不修改标准答案
+  // 接受状态不需要修改数据，只是标记完成
+
+  // 立即验证当前行
+  validateCell(rowIndex, 'stateStack')
+  validateCell(rowIndex, 'symbolStack')
+  validateCell(rowIndex, 'inputString')
+
+  // 分析完成，不再自动进入下一步
+}
+
+// 执行符号移进动画
+async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
+  // 查找输入串和符号栈单元格
+  const inputCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4)`) as HTMLElement
+  const symbolStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`) as HTMLElement
+
+  if (!inputCell || !symbolStackCell) return
+
+  const inputRect = inputCell.getBoundingClientRect()
+  const symbolStackRect = symbolStackCell.getBoundingClientRect()
+
+  // 创建飞行动画
+  flyingSymbols.value.push({
+    symbol,
+    from: 'input',
+    to: 'stack',
+    x: inputRect.left + inputRect.width / 2,
+    y: inputRect.top + inputRect.height / 2
+  })
+
+  await new Promise(resolve => requestAnimationFrame(resolve))
+
+  // 动画到目标位置
+  const flyingSymbol = flyingSymbols.value.find(fs => fs.symbol === symbol && fs.from === 'input')
+  if (flyingSymbol) {
+    flyingSymbol.x = symbolStackRect.left + symbolStackRect.width / 2
+    flyingSymbol.y = symbolStackRect.top + symbolStackRect.height / 2
+  }
+
+  await sleep(700)
+
+  // 移除飞行动画（不更新数据）
+  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === symbol && fs.from === 'input'))
+}
+
+// 执行状态移进动画
+async function executeStateShiftAnimation(state: string, rowIndex: number) {
+  // 查找Action表和状态栈单元格
+  const actionCell = document.querySelector(`[data-action-cell="${highlightRow.value}|${highlightCol.value}"]`) as HTMLElement
+  const stateStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`) as HTMLElement
+
+  if (!actionCell || !stateStackCell) return
+
+  const actionRect = actionCell.getBoundingClientRect()
+  const stateStackRect = stateStackCell.getBoundingClientRect()
+
+  // 创建飞行动画
+  flyingSymbols.value.push({
+    symbol: state,
+    from: 'actionTable',
+    to: 'stateStack',
+    x: actionRect.left + actionRect.width / 2,
+    y: actionRect.top + actionRect.height / 2
+  })
+
+  await new Promise(resolve => requestAnimationFrame(resolve))
+
+  // 动画到目标位置
+  const flyingSymbol = flyingSymbols.value.find(fs => fs.symbol === state && fs.from === 'actionTable')
+  if (flyingSymbol) {
+    flyingSymbol.x = stateStackRect.left + stateStackRect.width / 2
+    flyingSymbol.y = stateStackRect.top + stateStackRect.height / 2
+  }
+
+  await sleep(700)
+
+  // 移除飞行动画（不更新数据）
+  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === state && fs.from === 'actionTable'))
+}
+
+// 重置提示状态
+function resetHint() {
+  hintStepIndex.value = 1
+  clearHighlight()
+  hintActive.value = false
+  hintMessage.value = ''
+  flyingSymbols.value = []
+}
+
+// 监听分析结果变化，重置提示状态
+watch(analysisResult, () => {
+  if (analysisResult.value) {
+    resetHint()
+  }
+})
+
+// 添加复制数据到答题行的函数
+async function copyDataToAnswerRow(rowIndex: number) {
+  if (rowIndex <= 0 || rowIndex >= analysisSteps.value.length) return
+
+  const prevStep = analysisSteps.value[rowIndex - 1]
+
+  // 只更新用户答案，不修改标准答案
+  userAnswers.value.stateStack[rowIndex] = prevStep.stateStack
+  userAnswers.value.symbolStack[rowIndex] = prevStep.symbolStack
+  userAnswers.value.inputString[rowIndex] = prevStep.inputString
+
+  // 高亮当前行
+  const currentRow = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1})`) as HTMLElement
+  if (currentRow) {
+    currentRow.classList.add('bg-green-50', 'border-green-200')
+    await sleep(300)
+    currentRow.classList.remove('bg-green-50', 'border-green-200')
+  }
+}
+
+// 修改接受动画，确保正确的查表依据
+const executeAcceptAnimation = async () => {
+  if (hintActive.value) return
+  hintActive.value = true
+
+  const step = analysisSteps.value[hintStepIndex.value - 1]
+  const stateStack = step.stateStack.trim()
+  // 修复状态栈顶解析：正确处理空格分隔的状态
+  const stateStackStr = String(stateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const state = states[states.length - 1] || '0'  // 取最后一个状态作为栈顶
+
+  // 1. 先填写数据到答题行（复制上一行数据）
+  await copyDataToAnswerRow(hintStepIndex.value)
+  await sleep(500)
+
+  // 2. 高亮查表依据
+  highlightTableBasis.value = {
+    stateStack: true,
+    inputString: true,
+    stateStackCell: state,
+    inputStringCell: '#'
+  }
+  hintMessage.value = `查表依据：状态栈顶${state}，输入串首#`
+  await sleep(500)
+
+  // 3. 高亮Action表
+  highlightRow.value = Number(state)
+  highlightCol.value = '#'
+  highlightCell.value = {row: Number(state), col: '#'}
+  hintMessage.value = `Action[${state},#]=acc: 分析成功！`
+
+  await sleep(1000)
+
+  // 4. 动画结束后自动填写答案
+  setTimeout(() => {
+    fillAcceptAnswer(hintStepIndex.value)
+    hintActive.value = false
+    hintMessage.value = ''
+    clearHighlight()
+    highlightTableBasis.value = {
+      stateStack: false,
+      inputString: false,
+      stateStackCell: '',
+      inputStringCell: ''
+    }
+  }, 800)
+}
 </script>
 
 <style scoped>
