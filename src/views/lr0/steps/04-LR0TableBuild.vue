@@ -45,8 +45,11 @@
           <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
         </div>
         <div class="p-4">
-          <div ref="dfaCanvasContainer" class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
-            <div v-if="!dfaRendered" class="text-center text-gray-500">
+          <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
+            <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
+              <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+            </div>
+            <div v-else class="text-center text-gray-500">
               <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500" />
               <p class="text-sm">正在渲染DFA图...</p>
             </div>
@@ -119,7 +122,7 @@ const lr0Store = useLR0Store()
 const stepCompleteStatus = ref(false)
 
 // DFA图渲染相关
-const dfaCanvasContainer = ref<HTMLElement>()
+const dfaSvg = ref('')
 const dfaRendered = ref(false)
 
 // 计算属性
@@ -128,13 +131,10 @@ const lr0DotString = computed(() => lr0Store.dotString)
 
 // 渲染DFA图
 const renderDFA = async () => {
-  if (!hasDFAData.value || !lr0DotString.value || !dfaCanvasContainer.value) return
+  if (!hasDFAData.value || !lr0DotString.value) return
 
   try {
     dfaRendered.value = false
-
-    // 清理之前的内容
-    dfaCanvasContainer.value.innerHTML = ''
 
     // 渲染SVG
     const viz = await instance()
@@ -142,18 +142,16 @@ const renderDFA = async () => {
 
     // 添加样式类
     svg.classList.add('lr0-dfa-svg')
-    dfaCanvasContainer.value.appendChild(svg)
+    dfaSvg.value = svg.outerHTML
     dfaRendered.value = true
 
   } catch (error) {
     console.error('LR0 DFA render failed:', error)
-    if (dfaCanvasContainer.value) {
-      dfaCanvasContainer.value.innerHTML = `
-        <div class="text-center text-red-500 p-4">
-          <p>DFA图渲染失败: ${error instanceof Error ? error.message : String(error)}</p>
-        </div>
-      `
-    }
+    dfaSvg.value = `
+      <div class="text-center text-red-500 p-4">
+        <p>DFA图渲染失败: ${error instanceof Error ? error.message : String(error)}</p>
+      </div>
+    `
   }
 }
 
@@ -280,5 +278,22 @@ const nextStep = () => {
   max-height: 100%;
   height: auto;
   width: auto;
+  transform-origin: center;
+}
+
+.dfa-svg-container {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dfa-svg-container svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 </style>
