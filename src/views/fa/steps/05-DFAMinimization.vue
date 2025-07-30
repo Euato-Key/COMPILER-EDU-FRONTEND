@@ -46,15 +46,14 @@
                   <h3 class="font-semibold text-gray-900">化简DFA状态子集（用户填写）</h3>
                 </div>
                 <div class="p-6">
-                  <p v-if="originalStateCount > 0" class="text-sm text-gray-600 mb-4">
+                  <p v-if="originalStateCount > 0" class="text-sm text-blue-700 font-medium mb-4">
                     请将状态集
-                    {{
-                      faStore.originalData?.table_to_num_min?.['S']?.join(', ') ||
-                      Array.from({ length: originalStateCount }, (_, i) => i).join(', ')
-                    }}
+                    <span class="font-bold text-blue-800">{{
+                      getOriginalStateSet()
+                    }}</span>
                     最小化
                   </p>
-                  <span class="text-xs text-gray-500">(每一行输入一个化简后的状态子集)</span>
+                  <span class="text-xs text-blue-600 font-medium">(每一行输入一个化简后的状态子集)</span>
 
                   <!-- P集合输入 -->
                   <div class="space-y-3 mt-4">
@@ -529,6 +528,31 @@ const toggleSetsAnswer = () => {
 
 const toggleMatrixAnswerStep5 = () => {
   showMatrixAnswerStep5.value = !showMatrixAnswerStep5.value
+}
+
+// 获取原始状态集
+const getOriginalStateSet = () => {
+  // 尝试从原始DFA数据中获取状态集
+  if (faStore.originalData?.table_to_num?.['S']) {
+    const originalStates = faStore.originalData.table_to_num['S']
+    if (Array.isArray(originalStates)) {
+      return originalStates.join(', ')
+    }
+  }
+  
+  // 如果无法从原始数据获取，尝试从最小化数据推断原始状态数量
+  if (faStore.originalData?.table_to_num_min?.['S']) {
+    const minimizedStates = faStore.originalData.table_to_num_min['S']
+    if (Array.isArray(minimizedStates)) {
+      // 从最小化状态推断原始状态数量
+      const maxState = Math.max(...minimizedStates.map(s => parseInt(s) || 0))
+      const originalStates = Array.from({ length: maxState + 1 }, (_, i) => i)
+      return originalStates.join(', ')
+    }
+  }
+  
+  // 最后的备选方案
+  return Array.from({ length: originalStateCount.value }, (_, i) => i).join(', ')
 }
 
 // DFA SVG渲染函数
