@@ -14,8 +14,8 @@
             </p>
           </div>
         </div>
-        <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded">
-          正则表达式: <code class="font-mono">{{ faStore.inputRegex }}</code>
+        <div class="text-sm text-white bg-blue-600 px-3 py-1 rounded shadow-md">
+          正则表达式: <code class="font-mono font-bold">{{ faStore.inputRegex }}</code>
         </div>
       </div>
     </div>
