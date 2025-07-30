@@ -153,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useTheme, type Theme } from '@/composables/useTheme'
 
@@ -249,6 +249,7 @@ const presetThemes: Theme[] = [
 const { currentTheme, applyTheme: applyThemeToDOM } = useTheme()
 const isOpen = ref(false)
 
+// 初始化自定义主题为当前主题的值
 const customTheme = reactive({
   mainBgFrom: '#EBF8FF',
   mainBgTo: '#E0E7FF',
@@ -258,6 +259,30 @@ const customTheme = reactive({
   contentBorder: '#E5E7EB',
   stepBg: '#F8FAFC',
   stepBorder: '#E2E8F0'
+})
+
+// 监听当前主题变化，更新自定义主题的值
+const updateCustomTheme = () => {
+  if (currentTheme.value) {
+    customTheme.mainBgFrom = currentTheme.value.colors.mainBgFrom
+    customTheme.mainBgTo = currentTheme.value.colors.mainBgTo
+    customTheme.headerBg = currentTheme.value.colors.headerBg
+    customTheme.headerText = currentTheme.value.colors.headerText
+    customTheme.contentBg = currentTheme.value.colors.contentBg
+    customTheme.contentBorder = currentTheme.value.colors.contentBorder
+    customTheme.stepBg = currentTheme.value.colors.stepBg
+    customTheme.stepBorder = currentTheme.value.colors.stepBorder
+  }
+}
+
+// 监听主题变化
+onMounted(() => {
+  updateCustomTheme()
+})
+
+// 监听currentTheme变化
+watch(currentTheme, () => {
+  updateCustomTheme()
 })
 
 const toggleDropdown = () => {

@@ -508,7 +508,7 @@ onMounted(() => {
 
 <style scoped>
 .step-flow-chart {
-  background: var(--theme-step-bg, linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%));
+  background: var(--theme-step-bg, #F8FAFC);
   border-radius: 1rem;
   padding: 2rem;
   box-shadow:
