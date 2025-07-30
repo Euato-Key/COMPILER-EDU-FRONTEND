@@ -22,7 +22,7 @@
       <!-- 步骤按钮 -->
       <div class="flex items-center justify-between px-4 py-4">
         <button
-          v-for="(step, index) in steps"
+          v-for="step in steps"
           :key="step.id"
           @click="$emit('step-click', step.id)"
           :class="[
@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { gsap } from 'gsap'
 
@@ -216,7 +216,7 @@ const getButtonPosition = (stepId: number) => {
     targetButton.classList.remove('active', 'completed')
 
     // 强制重新计算布局
-    targetButton.offsetHeight
+    void targetButton.offsetHeight
 
     const containerRect = container.getBoundingClientRect()
     const buttonRect = targetButton.getBoundingClientRect()
@@ -272,7 +272,7 @@ const getButtonVerticalCenter = () => {
     firstButton.classList.remove('active', 'completed')
 
     // 强制重新计算布局
-    firstButton.offsetHeight
+    void firstButton.offsetHeight
 
     const containerRect = container.getBoundingClientRect()
     const circleRect = firstCircle.getBoundingClientRect()
@@ -319,14 +319,7 @@ const getActiveProgressWidth = () => {
   return Math.max(0, currentPos - firstPos)
 }
 
-// Google AI Journey 风格的颜色配置
-const colors = {
-  primary: '#4285F4',    // Google Blue
-  success: '#34A853',    // Google Green
-  warning: '#FCC924',    // Google Yellow
-  background: '#e5e7eb', // Gray background
-  active: '#8b5cf6'      // Purple for active state
-}
+// 颜色配置已移至主题系统
 
 // 判断步骤状态
 const isStepActive = (stepId: number) => stepId === props.currentStep
@@ -515,14 +508,15 @@ onMounted(() => {
 
 <style scoped>
 .step-flow-chart {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--theme-step-bg, linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%));
   border-radius: 1rem;
   padding: 2rem;
   box-shadow:
     0 10px 15px -3px rgb(0 0 0 / 0.1),
     0 4px 6px -2px rgb(0 0 0 / 0.05);
-  border: 1px solid rgb(226 232 240);
+  border: 1px solid var(--theme-step-border, rgb(226 232 240));
   position: relative;
+  transition: all 0.3s ease-in-out;
 }
 
 .timeline-container {
