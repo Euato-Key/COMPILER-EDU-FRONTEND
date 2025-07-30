@@ -62,7 +62,8 @@ const emit = defineEmits(["removeInput","addInput"])
   position: relative;
   padding: 10px;
   border: 1px solid rgb(230, 196, 196);
-  background-color: rgb(253, 214, 174);
+  // background-color: rgb(253, 214, 174);
+  background-image: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
   border-radius: 30px;
   cursor:default;
   width: 120px;
