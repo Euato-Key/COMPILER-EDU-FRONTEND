@@ -1,13 +1,13 @@
 <template>
-  <div class="lr0-layout h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
+  <div class="lr0-layout h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
-    <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+    <header class="theme-header-bg backdrop-blur-sm border-b sticky top-0 z-50 theme-transition">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <router-link
               to="/"
-              class="text-2xl font-bold text-purple-600 hover:text-purple-800 transition-colors"
+              class="text-2xl font-bold theme-header-text hover:opacity-80 transition-colors"
             >
               编译原理可视化
             </router-link>
@@ -15,6 +15,7 @@
             <h1 class="text-xl font-semibold text-gray-800">LR0 语法分析</h1>
           </div>
           <div class="flex items-center gap-2">
+            <ThemeSelector />
             <button
               @click="resetProgress"
               class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -30,7 +31,7 @@
             </button>
             <router-link
               to="/slr1"
-              class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              class="px-4 py-2 text-sm theme-btn-primary rounded-lg hover:opacity-90 transition-colors"
             >
               SLR1分析 →
             </router-link>
@@ -51,7 +52,7 @@
       </div>
 
       <!-- 步骤内容 -->
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="theme-content-bg rounded-xl shadow-lg overflow-hidden theme-transition">
         <Transition name="step-slide" mode="out-in">
           <component
             v-if="currentStepComponent"
@@ -80,6 +81,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
+import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { useLR0Store } from '@/stores/lr0'
 
 const lr0Store = useLR0Store()

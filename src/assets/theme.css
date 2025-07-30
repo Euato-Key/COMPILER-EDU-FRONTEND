@@ -1,0 +1,61 @@
+/* 全局主题CSS变量 */
+:root {
+  /* 默认主题变量 */
+  --theme-primary: #3B82F6;
+  --theme-main-bg-from: #EBF8FF;
+  --theme-main-bg-to: #E0E7FF;
+  --theme-header-bg: #FFFFFF;
+  --theme-header-text: #3B82F6;
+  --theme-content-bg: #FFFFFF;
+  --theme-content-border: #E5E7EB;
+  --theme-header-border: #E5E7EB;
+  --theme-step-bg: #F9FAFB;
+  --theme-step-border: #E5E7EB;
+}
+
+/* 主题应用类 */
+.theme-main-bg {
+  background: linear-gradient(to bottom right, var(--theme-main-bg-from), var(--theme-main-bg-to));
+}
+
+.theme-header-bg {
+  background-color: var(--theme-header-bg);
+  border-bottom-color: var(--theme-header-border);
+}
+
+.theme-header-text {
+  color: var(--theme-header-text);
+}
+
+.theme-content-bg {
+  background-color: var(--theme-content-bg);
+  border-color: var(--theme-content-border);
+}
+
+.theme-step-bg {
+  background-color: var(--theme-step-bg);
+  border-color: var(--theme-step-border);
+}
+
+/* 主题过渡动画 */
+.theme-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* 主题按钮样式 */
+.theme-btn-primary {
+  background-color: var(--theme-primary);
+  color: white;
+}
+
+.theme-btn-primary:hover {
+  background-color: color-mix(in srgb, var(--theme-primary) 80%, black);
+}
+
+.theme-text-primary {
+  color: var(--theme-primary);
+}
+
+.theme-border-primary {
+  border-color: var(--theme-primary);
+}
