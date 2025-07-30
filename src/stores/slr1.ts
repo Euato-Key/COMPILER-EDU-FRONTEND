@@ -247,13 +247,32 @@ export const useSLR1Store = defineStore('slr1', () => {
       commonStore.setLoading(true)
       commonStore.clearError()
 
-      const response = await SLR1AnalyseInpStrAPI(productions.value, inputString.value.trim())
+      // 处理输入字符串：移除用户输入的#，让后端自动添加
+      const processedInput = inputString.value.trim().replace(/#/g, '')
+
+      // 打印发送给后端的数据
+      console.log('=== SLR1输入串分析请求数据 ===')
+      console.log('产生式数组:', productions.value)
+      console.log('原始输入字符串:', inputString.value.trim())
+      console.log('处理后输入字符串:', processedInput)
+      console.log('请求参数:', { inpProductions: productions.value, inpStr: processedInput })
+
+      const response = await SLR1AnalyseInpStrAPI(productions.value, processedInput)
+
+      // 打印后端响应数据
+      console.log('=== SLR1输入串分析响应数据 ===')
+      console.log('响应状态:', response.status)
+      console.log('响应数据:', response.data)
+      console.log('响应code:', response.data?.code)
+      console.log('响应message:', response.data?.message || response.data?.msg)
 
       // 检查响应是否成功 - 后端返回 code: 0 表示成功
       if (response.status === 200 && response.data && response.data.code === 0) {
         const result = response.data.data
         if (result) {
           inputAnalysisResult.value = result
+          console.log('=== SLR1输入串分析成功 ===')
+          console.log('分析结果数据:', response.data.data)
           return true
         } else {
           commonStore.setError('输入串分析结果为空')

@@ -50,24 +50,24 @@
             </div>
             <div class="p-6">
               <div v-if="grammarInfo" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span class="font-medium text-gray-700">开始符号：</span>
                     <span class="text-purple-600 font-mono">{{ grammarInfo.startSymbol }}</span>
                   </div>
-                  <div>
+          <div>
                     <span class="font-medium text-gray-700">产生式数量：</span>
                     <span class="text-purple-600">{{ grammarInfo.productions?.length || 0 }}</span>
-                  </div>
-                </div>
+          </div>
+        </div>
 
                 <!-- 编号产生式 -->
                 <div v-if="grammarInfo.productions?.length" class="mt-4">
                   <h4 class="font-medium text-gray-800 mb-3">编号产生式</h4>
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <div
+            <div
                       v-for="(production, index) in grammarInfo.productions"
-                      :key="index"
+              :key="index"
                       class="flex items-center space-x-2 p-2 rounded"
                       :class="
                         index === 0
@@ -82,7 +82,7 @@
                             ? 'bg-yellow-200 text-yellow-800'
                             : 'bg-gray-200 text-gray-700'
                         "
-                      >
+            >
                         {{ index }}
                       </span>
                       <span class="font-mono text-sm">{{ production }}</span>
@@ -95,19 +95,19 @@
                 <Icon icon="lucide:arrow-left" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
                 <p>暂无文法数据</p>
                 <p class="text-sm mt-1">请先完成前面的步骤</p>
-              </div>
             </div>
           </div>
         </div>
+      </div>
 
         <!-- 用户画图区域 -->
         <div class="user-draw-area">
           <div class="bg-white border border-gray-200 rounded-lg">
             <!-- 用户画布 -->
-            <div class="h-[700px]">
+        <div class="h-[700px]">
               <SLR1DrawDFA :check_DFA="slr1Store.dfaStates as any" @open_step4="onStep4Open" />
-            </div>
-          </div>
+        </div>
+      </div>
 
           <!-- 构造提示 -->
           <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -122,71 +122,71 @@
                   <li>• 继续构造直到没有新的项目集产生</li>
                   <li>• 确保所有项目集和转移关系都正确标记</li>
                 </ul>
-              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 答案区域 -->
+      <!-- 答案区域 -->
         <div class="answer-area">
-          <div class="bg-white border border-gray-200 rounded-lg">
-            <!-- 答案区域头部 -->
-            <div class="border-b border-gray-200 p-4">
-              <div class="flex items-center justify-between">
-                <h3 class="font-semibold text-gray-900">标准答案</h3>
-                <button
-                  @click="toggleAnswer"
-                  :class="[
-                    'px-4 py-2 rounded-lg transition-colors',
-                    showAnswerFlag
-                      ? 'bg-gray-600 text-white hover:bg-gray-700'
-                      : 'bg-green-600 text-white hover:bg-green-700',
-                  ]"
-                >
-                  <Icon
-                    :icon="showAnswerFlag ? 'lucide:eye-off' : 'lucide:eye'"
-                    class="w-4 h-4 inline mr-2"
-                  />
-                  {{ showAnswerFlag ? '隐藏答案' : '查看答案' }}
-                </button>
+        <div class="bg-white border border-gray-200 rounded-lg">
+          <!-- 答案区域头部 -->
+          <div class="border-b border-gray-200 p-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold text-gray-900">标准答案</h3>
+              <button
+                @click="toggleAnswer"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors',
+                  showAnswerFlag
+                    ? 'bg-gray-600 text-white hover:bg-gray-700'
+                    : 'bg-green-600 text-white hover:bg-green-700',
+                ]"
+              >
+                <Icon
+                  :icon="showAnswerFlag ? 'lucide:eye-off' : 'lucide:eye'"
+                  class="w-4 h-4 inline mr-2"
+                />
+                {{ showAnswerFlag ? '隐藏答案' : '查看答案' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- 答案内容 -->
+          <div class="h-80 p-4">
+            <div v-if="!showAnswerFlag" class="h-full flex items-center justify-center">
+              <div class="text-center text-gray-500">
+                <Icon icon="lucide:lock" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p class="text-lg font-medium">答案已隐藏</p>
+                <p class="text-sm mt-1">完成你的构造后点击"查看答案"按钮</p>
               </div>
             </div>
 
-            <!-- 答案内容 -->
-            <div class="h-80 p-4">
-              <div v-if="!showAnswerFlag" class="h-full flex items-center justify-center">
-                <div class="text-center text-gray-500">
-                  <Icon icon="lucide:lock" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                  <p class="text-lg font-medium">答案已隐藏</p>
-                  <p class="text-sm mt-1">完成你的构造后点击"查看答案"按钮</p>
-                </div>
-              </div>
-
-              <div v-else class="h-full">
-                <!-- 答案DFA -->
-                <div class="h-full">
-                  <div ref="answerCanvasContainer" class="h-full w-full bg-gray-50 rounded"></div>
-                </div>
+            <div v-else class="h-full">
+              <!-- 答案DFA -->
+              <div class="h-full">
+                <div ref="answerCanvasContainer" class="h-full w-full bg-gray-50 rounded"></div>
               </div>
             </div>
+          </div>
 
-            <!-- 答案分析 -->
+          <!-- 答案分析 -->
             <div
               v-if="showAnswerFlag && hasDFAData"
               class="border-t border-gray-200 bg-green-50 p-4"
             >
-              <div class="flex items-start gap-3">
-                <Icon
-                  icon="lucide:check-circle"
-                  class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
-                />
-                <div>
-                  <h4 class="font-medium text-green-800">SLR1项目集规范族构造分析</h4>
-                  <div class="text-sm text-green-700 mt-2 space-y-1">
-                    <p>• 项目集数量: {{ answerData?.itemSets?.length || 0 }}</p>
-                    <p>• 转移关系数量: {{ answerData?.transitions?.length || 0 }}</p>
-                    <p>• GOTO函数构造完成</p>
-                    <p>• 可进行下一步SLR1分析表构建</p>
+            <div class="flex items-start gap-3">
+              <Icon
+                icon="lucide:check-circle"
+                class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+              />
+              <div>
+                <h4 class="font-medium text-green-800">SLR1项目集规范族构造分析</h4>
+                <div class="text-sm text-green-700 mt-2 space-y-1">
+                  <p>• 项目集数量: {{ answerData?.itemSets?.length || 0 }}</p>
+                  <p>• 转移关系数量: {{ answerData?.transitions?.length || 0 }}</p>
+                  <p>• GOTO函数构造完成</p>
+                  <p>• 可进行下一步SLR1分析表构建</p>
                   </div>
                 </div>
               </div>
@@ -284,7 +284,7 @@ const answerData = computed(() => {
 
 // 处理步骤4开启事件
 const onStep4Open = () => {
-  isStepComplete.value = true
+      isStepComplete.value = true
   console.log('SLR1 DFA构造完成，可以进入下一步')
 }
 
