@@ -114,7 +114,7 @@ const { error } = storeToRefs(commonStore)
 const ll1Steps = [
   {
     id: 1,
-    name: 'GRAMMAR',
+    name: '输入文法',
     title: '输入文法',
     description: '定义上下文无关文法',
     color: '#10B981',
@@ -122,7 +122,7 @@ const ll1Steps = [
   },
   {
     id: 2,
-    name: 'FIRST/FOLLOW',
+    name: 'First/Follow集',
     title: 'First集和Follow集',
     description: '集合提取',
     color: '#059669',
@@ -130,7 +130,7 @@ const ll1Steps = [
   },
   {
     id: 3,
-    name: 'LL1-TABLE',
+    name: 'LL1分析表',
     title: 'LL1分析表',
     description: '表格构建',
     color: '#047857',
@@ -138,7 +138,7 @@ const ll1Steps = [
   },
   {
     id: 4,
-    name: 'ANALYSIS',
+    name: '字符串分析',
     title: '字符串分析结果',
     description: '语法分析',
     color: '#065f46',

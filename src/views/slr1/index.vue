@@ -5,7 +5,10 @@
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <router-link to="/" class="text-2xl font-bold text-emerald-600 hover:text-emerald-800 transition-colors">
+            <router-link
+              to="/"
+              class="text-2xl font-bold text-emerald-600 hover:text-emerald-800 transition-colors"
+            >
               编译原理可视化
             </router-link>
             <span class="text-gray-400">|</span>
@@ -73,19 +76,59 @@ import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 
 // 动态导入所有步骤组件
 const stepComponents = {
-  'GrammarInput': defineAsyncComponent(() => import('./steps/01-GrammarInput.vue')),
-  'AugmentedGrammar': defineAsyncComponent(() => import('./steps/02-AugmentedGrammar.vue')),
-  'ItemSetConstruction': defineAsyncComponent(() => import('./steps/03-ItemSetConstruction.vue')),
-  'SLR1TableBuild': defineAsyncComponent(() => import('./steps/04-SLR1TableBuild.vue')),
-  'StringAnalysis': defineAsyncComponent(() => import('./steps/05-StringAnalysis.vue'))
+  GrammarInput: defineAsyncComponent(() => import('./steps/01-GrammarInput.vue')),
+  AugmentedGrammar: defineAsyncComponent(() => import('./steps/02-AugmentedGrammar.vue')),
+  ItemSetConstruction: defineAsyncComponent(() => import('./steps/03-ItemSetConstruction.vue')),
+  SLR1TableBuild: defineAsyncComponent(() => import('./steps/04-SLR1TableBuild.vue')),
+  StringAnalysis: defineAsyncComponent(() => import('./steps/05-StringAnalysis.vue')),
 }
 
 const slr1Steps = [
-  { id: 1, name: '输入文法', title: '输入文法', key: 'GrammarInput', description: '输入SLR1文法并进行预处理', color: '#3b82f6', component: 'GrammarInput' },
-  { id: 2, name: '写出增广文法', title: '写出增广文法', key: 'AugmentedGrammar', description: '构造增广文法并分解产生式', color: '#8b5cf6', component: 'AugmentedGrammar' },
-  { id: 3, name: '画DFA', title: '画DFA', key: 'ItemSetConstruction', description: '构造LR0项目集规范族', color: '#10b981', component: 'ItemSetConstruction' },
-  { id: 4, name: '构建SLR1分析表', title: '构建SLR1分析表', key: 'SLR1TableBuild', description: '构建SLR1分析表', color: '#f59e0b', component: 'SLR1TableBuild' },
-  { id: 5, name: '分析输入串', title: '分析输入串', key: 'StringAnalysis', description: '使用SLR1分析表分析字符串', color: '#ef4444', component: 'StringAnalysis' }
+  {
+    id: 1,
+    name: '输入文法',
+    title: '输入文法',
+    key: 'GrammarInput',
+    description: '输入SLR1文法并进行预处理',
+    color: '#3b82f6',
+    component: 'GrammarInput',
+  },
+  {
+    id: 2,
+    name: '写出增广文法',
+    title: '写出增广文法',
+    key: 'AugmentedGrammar',
+    description: '构造增广文法并分解产生式',
+    color: '#8b5cf6',
+    component: 'AugmentedGrammar',
+  },
+  {
+    id: 3,
+    name: '画DFA',
+    title: '画DFA',
+    key: 'ItemSetConstruction',
+    description: '构造LR0项目集规范族',
+    color: '#10b981',
+    component: 'ItemSetConstruction',
+  },
+  {
+    id: 4,
+    name: '构建SLR1分析表',
+    title: '构建SLR1分析表',
+    key: 'SLR1TableBuild',
+    description: '构建SLR1分析表',
+    color: '#f59e0b',
+    component: 'SLR1TableBuild',
+  },
+  {
+    id: 5,
+    name: '分析输入串',
+    title: '分析输入串',
+    key: 'StringAnalysis',
+    description: '使用SLR1分析表分析字符串',
+    color: '#ef4444',
+    component: 'StringAnalysis',
+  },
 ]
 
 const route = useRoute()
@@ -106,17 +149,20 @@ const initializeCurrentStep = () => {
 const currentStep = ref(initializeCurrentStep())
 
 // 监听路由变化
-watch(() => route.params.step, (newStep) => {
-  if (newStep) {
-    const stepNumber = parseInt(newStep as string)
-    if (stepNumber >= 1 && stepNumber <= slr1Steps.length) {
-      currentStep.value = stepNumber
+watch(
+  () => route.params.step,
+  (newStep) => {
+    if (newStep) {
+      const stepNumber = parseInt(newStep as string)
+      if (stepNumber >= 1 && stepNumber <= slr1Steps.length) {
+        currentStep.value = stepNumber
+      }
     }
-  }
-})
+  },
+)
 
 const currentStepComponent = computed(() => {
-  const step = slr1Steps.find(s => s.id === currentStep.value)
+  const step = slr1Steps.find((s) => s.id === currentStep.value)
   return step ? stepComponents[step.key as keyof typeof stepComponents] : null
 })
 
