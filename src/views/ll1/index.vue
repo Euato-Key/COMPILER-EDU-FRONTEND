@@ -77,6 +77,9 @@
         </Transition>
       </div>
     </main>
+
+    <!-- 返回顶部按钮 -->
+    <ScrollToTop theme="green" />
   </div>
 </template>
 
@@ -86,6 +89,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
+import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
 
@@ -103,7 +107,7 @@ const ll1Store = useLL1Store()
 const commonStore = useCommonStore()
 
 // 解构响应式状态（用于模板绑定）
-const { productions, originalData, validationData, inputString } = storeToRefs(ll1Store)
+const { productions, originalData, inputString } = storeToRefs(ll1Store)
 const { error } = storeToRefs(commonStore)
 
 // LL1流程步骤定义

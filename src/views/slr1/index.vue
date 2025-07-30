@@ -58,6 +58,9 @@
         </Transition>
       </div>
     </main>
+
+    <!-- 返回顶部按钮 -->
+    <ScrollToTop theme="emerald" />
   </div>
 </template>
 
@@ -66,6 +69,7 @@ import { ref, computed, watch, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
+import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 
 // 动态导入所有步骤组件
 const stepComponents = {
