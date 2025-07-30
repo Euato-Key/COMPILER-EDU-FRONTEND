@@ -47,24 +47,24 @@
             </div>
             <h3 class="text-xl font-bold text-blue-900">原文法</h3>
           </div>
-          <div class="space-y-2">
-            <div
+              <div class="space-y-2">
+                  <div
               v-for="(production, index) in originalGrammar"
-              :key="index"
+                    :key="index"
               class="font-mono text-sm bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800"
-            >
-              {{ production }}
+                  >
+                    {{ production }}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 从前面步骤获取数据 -->
       <div v-if="!grammarData" class="text-center py-20">
         <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成前面的步骤</h3>
         <p class="text-gray-500">需要先完成文法输入才能构造增广文法</p>
-      </div>
+                  </div>
 
       <div v-else class="space-y-6">
         <!-- 增广文法输入区域 -->
@@ -72,8 +72,8 @@
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
               <Icon icon="lucide:edit-3" class="w-6 h-6 text-white" />
-            </div>
-            <div>
+              </div>
+              <div>
               <h3 class="text-2xl font-bold text-blue-900">增广文法产生式</h3>
               <p class="text-blue-600 text-sm">请填写增广后的文法产生式（包含新增的增广产生式）</p>
             </div>
@@ -106,7 +106,7 @@
                     @input="checkFormCompletion"
                     :readonly="formula.readonly"
                   />
-                </div>
+                  </div>
 
                 <!-- 操作按钮 -->
                 <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -129,7 +129,7 @@
                 </div>
               </div>
             </div>
-          </div>
+                  </div>
 
           <!-- 提示信息 -->
           <div class="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
