@@ -104,10 +104,10 @@
         <div class="user-draw-area">
           <div class="bg-white border border-gray-200 rounded-lg">
             <!-- 用户画布 -->
-        <div class="h-[700px]">
+            <div class="h-[700px] p-4">
               <SLR1DrawDFA :check_DFA="slr1Store.dfaStates as any" @open_step4="onStep4Open" />
-        </div>
-      </div>
+            </div>
+          </div>
 
           <!-- 构造提示 -->
           <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">

@@ -8,6 +8,7 @@ const { onConnect, addEdges, addNodes, onNodeClick, onEdgeClick, findNode, findE
 
 import customEdge from '@/components/lr/custom-edge.vue';
 import customNode from '@/components/lr/custom-node.vue';
+import ModalDialog from '@/components/shared/ModalDialog.vue';
 
 const props = defineProps({
   check_DFA: {
@@ -43,12 +44,33 @@ const next_step_open: Ref<boolean[]> = ref([false, false])
 let showAnswer_cnt = 3
 const emit = defineEmits(["open_step4"])
 
-watch(next_step_open.value, (newValue: boolean[], oldValue: boolean[]) => {
+// 弹窗状态
+const modalVisible = ref(false)
+const modalConfig = ref({
+  type: 'info' as 'success' | 'error' | 'warning' | 'info' | 'confirm',
+  title: '',
+  message: '',
+  details: '',
+  showCancel: false
+})
+
+// 显示弹窗函数
+const showModal = (type: 'success' | 'error' | 'warning' | 'info' | 'confirm', title: string, message: string, details?: string, showCancel = false) => {
+  modalConfig.value = { type, title, message, details: details || '', showCancel }
+  modalVisible.value = true
+}
+
+// 关闭弹窗函数
+const closeModal = () => {
+  modalVisible.value = false
+}
+
+watch(next_step_open.value, (newValue: boolean[]) => {
   if (newValue.every(item => item === true)) {
     emit('open_step4')
     if (showAnswer_cnt <= 1) return
 
-    alert("成功: DFA正确！")
+    showModal('success', 'DFA构造成功', '恭喜！您的DFA构造完全正确！', '所有项目集和转移关系都已正确验证。')
     for (const node of getNodes.value) { // 确保不能删除node，但能拖动 dragable
       node.selectable = false
     }
@@ -99,7 +121,10 @@ const initVar = () => {
 const addNode = () => {
   if (next_step_open.value[0] && next_step_open.value[1]) return
 
-  if (addNode_remainCnt.value <= 0) return alert("错误: 添加次数不足，请确保当前 Item 校验正确")
+  if (addNode_remainCnt.value <= 0) {
+    showModal('error', '添加失败', '添加次数不足，请确保当前 Item 校验正确')
+    return
+  }
   addNode_remainCnt.value--
   addNodes({
     id: "node" + Date.now(),
@@ -156,7 +181,7 @@ const checkItem = () => {
   }
 
   if (checkRight_Items.length >= answerItem_totalNum.value) {
-    alert("成功: 所有 Item 校验正确！")
+    showModal('success', 'Item校验成功', '恭喜！所有 Item 校验正确！', '您可以继续进行Goto连线的校验。')
     next_step_open.value[0] = true
     return
   }
@@ -173,13 +198,16 @@ const checkItem = () => {
     forEachEpoch_AllNum += addNodeLimit
     NodeMatchRight_cnt = 0
     everyEpooch_Items.clear()
-    return alert(`成功: 当前所有 Item 检测成功，可继续添加${addNodeLimit}个 Item`)
+    showModal('success', 'Item校验成功', `当前所有 Item 检测成功，可继续添加${addNodeLimit}个 Item`)
+    return
   }
 
   if (NodeMatchRight_cnt > 0) {
-    return alert(`成功: ${NodeMatchRight_cnt}个 Item 校验成功！`)
+    showModal('success', 'Item校验成功', `${NodeMatchRight_cnt}个 Item 校验成功！`)
+    return
   } else {
-    return alert(`错误: 无 Item 校验成功`)
+    showModal('error', 'Item校验失败', '无 Item 校验成功，请检查您的输入。')
+    return
   }
 }
 
@@ -217,15 +245,17 @@ const checkGoto = () => {
   }
 
   if (checkRIght_Gotos.length >= answerGotos_totalNum.value) {
-    alert("成功: 所有 Goto 校验正确！")
+    showModal('success', 'Goto校验成功', '恭喜！所有 Goto 连线校验正确！', '您的DFA构造已经完成。')
     next_step_open.value[1] = true
     return
   }
 
   if (edgeMatchRight_cnt > 0) {
-    return alert(`成功: ${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
+    showModal('success', 'Goto校验成功', `${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
+    return
   } else {
-    return alert(`错误: 无 Goto 连线校验成功`)
+    showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
+    return
   }
 }
 
@@ -248,38 +278,40 @@ const handleAddInput = (nodeId: string, index: number) => {
 const reset = () => {
   if (next_step_open.value[0] && next_step_open.value[1]) return
 
-  if (confirm('确定要初始化吗?')) {
-    nodes.value = [
-      {
-        id: 'node1',
-        data: {
-          label: "",
-          pros: [
-            {
-              id: "node1" + "_pro" + Date.now(),
-              category: "onlyRead",
-              check: "normal",
-              state: "normal",
-              text: answerItems.value[0].pros[0].text
-            }
-          ],
-        },
-        type: 'custom',
-        position: { x: 50, y: 50 },
-        label: ""
+  showModal('confirm', '确认重置', '确定要初始化吗？这将清除所有已绘制的内容。', '此操作不可撤销。', true)
+}
+
+// 处理重置确认
+const handleResetConfirm = () => {
+  nodes.value = [
+    {
+      id: 'node1',
+      data: {
+        label: "",
+        pros: [
+          {
+            id: "node1" + "_pro" + Date.now(),
+            category: "onlyRead",
+            check: "normal",
+            state: "normal",
+            text: answerItems.value[0].pros[0].text
+          }
+        ],
       },
-    ]
-    edges.value = []
+      type: 'custom',
+      position: { x: 50, y: 50 },
+      label: ""
+    },
+  ]
+  edges.value = []
 
-    initVar()
+  initVar()
 
-    next_step_open.value[0] = false
-    next_step_open.value[1] = false
+  next_step_open.value[0] = false
+  next_step_open.value[1] = false
 
-    setViewport({ x: 0, y: 0, zoom: 1 })
-  } else {
-    console.log("no!")
-  }
+  setViewport({ x: 0, y: 0, zoom: 1 })
+  closeModal()
 }
 
 const showAnswer = () => {
@@ -447,75 +479,96 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
 </script>
 
 <template>
-  <div id="flow_wrapper">
-    <!-- apply-default: 自动更新 useVueflow 和 user-opeartion 的change ，默认为true-->
-    <VueFlow :nodes="nodes" :edges="edges" class="flow" fit-view-on-init :apply-default="true">
-      <Background pattern="dots" :gap="20" />
-      <template #node-custom="customNodeProps">
-        <custom-node
-          :node="customNodeProps"
-          :inpArr="customNodeProps.data.pros"
-          :class="{ active: customNodeProps.selected }"
-          @removeInput="handleRemoveInput"
-          @addInput="handleAddInput"
+  <div class="slr1-dfa-container">
+    <!-- 按钮控制区域 -->
+    <div class="button-controls">
+      <div class="btn_box" id="addNode_wrapper">
+        <button
+          @click="addNode"
+          class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
         >
-        </custom-node>
-      </template>
-      <template #edge-button="customEdgeProps">
-        <custom-edge
-          :id="customEdgeProps.id"
-          :source-x="customEdgeProps.sourceX"
-          :source-y="customEdgeProps.sourceY"
-          :target-x="customEdgeProps.targetX"
-          :target-y="customEdgeProps.targetY"
-          :source-position="customEdgeProps.sourcePosition"
-          :target-position="customEdgeProps.targetPosition"
-          :marker-end="customEdgeProps.markerEnd"
-          :style="customEdgeProps.style"
-          :edgeLabel="customEdgeProps.data"
-        />
-      </template>
-    </VueFlow>
-  </div>
+          添加 Item
+        </button>
+        <div class="icon" id="addLimit_remain" :style="{ 'backgroundColor': next_step_open[0] && next_step_open[1] ? 'rgb(133, 215, 61)' : 'rgb(237, 111, 111)' }">
+          {{ addNode_remainCnt }}
+        </div>
+      </div>
 
-  <div class="btn_box" id="addNode_wrapper">
-    <button
-      @click="addNode"
-      class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-    >
-      添加 Item
-    </button>
-    <div class="icon" id="addLimit_remain" :style="{ 'backgroundColor': next_step_open[0] && next_step_open[1] ? 'rgb(133, 215, 61)' : 'rgb(237, 111, 111)' }">
-      {{ addNode_remainCnt }}
+      <div class="btn_box" id="checkItem_wrapper">
+        <button
+          @click="checkItem"
+          class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          校验 Item
+        </button>
+        <div class="icon" id="allItemRight" v-if="next_step_open[0] === true">√</div>
+      </div>
+
+      <div class="btn_box" id="checkGoto_wrapper">
+        <button
+          @click="checkGoto"
+          class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          校验 Goto
+        </button>
+        <div class="icon" id="allGotoRight" v-if="next_step_open[1] === true">√</div>
+      </div>
+
+      <button
+        @click="reset"
+        class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+      >
+        重置
+      </button>
+    </div>
+
+    <!-- 画布容器 -->
+    <div class="canvas-container">
+      <div id="flow_wrapper">
+        <!-- apply-default: 自动更新 useVueflow 和 user-opeartion 的change ，默认为true-->
+        <VueFlow :nodes="nodes" :edges="edges" class="flow" fit-view-on-init :apply-default="true">
+          <Background pattern="dots" :gap="20" />
+          <template #node-custom="customNodeProps">
+            <custom-node
+              :node="customNodeProps"
+              :inpArr="customNodeProps.data.pros"
+              :class="{ active: customNodeProps.selected }"
+              @removeInput="handleRemoveInput"
+              @addInput="handleAddInput"
+            >
+            </custom-node>
+          </template>
+          <template #edge-button="customEdgeProps">
+            <custom-edge
+              :id="customEdgeProps.id"
+              :source-x="customEdgeProps.sourceX"
+              :source-y="customEdgeProps.sourceY"
+              :target-x="customEdgeProps.targetX"
+              :target-y="customEdgeProps.targetY"
+              :source-position="customEdgeProps.sourcePosition"
+              :target-position="customEdgeProps.targetPosition"
+              :marker-end="customEdgeProps.markerEnd"
+              :style="customEdgeProps.style"
+              :edgeLabel="customEdgeProps.data"
+            />
+          </template>
+        </VueFlow>
+      </div>
     </div>
   </div>
 
-  <div class="btn_box" id="checkItem_wrapper">
-    <button
-      @click="checkItem"
-      class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-    >
-      校验 Item
-    </button>
-    <div class="icon" id="allItemRight" v-if="next_step_open[0] === true">√</div>
-  </div>
-
-  <div class="btn_box" id="checkGoto_wrapper">
-    <button
-      @click="checkGoto"
-      class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-    >
-      校验 Goto
-    </button>
-    <div class="icon" id="allGotoRight" v-if="next_step_open[1] === true">√</div>
-  </div>
-
-  <button
-    @click="reset"
-    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-  >
-    重置
-  </button>
+  <!-- 弹窗组件 -->
+  <ModalDialog
+    :visible="modalVisible"
+    :type="modalConfig.type"
+    :title="modalConfig.title"
+    :message="modalConfig.message"
+    :details="modalConfig.details"
+    :show-cancel="modalConfig.showCancel"
+    @confirm="modalConfig.showCancel ? handleResetConfirm() : closeModal()"
+    @cancel="closeModal()"
+    @close="closeModal()"
+  />
 </template>
 
 <style lang="scss">
@@ -524,6 +577,35 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
 
 /* import the default theme, this is optional but generally recommended */
 @import "@vue-flow/core/dist/theme-default.css";
+
+/* 主容器样式 */
+.slr1-dfa-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 按钮控制区域 */
+.button-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* 画布容器 */
+.canvas-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
 
 .vue-flow__handle {
   /* Handle样式 */
@@ -541,11 +623,12 @@ input {
 }
 
 #flow_wrapper {
-  // border: 1px solid red;
   position: relative;
+  height: 100%;
+  width: 100%;
 
   .flow {
-    height: 80vh;
+    height: 100%;
     width: 100%;
   }
 
@@ -557,7 +640,6 @@ input {
 .btn_box {
   position: relative;
   display: inline-block;
-  // width: 500px;
   margin-right: 20px;
 
   .icon {

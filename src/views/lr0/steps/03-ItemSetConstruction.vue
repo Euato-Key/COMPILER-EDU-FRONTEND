@@ -81,7 +81,7 @@
         <div class="user-draw-area">
           <div class="bg-white border border-gray-200 rounded-lg">
             <!-- 用户画布 -->
-            <div class="h-[700px]">
+            <div class="h-[700px] p-4">
               <!-- <LRCanvas ref="canvasRef" /> -->
               <LR0DrawDFA :check_DFA="lr0Store.dfaStates"></LR0DrawDFA>
             </div>
