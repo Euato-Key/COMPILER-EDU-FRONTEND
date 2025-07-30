@@ -399,9 +399,13 @@
                       :show-answer="true"
                       :final-state-config="{
                         isFinalState: (row: number, col: string, value: any) => {
-                          const columnMapping: Record<string, string> = {
-                            'S': 'I', 'a': 'Ia', 'b': 'Ib', 'c': 'Ic'
-                          }
+                          // 动态生成列映射，支持任意数量的符号
+                          const columnMapping: Record<string, string> = {}
+                          columnMapping['S'] = 'I'
+                          alphabetSymbols.forEach(symbol => {
+                            columnMapping[symbol] = `I${symbol}`
+                          })
+                          
                           const mappedColumn = columnMapping[col] || col
                           return finalStatePositions.some((pos: {row: number, col: string}) => pos.row === row && pos.col === mappedColumn)
                         }
