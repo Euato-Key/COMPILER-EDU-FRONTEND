@@ -54,16 +54,13 @@
                 <p class="text-sm mt-1">请先完成第五步的 DFA 最小化</p>
               </div>
 
-              <!-- 🟢 新增：高亮说明 - 与第四步保持一致 -->
+              <!-- 高亮说明 -->
               <div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
                 <div class="flex items-start gap-3">
                   <Icon icon="lucide:zap" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 class="font-medium text-green-800">高亮说明</h4>
                     <div class="text-sm text-green-700 mt-2 space-y-1">
-                      <p>• <span class="font-semibold">绿色发光单元格</span>：表示终态（接受状态）</p>
-                      <p>• 最小化矩阵中的终态会高亮显示</p>
-                      <p>• 这些高亮状态在最小化DFA中应标记为接受状态</p>
+                      <p><span class="font-semibold">绿色发光单元格</span>：表示终态（包含Y的状态集合），这些高亮状态在DFA中应标记为接受状态</p>
                     </div>
                   </div>
                 </div>
@@ -136,21 +133,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- 新FA画图组件使用说明 -->
-            <div v-if="activeCanvas === 'new'" class="mt-4 pt-4 border-t border-indigo-200">
-              <h5 class="font-medium text-indigo-800 mb-3">新FA画图工具使用说明</h5>
-              <div class="text-xs text-indigo-600 space-y-1">
-                <p>• 使用画布上方的工具栏按钮进行操作</p>
-                <p>• 点击"添加节点"按钮或双击画布添加新状态</p>
-                <p>• 选择节点后点击"设置初态"或"设置终态"</p>
-                <p>• 拖拽节点边缘的连接点创建转换</p>
-                <p>• 点击边上的输入框编辑转换标签</p>
-                <p>• 支持自环和复杂的最小化DFA结构</p>
-                <p>• 使用鼠标滚轮缩放画布，拖拽平移画布</p>
-                <p>• 右下角控制面板可快速调整视图</p>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -164,7 +146,7 @@
                 <button
                   @click="toggleAnswer"
                   :class="[
-                    'px-4 py-2 rounded-lg transition-colors',
+                    'px-4 py-2 rounded-lg transition-colors flex items-center',
                     showAnswer
                       ? 'bg-gray-600 text-white hover:bg-gray-700'
                       : 'bg-green-600 text-white hover:bg-green-700',
@@ -172,7 +154,7 @@
                 >
                   <Icon
                     :icon="showAnswer ? 'lucide:eye-off' : 'lucide:eye'"
-                    class="w-4 h-4 inline mr-2"
+                    class="w-4 h-4 mr-2"
                   />
                   {{ showAnswer ? '隐藏答案' : '查看答案' }}
                 </button>
