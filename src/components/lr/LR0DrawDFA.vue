@@ -5,7 +5,7 @@ import { VueFlow,Handle,Position,useVueFlow,MarkerType, type NodeChange} from "@
 import { Background } from '@vue-flow/background'
 const { onConnect,addEdges,addNodes,onNodeClick,onEdgeClick,findNode,findEdge,getNodes,getEdges,
   onNodesChange,onEdgesChange,applyNodeChanges,applyEdgeChanges,updateEdge,onEdgeUpdate,onPaneReady,setViewport,removeNodes } = useVueFlow()
-
+import { ElMessage } from 'element-plus'
 import customEdge from '@/components/lr/custom-edge.vue';
 import customNode from '@/components/lr/custom-node.vue';
 
@@ -133,7 +133,7 @@ const addNode =  () => {
   //   data: { label: `Node ${id}`, },
   // })
   if(next_step_open.value[0] && next_step_open.value[1]) return
-
+  
   if(addNode_remainCnt.value<=0) return alert("错误: 添加次数不足，请确保当前 Item 校验正确")
   addNode_remainCnt.value--
   addNodes({
@@ -515,7 +515,7 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
 </script>
 
 <template>
-
+<div id="flow_wrapper_container">
   <div id="flow_wrapper">
     <!-- apply-default: 自动更新 useVueflow 和 user-opeartion 的change ，默认为true-->
     <VueFlow :nodes="nodes" :edges="edges" class="flow" fit-view-on-init :apply-default="true">
@@ -585,8 +585,7 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
         >
         重置
   </button>
-
-
+</div>
 </template>
 
 <style lang="scss"> // 不能scoped，否则覆盖不了vue-flow自带样式，同时注意子组件的样式继承
@@ -621,17 +620,18 @@ input{
   margin-right: 20px;
   .icon{
     position: absolute;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-      border-radius: 50%;
-      font-size: 16px;
-      color: white;
-      text-align: center;
-      top: -20%;
-      right: -5%;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    border-radius: 50%;
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    top: -20%;
+    right: -5%;
   }
 }
+
 // #addNode_wrapper{
 //     #addLimit_remain{
 //       // background-color: rgb(237, 111, 111);

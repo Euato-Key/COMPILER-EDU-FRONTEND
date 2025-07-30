@@ -81,10 +81,8 @@
         <div class="user-draw-area">
           <div class="bg-white border border-gray-200 rounded-lg">
             <!-- 用户画布 -->
-            <div class="h-[700px]">
               <!-- <LRCanvas ref="canvasRef" /> -->
               <LR0DrawDFA :check_DFA="lr0Store.dfaStates"></LR0DrawDFA>
-            </div>
           </div>
 
           <!-- 构造提示 -->
@@ -255,9 +253,15 @@ const answerData = computed(() => {
   }
   return null
 })
+import { ElMessage } from 'element-plus'
 
 // 答案控制 - 参考FA组件的SVG渲染实现
 const toggleAnswer = async () => {
+  ElMessage({
+    message: 'Congrats, this is a success message.',
+    type: 'success',
+  })
+
   showAnswerFlag.value = !showAnswerFlag.value
 
   if (showAnswerFlag.value && lr0DotString.value) {
@@ -366,5 +370,6 @@ const proceedToNext = () => {
   max-height: 100%;
   height: auto;
   width: auto;
+
 }
 </style>
