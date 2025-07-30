@@ -12,8 +12,11 @@
       <!-- 激活的进度条 -->
       <div
         ref="progressActiveRef"
-        class="progress-active absolute h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-700 ease-out"
-        style="transform: translateY(-50%)"
+        class="progress-active absolute h-1 rounded-full transition-all duration-700 ease-out"
+        :style="{
+          background: `linear-gradient(to right, var(--theme-primary), ${getCurrentStep()?.color || '#10B981'})`,
+          transform: 'translateY(-50%)'
+        }"
       ></div>
 
       <!-- 步骤按钮 -->
@@ -38,11 +41,15 @@
               'step-circle w-8 h-8 rounded-full border-3 flex items-center justify-center transition-all duration-300',
               'text-xs font-bold relative',
               {
-                'bg-blue-500 border-blue-500 text-white scale-110 shadow-lg': isStepActive(step.id),
-                'bg-green-500 border-green-500 text-white': isStepCompleted(step.id),
+                'text-white scale-110 shadow-lg': isStepActive(step.id),
+                'text-white': isStepCompleted(step.id),
                 'bg-white border-gray-300 text-gray-500 hover:border-gray-400': !isStepActive(step.id) && !isStepCompleted(step.id)
               }
             ]"
+            :style="{
+              backgroundColor: isStepActive(step.id) ? 'var(--theme-primary)' : isStepCompleted(step.id) ? '#10B981' : 'white',
+              borderColor: isStepActive(step.id) ? 'var(--theme-primary)' : isStepCompleted(step.id) ? '#10B981' : '#D1D5DB'
+            }"
           >
             <!-- 完成状态图标 -->
             <Icon
@@ -53,7 +60,8 @@
             <!-- 当前步骤脉冲效果 -->
             <div
               v-else-if="isStepActive(step.id)"
-              class="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-30"
+              class="absolute inset-0 rounded-full animate-ping opacity-30"
+              :style="{ backgroundColor: 'var(--theme-primary)' }"
             />
             <!-- 步骤编号 -->
             <span v-else>{{ step.id }}</span>
@@ -64,11 +72,14 @@
             :class="[
               'step-label text-xs font-medium mt-2 transition-colors duration-300 text-center max-w-20',
               {
-                'text-blue-600 font-semibold': isStepActive(step.id),
+                'font-semibold': isStepActive(step.id),
                 'text-green-600': isStepCompleted(step.id),
                 'text-gray-500': !isStepActive(step.id) && !isStepCompleted(step.id)
               }
             ]"
+            :style="{
+              color: isStepActive(step.id) ? 'var(--theme-primary)' : isStepCompleted(step.id) ? '#10B981' : '#6B7280'
+            }"
           >
             {{ step.name }}
           </span>
@@ -78,9 +89,17 @@
       <!-- 动态指示器球 -->
       <div
         ref="ballRef"
-        class="progress-ball absolute w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full shadow-lg transition-all duration-500 ease-out z-20"
+        class="progress-ball absolute w-3 h-3 rounded-full shadow-lg transition-all duration-500 ease-out z-20"
+        :style="{
+          background: `linear-gradient(to right, var(--theme-primary), ${getCurrentStep()?.color || '#8B5CF6'})`
+        }"
       >
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-ping opacity-25"></div>
+        <div
+          class="absolute inset-0 rounded-full animate-ping opacity-25"
+          :style="{
+            background: `linear-gradient(to right, var(--theme-primary), ${getCurrentStep()?.color || '#8B5CF6'})`
+          }"
+        ></div>
       </div>
     </div>
 
