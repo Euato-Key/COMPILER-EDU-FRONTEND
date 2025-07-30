@@ -699,11 +699,60 @@ const analysisSteps = computed(() => {
     const result = lr0Store.inputAnalysisResult
 
     for (let i = 0; i < result.info_step.length; i++) {
-      // 确保状态栈用空格间隔
+      // 修复：正确处理状态栈，添加空格分隔
       let stateStack = result.info_state_stack?.[i] || ''
-      // 如果状态栈没有空格，添加空格分隔
-      if (stateStack && !stateStack.includes(' ')) {
-        stateStack = stateStack.split('').join(' ')
+
+      // 如果状态栈是数组格式，转换为空格分隔的字符串
+      if (Array.isArray(stateStack)) {
+        stateStack = stateStack.join(' ')
+      } else if (typeof stateStack === 'string') {
+        // 如果是字符串，需要添加空格分隔
+        stateStack = stateStack.trim()
+        // 如果状态栈没有空格分隔，需要添加空格分隔
+        if (stateStack && !stateStack.includes(' ')) {
+          // 智能分割状态栈：根据Action表中的状态来判断
+          // 从Action表中获取所有可能的状态
+          const allStates = new Set<string>()
+          if (lr0Store.actionTable) {
+            Object.keys(lr0Store.actionTable).forEach(key => {
+              const state = key.split('|')[0]
+              allStates.add(state)
+            })
+          }
+          if (grammarInfo.value?.actions) {
+            Object.keys(grammarInfo.value.actions).forEach(key => {
+              const state = key.split('|')[0]
+              allStates.add(state)
+            })
+          }
+
+          // 将状态栈字符串按可能的状态进行分割
+          const states = []
+          let remaining = stateStack
+
+          while (remaining.length > 0) {
+            let found = false
+            // 从最长到最短尝试匹配状态
+            const sortedStates = Array.from(allStates).sort((a, b) => b.length - a.length)
+
+            for (const state of sortedStates) {
+              if (remaining.startsWith(state)) {
+                states.push(state)
+                remaining = remaining.slice(state.length)
+                found = true
+                break
+              }
+            }
+
+            if (!found) {
+              // 如果没有匹配到，按单个字符处理
+              states.push(remaining[0])
+              remaining = remaining.slice(1)
+            }
+          }
+
+          stateStack = states.join(' ')
+        }
       }
 
       steps.push({
