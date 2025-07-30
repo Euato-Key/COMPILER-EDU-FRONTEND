@@ -13,6 +13,13 @@
   --theme-step-border: #E5E7EB;
 }
 
+/* 确保整个页面都有背景色 */
+html, body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--theme-main-bg-from) 0%, var(--theme-main-bg-to) 100%);
+  background-attachment: fixed;
+}
+
 /* 主题应用类 */
 .theme-main-bg {
   background: linear-gradient(to bottom right, var(--theme-main-bg-from), var(--theme-main-bg-to));

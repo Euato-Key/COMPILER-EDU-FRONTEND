@@ -32,6 +32,9 @@ export function useTheme() {
     root.style.setProperty('--theme-step-bg', theme.colors.stepBg)
     root.style.setProperty('--theme-step-border', theme.colors.stepBorder)
 
+    // 移除深色主题class
+    root.classList.remove('theme-dark')
+
     currentTheme.value = theme
 
     // 保存到本地存储
@@ -58,8 +61,8 @@ export function useTheme() {
       name: '默认蓝',
       colors: {
         primary: '#3B82F6',
-        mainBgFrom: '#EBF8FF',
-        mainBgTo: '#E0E7FF',
+              mainBgFrom: '#EBF8FF',
+      mainBgTo: '#BFDBFE',
         headerBg: '#FFFFFF',
         headerText: '#3B82F6',
               contentBg: '#FFFFFF',

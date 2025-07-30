@@ -1,16 +1,17 @@
 <template>
-  <div class="home-page min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="home-page min-h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
-    <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+    <header class="theme-header-bg backdrop-blur-sm border-b theme-header-border">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-blue-600">编译原理可视化工具</h1>
+            <h1 class="text-2xl font-bold theme-header-text">编译原理可视化工具</h1>
           </div>
           <div class="flex items-center gap-2">
+            <ThemeSelector />
             <router-link
               to="/"
-              class="px-3 py-2 text-blue-600 hover:text-blue-800 transition-colors"
+              class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
             >
               首页
             </router-link>
@@ -159,7 +160,7 @@
       </div>
 
       <!-- 开发者工具 -->
-      <div class="bg-gray-50 rounded-xl p-8">
+      <div class="theme-step-bg rounded-xl p-8">
         <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">开发者工具</h3>
         <div class="flex justify-center gap-4">
           <router-link
@@ -184,15 +185,16 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 </script>
 
 <style scoped>
 .algorithm-card {
-  background: white;
+  background: var(--theme-content-bg);
   border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  border: 1px solid rgb(243 244 246);
+  border: 1px solid var(--theme-content-border);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
