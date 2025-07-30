@@ -105,6 +105,28 @@
           </div>
         </div>
 
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-2">步骤导航区域</label>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">背景色</label>
+              <input
+                v-model="customTheme.stepBg"
+                type="color"
+                class="w-full h-8 rounded border border-gray-200 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">边框色</label>
+              <input
+                v-model="customTheme.stepBorder"
+                type="color"
+                class="w-full h-8 rounded border border-gray-200 cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
         <div class="flex gap-2">
           <button
             @click="applyCustomTheme"
@@ -147,7 +169,9 @@ const presetThemes: Theme[] = [
       headerBg: '#FFFFFF',
       headerText: '#3B82F6',
       contentBg: '#FFFFFF',
-      contentBorder: '#E5E7EB'
+      contentBorder: '#E5E7EB',
+      stepBg: '#F8FAFC',
+      stepBorder: '#E2E8F0'
     }
   },
   {
@@ -159,7 +183,9 @@ const presetThemes: Theme[] = [
       headerBg: '#F8FAFC',
       headerText: '#8B5CF6',
       contentBg: '#FFFFFF',
-      contentBorder: '#E2E8F0'
+      contentBorder: '#E2E8F0',
+      stepBg: '#F1F5F9',
+      stepBorder: '#CBD5E1'
     }
   },
   {
@@ -171,7 +197,9 @@ const presetThemes: Theme[] = [
       headerBg: '#F0FDF4',
       headerText: '#10B981',
       contentBg: '#FFFFFF',
-      contentBorder: '#D1FAE5'
+      contentBorder: '#D1FAE5',
+      stepBg: '#F0FDF4',
+      stepBorder: '#A7F3D0'
     }
   },
   {
@@ -183,7 +211,9 @@ const presetThemes: Theme[] = [
       headerBg: '#FFFAF0',
       headerText: '#F59E0B',
       contentBg: '#FFFFFF',
-      contentBorder: '#FDE68A'
+      contentBorder: '#FDE68A',
+      stepBg: '#FFFAF0',
+      stepBorder: '#FED7AA'
     }
   }
 ]
@@ -197,7 +227,9 @@ const customTheme = reactive({
   headerBg: '#FFFFFF',
   headerText: '#3B82F6',
   contentBg: '#FFFFFF',
-  contentBorder: '#E5E7EB'
+  contentBorder: '#E5E7EB',
+  stepBg: '#F8FAFC',
+  stepBorder: '#E2E8F0'
 })
 
 const toggleDropdown = () => {
@@ -223,7 +255,9 @@ const applyCustomTheme = () => {
       headerBg: customTheme.headerBg,
       headerText: customTheme.headerText,
       contentBg: customTheme.contentBg,
-      contentBorder: customTheme.contentBorder
+      contentBorder: customTheme.contentBorder,
+      stepBg: customTheme.stepBg,
+      stepBorder: customTheme.stepBorder
     }
   }
 

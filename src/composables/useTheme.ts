@@ -10,6 +10,8 @@ export interface Theme {
     headerText: string
     contentBg: string
     contentBorder: string
+    stepBg: string
+    stepBorder: string
   }
 }
 
@@ -27,6 +29,8 @@ export function useTheme() {
     root.style.setProperty('--theme-header-text', theme.colors.headerText)
     root.style.setProperty('--theme-content-bg', theme.colors.contentBg)
     root.style.setProperty('--theme-content-border', theme.colors.contentBorder)
+    root.style.setProperty('--theme-step-bg', theme.colors.stepBg)
+    root.style.setProperty('--theme-step-border', theme.colors.stepBorder)
 
     currentTheme.value = theme
 
@@ -58,8 +62,10 @@ export function useTheme() {
         mainBgTo: '#E0E7FF',
         headerBg: '#FFFFFF',
         headerText: '#3B82F6',
-        contentBg: '#FFFFFF',
-        contentBorder: '#E5E7EB'
+              contentBg: '#FFFFFF',
+      contentBorder: '#E5E7EB',
+      stepBg: '#F8FAFC',
+      stepBorder: '#E2E8F0'
       }
     }
     applyTheme(defaultTheme)

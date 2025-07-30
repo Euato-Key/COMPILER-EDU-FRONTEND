@@ -9,7 +9,7 @@
   --theme-content-bg: #FFFFFF;
   --theme-content-border: #E5E7EB;
   --theme-header-border: #E5E7EB;
-  --theme-step-bg: #F9FAFB;
+  --theme-step-bg: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   --theme-step-border: #E5E7EB;
 }
 
