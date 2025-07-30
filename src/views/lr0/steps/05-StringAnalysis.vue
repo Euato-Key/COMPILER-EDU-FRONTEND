@@ -158,6 +158,41 @@
           </div>
 
           <div class="p-6">
+            <!-- 表说明 -->
+            <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div class="bg-blue-50 p-3 rounded">
+                <h4 class="font-medium text-blue-900 mb-1">ACTION动作</h4>
+                <ul class="text-xs text-blue-700 space-y-1">
+                  <li>• Si: 移进到状态i</li>
+                  <li>• rj: 用产生式j规约</li>
+                  <li>• acc: 接受</li>
+                </ul>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <h4 class="font-medium text-green-900 mb-1">GOTO函数</h4>
+                <ul class="text-xs text-green-700 space-y-1">
+                  <li>• 数字: 转移到对应状态</li>
+                  <li>• 空白: 无转移</li>
+                </ul>
+              </div>
+              <div class="bg-purple-50 p-3 rounded">
+                <h4 class="font-medium text-purple-900 mb-1">产生式编号</h4>
+                <ul class="text-xs text-purple-700 space-y-1">
+                  <li
+                    v-for="(production, index) in numberedProductions"
+                    :key="production"
+                    :data-production="index + 1"
+                    :class="[
+                      'text-xs font-mono text-blue-700',
+                      highlightProduction === index + 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded' : ''
+                    ]"
+                  >
+                    • r{{ index + 1 }}: {{ production }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <!-- 分析表 -->
             <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-300">
@@ -248,49 +283,48 @@
                 </tbody>
               </table>
             </div>
-
-            <!-- 表说明 -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div class="bg-blue-50 p-3 rounded">
-                <h4 class="font-medium text-blue-900 mb-1">ACTION动作</h4>
-                <ul class="text-xs text-blue-700 space-y-1">
-                  <li>• Si: 移进到状态i</li>
-                  <li>• rj: 用产生式j规约</li>
-                  <li>• acc: 接受</li>
-                </ul>
-              </div>
-              <div class="bg-green-50 p-3 rounded">
-                <h4 class="font-medium text-green-900 mb-1">GOTO函数</h4>
-                <ul class="text-xs text-green-700 space-y-1">
-                  <li>• 数字: 转移到对应状态</li>
-                  <li>• 空白: 无转移</li>
-                </ul>
-              </div>
-              <div class="bg-purple-50 p-3 rounded">
-                <h4 class="font-medium text-purple-900 mb-1">产生式编号</h4>
-                <ul class="text-xs text-purple-700 space-y-1">
-                  <li
-                    v-for="(production, index) in numberedProductions"
-                    :key="production"
-                    :data-production="index + 1"
-                    :class="[
-                      'text-xs font-mono text-blue-700',
-                      highlightProduction === index + 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded' : ''
-                    ]"
-                  >
-                    • r{{ index + 1 }}: {{ production }}
-                  </li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
 
         <!-- LR0移进-规约分析答题表 -->
         <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">LR0移进-规约分析答题表</h3>
-            <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">LR0移进-规约分析答题表</h3>
+                <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="validateAll"
+                  class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:check-circle" class="w-4 h-4" />
+                  校验
+                </button>
+                <button
+                  @click="showCorrectAnswers"
+                  class="px-4 py-2 text-sm border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:eye" class="w-4 h-4" />
+                  {{ showAnswers ? '隐藏答案' : '查看答案' }}
+                </button>
+                <button
+                  @click="clearAll"
+                  class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:trash-2" class="w-4 h-4" />
+                  清除
+                </button>
+                <button
+                  @click="onHintClick"
+                  class="px-4 py-2 text-sm border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:lightbulb" class="w-4 h-4" />
+                  提示
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="p-6">
@@ -394,7 +428,7 @@
             </div>
 
             <!-- 验证状态说明 -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div class="bg-yellow-50 p-3 rounded">
                 <h4 class="font-medium text-yellow-900 mb-1">验证状态</h4>
                 <div class="text-xs text-yellow-700 space-y-1">
@@ -433,32 +467,6 @@
                   <li>• 符号栈：当前符号序列</li>
                   <li>• 输入串：剩余输入字符串</li>
                 </ul>
-              </div>
-              <div class="bg-green-50 p-3 rounded">
-                <h4 class="font-medium text-green-900 mb-1">操作</h4>
-                <div class="space-y-2">
-                  <button
-                    @click="validateAll"
-                    class="w-full px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                  >
-                    验证答案
-                  </button>
-                  <button
-                    @click="showCorrectAnswers"
-                    class="w-full px-3 py-1.5 text-xs border border-green-300 text-green-700 rounded hover:bg-green-50 transition-colors"
-                  >
-                    {{ showAnswers ? '隐藏答案' : '查看答案' }}
-                  </button>
-                  <button
-                    @click="clearAll"
-                    class="w-full px-3 py-1.5 text-xs border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors"
-                  >
-                    一键清除
-                  </button>
-                  <button @click="onHintClick" class="w-full px-3 py-1.5 text-xs border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
-                    提示
-                  </button>
-                </div>
               </div>
             </div>
           </div>
