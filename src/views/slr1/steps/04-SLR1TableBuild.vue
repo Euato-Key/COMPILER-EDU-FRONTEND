@@ -35,6 +35,25 @@
         </div>
       </div>
 
+      <!-- DFA图显示区域 -->
+      <div v-if="hasDFAData" class="bg-white border border-gray-200 rounded-lg mb-6">
+        <div class="border-b border-gray-200 p-4">
+          <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+            <Icon icon="lucide:git-merge" class="w-5 h-5 text-cyan-600" />
+            SLR1项目集规范族DFA图
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
+        </div>
+        <div class="p-4">
+          <div ref="dfaCanvasContainer" class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
+            <div v-if="!dfaRendered" class="text-center text-gray-500">
+              <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-cyan-500" />
+              <p class="text-sm">正在渲染DFA图...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 从前面步骤获取数据 -->
       <div v-if="!analysisData" class="text-center py-20">
         <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -113,10 +132,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useSLR1Store } from '@/stores/slr1'
 import ParsingTable from '@/components/lr/ParsingTable.vue'
+import { instance } from '@viz-js/viz'
 
 const emit = defineEmits<{
   'next-step': []
@@ -128,8 +148,63 @@ const slr1Store = useSLR1Store()
 // 步骤完成状态
 const stepCompleteStatus = ref(false)
 
+// DFA图渲染相关
+const dfaCanvasContainer = ref<HTMLElement>()
+const dfaRendered = ref(false)
+
 // 从store获取分析数据
 const analysisData = computed(() => slr1Store.analysisResult)
+
+// 计算属性
+const hasDFAData = computed(() => slr1Store.analysisResult !== null && slr1Store.dotString !== '')
+const slr1DotString = computed(() => slr1Store.dotString)
+
+// 渲染DFA图
+const renderDFA = async () => {
+  if (!hasDFAData.value || !slr1DotString.value || !dfaCanvasContainer.value) return
+
+  try {
+    dfaRendered.value = false
+
+    // 清理之前的内容
+    dfaCanvasContainer.value.innerHTML = ''
+
+    // 渲染SVG
+    const viz = await instance()
+    const svg = viz.renderSVGElement(slr1DotString.value)
+
+    // 添加样式类
+    svg.classList.add('slr1-dfa-svg')
+    dfaCanvasContainer.value.appendChild(svg)
+    dfaRendered.value = true
+
+  } catch (error) {
+    console.error('SLR1 DFA render failed:', error)
+    if (dfaCanvasContainer.value) {
+      dfaCanvasContainer.value.innerHTML = `
+        <div class="text-center text-red-500 p-4">
+          <p>DFA图渲染失败: ${error instanceof Error ? error.message : String(error)}</p>
+        </div>
+      `
+    }
+  }
+}
+
+// 组件挂载时渲染DFA图
+onMounted(async () => {
+  await nextTick()
+  if (hasDFAData.value) {
+    await renderDFA()
+  }
+})
+
+// 监听DFA数据变化，重新渲染
+watch(hasDFAData, async (newValue) => {
+  if (newValue) {
+    await nextTick()
+    await renderDFA()
+  }
+})
 
 // FOLLOW集数据 - 如果后端提供的话
 const followSets = computed(() => {
@@ -266,5 +341,13 @@ const nextStep = () => {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* SLR1 DFA SVG 样式 */
+:deep(.slr1-dfa-svg) {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  width: auto;
 }
 </style>
