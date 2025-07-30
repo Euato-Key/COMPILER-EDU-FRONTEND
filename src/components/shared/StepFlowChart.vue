@@ -613,6 +613,43 @@ onMounted(() => {
   }
 }
 
+/* 深色主题特殊动画 */
+.theme-dark .step-button.active .step-circle {
+  animation: dark-pulse-glow 2s ease-in-out infinite;
+}
+
+.theme-dark .progress-ball {
+  animation: dark-ball-glow 3s ease-in-out infinite;
+}
+
+@keyframes dark-pulse-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgb(96 165 250 / 0.6),
+      0 0 20px rgb(96 165 250 / 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 12px rgb(96 165 250 / 0),
+      0 0 30px rgb(96 165 250 / 0.5);
+  }
+}
+
+@keyframes dark-ball-glow {
+  0%, 100% {
+    box-shadow:
+      0 4px 16px rgb(96 165 250 / 0.5),
+      0 0 30px rgb(168 85 247 / 0.4),
+      0 0 50px rgb(96 165 250 / 0.2);
+  }
+  50% {
+    box-shadow:
+      0 6px 20px rgb(96 165 250 / 0.7),
+      0 0 40px rgb(168 85 247 / 0.6),
+      0 0 70px rgb(96 165 250 / 0.4);
+  }
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .step-flow-chart {

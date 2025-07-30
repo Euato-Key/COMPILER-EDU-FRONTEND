@@ -1,5 +1,5 @@
 <template>
-  <div class="slr1-layout h-screen theme-main-bg theme-transition">
+  <div class="slr1-layout min-h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
     <header class="theme-header-bg backdrop-blur-sm border-b sticky top-0 z-50 theme-transition">
       <div class="max-w-7xl mx-auto px-4 py-4">

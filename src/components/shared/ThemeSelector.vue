@@ -14,7 +14,7 @@
 
     <div
       v-if="isOpen"
-      class="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50"
+      class="absolute top-full right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50"
     >
       <div class="p-4 border-b border-gray-100">
         <h3 class="text-sm font-semibold text-gray-900 mb-3">预设主题</h3>
@@ -165,7 +165,7 @@ const presetThemes: Theme[] = [
     colors: {
       primary: '#3B82F6',
       mainBgFrom: '#EBF8FF',
-      mainBgTo: '#E0E7FF',
+      mainBgTo: '#BFDBFE',
       headerBg: '#FFFFFF',
       headerText: '#3B82F6',
       contentBg: '#FFFFFF',
@@ -178,8 +178,8 @@ const presetThemes: Theme[] = [
     name: '科技紫',
     colors: {
       primary: '#8B5CF6',
-      mainBgFrom: '#F3F4F6',
-      mainBgTo: '#E0E7FF',
+      mainBgFrom: '#F5F3FF',
+      mainBgTo: '#DDD6FE',
       headerBg: '#F8FAFC',
       headerText: '#8B5CF6',
       contentBg: '#FFFFFF',
@@ -193,7 +193,7 @@ const presetThemes: Theme[] = [
     colors: {
       primary: '#10B981',
       mainBgFrom: '#ECFDF5',
-      mainBgTo: '#D1FAE5',
+      mainBgTo: '#A7F3D0',
       headerBg: '#F0FDF4',
       headerText: '#10B981',
       contentBg: '#FFFFFF',
@@ -207,13 +207,41 @@ const presetThemes: Theme[] = [
     colors: {
       primary: '#F59E0B',
       mainBgFrom: '#FFFBEB',
-      mainBgTo: '#FEF3C7',
+      mainBgTo: '#FED7AA',
       headerBg: '#FFFAF0',
       headerText: '#F59E0B',
       contentBg: '#FFFFFF',
       contentBorder: '#FDE68A',
       stepBg: '#FFFAF0',
       stepBorder: '#FED7AA'
+    }
+  },
+  {
+    name: '浪漫粉',
+    colors: {
+      primary: '#EC4899',
+      mainBgFrom: '#FDF2F8',
+      mainBgTo: '#FCE7F3',
+      headerBg: '#FFFFFF',
+      headerText: '#EC4899',
+      contentBg: '#FFFFFF',
+      contentBorder: '#FBCFE8',
+      stepBg: '#FDF2F8',
+      stepBorder: '#FBCFE8'
+    }
+  },
+  {
+    name: '清新青',
+    colors: {
+      primary: '#06B6D4',
+      mainBgFrom: '#ECFEFF',
+      mainBgTo: '#CFFAFE',
+      headerBg: '#F0FDFA',
+      headerText: '#06B6D4',
+      contentBg: '#FFFFFF',
+      contentBorder: '#A7F3D0',
+      stepBg: '#F0FDFA',
+      stepBorder: '#A7F3D0'
     }
   }
 ]
