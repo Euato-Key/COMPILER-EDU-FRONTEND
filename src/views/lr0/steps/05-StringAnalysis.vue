@@ -99,7 +99,7 @@
                 <button
                   @click="analyzeString"
                   :disabled="!inputString.trim() || isAnalyzing"
-                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center gap-2"
                 >
                   <Icon
                     :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
