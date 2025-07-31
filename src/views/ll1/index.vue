@@ -1,13 +1,13 @@
 <template>
-  <div class="ll1-layout h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="ll1-layout min-h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
-    <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+    <header class="theme-header-bg backdrop-blur-sm border-b sticky top-0 z-50 theme-transition">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <router-link
               to="/"
-              class="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
+              class="text-2xl font-bold theme-header-text hover:opacity-80 transition-colors"
             >
               编译原理可视化
             </router-link>
@@ -15,10 +15,11 @@
             <h1 class="text-xl font-semibold text-gray-800">LL1 语法分析</h1>
           </div>
           <div class="flex items-center gap-2">
+            <ThemeSelector />
             <!-- 持久化控制按钮 -->
             <button
               @click="saveProgress"
-              class="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+              class="px-3 py-1.5 text-sm theme-header-text hover:opacity-80 hover:bg-gray-50 rounded-lg transition-colors"
             >
               保存进度
             </button>
@@ -30,7 +31,7 @@
             </button>
             <router-link
               to="/lr0"
-              class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              class="px-4 py-2 text-sm theme-btn-primary rounded-lg hover:opacity-90 transition-colors"
             >
               LR0 分析 →
             </router-link>
@@ -65,7 +66,7 @@
       </div>
 
       <!-- 步骤内容 -->
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="theme-content-bg rounded-xl shadow-lg overflow-hidden theme-transition">
         <Transition name="step-slide" mode="out-in">
           <component
             :is="currentStepComponent"
@@ -90,6 +91,7 @@ import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
+import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
 

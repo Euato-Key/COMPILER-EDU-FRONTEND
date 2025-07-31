@@ -215,13 +215,7 @@
 
         <button
           @click="proceedToNext"
-          :disabled="!isStepComplete"
-          :class="[
-            'px-6 py-2 rounded-lg transition-colors',
-            isStepComplete
-              ? 'bg-purple-600 text-white hover:bg-purple-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
-          ]"
+          class="px-6 py-2 rounded-lg transition-colors bg-purple-600 text-white hover:bg-purple-700"
         >
           下一步
           <Icon icon="lucide:chevron-right" class="w-4 h-4 inline ml-2" />
@@ -337,10 +331,8 @@ const toggleAnswer = async () => {
 
 // 进入下一步
 const proceedToNext = () => {
-  if (isStepComplete.value) {
-    // 触发下一步事件
-    emit('next-step')
-  }
+  // 触发下一步事件
+  emit('next-step')
 }
 </script>
 

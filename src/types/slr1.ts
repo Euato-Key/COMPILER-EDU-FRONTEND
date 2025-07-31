@@ -10,6 +10,8 @@ export interface SLR1AnalysisResult {
   gotos: Record<string, string>
   isSLR1: boolean
   SLR1_dot_str: string
+  first: Record<string, string[]>  // 新增：FIRST集
+  follow: Record<string, string[]> // 新增：FOLLOW集
 }
 
 // SLR1 DFA状态类型

@@ -35,23 +35,63 @@
         </div>
       </div>
 
-      <!-- DFA图显示区域 -->
-      <div v-if="hasDFAData" class="bg-white border border-gray-200 rounded-lg mb-6">
-        <div class="border-b border-gray-200 p-4">
-          <h3 class="font-semibold text-gray-900 flex items-center gap-2">
-            <Icon icon="lucide:git-merge" class="w-5 h-5 text-cyan-600" />
-            SLR1项目集规范族DFA图
-          </h3>
-          <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
-        </div>
-        <div class="p-4">
-          <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
-            <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
-              <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+      <!-- DFA图和FOLLOW集并排显示 -->
+      <div v-if="hasDFAData" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- DFA图显示区域 -->
+        <div class="bg-white border border-gray-200 rounded-lg">
+          <div class="border-b border-gray-200 p-4">
+            <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+              <Icon icon="lucide:git-merge" class="w-5 h-5 text-cyan-600" />
+              SLR1项目集规范族DFA图
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
+          </div>
+          <div class="p-4">
+            <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
+              <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
+                <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+              </div>
+              <div v-else class="text-center text-gray-500">
+                <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-cyan-500" />
+                <p class="text-sm">正在渲染DFA图...</p>
+              </div>
             </div>
-            <div v-else class="text-center text-gray-500">
+          </div>
+        </div>
+
+        <!-- FOLLOW集显示区域 -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex items-center gap-2">
+              <Icon icon="lucide:list" class="w-5 h-5 text-cyan-600" />
+              <h3 class="text-xl font-bold text-gray-900">FOLLOW集</h3>
+            </div>
+            <p class="text-sm text-gray-600">SLR1使用FOLLOW集来解决规约冲突</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div
+              v-for="(followSet, symbol) in followSets"
+              :key="symbol"
+              class="group relative bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-3 hover:shadow-md transition-all duration-200 hover:scale-105"
+            >
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <div class="text-xs font-medium text-cyan-700 bg-cyan-100 px-2 py-1 rounded-full whitespace-nowrap">
+                  FOLLOW({{ symbol }})
+                </div>
+                <div class="text-sm font-mono text-gray-800 bg-white/60 rounded px-2 py-1 border border-cyan-100 flex-1 truncate">
+                  {{ followSet.join(', ') || '∅' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 如果没有FOLLOW集数据，显示提示 -->
+            <div
+              v-if="Object.keys(followSets).length === 0"
+              class="col-span-full text-center py-12 text-gray-500"
+            >
               <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-cyan-500" />
-              <p class="text-sm">正在渲染DFA图...</p>
+              <p class="text-sm">FOLLOW集计算中...</p>
             </div>
           </div>
         </div>
@@ -65,28 +105,6 @@
       </div>
 
       <div v-else class="space-y-8">
-        <!-- FOLLOW集显示 -->
-        <div class="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">FOLLOW集</h3>
-          <p class="text-sm text-gray-600 mb-4">SLR1需要使用FOLLOW集来解决规约冲突</p>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div
-              v-for="(followSet, symbol) in followSets"
-              :key="symbol"
-              class="bg-gray-50 p-3 rounded"
-            >
-              <div class="font-medium text-gray-900 mb-1">FOLLOW({{ symbol }})</div>
-              <div class="text-sm text-gray-700">{{ followSet || '∅' }}</div>
-            </div>
-            <!-- 如果没有FOLLOW集数据，显示提示 -->
-            <div
-              v-if="Object.keys(followSets).length === 0"
-              class="col-span-full text-center text-gray-500"
-            >
-              FOLLOW集将在分析过程中自动计算
-            </div>
-          </div>
-        </div>
 
         <!-- 替换原有分析表区域为ParsingTable组件 -->
         <div v-if="tableProps" class="mt-6">
@@ -204,12 +222,8 @@ watch(hasDFAData, async (newValue) => {
   }
 })
 
-// FOLLOW集数据 - 如果后端提供的话
-const followSets = computed(() => {
-  // 如果后端提供FOLLOW集数据，在这里获取
-  // 目前先返回空对象，可以根据实际后端数据结构调整
-  return {}
-})
+// FOLLOW集数据 - 从store获取
+const followSets = computed(() => slr1Store.followSets)
 
 // 计算属性
 const terminals = computed(() => {

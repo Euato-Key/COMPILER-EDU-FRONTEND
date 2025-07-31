@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './theme.css';
 
 /* these are necessary styles for vue flow */
 @import '@vue-flow/core/dist/style.css';

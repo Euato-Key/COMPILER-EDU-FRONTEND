@@ -12,14 +12,17 @@
       <!-- 激活的进度条 -->
       <div
         ref="progressActiveRef"
-        class="progress-active absolute h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-700 ease-out"
-        style="transform: translateY(-50%)"
+        class="progress-active absolute h-1 rounded-full transition-all duration-700 ease-out"
+        :style="{
+          background: `linear-gradient(to right, var(--theme-primary), ${getCurrentStep()?.color || '#10B981'})`,
+          transform: 'translateY(-50%)'
+        }"
       ></div>
 
       <!-- 步骤按钮 -->
       <div class="flex items-center justify-between px-4 py-4">
         <button
-          v-for="(step, index) in steps"
+          v-for="step in steps"
           :key="step.id"
           @click="$emit('step-click', step.id)"
           :class="[
@@ -38,11 +41,15 @@
               'step-circle w-8 h-8 rounded-full border-3 flex items-center justify-center transition-all duration-300',
               'text-xs font-bold relative',
               {
-                'bg-blue-500 border-blue-500 text-white scale-110 shadow-lg': isStepActive(step.id),
-                'bg-green-500 border-green-500 text-white': isStepCompleted(step.id),
+                'text-white scale-110 shadow-lg': isStepActive(step.id),
+                'text-white': isStepCompleted(step.id),
                 'bg-white border-gray-300 text-gray-500 hover:border-gray-400': !isStepActive(step.id) && !isStepCompleted(step.id)
               }
             ]"
+            :style="{
+              backgroundColor: isStepActive(step.id) ? 'var(--theme-primary)' : isStepCompleted(step.id) ? '#10B981' : 'white',
+              borderColor: isStepActive(step.id) ? 'var(--theme-primary)' : isStepCompleted(step.id) ? '#10B981' : '#D1D5DB'
+            }"
           >
             <!-- 完成状态图标 -->
             <Icon
@@ -53,7 +60,8 @@
             <!-- 当前步骤脉冲效果 -->
             <div
               v-else-if="isStepActive(step.id)"
-              class="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-30"
+              class="absolute inset-0 rounded-full animate-ping opacity-30"
+              :style="{ backgroundColor: 'var(--theme-primary)' }"
             />
             <!-- 步骤编号 -->
             <span v-else>{{ step.id }}</span>
@@ -64,11 +72,14 @@
             :class="[
               'step-label text-xs font-medium mt-2 transition-colors duration-300 text-center max-w-20',
               {
-                'text-blue-600 font-semibold': isStepActive(step.id),
+                'font-semibold': isStepActive(step.id),
                 'text-green-600': isStepCompleted(step.id),
                 'text-gray-500': !isStepActive(step.id) && !isStepCompleted(step.id)
               }
             ]"
+            :style="{
+              color: isStepActive(step.id) ? 'var(--theme-primary)' : isStepCompleted(step.id) ? '#10B981' : '#6B7280'
+            }"
           >
             {{ step.name }}
           </span>
@@ -78,9 +89,17 @@
       <!-- 动态指示器球 -->
       <div
         ref="ballRef"
-        class="progress-ball absolute w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full shadow-lg transition-all duration-500 ease-out z-20"
+        class="progress-ball absolute w-3 h-3 rounded-full shadow-lg transition-all duration-500 ease-out z-20"
+        :style="{
+          background: `linear-gradient(to right, var(--theme-primary), ${getCurrentStep()?.color || '#8B5CF6'})`
+        }"
       >
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-ping opacity-25"></div>
+        <div
+          class="absolute inset-0 rounded-full animate-ping opacity-25"
+          :style="{
+            background: `linear-gradient(to right, var(--theme-primary), ${getCurrentStep()?.color || '#8B5CF6'})`
+          }"
+        ></div>
       </div>
     </div>
 
@@ -102,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { gsap } from 'gsap'
 
@@ -197,7 +216,7 @@ const getButtonPosition = (stepId: number) => {
     targetButton.classList.remove('active', 'completed')
 
     // 强制重新计算布局
-    targetButton.offsetHeight
+    void targetButton.offsetHeight
 
     const containerRect = container.getBoundingClientRect()
     const buttonRect = targetButton.getBoundingClientRect()
@@ -253,7 +272,7 @@ const getButtonVerticalCenter = () => {
     firstButton.classList.remove('active', 'completed')
 
     // 强制重新计算布局
-    firstButton.offsetHeight
+    void firstButton.offsetHeight
 
     const containerRect = container.getBoundingClientRect()
     const circleRect = firstCircle.getBoundingClientRect()
@@ -300,14 +319,7 @@ const getActiveProgressWidth = () => {
   return Math.max(0, currentPos - firstPos)
 }
 
-// Google AI Journey 风格的颜色配置
-const colors = {
-  primary: '#4285F4',    // Google Blue
-  success: '#34A853',    // Google Green
-  warning: '#FCC924',    // Google Yellow
-  background: '#e5e7eb', // Gray background
-  active: '#8b5cf6'      // Purple for active state
-}
+// 颜色配置已移至主题系统
 
 // 判断步骤状态
 const isStepActive = (stepId: number) => stepId === props.currentStep
@@ -496,14 +508,15 @@ onMounted(() => {
 
 <style scoped>
 .step-flow-chart {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--theme-step-bg, #F8FAFC);
   border-radius: 1rem;
   padding: 2rem;
   box-shadow:
     0 10px 15px -3px rgb(0 0 0 / 0.1),
     0 4px 6px -2px rgb(0 0 0 / 0.05);
-  border: 1px solid rgb(226 232 240);
+  border: 1px solid var(--theme-step-border, rgb(226 232 240));
   position: relative;
+  transition: all 0.3s ease-in-out;
 }
 
 .timeline-container {
@@ -597,6 +610,43 @@ onMounted(() => {
     box-shadow:
       0 6px 16px rgb(66 133 244 / 0.4),
       0 0 30px rgb(139 92 246 / 0.3);
+  }
+}
+
+/* 深色主题特殊动画 */
+.theme-dark .step-button.active .step-circle {
+  animation: dark-pulse-glow 2s ease-in-out infinite;
+}
+
+.theme-dark .progress-ball {
+  animation: dark-ball-glow 3s ease-in-out infinite;
+}
+
+@keyframes dark-pulse-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgb(96 165 250 / 0.6),
+      0 0 20px rgb(96 165 250 / 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 12px rgb(96 165 250 / 0),
+      0 0 30px rgb(96 165 250 / 0.5);
+  }
+}
+
+@keyframes dark-ball-glow {
+  0%, 100% {
+    box-shadow:
+      0 4px 16px rgb(96 165 250 / 0.5),
+      0 0 30px rgb(168 85 247 / 0.4),
+      0 0 50px rgb(96 165 250 / 0.2);
+  }
+  50% {
+    box-shadow:
+      0 6px 20px rgb(96 165 250 / 0.7),
+      0 0 40px rgb(168 85 247 / 0.6),
+      0 0 70px rgb(96 165 250 / 0.4);
   }
 }
 

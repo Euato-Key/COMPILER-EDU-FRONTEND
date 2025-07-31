@@ -94,17 +94,17 @@
                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   @keydown.enter="analyzeString"
                 />
-            <button
-              @click="analyzeString"
-              :disabled="!inputString.trim() || isAnalyzing"
-                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
-            >
-              <Icon
-                :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
+                            <button
+                  @click="analyzeString"
+                  :disabled="!inputString.trim() || isAnalyzing"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center gap-2"
+                >
+                  <Icon
+                    :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
                     :class="['w-4 h-4', isAnalyzing ? 'animate-spin' : '']"
-              />
-              {{ isAnalyzing ? '分析中...' : '开始分析' }}
-            </button>
+                  />
+                  {{ isAnalyzing ? '分析中...' : '开始分析' }}
+                </button>
                 <button
                   @click="resetAnalysis"
                   class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -185,6 +185,41 @@
           </div>
 
           <div class="p-6">
+            <!-- 表说明 -->
+            <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div class="bg-purple-50 p-3 rounded">
+                <h4 class="font-medium text-purple-900 mb-1">ACTION动作</h4>
+                <ul class="text-xs text-purple-700 space-y-1">
+                  <li>• Si: 移进到状态i</li>
+                  <li>• rj: 用产生式j规约</li>
+                  <li>• acc: 接受</li>
+                </ul>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <h4 class="font-medium text-green-900 mb-1">GOTO函数</h4>
+                <ul class="text-xs text-green-700 space-y-1">
+                  <li>• 数字: 转移到对应状态</li>
+                  <li>• 空白: 无转移</li>
+                </ul>
+              </div>
+              <div class="bg-purple-50 p-3 rounded">
+                <h4 class="font-medium text-purple-900 mb-1">产生式编号</h4>
+                <ul class="text-xs text-purple-700 space-y-1">
+                  <li
+                    v-for="(production, index) in numberedProductions"
+                    :key="production"
+                    :data-production="index + 1"
+                    :class="[
+                      'text-xs font-mono text-purple-700',
+                      highlightProduction === index + 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded' : ''
+                    ]"
+                  >
+                    • r{{ index + 1 }}: {{ production }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <!-- 分析表 -->
           <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-300">
@@ -275,49 +310,48 @@
               </tbody>
             </table>
           </div>
-
-            <!-- 表说明 -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div class="bg-purple-50 p-3 rounded">
-                <h4 class="font-medium text-purple-900 mb-1">ACTION动作</h4>
-                <ul class="text-xs text-purple-700 space-y-1">
-                  <li>• Si: 移进到状态i</li>
-                  <li>• rj: 用产生式j规约</li>
-                  <li>• acc: 接受</li>
-                </ul>
-              </div>
-              <div class="bg-green-50 p-3 rounded">
-                <h4 class="font-medium text-green-900 mb-1">GOTO函数</h4>
-                <ul class="text-xs text-green-700 space-y-1">
-                  <li>• 数字: 转移到对应状态</li>
-                  <li>• 空白: 无转移</li>
-                </ul>
+          </div>
         </div>
-              <div class="bg-purple-50 p-3 rounded">
-                <h4 class="font-medium text-purple-900 mb-1">产生式编号</h4>
-                <ul class="text-xs text-purple-700 space-y-1">
-                  <li
-                    v-for="(production, index) in numberedProductions"
-                    :key="production"
-                    :data-production="index + 1"
-                    :class="[
-                      'text-xs font-mono text-purple-700',
-                      highlightProduction === index + 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded' : ''
-                    ]"
-                  >
-                    • r{{ index + 1 }}: {{ production }}
-                  </li>
-                </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
 
         <!-- SLR1移进-规约分析答题表 -->
         <div v-if="analysisSteps.length > 0" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">SLR1移进-规约分析答题表</h3>
-            <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">SLR1移进-规约分析答题表</h3>
+                <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="validateAll"
+                  class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:check-circle" class="w-4 h-4" />
+                  校验
+                </button>
+                <button
+                  @click="showCorrectAnswers"
+                  class="px-4 py-2 text-sm border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:eye" class="w-4 h-4" />
+                  {{ showAnswers ? '隐藏答案' : '查看答案' }}
+                </button>
+                <button
+                  @click="clearAll"
+                  class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:trash-2" class="w-4 h-4" />
+                  清除
+                </button>
+                <button
+                  @click="onHintClick"
+                  class="px-4 py-2 text-sm border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                >
+                  <Icon icon="lucide:lightbulb" class="w-4 h-4" />
+                  提示
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="p-6">
@@ -421,7 +455,7 @@
             </div>
 
             <!-- 验证状态说明 -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div class="bg-yellow-50 p-3 rounded">
                 <h4 class="font-medium text-yellow-900 mb-1">验证状态</h4>
                 <div class="text-xs text-yellow-700 space-y-1">
@@ -461,33 +495,7 @@
                   <li>• 输入串：剩余输入字符串</li>
                 </ul>
             </div>
-              <div class="bg-green-50 p-3 rounded">
-                <h4 class="font-medium text-green-900 mb-1">操作</h4>
-                <div class="space-y-2">
-            <button
-                    @click="validateAll"
-                    class="w-full px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-            >
-                    验证答案
-            </button>
-            <button
-                    @click="showCorrectAnswers"
-                    class="w-full px-3 py-1.5 text-xs border border-green-300 text-green-700 rounded hover:bg-green-50 transition-colors"
-                  >
-                    {{ showAnswers ? '隐藏答案' : '查看答案' }}
-            </button>
-            <button
-                    @click="clearAll"
-                    class="w-full px-3 py-1.5 text-xs border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors"
-            >
-                    一键清除
-            </button>
-                  <button @click="onHintClick" class="w-full px-3 py-1.5 text-xs border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
-                    提示
-                  </button>
           </div>
-        </div>
-      </div>
           </div>
         </div>
 
@@ -1056,19 +1064,16 @@ const executeShiftAnimation = async () => {
 
   const step = analysisSteps.value[hintStepIndex.value - 1]
   const stateStack = step.stateStack.trim()
-  // 修复状态栈顶解析：正确处理空格分隔的状态
   const stateStackStr = String(stateStack)
   const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
-  const state = states[states.length - 1] || '0'  // 取最后一个状态作为栈顶
+  const state = states[states.length - 1] || '0'
   const symbol = step.inputString[0]
   const action = getActionValue(Number(state), symbol)
   const newState = action.replace('s', '')
 
-  // 1. 先填写数据到答题行（复制上一行数据）
   await copyDataToAnswerRow(hintStepIndex.value)
   await sleep(500)
 
-  // 2. 高亮查表依据：状态栈顶状态和输入串首字符
   highlightTableBasis.value = {
     stateStack: true,
     inputString: true,
@@ -1078,23 +1083,17 @@ const executeShiftAnimation = async () => {
   hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
   await sleep(1000)
 
-  // 3. 高亮Action表对应单元格
   highlightRow.value = Number(state)
   highlightCol.value = symbol
   highlightCell.value = {row: Number(state), col: symbol}
   hintMessage.value = `Action[${state},${symbol}]=${action}: 状态${newState}入栈`
-
   await sleep(1000)
 
-  // 4. 符号移进动画
   await executeSymbolShiftAnimation(symbol, hintStepIndex.value)
   await sleep(500)
-
-  // 5. 状态移进动画
   await executeStateShiftAnimation(newState, hintStepIndex.value)
   await sleep(500)
 
-  // 6. 动画结束后自动填写答案
   setTimeout(() => {
     fillShiftAnswer(hintStepIndex.value, symbol, newState)
     hintActive.value = false
@@ -1109,26 +1108,22 @@ const executeShiftAnimation = async () => {
   }, 800)
 }
 
-// 修改规约动画
 const executeReduceAnimation = async () => {
   if (hintActive.value) return
   hintActive.value = true
 
   const step = analysisSteps.value[hintStepIndex.value - 1]
   const stateStack = step.stateStack.trim()
-  // 修复状态栈顶解析：正确处理空格分隔的状态
   const stateStackStr = String(stateStack)
   const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
-  const state = states[states.length - 1] || '0'  // 取最后一个状态作为栈顶
+  const state = states[states.length - 1] || '0'
   const symbol = step.inputString[0]
   const action = getActionValue(Number(state), symbol)
   const productionNum = action.replace('r', '')
 
-  // 1. 先填写数据到答题行（复制上一行数据）
   await copyDataToAnswerRow(hintStepIndex.value)
   await sleep(500)
 
-  // 2. 高亮查表依据：状态栈顶状态和输入串首字符
   highlightTableBasis.value = {
     stateStack: true,
     inputString: true,
@@ -1138,57 +1133,87 @@ const executeReduceAnimation = async () => {
   hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
   await sleep(500)
 
-  // 3. 高亮Action表
   highlightRow.value = Number(state)
   highlightCol.value = symbol
   highlightCell.value = {row: Number(state), col: symbol}
   hintMessage.value = `Action[${state},${symbol}]=${action}: 用产生式${productionNum}归约`
-
   await sleep(1000)
 
-  // 4. 高亮产生式
   highlightProduction.value = Number(productionNum)
   await sleep(500)
 
-  // 5. 规约动画
   const production = numberedProductions.value[Number(productionNum) - 1]
   if (production) {
     const [left, right] = production.split('->')
     await executeReduceSymbolAnimation(right, left, hintStepIndex.value)
   }
-
   await sleep(500)
 
-  // 6. 状态栈出栈动画（弹出右部符号对应数量的状态）
   if (production) {
     const [, right] = production.split('->')
     await executeStatePopAnimation(right.length, hintStepIndex.value)
   }
-
   await sleep(500)
 
-  // 7. Goto表查询和动画
   const nextStep = analysisSteps.value[hintStepIndex.value]
   let gotoState = ''
   if (nextStep && production) {
     const [left] = production.split('->')
-    // 修复：确保状态栈是字符串格式，然后按空格分割
     const nextStateStackStr = String(nextStep.stateStack)
     const nextStateStack = nextStateStackStr.split(/\s+/).filter(s => s.trim() !== '')
     const prevState = nextStateStack[nextStateStack.length - 2]
     gotoState = nextStateStack[nextStateStack.length - 1]
-
     highlightGoto.value = {row: Number(prevState), col: left}
     hintMessage.value = `Goto[${prevState},${left}]=${gotoState}入栈`
     await sleep(500)
     await executeGotoAnimation(gotoState, hintStepIndex.value)
   }
-
   await sleep(500)
 
-  // 8. 动画结束后自动填写答案
   setTimeout(() => {
     fillReduceAnswer(hintStepIndex.value, production, gotoState)
+    hintActive.value = false
+    hintMessage.value = ''
+    clearHighlight()
+    highlightTableBasis.value = {
+      stateStack: false,
+      inputString: false,
+      stateStackCell: '',
+      inputStringCell: ''
+    }
+  }, 800)
+}
+
+const executeAcceptAnimation = async () => {
+  if (hintActive.value) return
+  hintActive.value = true
+
+  const step = analysisSteps.value[hintStepIndex.value - 1]
+  const stateStack = step.stateStack.trim()
+  const stateStackStr = String(stateStack)
+  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const state = states[states.length - 1] || '0'
+
+  await copyDataToAnswerRow(hintStepIndex.value)
+  await sleep(500)
+
+  highlightTableBasis.value = {
+    stateStack: true,
+    inputString: true,
+    stateStackCell: state,
+    inputStringCell: '#'
+  }
+  hintMessage.value = `查表依据：状态栈顶${state}，输入串首#`
+  await sleep(500)
+
+  highlightRow.value = Number(state)
+  highlightCol.value = '#'
+  highlightCell.value = {row: Number(state), col: '#'}
+  hintMessage.value = `Action[${state},#]=acc: 分析成功！`
+  await sleep(1000)
+
+  setTimeout(() => {
+    fillAcceptAnswer(hintStepIndex.value)
     hintActive.value = false
     hintMessage.value = ''
     clearHighlight()
@@ -1520,55 +1545,6 @@ async function copyDataToAnswerRow(rowIndex: number) {
     await sleep(300)
     currentRow.classList.remove('bg-green-50', 'border-green-200')
   }
-}
-
-// 修改接受动画，确保正确的查表依据
-const executeAcceptAnimation = async () => {
-  if (hintActive.value) return
-  hintActive.value = true
-
-  const step = analysisSteps.value[hintStepIndex.value - 1]
-  const stateStack = step.stateStack.trim()
-  // 修复状态栈顶解析：正确处理空格分隔的状态
-  const stateStackStr = String(stateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
-  const state = states[states.length - 1] || '0'  // 取最后一个状态作为栈顶
-
-  // 1. 先填写数据到答题行（复制上一行数据）
-  await copyDataToAnswerRow(hintStepIndex.value)
-  await sleep(500)
-
-  // 2. 高亮查表依据
-  highlightTableBasis.value = {
-    stateStack: true,
-    inputString: true,
-    stateStackCell: state,
-    inputStringCell: '#'
-  }
-  hintMessage.value = `查表依据：状态栈顶${state}，输入串首#`
-  await sleep(500)
-
-  // 3. 高亮Action表
-  highlightRow.value = Number(state)
-  highlightCol.value = '#'
-  highlightCell.value = {row: Number(state), col: '#'}
-  hintMessage.value = `Action[${state},#]=acc: 分析成功！`
-
-  await sleep(1000)
-
-  // 4. 动画结束后自动填写答案
-  setTimeout(() => {
-    fillAcceptAnswer(hintStepIndex.value)
-    hintActive.value = false
-    hintMessage.value = ''
-    clearHighlight()
-    highlightTableBasis.value = {
-      stateStack: false,
-      inputString: false,
-      stateStackCell: '',
-      inputStringCell: ''
-    }
-  }, 800)
 }
 </script>
 
