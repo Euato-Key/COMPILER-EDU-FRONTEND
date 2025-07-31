@@ -94,17 +94,17 @@
                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   @keydown.enter="analyzeString"
                 />
-            <button
-              @click="analyzeString"
-              :disabled="!inputString.trim() || isAnalyzing"
-                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
-            >
-              <Icon
-                :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
+                            <button
+                  @click="analyzeString"
+                  :disabled="!inputString.trim() || isAnalyzing"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center gap-2"
+                >
+                  <Icon
+                    :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
                     :class="['w-4 h-4', isAnalyzing ? 'animate-spin' : '']"
-              />
-              {{ isAnalyzing ? '分析中...' : '开始分析' }}
-            </button>
+                  />
+                  {{ isAnalyzing ? '分析中...' : '开始分析' }}
+                </button>
                 <button
                   @click="resetAnalysis"
                   class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
