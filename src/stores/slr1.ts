@@ -33,6 +33,10 @@ export const useSLR1Store = defineStore('slr1', () => {
   // DOT字符串用于图形显示
   const dotString = ref('')
 
+  // FIRST和FOLLOW集
+  const firstSets = ref<Record<string, string[]>>({})
+  const followSets = ref<Record<string, string[]>>({})
+
   // Actions
   const setProductions = (newProductions: string[]) => {
     // 处理产生式：移除所有空格，保持与旧前端一致的格式
@@ -76,6 +80,8 @@ export const useSLR1Store = defineStore('slr1', () => {
     dotItems.value = []
     isSLR1Grammar.value = null
     dotString.value = ''
+    firstSets.value = {}
+    followSets.value = {}
   }
 
   // 将后端数据转换为校验数据
@@ -202,6 +208,13 @@ export const useSLR1Store = defineStore('slr1', () => {
           dotItems.value = result.dot_items || []
           isSLR1Grammar.value = result.isSLR1 ?? null
           dotString.value = result.SLR1_dot_str || ''
+
+          // 更新FIRST和FOLLOW集
+          firstSets.value = result.first || {}
+          followSets.value = result.follow || {}
+
+          console.log('FIRST集:', firstSets.value)
+          console.log('FOLLOW集:', followSets.value)
 
           console.log("dfaStates", dfaStates)
 
@@ -376,6 +389,8 @@ export const useSLR1Store = defineStore('slr1', () => {
     dotItems,
     isSLR1Grammar,
     dotString,
+    firstSets,
+    followSets,
 
     // Actions
     setProductions,
