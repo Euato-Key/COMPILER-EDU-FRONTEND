@@ -488,8 +488,8 @@ const exampleGrammars = [
   },
   {
     name: '基础文法2',
-    grammar: 'S->aS|b',
-    description: '简单的递归文法，生成a*b形式的字符串',
+    grammar: 'E->TG\nG->+TG|ε\nT->FH\nH->*FH|ε\nF->(E)|i',
+    description: '生产算术表达式',
   },
   {
     name: '基础文法3',
