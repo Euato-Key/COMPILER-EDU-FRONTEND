@@ -63,7 +63,7 @@
                           v-model="pItem.text"
                           :class="getPSetFieldClass(pItem)"
                           :disabled="pItem.category === 'onlyRead' || step6Open"
-                          @focus="handlePSetFocus(pItem)"
+                          @focus="handlePSetFocus()"
                           @input="handlePSetInput(pItem)"
                           @blur="handlePSetBlur(pItem)"
                           placeholder="输入状态子集，如：1 2 3"
@@ -415,7 +415,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
@@ -586,7 +586,7 @@ onMounted(() => {
     if (faResult) {
       console.log('Step 5 loaded data from store')
       console.log('Step 5 - P data structure:', faResult.P)
-      console.log('Step 5 - P data type check:', faResult.P?.map(p => ({ value: p, type: typeof p, isArray: Array.isArray(p) })))
+      console.log('Step 5 - P data type check:', faResult.P?.map((p: any) => ({ value: p, type: typeof p, isArray: Array.isArray(p) })))
       console.log('Step 5 - table_to_num_min:', faResult.table_to_num_min)
 
       // 详细打印最小化转换表数据
@@ -622,14 +622,34 @@ onMounted(() => {
 
       // 构建最小化DFA的接受状态集合
       buildMinimizedAcceptingStatesSet(faResult)
+
+      // 尝试恢复05页面的用户数据
+      const savedStep5Data = faStore.loadStep5Data()
+      if (savedStep5Data) {
+        console.log('恢复05页面数据:', savedStep5Data)
+        localPSets.value = savedStep5Data.userPSets
+        minimizedMatrix.value = savedStep5Data.userMinimizedMatrix
+      }
     }
   } catch (error) {
     console.error('处理FA数据失败：', error)
   }
 })
 
+// 监听数据变化，自动保存
+watch(
+  [localPSets, minimizedMatrix],
+  () => {
+    // 延迟保存，避免频繁保存
+    setTimeout(() => {
+      saveStep5Data()
+    }, 1000)
+  },
+  { deep: true }
+)
+
 // P集合相关方法
-const handlePSetFocus = (pItem: PSetItem) => {
+const handlePSetFocus = () => {
   // 焦点时不清除错误状态，让用户看到错误信息
   // 只有在用户开始输入时才清除错误状态
 }
@@ -883,6 +903,9 @@ const validateMatrix = () => {
 // 进入下一步
 const proceedToNext = () => {
   if (isComplete.value) {
+    // 保存当前数据
+    saveStep5Data()
+
     const stepData = {
       localPSets: localPSets.value,
       minimizedMatrix: minimizedMatrix.value,
@@ -1053,6 +1076,12 @@ const formatFieldKey = (fieldKey: string, fieldType: 'pset' | 'matrix') => {
     }
   }
   return fieldKey
+}
+
+// 保存05页面数据
+const saveStep5Data = () => {
+  faStore.saveStep5Data(localPSets.value, minimizedMatrix.value)
+  console.log('05页面数据已保存')
 }
 
 // 构建最小化DFA的接受状态集合

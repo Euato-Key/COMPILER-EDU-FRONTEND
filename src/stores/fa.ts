@@ -35,6 +35,26 @@ export interface FAStoreData {
     conversionTableRowCount: number
     timestamp: string
   }
+  // 05页面数据
+  step5Data?: {
+    userPSets: Array<{
+      id: string
+      category: string
+      state: string
+      check: string
+      text: string
+    }>
+    userMinimizedMatrix: Array<{
+      id: string
+      category: string
+      check: string
+      value: string
+      rowIndex: number
+      colIndex: number
+      isRowHeader?: boolean
+    }>
+    timestamp: string
+  }
 }
 
 export const useFAStore = defineStore('fa', () => {
@@ -54,6 +74,8 @@ export const useFAStore = defineStore('fa', () => {
 
   // 03页面数据状态
   const step3Data = ref<FAStoreData['step3Data']>(undefined)
+  // 05页面数据状态
+  const step5Data = ref<FAStoreData['step5Data']>(undefined)
 
   // 计算属性 - 从原始数据提取
   const nfaTable = computed(() => originalData.value?.table || null)
@@ -247,6 +269,39 @@ export const useFAStore = defineStore('fa', () => {
     step3Data.value = undefined
   }
 
+  const saveStep5Data = (
+    userPSets: Array<{
+      id: string
+      category: string
+      state: string
+      check: string
+      text: string
+    }>,
+    userMinimizedMatrix: Array<{
+      id: string
+      category: string
+      check: string
+      value: string
+      rowIndex: number
+      colIndex: number
+      isRowHeader?: boolean
+    }>
+  ) => {
+    step5Data.value = {
+      userPSets: JSON.parse(JSON.stringify(userPSets)), // 深拷贝
+      userMinimizedMatrix: JSON.parse(JSON.stringify(userMinimizedMatrix)), // 深拷贝
+      timestamp: new Date().toISOString()
+    }
+  }
+
+  const loadStep5Data = () => {
+    return step5Data.value
+  }
+
+  const clearStep5Data = () => {
+    step5Data.value = undefined
+  }
+
   // 检查是否有分析结果
   const hasResult = () => {
     return originalData.value !== null
@@ -290,7 +345,7 @@ export const useFAStore = defineStore('fa', () => {
   const persistenceConfig = {
     key: 'fa_store',
     version: '1.0.0',
-    include: ['inputRegex', 'canvasData', 'step3Data'],
+    include: ['inputRegex', 'canvasData', 'step3Data', 'step5Data'],
     autoSave: true,
     ttl: 7 * 24 * 60 * 60 * 1000, // 7天
     saveDelay: 500,
@@ -302,6 +357,7 @@ export const useFAStore = defineStore('fa', () => {
       inputRegex,
       canvasData,
       step3Data,
+      step5Data,
     },
     ...persistenceConfig,
   })
@@ -365,6 +421,11 @@ export const useFAStore = defineStore('fa', () => {
     saveStep3Data,
     loadStep3Data,
     clearStep3Data,
+
+    // 05页面数据管理
+    saveStep5Data,
+    loadStep5Data,
+    clearStep5Data,
 
     // 辅助方法
     hasResult,
