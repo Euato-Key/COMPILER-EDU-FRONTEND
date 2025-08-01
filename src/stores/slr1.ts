@@ -195,14 +195,14 @@ export const useSLR1Store = defineStore('slr1', () => {
           // dfaStates.value = result.all_dfa || []
           dfaStates.value = result.all_dfa.map((item) => {
             return {
-              id: "Item" + item.id,
+              id: 'Item' + item.id,
               pros: item.pros.map((x: string, idx: number) => {
                 return {
-                  id: "Item" + item.id + "_pro" + idx,
+                  id: 'Item' + item.id + '_pro' + idx,
                   text: x,
                 }
               }),
-              next_ids: item.next_ids
+              next_ids: item.next_ids,
             }
           })
           dotItems.value = result.dot_items || []
@@ -216,7 +216,7 @@ export const useSLR1Store = defineStore('slr1', () => {
           console.log('FIRST集:', firstSets.value)
           console.log('FOLLOW集:', followSets.value)
 
-          console.log("dfaStates", dfaStates)
+          console.log('dfaStates', dfaStates)
 
           // 转换为校验数据
           validationData.value = transformToValidationData(result)
