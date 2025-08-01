@@ -751,6 +751,11 @@
       </div>
     </div>
 
+    <!-- 语法分析动画组件 -->
+    <div v-if="isStepComplete" class="mt-8">
+      <CompilerAnalyzer algorithm="LL1" />
+    </div>
+
     <div class="step-actions">
       <div class="flex justify-between items-center">
         <button
@@ -812,6 +817,7 @@ import { storeToRefs } from 'pinia'
 import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
 import { Icon } from '@iconify/vue'
+import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
 
 // 组件事件
 const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: any] }>()
@@ -826,6 +832,7 @@ const { loading } = storeToRefs(commonStore)
 
 // 本地状态
 const analyzing = computed(() => loading.value)
+const isStepComplete = computed(() => inputAnalysisResult.value !== null)
 
 // 示例字符串 (不包含结束符，系统会自动添加#)
 const exampleStrings = ['a', 'ab', 'aab', 'b']

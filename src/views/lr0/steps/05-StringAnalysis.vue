@@ -603,6 +603,11 @@
       </div>
     </div>
 
+    <!-- 语法分析动画组件 -->
+    <div v-if="isStepComplete" class="mt-8">
+      <CompilerAnalyzer algorithm="LR0" />
+    </div>
+
     <!-- 步骤操作栏 -->
     <div class="step-actions">
       <div class="flex justify-between items-center">
@@ -658,6 +663,7 @@ import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useLR0Store } from '@/stores/lr0'
 import { useCommonStore } from '@/stores/common'
+import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
 import type { AnalysisStepInfo } from '@/types'
 
 const emit = defineEmits<{

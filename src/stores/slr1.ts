@@ -284,8 +284,10 @@ export const useSLR1Store = defineStore('slr1', () => {
         const result = response.data.data
         if (result) {
           inputAnalysisResult.value = result
-          console.log('=== SLR1输入串分析成功 ===')
-          console.log('分析结果数据:', response.data.data)
+          console.log('===== SLR1 输入串分析结果 =====')
+          console.log('输入串:', processedInput)
+          console.log('分析结果数据:', inputAnalysisResult.value)
+          console.log('=====================================')
           return true
         } else {
           commonStore.setError('输入串分析结果为空')

@@ -330,26 +330,24 @@ export const useLR0Store = defineStore('lr0', () => {
           actionTable.value = result.actions || {}
           gotoTable.value = result.gotos || {}
           // dfaStates.value = result.all_dfa || []
-          dfaStates.value = result.all_dfa.map((item, index)=>{
+          dfaStates.value = result.all_dfa.map((item, index) => {
             return {
-              id:"Item"+item.id,
-              pros: item.pros.map((x:any,idx:any)=>{
-                return{
-                  id:"Item"+item.id+"_pro"+idx,
-                  text:x,
+              id: 'Item' + item.id,
+              pros: item.pros.map((x: any, idx: any) => {
+                return {
+                  id: 'Item' + item.id + '_pro' + idx,
+                  text: x,
                 }
               }),
-              next_ids: item.next_ids
+              next_ids: item.next_ids,
             }
           })
-
-
 
           dotItems.value = result.dot_items || []
           isLR0Grammar.value = result.isLR0 ?? null
           dotString.value = result.LR0_dot_str || ''
 
-          console.log("dfaStates",dfaStates)
+          console.log('dfaStates', dfaStates)
           // 检测冲突并设置警告
           if (!result.isLR0) {
             validationWarnings.value = [
@@ -430,8 +428,10 @@ export const useLR0Store = defineStore('lr0', () => {
         response.data.data
       ) {
         inputAnalysisResult.value = response.data.data
-        console.log('=== LR0输入串分析成功 ===')
-        console.log('分析结果数据:', response.data.data)
+        console.log('===== LR0 输入串分析结果 =====')
+        console.log('输入串:', processedInput)
+        console.log('分析结果数据:', inputAnalysisResult.value)
+        console.log('=====================================')
         return true
       } else {
         commonStore.setError(response.data?.message || response.data?.msg || '输入串分析失败')

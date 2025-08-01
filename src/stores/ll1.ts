@@ -21,7 +21,9 @@ export const useLL1Store = defineStore('ll1', () => {
   const isLL1Grammar = computed(() => originalData.value?.isLL1 ?? null)
 
   // 文法验证函数
-  const validateGrammar = (inputText: string): { isValid: boolean; errorMessage: string; processedProductions: string[] } => {
+  const validateGrammar = (
+    inputText: string,
+  ): { isValid: boolean; errorMessage: string; processedProductions: string[] } => {
     let errorMessage = ''
     let processedProductions: string[] = []
 
@@ -31,7 +33,7 @@ export const useLL1Store = defineStore('ll1', () => {
       const emptyPattern = /^\s*$/
       if (emptyPattern.test(inputText)) {
         return { isValid: false, errorMessage: '请输入产生式！', processedProductions: [] }
-    }
+      }
 
       // 检查是否包含中文字符
       const chinesePattern = /[\u4e00-\u9fa5]/
@@ -43,12 +45,16 @@ export const useLL1Store = defineStore('ll1', () => {
       let processedText = inputText.replace(/ +/g, '')
 
       // 2. 产生式分割与重复检查
-      processedProductions = processedText.split('\n').filter(item => item.trim() !== '')
+      processedProductions = processedText.split('\n').filter((item) => item.trim() !== '')
 
       // 检查重复项
       const productionSet = new Set(processedProductions)
       if (processedProductions.length !== productionSet.size) {
-        return { isValid: false, errorMessage: '产生式含重复项，请重新输入！', processedProductions: [] }
+        return {
+          isValid: false,
+          errorMessage: '产生式含重复项，请重新输入！',
+          processedProductions: [],
+        }
       }
 
       // 3. 产生式格式检查
@@ -59,18 +65,30 @@ export const useLL1Store = defineStore('ll1', () => {
         // 检查 -> 数量
         const arrowCount = (production.match(/->/g) || []).length
         if (arrowCount > 1) {
-          return { isValid: false, errorMessage: `第${i + 1}行产生式包含多个"->"，格式错误！`, processedProductions: [] }
+          return {
+            isValid: false,
+            errorMessage: `第${i + 1}行产生式包含多个"->"，格式错误！`,
+            processedProductions: [],
+          }
         }
         if (arrowCount === 0) {
-          return { isValid: false, errorMessage: `第${i + 1}行产生式缺少"->"，格式错误！`, processedProductions: [] }
+          return {
+            isValid: false,
+            errorMessage: `第${i + 1}行产生式缺少"->"，格式错误！`,
+            processedProductions: [],
+          }
         }
 
         // 检查产生式格式：X->Y，其中X为大写字母，Y为任意字符（除|）和|分隔的序列
         const formatMatch = production.match(/^([A-Z])->((?:[^|]+\|)*[^|]+)$/)
         if (!formatMatch) {
-          return { isValid: false, errorMessage: `第${i + 1}行产生式格式错误！应为"大写字母->右部"格式`, processedProductions: [] }
+          return {
+            isValid: false,
+            errorMessage: `第${i + 1}行产生式格式错误！应为"大写字母->右部"格式`,
+            processedProductions: [],
+          }
         }
-    }
+      }
 
       // 4. 构建产生式字典
       const formulasDict: Record<string, string[]> = {}
@@ -98,9 +116,13 @@ export const useLL1Store = defineStore('ll1', () => {
       const allNonTerminals = Array.from(processedProductions.join('').match(/[A-Z]/g) || [])
       for (const nonTerminal of allNonTerminals) {
         if (!formulasDict[nonTerminal]) {
-          return { isValid: false, errorMessage: `非终结符"${nonTerminal}"没有定义产生式！`, processedProductions: [] }
+          return {
+            isValid: false,
+            errorMessage: `非终结符"${nonTerminal}"没有定义产生式！`,
+            processedProductions: [],
+          }
         }
-    }
+      }
 
       // 6. 检查左递归
       const visited = new Set<string>()
@@ -133,10 +155,14 @@ export const useLL1Store = defineStore('ll1', () => {
       for (const nonTerminal of allNonTerminals) {
         if (!visited.has(nonTerminal)) {
           if (hasLeftRecursion(nonTerminal)) {
-            return { isValid: false, errorMessage: '存在直接或间接左递归，请输入消除左递归后的文法！', processedProductions: [] }
+            return {
+              isValid: false,
+              errorMessage: '存在直接或间接左递归，请输入消除左递归后的文法！',
+              processedProductions: [],
+            }
           }
         }
-    }
+      }
 
       // 7. 检查终结符连续出现
       for (let i = 0; i < processedProductions.length; i++) {
@@ -158,14 +184,17 @@ export const useLL1Store = defineStore('ll1', () => {
             const isNextTerminal = !/[A-Z| ]/.test(next)
 
             if (isCurrentTerminal && isNextTerminal) {
-              return { isValid: false, errorMessage: `第${i + 1}行：终结符不能连续出现，如"${current}${next}"`, processedProductions: [] }
+              return {
+                isValid: false,
+                errorMessage: `第${i + 1}行：终结符不能连续出现，如"${current}${next}"`,
+                processedProductions: [],
+              }
             }
           }
         }
       }
 
       return { isValid: true, errorMessage: '', processedProductions }
-
     } catch (error) {
       return { isValid: false, errorMessage: '文法验证过程中发生错误', processedProductions: [] }
     }
@@ -281,7 +310,7 @@ export const useLL1Store = defineStore('ll1', () => {
     let cleanedInputString = inputString.value.replace(/ +/g, '') // 移除空格
     if (/^\s*$/.test(cleanedInputString)) {
       commonStore.setError('请先输入字符串')
-      cleanedInputString +='#'
+      cleanedInputString += '#'
       return false
     }
 
@@ -305,6 +334,12 @@ export const useLL1Store = defineStore('ll1', () => {
 
         // 保存分析结果，无论成功还是失败
         inputAnalysisResult.value = responseData
+
+        // 打印 LL1 输入串分析结果
+        console.log('===== LL1 输入串分析结果 =====')
+        console.log('输入串:', cleanedInputString)
+        console.log('分析结果数据:', inputAnalysisResult.value)
+        console.log('=====================================')
 
         // 检查分析结果
         if (responseData.info_res === 'Success!') {
