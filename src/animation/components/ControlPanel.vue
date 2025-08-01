@@ -2,16 +2,16 @@
   <div class="flex items-center justify-between px-4 py-2 bg-white shadow rounded mb-4">
     <div class="flex items-center gap-2">
       <button @click="$emit('play')" :disabled="isPlaying" class="btn">
-        <lucide-play class="w-5 h-5" />
+        <Play class="w-5 h-5" />
       </button>
       <button @click="$emit('pause')" :disabled="!isPlaying" class="btn">
-        <lucide-pause class="w-5 h-5" />
+        <Pause class="w-5 h-5" />
       </button>
       <button @click="$emit('reset')" class="btn">
-        <lucide-rotate-ccw class="w-5 h-5" />
+        <RotateCcw class="w-5 h-5" />
       </button>
       <button @click="$emit('step')" class="btn">
-        <lucide-step-forward class="w-5 h-5" />
+        <StepForward class="w-5 h-5" />
       </button>
     </div>
     <div class="flex items-center gap-4">
