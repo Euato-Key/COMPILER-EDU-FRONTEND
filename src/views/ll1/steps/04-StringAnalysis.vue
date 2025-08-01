@@ -751,6 +751,11 @@
       </div>
     </div>
 
+    <!-- 语法分析动画组件 -->
+    <div v-if="isStepComplete" class="mt-8">
+      <CompilerAnalyzer algorithm="LL1" />
+    </div>
+
     <div class="step-actions">
       <div class="flex justify-between items-center">
         <button
@@ -802,11 +807,6 @@
       >
         {{ flyingSymbol.symbol }}
       </div>
-    </div>
-
-    <!-- 语法分析动画组件 -->
-    <div v-if="isStepComplete" class="mt-8">
-      <CompilerAnalyzer algorithm="LL1" />
     </div>
   </div>
 </template>
