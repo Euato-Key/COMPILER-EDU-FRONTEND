@@ -26,14 +26,16 @@
     <div class="flex flex-col items-center bg-white rounded shadow p-4 min-w-[120px]">
       <div class="font-bold mb-2">分析栈</div>
       <div class="flex flex-col-reverse items-center">
-        <div
-          v-for="(item, idx) in currentStack"
-          :key="idx"
-          class="stack-item"
-          :class="{ 'bg-blue-100': idx === 0 }"
-        >
-          {{ item }}
-        </div>
+        <transition-group name="stack" tag="div" class="flex flex-col-reverse items-center">
+          <div
+            v-for="(item, idx) in currentStack"
+            :key="`${item}-${idx}`"
+            class="stack-item"
+            :class="{ 'bg-blue-100': idx === 0 }"
+          >
+            {{ item }}
+          </div>
+        </transition-group>
       </div>
       <div class="text-xs text-gray-400 mt-2">栈底 #</div>
     </div>
@@ -43,9 +45,12 @@
       <div class="flex gap-1">
         <div
           v-for="(ch, idx) in currentInput"
-          :key="idx"
+          :key="`${ch}-${idx}`"
           class="input-symbol"
-          :class="{ 'bg-green-200': idx === pointer }"
+          :class="{
+            'bg-green-200': idx === pointer,
+            'opacity-50': idx < pointer,
+          }"
         >
           {{ ch }}
         </div>
@@ -75,11 +80,40 @@ const currentMsg = computed(() =>
 )
 const currentStack = computed(() => {
   const stack = props.analysisData?.info_stack?.[props.currentStep]
-  return stack ? stack.split('').reverse() : []
+  if (!stack) return []
+
+  // 处理不同的栈数据格式
+  if (typeof stack === 'string') {
+    // 如果是字符串格式，例如："#S" -> ['#', 'S']
+    const stackArray = stack.split('').filter((c: string) => c !== '')
+    return stackArray.reverse() // 栈顶在前面显示
+  } else if (Array.isArray(stack)) {
+    // 如果是数组格式
+    if (stack.length > 0 && typeof stack[0] === 'object') {
+      // LL1InfoSymbol[] 格式
+      return stack.map((item: any) => item.text || item.symbol || item).reverse()
+    } else {
+      // string[] 格式
+      return [...stack].reverse()
+    }
+  }
+
+  return []
 })
+
 const currentInput = computed(() => {
   const str = props.analysisData?.info_str?.[props.currentStep]
-  return str ? str.split('') : []
+  if (!str) return []
+
+  // 处理不同的输入串数据格式
+  if (typeof str === 'string') {
+    return str.split('')
+  } else if (typeof str === 'object' && str.text) {
+    // LL1InfoStr 格式
+    return str.text.split('')
+  }
+
+  return []
 })
 const pointer = computed(() => {
   // 指针为输入串长度 - 当前输入串长度
@@ -113,6 +147,40 @@ const pointer = computed(() => {
   border-radius: 0.25rem;
   font-size: 1.125rem;
   font-family: ui-monospace, SFMono-Regular, monospace;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Vue 过渡动画 */
+.stack-enter-active {
+  transition: all 0.5s ease;
+}
+.stack-leave-active {
+  transition: all 0.3s ease;
+}
+.stack-enter-from {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.8);
+}
+.stack-leave-to {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+}
+.stack-move {
+  transition: transform 0.3s ease;
+}
+
+/* 当前步骤高亮动画 */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.stack-item.bg-blue-100 {
+  animation: pulse 1s infinite;
 }
 </style>

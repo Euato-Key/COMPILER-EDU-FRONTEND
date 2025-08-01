@@ -9,28 +9,32 @@ export function useAnimationControl(totalSteps: Ref<number>) {
 
   const play = () => {
     isPlaying.value = true
-    timeline.value?.play()
+    if (timeline.value) {
+      timeline.value.play()
+    }
   }
 
   const pause = () => {
     isPlaying.value = false
-    timeline.value?.pause()
+    if (timeline.value) {
+      timeline.value.pause()
+    }
   }
 
   const reset = () => {
     isPlaying.value = false
     currentStep.value = 0
-    timeline.value?.restart().pause()
+    if (timeline.value) {
+      timeline.value.restart().pause()
+    }
   }
 
   const step = () => {
-    if (timeline.value) {
-      const steps = totalSteps.value
-      if (currentStep.value < steps - 1) {
-        currentStep.value++
-        const progress = currentStep.value / (steps - 1)
-        timeline.value.progress(progress)
-      }
+    if (timeline.value && currentStep.value < totalSteps.value - 1) {
+      currentStep.value++
+      const progress = currentStep.value / Math.max(totalSteps.value - 1, 1)
+      timeline.value.progress(progress).pause()
+      isPlaying.value = false
     }
   }
 

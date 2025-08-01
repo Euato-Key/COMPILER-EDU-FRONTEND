@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
+import { computed, defineProps, watch, onMounted } from 'vue'
 import { useLL1Store, useLR0Store, useSLR1Store } from '@/stores'
 import ControlPanel from './ControlPanel.vue'
 import LL1Analyzer from './LL1Analyzer.vue'
@@ -60,4 +60,95 @@ const totalSteps = computed(() => {
 })
 
 const animationControl = useAnimationControl(totalSteps)
+
+const setupAnimationTimeline = () => {
+  // 添加数据有效性检查
+  if (totalSteps.value <= 0) {
+    console.log('No steps available for animation')
+    return
+  }
+
+  if (props.algorithm === 'LL1' && ll1Data.value) {
+    // 简化的 LL1 动画逻辑
+    console.log('Setting up LL1 animation with data:', ll1Data.value)
+    // 创建一个基础的 GSAP 时间线来测试动画控制
+    import('gsap').then(({ gsap }) => {
+      const tl = gsap.timeline({
+        paused: true,
+        onUpdate: () => {
+          // 根据时间线进度更新当前步骤
+          const progress = tl.progress()
+          const newStep = Math.floor(progress * totalSteps.value)
+          if (newStep !== animationControl.currentStep.value && newStep < totalSteps.value) {
+            animationControl.currentStep.value = newStep
+          }
+        },
+      })
+
+      // 为每一步创建简单的动画
+      for (let i = 0; i < totalSteps.value; i++) {
+        tl.to(
+          {},
+          {
+            duration: 1,
+            onStart: () => {
+              console.log(`LL1 Animation step ${i + 1}:`, ll1Data.value?.info_msg?.[i])
+              animationControl.currentStep.value = i
+            },
+          },
+        )
+      }
+
+      animationControl.timeline.value = tl
+    })
+  } else if ((props.algorithm === 'LR0' || props.algorithm === 'SLR1') && lrData.value) {
+    // 简化的 LR 动画逻辑
+    console.log('Setting up LR animation with data:', lrData.value)
+    import('gsap').then(({ gsap }) => {
+      const tl = gsap.timeline({
+        paused: true,
+        onUpdate: () => {
+          // 根据时间线进度更新当前步骤
+          const progress = tl.progress()
+          const newStep = Math.floor(progress * totalSteps.value)
+          if (newStep !== animationControl.currentStep.value && newStep < totalSteps.value) {
+            animationControl.currentStep.value = newStep
+          }
+        },
+      })
+
+      // 为每一步创建简单的动画
+      for (let i = 0; i < totalSteps.value; i++) {
+        tl.to(
+          {},
+          {
+            duration: 1,
+            onStart: () => {
+              console.log(`LR Animation step ${i + 1}:`, lrData.value?.info_msg?.[i])
+              animationControl.currentStep.value = i
+            },
+          },
+        )
+      }
+
+      animationControl.timeline.value = tl
+    })
+  }
+}
+
+// 监听数据变化，重新创建动画时间线
+watch(
+  [ll1Data, lrData, totalSteps],
+  () => {
+    if (totalSteps.value > 0) {
+      console.log('Data changed, setting up new animation timeline')
+      setupAnimationTimeline()
+    }
+  },
+  { immediate: false },
+)
+
+onMounted(() => {
+  setupAnimationTimeline()
+})
 </script>
