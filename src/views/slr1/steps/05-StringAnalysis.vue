@@ -17,16 +17,16 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- SLR1分析过程说明 -->
         <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-        <div class="flex items-start">
-          <Icon icon="lucide:info" class="w-5 h-5 text-green-600 mt-0.5 mr-3" />
-          <div>
+          <div class="flex items-start">
+            <Icon icon="lucide:info" class="w-5 h-5 text-green-600 mt-0.5 mr-3" />
+            <div>
               <h3 class="text-lg font-semibold text-green-900 mb-2">SLR1分析过程</h3>
-            <ul class="space-y-1 text-sm text-green-800">
+              <ul class="space-y-1 text-sm text-green-800">
                 <li>• <strong>移进：</strong>将输入符号压入符号栈，状态压入状态栈</li>
                 <li>• <strong>规约：</strong>根据产生式弹出栈中符号和状态，压入左部符号</li>
                 <li>• <strong>接受：</strong>当遇到接受动作时，输入串被成功分析</li>
                 <li>• <strong>错误：</strong>无对应动作时，分析失败</li>
-            </ul>
+              </ul>
             </div>
           </div>
         </div>
@@ -82,19 +82,19 @@
         <div class="bg-white border border-gray-200 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">输入待分析字符串</h3>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
                 输入字符串（单字符，系统自动添加结束符#）
-            </label>
+              </label>
               <div class="flex gap-2">
                 <input
-              v-model="inputString"
+                  v-model="inputString"
                   placeholder="例如: ab"
                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   @keydown.enter="analyzeString"
                 />
-                            <button
+                <button
                   @click="analyzeString"
                   :disabled="!inputString.trim() || isAnalyzing"
                   class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center gap-2"
@@ -135,23 +135,23 @@
                 <span class="text-xs text-gray-500">(点击使用)</span>
               </div>
               <div class="flex flex-wrap gap-2">
-            <button
+                <button
                   v-for="example in exampleStrings"
                   :key="example"
                   @click="inputString = example"
                   class="px-3 py-1.5 text-sm bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200 hover:border-gray-300 font-mono"
                 >
                   {{ example }}
-            </button>
+                </button>
               </div>
+            </div>
           </div>
         </div>
-      </div>
 
         <!-- 分析结果 -->
         <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg p-6">
-            <div
-              :class="[
+          <div
+            :class="[
               'p-4 rounded-lg border',
               analysisResult.info_res === 'Success!'
                 ? 'bg-green-50 border-green-200 text-green-800'
@@ -178,7 +178,10 @@
         </div>
 
         <!-- SLR1分析表 -->
-        <div v-if="analysisResult" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div
+          v-if="analysisResult"
+          class="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        >
           <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900">SLR1分析表</h3>
             <p class="text-sm text-gray-600 mt-1">用于字符串分析的Action表和Goto表</p>
@@ -211,7 +214,9 @@
                     :data-production="index + 1"
                     :class="[
                       'text-xs font-mono text-purple-700',
-                      highlightProduction === index + 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded' : ''
+                      highlightProduction === index + 1
+                        ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded'
+                        : '',
                     ]"
                   >
                     • r{{ index + 1 }}: {{ production }}
@@ -221,25 +226,25 @@
             </div>
 
             <!-- 分析表 -->
-          <div class="overflow-x-auto">
+            <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-300">
                 <!-- 表头 -->
-              <thead class="bg-gray-50">
+                <thead class="bg-gray-50">
                   <!-- 分组表头行 -->
-                <tr>
-                  <th
+                  <tr>
+                    <th
                       rowspan="2"
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
-                  >
+                    >
                       State
-                  </th>
-                  <th
+                    </th>
+                    <th
                       :colspan="terminals.length + 1"
                       class="px-3 py-2 border border-gray-300 text-xs font-bold text-purple-900 bg-purple-100 text-center"
-                  >
+                    >
                       ACTION
-                  </th>
-                  <th
+                    </th>
+                    <th
                       :colspan="nonterminals.length"
                       class="px-3 py-2 border border-gray-300 text-xs font-bold text-green-900 bg-green-100 text-center"
                     >
@@ -255,26 +260,30 @@
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-purple-50"
                     >
                       {{ terminal }}
-                  </th>
-                  <th
+                    </th>
+                    <th
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-purple-50"
-                  >
+                    >
                       #
-                  </th>
+                    </th>
                     <!-- GOTO列 -->
-                  <th
+                    <th
                       v-for="nonterminal in nonterminals"
                       :key="nonterminal"
                       class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50"
-                  >
+                    >
                       {{ nonterminal }}
-                  </th>
-                </tr>
-              </thead>
+                    </th>
+                  </tr>
+                </thead>
 
                 <!-- 表体 -->
                 <tbody>
-                  <tr v-for="stateIndex in stateCount" :key="stateIndex - 1" class="hover:bg-gray-50">
+                  <tr
+                    v-for="stateIndex in stateCount"
+                    :key="stateIndex - 1"
+                    class="hover:bg-gray-50"
+                  >
                     <td
                       class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
                     >
@@ -288,7 +297,9 @@
                       :data-action-cell="`${stateIndex - 1}|${terminal}`"
                       :class="[
                         'px-2 py-1 border border-gray-300 text-xs text-center',
-                        highlightCell.row === stateIndex - 1 && highlightCell.col === terminal ? 'bg-orange-300 ring-4 ring-orange-500' : ''
+                        highlightCell.row === stateIndex - 1 && highlightCell.col === terminal
+                          ? 'bg-orange-300 ring-4 ring-orange-500'
+                          : '',
                       ]"
                     >
                       {{ getActionValue(stateIndex - 1, terminal) }}
@@ -301,20 +312,25 @@
                       :data-goto-cell="`${stateIndex - 1}|${nonterminal}`"
                       :class="[
                         'px-2 py-1 border border-gray-300 text-xs text-center',
-                        highlightGoto.row === stateIndex - 1 && highlightGoto.col === nonterminal ? 'bg-orange-300 ring-4 ring-orange-500' : ''
+                        highlightGoto.row === stateIndex - 1 && highlightGoto.col === nonterminal
+                          ? 'bg-orange-300 ring-4 ring-orange-500'
+                          : '',
                       ]"
                     >
                       {{ getGotoValue(stateIndex - 1, nonterminal) }}
                     </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         <!-- SLR1移进-规约分析答题表 -->
-        <div v-if="analysisSteps.length > 0" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div
+          v-if="analysisSteps.length > 0"
+          class="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        >
           <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <div class="flex items-center justify-between">
               <div>
@@ -361,16 +377,24 @@
                 <!-- 表头 -->
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                    <th
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
+                    >
                       步骤
                     </th>
-                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                    <th
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
+                    >
                       状态栈
                     </th>
-                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                    <th
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
+                    >
                       符号栈
                     </th>
-                    <th class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100">
+                    <th
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
+                    >
                       输入串
                     </th>
                   </tr>
@@ -380,7 +404,9 @@
                 <tbody>
                   <tr v-for="(step, index) in analysisSteps" :key="index" class="hover:bg-gray-50">
                     <!-- 步骤 -->
-                    <td class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center">
+                    <td
+                      class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
+                    >
                       {{ index + 1 }}
                     </td>
 
@@ -393,7 +419,9 @@
                         @input="clearValidation(index, 'stateStack')"
                         :class="[
                           getCellStyle(index, 'stateStack'),
-                          highlightTableBasis.stateStack && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400' : ''
+                          highlightTableBasis.stateStack && index === hintStepIndex - 1
+                            ? 'bg-yellow-200 ring-2 ring-yellow-400'
+                            : '',
                         ]"
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-purple-500 rounded transition-colors"
                         placeholder="如: 0"
@@ -402,14 +430,16 @@
                         v-else
                         :class="[
                           'w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full',
-                          highlightTableBasis.stateStack && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 rounded' : ''
+                          highlightTableBasis.stateStack && index === hintStepIndex - 1
+                            ? 'bg-yellow-200 ring-2 ring-yellow-400 rounded'
+                            : '',
                         ]"
                       >
                         {{ step.stateStack }}
                       </span>
                     </td>
 
-            <!-- 符号栈 -->
+                    <!-- 符号栈 -->
                     <td class="px-2 py-1 border border-gray-300 text-xs">
                       <input
                         v-if="index > 0"
@@ -420,7 +450,10 @@
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-purple-500 rounded transition-colors"
                         placeholder="如: #"
                       />
-                      <span v-else class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full">
+                      <span
+                        v-else
+                        class="w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full"
+                      >
                         {{ step.symbolStack }}
                       </span>
                     </td>
@@ -434,7 +467,9 @@
                         @input="clearValidation(index, 'inputString')"
                         :class="[
                           getCellStyle(index, 'inputString'),
-                          highlightTableBasis.inputString && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400' : ''
+                          highlightTableBasis.inputString && index === hintStepIndex - 1
+                            ? 'bg-yellow-200 ring-2 ring-yellow-400'
+                            : '',
                         ]"
                         class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-purple-500 rounded transition-colors"
                         placeholder="如: abb#"
@@ -443,7 +478,9 @@
                         v-else
                         :class="[
                           'w-full px-1 py-0.5 text-xs text-center text-gray-900 font-mono font-semibold flex items-center justify-center h-full',
-                          highlightTableBasis.inputString && index === hintStepIndex - 1 ? 'bg-yellow-200 ring-2 ring-yellow-400 rounded' : ''
+                          highlightTableBasis.inputString && index === hintStepIndex - 1
+                            ? 'bg-yellow-200 ring-2 ring-yellow-400 rounded'
+                            : '',
                         ]"
                       >
                         {{ step.inputString }}
@@ -466,7 +503,7 @@
                   <div class="flex items-center gap-2 mb-1">
                     <div class="w-3 h-3 bg-red-200 border border-red-400 rounded"></div>
                     <span>错误</span>
-                    </div>
+                  </div>
                   <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-green-200 border border-green-400 rounded"></div>
                     <span>正确</span>
@@ -494,8 +531,8 @@
                   <li>• 符号栈：当前符号序列</li>
                   <li>• 输入串：剩余输入字符串</li>
                 </ul>
+              </div>
             </div>
-          </div>
           </div>
         </div>
 
@@ -596,12 +633,27 @@
     </div>
 
     <!-- 动画弹窗 -->
-    <div v-if="hintActive" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+    <div
+      v-if="hintActive"
+      class="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg"
+    >
       {{ hintMessage }}
     </div>
     <!-- 飞行动画卡片 -->
-    <div v-for="item in flyingSymbols" :key="item.symbol + item.from" class="fixed z-50 transition-all duration-700" :style="{ left: item.x + 'px', top: item.y + 'px', transform: 'translate(-50%, -50%)' }">
-      <span class="bg-green-500 text-white px-2 py-1 rounded shadow font-mono">{{ item.symbol }}</span>
+    <div
+      v-for="item in flyingSymbols"
+      :key="item.symbol + item.from"
+      class="fixed z-50 transition-all duration-700"
+      :style="{ left: item.x + 'px', top: item.y + 'px', transform: 'translate(-50%, -50%)' }"
+    >
+      <span class="bg-green-500 text-white px-2 py-1 rounded shadow font-mono">{{
+        item.symbol
+      }}</span>
+    </div>
+
+    <!-- 语法分析动画组件 -->
+    <div v-if="isStepComplete" class="mt-8">
+      <CompilerAnalyzer algorithm="SLR1" />
     </div>
   </div>
 </template>
@@ -611,6 +663,7 @@ import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useSLR1Store } from '@/stores/slr1'
 import { useCommonStore } from '@/stores/common'
+import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
 
 const emit = defineEmits<{
   'next-step': []
@@ -635,7 +688,7 @@ const userAnswers = ref<{
 }>({
   stateStack: [],
   symbolStack: [],
-  inputString: []
+  inputString: [],
 })
 
 // 验证状态
@@ -646,7 +699,7 @@ const validationStatus = ref<{
 }>({
   stateStack: {},
   symbolStack: {},
-  inputString: {}
+  inputString: {},
 })
 
 // 是否显示正确答案
@@ -657,10 +710,12 @@ const hintActive = ref(false)
 const hintStepIndex = ref(1)
 const highlightRow = ref(-1)
 const highlightCol = ref('')
-const highlightCell = ref({row: -1, col: ''})
-const highlightGoto = ref({row: -1, col: ''})
+const highlightCell = ref({ row: -1, col: '' })
+const highlightGoto = ref({ row: -1, col: '' })
 const highlightProduction = ref(-1)
-const flyingSymbols = ref<Array<{symbol: string, from: string, to: string, x: number, y: number}>>([])
+const flyingSymbols = ref<
+  Array<{ symbol: string; from: string; to: string; x: number; y: number }>
+>([])
 const hintMessage = ref('')
 
 // 新增查表依据高亮状态
@@ -668,7 +723,7 @@ const highlightTableBasis = ref({
   stateStack: false,
   inputString: false,
   stateStackCell: '',
-  inputStringCell: ''
+  inputStringCell: '',
 })
 
 // 从store获取状态
@@ -706,13 +761,13 @@ const analysisSteps = computed(() => {
           // 从Action表中获取所有可能的状态
           const allStates = new Set<string>()
           if (slr1Store.actionTable) {
-            Object.keys(slr1Store.actionTable).forEach(key => {
+            Object.keys(slr1Store.actionTable).forEach((key) => {
               const state = key.split('|')[0]
               allStates.add(state)
             })
           }
           if (grammarInfo.value?.actions) {
-            Object.keys(grammarInfo.value.actions).forEach(key => {
+            Object.keys(grammarInfo.value.actions).forEach((key) => {
               const state = key.split('|')[0]
               allStates.add(state)
             })
@@ -768,7 +823,7 @@ const isStepComplete = computed(() => slr1Store.inputAnalysisResult !== null)
 // 带编号的产生式（去除S'->S）
 const numberedProductions = computed(() => {
   if (!grammarInfo.value?.formulas_list) return []
-  return grammarInfo.value.formulas_list.filter(production => {
+  return grammarInfo.value.formulas_list.filter((production) => {
     // 过滤掉S'->S的产生式
     return !production.includes("'") && !production.includes('S->S')
   })
@@ -778,11 +833,11 @@ const numberedProductions = computed(() => {
 const stateCount = computed(() => {
   if (!slr1Store.actionTable) return 0
   const states = new Set<string>()
-  Object.keys(slr1Store.actionTable).forEach(key => {
-    const state = key.split('|')[0]  // 使用 | 分隔符
+  Object.keys(slr1Store.actionTable).forEach((key) => {
+    const state = key.split('|')[0] // 使用 | 分隔符
     states.add(state)
   })
-  return Math.max(...Array.from(states).map(s => parseInt(s))) + 1
+  return Math.max(...Array.from(states).map((s) => parseInt(s))) + 1
 })
 
 // 终结符
@@ -790,7 +845,7 @@ const terminals = computed(() => {
   if (!grammarInfo.value?.Vt) return []
   return Array.isArray(grammarInfo.value.Vt)
     ? grammarInfo.value.Vt.map((item: string | { text?: string; value?: string }) =>
-        typeof item === 'object' ? item.text || item.value || '' : item
+        typeof item === 'object' ? item.text || item.value || '' : item,
       )
     : []
 })
@@ -799,14 +854,12 @@ const terminals = computed(() => {
 const nonterminals = computed(() => {
   if (!grammarInfo.value?.Vn) return []
   return Array.isArray(grammarInfo.value.Vn)
-    ? grammarInfo.value.Vn
-        .filter((item: string | { text?: string; value?: string }) => {
-          const text = typeof item === 'object' ? item.text || item.value || '' : item
-          return text !== (grammarInfo.value?.S || '') + "'"
-        })
-        .map((item: string | { text?: string; value?: string }) =>
-          typeof item === 'object' ? item.text || item.value || '' : item
-        )
+    ? grammarInfo.value.Vn.filter((item: string | { text?: string; value?: string }) => {
+        const text = typeof item === 'object' ? item.text || item.value || '' : item
+        return text !== (grammarInfo.value?.S || '') + "'"
+      }).map((item: string | { text?: string; value?: string }) =>
+        typeof item === 'object' ? item.text || item.value || '' : item,
+      )
     : []
 })
 
@@ -935,7 +988,8 @@ const getCellStyle = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
 // 验证所有答案
 const validateAll = () => {
   analysisSteps.value.forEach((_, index) => {
-    if (index > 0) { // 跳过第一行
+    if (index > 0) {
+      // 跳过第一行
       validateCell(index, 'stateStack')
       validateCell(index, 'symbolStack')
       validateCell(index, 'inputString')
@@ -954,14 +1008,14 @@ const clearAll = () => {
   userAnswers.value = {
     stateStack: new Array(analysisSteps.value.length).fill(''),
     symbolStack: new Array(analysisSteps.value.length).fill(''),
-    inputString: new Array(analysisSteps.value.length).fill('')
+    inputString: new Array(analysisSteps.value.length).fill(''),
   }
 
   // 清空验证状态
   validationStatus.value = {
     stateStack: {},
     symbolStack: {},
-    inputString: {}
+    inputString: {},
   }
 
   // 隐藏答案
@@ -977,24 +1031,28 @@ const initUserAnswers = () => {
     userAnswers.value = {
       stateStack: new Array(analysisSteps.value.length).fill(''),
       symbolStack: new Array(analysisSteps.value.length).fill(''),
-      inputString: new Array(analysisSteps.value.length).fill('')
+      inputString: new Array(analysisSteps.value.length).fill(''),
     }
     validationStatus.value = {
       stateStack: {},
       symbolStack: {},
-      inputString: {}
+      inputString: {},
     }
     showAnswers.value = false
   }
 }
 
 // 监听分析步骤变化
-watch(analysisSteps, () => {
-  initUserAnswers()
-}, { immediate: true })
+watch(
+  analysisSteps,
+  () => {
+    initUserAnswers()
+  },
+  { immediate: true },
+)
 
 // 2. 新增动画相关函数
-const sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms))
 
 // 添加缺失的函数
 const showErrorHint = async () => {
@@ -1004,7 +1062,7 @@ const showErrorHint = async () => {
   const step = analysisSteps.value[hintStepIndex.value - 1]
   const stateStack = step.stateStack.trim()
   const stateStackStr = String(stateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
   const state = states[states.length - 1] || '0'
   const symbol = step.inputString[0]
   hintMessage.value = `Action[${state},${symbol}]=错误: 无对应动作`
@@ -1018,14 +1076,14 @@ const showErrorHint = async () => {
 function clearHighlight() {
   highlightRow.value = -1
   highlightCol.value = ''
-  highlightCell.value = {row: -1, col: ''}
-  highlightGoto.value = {row: -1, col: ''}
+  highlightCell.value = { row: -1, col: '' }
+  highlightGoto.value = { row: -1, col: '' }
   highlightProduction.value = -1
   highlightTableBasis.value = {
     stateStack: false,
     inputString: false,
     stateStackCell: '',
-    inputStringCell: ''
+    inputStringCell: '',
   }
 }
 
@@ -1040,7 +1098,7 @@ function onHintClick() {
   // 修复状态栈解析：正确提取栈顶状态
   const stateStack = step.stateStack.trim()
   const stateStackStr = String(stateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
   const state = states[states.length - 1] || '0'
   const symbol = step.inputString[0]
   const action = getActionValue(Number(state), symbol)
@@ -1065,7 +1123,7 @@ const executeShiftAnimation = async () => {
   const step = analysisSteps.value[hintStepIndex.value - 1]
   const stateStack = step.stateStack.trim()
   const stateStackStr = String(stateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
   const state = states[states.length - 1] || '0'
   const symbol = step.inputString[0]
   const action = getActionValue(Number(state), symbol)
@@ -1078,14 +1136,14 @@ const executeShiftAnimation = async () => {
     stateStack: true,
     inputString: true,
     stateStackCell: state,
-    inputStringCell: symbol
+    inputStringCell: symbol,
   }
   hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
   await sleep(1000)
 
   highlightRow.value = Number(state)
   highlightCol.value = symbol
-  highlightCell.value = {row: Number(state), col: symbol}
+  highlightCell.value = { row: Number(state), col: symbol }
   hintMessage.value = `Action[${state},${symbol}]=${action}: 状态${newState}入栈`
   await sleep(1000)
 
@@ -1103,7 +1161,7 @@ const executeShiftAnimation = async () => {
       stateStack: false,
       inputString: false,
       stateStackCell: '',
-      inputStringCell: ''
+      inputStringCell: '',
     }
   }, 800)
 }
@@ -1115,7 +1173,7 @@ const executeReduceAnimation = async () => {
   const step = analysisSteps.value[hintStepIndex.value - 1]
   const stateStack = step.stateStack.trim()
   const stateStackStr = String(stateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
   const state = states[states.length - 1] || '0'
   const symbol = step.inputString[0]
   const action = getActionValue(Number(state), symbol)
@@ -1128,14 +1186,14 @@ const executeReduceAnimation = async () => {
     stateStack: true,
     inputString: true,
     stateStackCell: state,
-    inputStringCell: symbol
+    inputStringCell: symbol,
   }
   hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
   await sleep(500)
 
   highlightRow.value = Number(state)
   highlightCol.value = symbol
-  highlightCell.value = {row: Number(state), col: symbol}
+  highlightCell.value = { row: Number(state), col: symbol }
   hintMessage.value = `Action[${state},${symbol}]=${action}: 用产生式${productionNum}归约`
   await sleep(1000)
 
@@ -1160,10 +1218,10 @@ const executeReduceAnimation = async () => {
   if (nextStep && production) {
     const [left] = production.split('->')
     const nextStateStackStr = String(nextStep.stateStack)
-    const nextStateStack = nextStateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+    const nextStateStack = nextStateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
     const prevState = nextStateStack[nextStateStack.length - 2]
     gotoState = nextStateStack[nextStateStack.length - 1]
-    highlightGoto.value = {row: Number(prevState), col: left}
+    highlightGoto.value = { row: Number(prevState), col: left }
     hintMessage.value = `Goto[${prevState},${left}]=${gotoState}入栈`
     await sleep(500)
     await executeGotoAnimation(gotoState, hintStepIndex.value)
@@ -1179,7 +1237,7 @@ const executeReduceAnimation = async () => {
       stateStack: false,
       inputString: false,
       stateStackCell: '',
-      inputStringCell: ''
+      inputStringCell: '',
     }
   }, 800)
 }
@@ -1191,7 +1249,7 @@ const executeAcceptAnimation = async () => {
   const step = analysisSteps.value[hintStepIndex.value - 1]
   const stateStack = step.stateStack.trim()
   const stateStackStr = String(stateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
   const state = states[states.length - 1] || '0'
 
   await copyDataToAnswerRow(hintStepIndex.value)
@@ -1201,14 +1259,14 @@ const executeAcceptAnimation = async () => {
     stateStack: true,
     inputString: true,
     stateStackCell: state,
-    inputStringCell: '#'
+    inputStringCell: '#',
   }
   hintMessage.value = `查表依据：状态栈顶${state}，输入串首#`
   await sleep(500)
 
   highlightRow.value = Number(state)
   highlightCol.value = '#'
-  highlightCell.value = {row: Number(state), col: '#'}
+  highlightCell.value = { row: Number(state), col: '#' }
   hintMessage.value = `Action[${state},#]=acc: 分析成功！`
   await sleep(1000)
 
@@ -1221,16 +1279,24 @@ const executeAcceptAnimation = async () => {
       stateStack: false,
       inputString: false,
       stateStackCell: '',
-      inputStringCell: ''
+      inputStringCell: '',
     }
   }, 800)
 }
 
 // 修改规约符号动画，支持多符号规约
-const executeReduceSymbolAnimation = async (rightSymbol: string, leftSymbol: string, rowIndex: number) => {
+const executeReduceSymbolAnimation = async (
+  rightSymbol: string,
+  leftSymbol: string,
+  rowIndex: number,
+) => {
   // 查找符号栈和产生式单元格
-  const symbolStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`) as HTMLElement
-  const productionCell = document.querySelector(`[data-production="${highlightProduction.value}"]`) as HTMLElement
+  const symbolStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`,
+  ) as HTMLElement
+  const productionCell = document.querySelector(
+    `[data-production="${highlightProduction.value}"]`,
+  ) as HTMLElement
 
   if (!symbolStackCell || !productionCell) return
 
@@ -1245,14 +1311,14 @@ const executeReduceSymbolAnimation = async (rightSymbol: string, leftSymbol: str
       from: 'symbolStack',
       to: 'production',
       x: symbolStackRect.left + symbolStackRect.width / 2,
-      y: symbolStackRect.top + symbolStackRect.height / 2
+      y: symbolStackRect.top + symbolStackRect.height / 2,
     })
   }
 
-  await new Promise(resolve => requestAnimationFrame(resolve))
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 
   // 动画到目标位置
-  const flyingSymbols1 = flyingSymbols.value.filter(fs => fs.from === 'symbolStack')
+  const flyingSymbols1 = flyingSymbols.value.filter((fs) => fs.from === 'symbolStack')
   flyingSymbols1.forEach((fs) => {
     fs.x = productionRect.left + productionRect.width / 2
     fs.y = productionRect.top + productionRect.height / 2
@@ -1261,7 +1327,7 @@ const executeReduceSymbolAnimation = async (rightSymbol: string, leftSymbol: str
   await sleep(500)
 
   // 移除右部符号动画
-  flyingSymbols.value = flyingSymbols.value.filter(fs => fs.from !== 'symbolStack')
+  flyingSymbols.value = flyingSymbols.value.filter((fs) => fs.from !== 'symbolStack')
 
   // 左部符号飞入
   flyingSymbols.value.push({
@@ -1269,12 +1335,14 @@ const executeReduceSymbolAnimation = async (rightSymbol: string, leftSymbol: str
     from: 'production',
     to: 'symbolStack',
     x: productionRect.left + productionRect.width / 2,
-    y: productionRect.top + productionRect.height / 2
+    y: productionRect.top + productionRect.height / 2,
   })
 
-  await new Promise(resolve => requestAnimationFrame(resolve))
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 
-  const flyingSymbol2 = flyingSymbols.value.find(fs => fs.symbol === leftSymbol && fs.from === 'production')
+  const flyingSymbol2 = flyingSymbols.value.find(
+    (fs) => fs.symbol === leftSymbol && fs.from === 'production',
+  )
   if (flyingSymbol2) {
     flyingSymbol2.x = symbolStackRect.left + symbolStackRect.width / 2
     flyingSymbol2.y = symbolStackRect.top + symbolStackRect.height / 2
@@ -1283,13 +1351,17 @@ const executeReduceSymbolAnimation = async (rightSymbol: string, leftSymbol: str
   await sleep(500)
 
   // 移除左部符号动画（不更新数据，数据在最后统一更新）
-  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === leftSymbol && fs.from === 'production'))
+  flyingSymbols.value = flyingSymbols.value.filter(
+    (fs) => !(fs.symbol === leftSymbol && fs.from === 'production'),
+  )
 }
 
 // 添加状态栈出栈动画
 async function executeStatePopAnimation(popCount: number, rowIndex: number) {
   // 查找状态栈单元格
-  const stateStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`) as HTMLElement
+  const stateStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`,
+  ) as HTMLElement
 
   if (!stateStackCell) return
 
@@ -1299,7 +1371,7 @@ async function executeStatePopAnimation(popCount: number, rowIndex: number) {
   const currentStateStack = userAnswers.value.stateStack[rowIndex]
   // 确保状态栈是字符串格式，然后按空格分割
   const stateStackStr = String(currentStateStack)
-  const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+  const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
 
   // 弹出对应数量的状态
   const poppedStates = states.slice(-popCount)
@@ -1312,30 +1384,34 @@ async function executeStatePopAnimation(popCount: number, rowIndex: number) {
       from: 'stateStack',
       to: 'pop',
       x: stateStackRect.left + stateStackRect.width / 2,
-      y: stateStackRect.top + stateStackRect.height / 2
+      y: stateStackRect.top + stateStackRect.height / 2,
     })
   }
 
-  await new Promise(resolve => requestAnimationFrame(resolve))
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 
   // 动画到屏幕外（表示出栈）
-  const flyingStates = flyingSymbols.value.filter(fs => fs.from === 'stateStack')
+  const flyingStates = flyingSymbols.value.filter((fs) => fs.from === 'stateStack')
   flyingStates.forEach((fs) => {
     fs.x = stateStackRect.left + stateStackRect.width / 2
-    fs.y = stateStackRect.top - 50  // 向上飞出
+    fs.y = stateStackRect.top - 50 // 向上飞出
   })
 
   await sleep(500)
 
   // 移除出栈动画（不更新数据，数据在最后统一更新）
-  flyingSymbols.value = flyingSymbols.value.filter(fs => fs.from !== 'stateStack')
+  flyingSymbols.value = flyingSymbols.value.filter((fs) => fs.from !== 'stateStack')
 }
 
 // 执行Goto动画，不修改标准答案数据
 async function executeGotoAnimation(state: string, rowIndex: number) {
   // 查找Goto表和状态栈单元格
-  const gotoCell = document.querySelector(`[data-goto-cell="${highlightGoto.value.row}|${highlightGoto.value.col}"]`) as HTMLElement
-  const stateStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`) as HTMLElement
+  const gotoCell = document.querySelector(
+    `[data-goto-cell="${highlightGoto.value.row}|${highlightGoto.value.col}"]`,
+  ) as HTMLElement
+  const stateStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`,
+  ) as HTMLElement
 
   if (!gotoCell || !stateStackCell) return
 
@@ -1348,13 +1424,15 @@ async function executeGotoAnimation(state: string, rowIndex: number) {
     from: 'gotoTable',
     to: 'stateStack',
     x: gotoRect.left + gotoRect.width / 2,
-    y: gotoRect.top + gotoRect.height / 2
+    y: gotoRect.top + gotoRect.height / 2,
   })
 
-  await new Promise(resolve => requestAnimationFrame(resolve))
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 
   // 动画到目标位置
-  const flyingSymbol = flyingSymbols.value.find(fs => fs.symbol === state && fs.from === 'gotoTable')
+  const flyingSymbol = flyingSymbols.value.find(
+    (fs) => fs.symbol === state && fs.from === 'gotoTable',
+  )
   if (flyingSymbol) {
     flyingSymbol.x = stateStackRect.left + stateStackRect.width / 2
     flyingSymbol.y = stateStackRect.top + stateStackRect.height / 2
@@ -1363,7 +1441,9 @@ async function executeGotoAnimation(state: string, rowIndex: number) {
   await sleep(700)
 
   // 移除飞行动画（不更新数据，数据在最后统一更新）
-  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === state && fs.from === 'gotoTable'))
+  flyingSymbols.value = flyingSymbols.value.filter(
+    (fs) => !(fs.symbol === state && fs.from === 'gotoTable'),
+  )
 }
 
 // 添加自动填写答案的函数
@@ -1410,7 +1490,7 @@ function fillReduceAnswer(rowIndex: number, production: string, gotoState: strin
     // 状态栈：出栈对应数量的状态，然后压入goto状态
     // 修复：确保状态栈是字符串格式，然后按空格分割
     const stateStackStr = String(currentStateStack)
-    const states = stateStackStr.split(/\s+/).filter(s => s.trim() !== '')
+    const states = stateStackStr.split(/\s+/).filter((s) => s.trim() !== '')
     // 出栈right.length个状态
     states.splice(-right.length, right.length, gotoState)
     userAnswers.value.stateStack[rowIndex] = states.join(' ')
@@ -1444,8 +1524,12 @@ function fillAcceptAnswer(rowIndex: number) {
 // 执行符号移进动画
 async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
   // 查找输入串和符号栈单元格
-  const inputCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4)`) as HTMLElement
-  const symbolStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`) as HTMLElement
+  const inputCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4)`,
+  ) as HTMLElement
+  const symbolStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`,
+  ) as HTMLElement
 
   if (!inputCell || !symbolStackCell) return
 
@@ -1458,13 +1542,13 @@ async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
     from: 'input',
     to: 'stack',
     x: inputRect.left + inputRect.width / 2,
-    y: inputRect.top + inputRect.height / 2
+    y: inputRect.top + inputRect.height / 2,
   })
 
-  await new Promise(resolve => requestAnimationFrame(resolve))
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 
   // 动画到目标位置
-  const flyingSymbol = flyingSymbols.value.find(fs => fs.symbol === symbol && fs.from === 'input')
+  const flyingSymbol = flyingSymbols.value.find((fs) => fs.symbol === symbol && fs.from === 'input')
   if (flyingSymbol) {
     flyingSymbol.x = symbolStackRect.left + symbolStackRect.width / 2
     flyingSymbol.y = symbolStackRect.top + symbolStackRect.height / 2
@@ -1473,14 +1557,20 @@ async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
   await sleep(700)
 
   // 移除飞行动画（不更新数据）
-  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === symbol && fs.from === 'input'))
+  flyingSymbols.value = flyingSymbols.value.filter(
+    (fs) => !(fs.symbol === symbol && fs.from === 'input'),
+  )
 }
 
 // 执行状态移进动画
 async function executeStateShiftAnimation(state: string, rowIndex: number) {
   // 查找Action表和状态栈单元格
-  const actionCell = document.querySelector(`[data-action-cell="${highlightRow.value}|${highlightCol.value}"]`) as HTMLElement
-  const stateStackCell = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`) as HTMLElement
+  const actionCell = document.querySelector(
+    `[data-action-cell="${highlightRow.value}|${highlightCol.value}"]`,
+  ) as HTMLElement
+  const stateStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`,
+  ) as HTMLElement
 
   if (!actionCell || !stateStackCell) return
 
@@ -1493,13 +1583,15 @@ async function executeStateShiftAnimation(state: string, rowIndex: number) {
     from: 'actionTable',
     to: 'stateStack',
     x: actionRect.left + actionRect.width / 2,
-    y: actionRect.top + actionRect.height / 2
+    y: actionRect.top + actionRect.height / 2,
   })
 
-  await new Promise(resolve => requestAnimationFrame(resolve))
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 
   // 动画到目标位置
-  const flyingSymbol = flyingSymbols.value.find(fs => fs.symbol === state && fs.from === 'actionTable')
+  const flyingSymbol = flyingSymbols.value.find(
+    (fs) => fs.symbol === state && fs.from === 'actionTable',
+  )
   if (flyingSymbol) {
     flyingSymbol.x = stateStackRect.left + stateStackRect.width / 2
     flyingSymbol.y = stateStackRect.top + stateStackRect.height / 2
@@ -1508,7 +1600,9 @@ async function executeStateShiftAnimation(state: string, rowIndex: number) {
   await sleep(700)
 
   // 移除飞行动画（不更新数据）
-  flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === state && fs.from === 'actionTable'))
+  flyingSymbols.value = flyingSymbols.value.filter(
+    (fs) => !(fs.symbol === state && fs.from === 'actionTable'),
+  )
 }
 
 // 重置提示状态
@@ -1539,7 +1633,9 @@ async function copyDataToAnswerRow(rowIndex: number) {
   userAnswers.value.inputString[rowIndex] = prevStep.inputString
 
   // 高亮当前行
-  const currentRow = document.querySelector(`.user-steps-table tbody tr:nth-child(${rowIndex + 1})`) as HTMLElement
+  const currentRow = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1})`,
+  ) as HTMLElement
   if (currentRow) {
     currentRow.classList.add('bg-green-50', 'border-green-200')
     await sleep(300)
