@@ -28,7 +28,7 @@
               </div>
               <ul class="space-y-1 text-sm text-purple-800">
                 <li>• 为原文法添加新的开始符号{{ startSymbol }}'</li>
-                <li>• 添加产生式：{{ startSymbol }}' -> {{ startSymbol }}</li>
+                <li>• 添加产生式：{{ startSymbol }}'->{{ startSymbol }}</li>
                 <li>• 将含有多个候选式的产生式分解为多个单独的产生式</li>
                 <li>• 例如：A -> α|β 分解为 A -> α 和 A -> β</li>
               </ul>
@@ -97,7 +97,7 @@
                   <input
                     v-model="formula.text"
                     type="text"
-                    :placeholder="`请输入产生式 ${index + 1}，例如：S' -> S`"
+                    :placeholder="`请输入产生式 ${index + 1}，例如：S'->S`"
                     :class="[
                       'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-sm',
                       'focus:ring-4 focus:ring-purple-100 focus:border-purple-400',
@@ -138,7 +138,7 @@
               <div>
                 <p class="font-semibold text-blue-900 mb-2">填写提示：</p>
                 <ul class="space-y-1 text-sm text-blue-800">
-                  <li>• 首先添加增广产生式：<code class="bg-blue-100 px-1 rounded">{{ startSymbol }}' -> {{ startSymbol }}</code></li>
+                  <li>• 首先添加增广产生式：<code class="bg-blue-100 px-1 rounded">{{ startSymbol }}'->{{ startSymbol }}</code></li>
                   <li>• 然后将多候选式产生式分解为单个候选式</li>
                   <li>• 例如：<code class="bg-blue-100 px-1 rounded">S -> aB|bA</code> 分解为 <code class="bg-blue-100 px-1 rounded">S -> aB</code> 和 <code class="bg-blue-100 px-1 rounded">S -> bA</code></li>
                 </ul>
@@ -394,10 +394,10 @@ const nextStep = () => {
 // 初始化
 const initializeFormulas = () => {
   if (augmentedFormulas.value.length === 0) {
-    // 添加第一个空的产生式
+    // 添加第一个空的产生式 - 移除空格以匹配后端格式
     augmentedFormulas.value.push({
       id: `formula_${formulaCounter.value++}`,
-      text: startSymbol.value ? `${startSymbol.value}' -> ${startSymbol.value}` : '',
+      text: startSymbol.value ? `${startSymbol.value}'->${startSymbol.value}` : '',
       status: 'normal',
       readonly: false,
     })
