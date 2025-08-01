@@ -71,45 +71,8 @@
 
         <!-- 上方：最小化DFA画布区域 -->
         <div class="minimized-dfa-draw-area">
-          <!-- 画图工具选择 -->
-          <div class="mb-4">
-            <div class="flex space-x-2">
-              <button
-                @click="activeCanvas = 'original'"
-                :class="[
-                  'px-4 py-2 rounded-lg transition-colors',
-                  activeCanvas === 'original'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                ]"
-              >
-                <Icon icon="lucide:edit-3" class="w-4 h-4 inline mr-2" />
-                原始编辑器
-              </button>
-              <button
-                @click="activeCanvas = 'new'"
-                :class="[
-                  'px-4 py-2 rounded-lg transition-colors',
-                  activeCanvas === 'new'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                ]"
-              >
-                <Icon icon="lucide:git-branch" class="w-4 h-4 inline mr-2" />
-                新FA画图组件
-              </button>
-            </div>
-          </div>
-
-          <!-- 原始编辑器 -->
-          <div v-if="activeCanvas === 'original'" class="bg-white border border-gray-200 rounded-lg">
-            <div class="h-[700px] p-4">
-              <FACanvas ref="minimizedDFACanvasRef" mode="dfa" title="最小化 DFA" />
-            </div>
-          </div>
-
           <!-- 新FA画图组件 -->
-          <div v-if="activeCanvas === 'new'" class="bg-white border border-gray-200 rounded-lg">
+          <div class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <div class="w-full h-full">
                 <FA_vueflow ref="newMinimizedDFACanvasRef" FA_type="Min_DFA" />
@@ -213,7 +176,6 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import FACanvas from '@/components/flow/canvas/FACanvas.vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable, FA_vueflow } from '@/components/fa'
@@ -242,11 +204,7 @@ const minimizedAcceptingStates = ref<Set<string>>(new Set())
 // 状态管理
 const showAnswer = ref(false)
 
-// 画布选择状态
-const activeCanvas = ref<'original' | 'new'>('new')
-
 // 最小化DFA画布引用
-const minimizedDFACanvasRef = ref<InstanceType<typeof FACanvas>>()
 const newMinimizedDFACanvasRef = ref<InstanceType<typeof FA_vueflow>>()
 const answerSvgContainer = ref<HTMLElement>()
 

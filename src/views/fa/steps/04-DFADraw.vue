@@ -80,10 +80,10 @@
                   alphabetSymbols.forEach(symbol => {
                     columnMapping[symbol] = `I${symbol}`
                   })
-                  
+
                   const mappedColumn = columnMapping[col] || col
                   const isFinal = finalStatePositions.some((pos: {row: number, col: string}) => pos.row === row && pos.col === mappedColumn)
-                  
+
                   return isFinal
                 }
               }"
@@ -115,45 +115,8 @@
 
         <!-- 上方：用户画图区域 -->
         <div class="user-draw-area">
-          <!-- 画图工具选择 -->
-          <div class="mb-4">
-            <div class="flex space-x-2">
-              <button
-                @click="activeCanvas = 'original'"
-                :class="[
-                  'px-4 py-2 rounded-lg transition-colors',
-                  activeCanvas === 'original'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                ]"
-              >
-                <Icon icon="lucide:edit-3" class="w-4 h-4 inline mr-2" />
-                原始编辑器
-              </button>
-              <button
-                @click="activeCanvas = 'new'"
-                :class="[
-                  'px-4 py-2 rounded-lg transition-colors',
-                  activeCanvas === 'new'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                ]"
-              >
-                <Icon icon="lucide:git-branch" class="w-4 h-4 inline mr-2" />
-                新FA画图组件
-              </button>
-            </div>
-          </div>
-
-          <!-- 原始编辑器 -->
-          <div v-if="activeCanvas === 'original'" class="bg-white border border-gray-200 rounded-lg">
-            <div class="h-[700px] p-4">
-              <FACanvas ref="dfaCanvasRef" mode="dfa" />
-            </div>
-          </div>
-
           <!-- 新FA画图组件 -->
-          <div v-if="activeCanvas === 'new'" class="bg-white border border-gray-200 rounded-lg">
+          <div class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <div class="w-full h-full">
                 <FA_vueflow ref="newDFACanvasRef" FA_type="DFA" />
@@ -324,7 +287,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import FACanvas from '@/components/flow/canvas/FACanvas.vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable, FA_vueflow } from '@/components/fa'
@@ -360,11 +322,7 @@ const showDotString = ref(false)
 const showAnswer = ref(false) // 默认隐藏答案
 const hasRenderedAnswer = ref(false) // 记录是否已经渲染过答案
 
-// 画布选择状态
-const activeCanvas = ref<'original' | 'new'>('new')
-
 // DFA 画布引用
-const dfaCanvasRef = ref<InstanceType<typeof FACanvas>>()
 const newDFACanvasRef = ref<InstanceType<typeof FA_vueflow>>()
 const answerSvgContainer = ref<HTMLElement>()
 

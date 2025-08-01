@@ -25,45 +25,8 @@
       <div class="space-y-6">
         <!-- 上方：用户画图区域 -->
         <div class="user-draw-area">
-          <!-- 画图工具选择 -->
-          <div class="mb-4">
-            <div class="flex space-x-2">
-              <button
-                @click="activeCanvas = 'original'"
-                :class="[
-                  'px-4 py-2 rounded-lg transition-colors',
-                  activeCanvas === 'original'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                ]"
-              >
-                <Icon icon="lucide:edit-3" class="w-4 h-4 inline mr-2" />
-                原始编辑器
-              </button>
-              <button
-                @click="activeCanvas = 'new'"
-                :class="[
-                  'px-4 py-2 rounded-lg transition-colors',
-                  activeCanvas === 'new'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                ]"
-              >
-                <Icon icon="lucide:git-branch" class="w-4 h-4 inline mr-2" />
-                新FA画图组件
-              </button>
-            </div>
-          </div>
-
-          <!-- 原始编辑器 -->
-          <div v-if="activeCanvas === 'original'" class="bg-white border border-gray-200 rounded-lg">
-            <div class="h-[700px] p-4">
-              <FACanvas ref="userCanvasRef" mode="nfa" :readonly="false" />
-            </div>
-          </div>
-
           <!-- 新FA画图组件 -->
-          <div v-if="activeCanvas === 'new'" class="bg-white border border-gray-200 rounded-lg">
+          <div class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <div class="w-full h-full">
                 <FA_vueflow ref="newFACanvasRef" FA_type="NFA" />
@@ -201,7 +164,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import FACanvas from '@/components/flow/canvas/FACanvas.vue'
 import { FA_vueflow } from '@/components/fa'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
@@ -217,8 +179,6 @@ const faStore = useFAStore()
 
 // 本地状态
 const showAnswer = ref(false)
-const activeCanvas = ref<'original' | 'new'>('new')
-const userCanvasRef = ref<InstanceType<typeof FACanvas>>()
 const newFACanvasRef = ref<InstanceType<typeof FA_vueflow>>()
 const answerSvgContainer = ref<HTMLElement>()
 
@@ -230,7 +190,6 @@ const hasNFAData = computed(() => faStore.hasResult())
 const isConstructionComplete = computed(() => {
   return (
     showAnswer.value ||
-    (userCanvasRef.value?.getNodes && userCanvasRef.value.getNodes().length > 0) ||
     (newFACanvasRef.value?.getNodes && newFACanvasRef.value.getNodes().length > 0)
   )
 })
@@ -290,10 +249,6 @@ const proceedToNext = () => {
   const stepData = {
     nfa: {
       userDraw: {
-        nodes: userCanvasRef.value?.getNodes() || [],
-        edges: userCanvasRef.value?.getEdges() || [],
-      },
-      newUserDraw: {
         nodes: newFACanvasRef.value?.getNodes() || [],
         edges: newFACanvasRef.value?.getEdges() || [],
       },
