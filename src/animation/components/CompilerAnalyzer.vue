@@ -1,34 +1,39 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div class="h-full bg-gray-50 flex flex-col">
     <!-- 控制面板 -->
-    <ControlPanel
-      :is-playing="animationControl.isPlaying.value"
-      :current-step="animationControl.currentStep.value"
-      :total-steps="totalSteps"
-      :speed="animationControl.speed.value"
-      @play="animationControl.play"
-      @pause="animationControl.pause"
-      @reset="animationControl.reset"
-      @step="animationControl.step"
-      @speed-change="animationControl.setSpeed"
-    />
+    <div class="flex-shrink-0">
+      <ControlPanel
+        :is-playing="animationControl.isPlaying.value"
+        :current-step="animationControl.currentStep.value"
+        :total-steps="totalSteps"
+        :speed="animationControl.speed.value"
+        @play="animationControl.play"
+        @pause="animationControl.pause"
+        @reset="animationControl.reset"
+        @step="animationControl.step"
+        @speed-change="animationControl.setSpeed"
+      />
+    </div>
 
-    <!-- LL1 分析器 -->
-    <LL1Analyzer
-      v-if="algorithm === 'LL1'"
-      :analysis-data="ll1Data"
-      :current-step="animationControl.currentStep.value"
-      :is-playing="animationControl.isPlaying.value"
-    />
+    <!-- 分析器内容区域 - 自适应高度 -->
+    <div class="flex-1 overflow-hidden">
+      <!-- LL1 分析器 -->
+      <LL1Analyzer
+        v-if="algorithm === 'LL1'"
+        :analysis-data="ll1Data"
+        :current-step="animationControl.currentStep.value"
+        :is-playing="animationControl.isPlaying.value"
+      />
 
-    <!-- LR 分析器 -->
-    <LRAnalyzer
-      v-else
-      :algorithm="algorithm"
-      :analysis-data="lrData"
-      :current-step="animationControl.currentStep.value"
-      :is-playing="animationControl.isPlaying.value"
-    />
+      <!-- LR 分析器 -->
+      <LRAnalyzer
+        v-else
+        :algorithm="algorithm"
+        :analysis-data="lrData"
+        :current-step="animationControl.currentStep.value"
+        :is-playing="animationControl.isPlaying.value"
+      />
+    </div>
   </div>
 </template>
 
