@@ -911,7 +911,7 @@ const calculateFirstSetHint = (symbol: string) => {
       })
     } else if (production.length === 1) {
       const firstChar = production[0]
-      if (/[a-z]/.test(firstChar)) {
+      if (isTerminal(firstChar)) {
         // 终结符规则
         result.steps.push({
           type: 'terminal',
@@ -921,7 +921,7 @@ const calculateFirstSetHint = (symbol: string) => {
           symbols: [firstChar],
           finalSymbols: [firstChar]
         })
-      } else if (/[A-Z]/.test(firstChar)) {
+      } else if (isNonTerminal(firstChar)) {
         // 非终结符规则 - 需要递归计算
         const firstSetOfFirstChar = calculateFirstSetForSymbol(firstChar)
         if (firstSetOfFirstChar.length > 0) {
@@ -934,6 +934,16 @@ const calculateFirstSetHint = (symbol: string) => {
             finalSymbols: firstSetOfFirstChar.filter(s => s !== 'ε')
           })
         }
+      } else {
+        // 其他符号（如标点符号、界符等）
+        result.steps.push({
+          type: 'terminal',
+          description: `其他符号${firstChar}：First(${firstChar}) = {${firstChar}}`,
+          productions: [`${symbol}->${firstChar}`],
+          rules: ['终结符X：First(X) = {X}'],
+          symbols: [firstChar],
+          finalSymbols: [firstChar]
+        })
       }
     } else {
       // 多字符产生式 - 需要处理所有可能的推导路径
@@ -963,7 +973,7 @@ const calculateDerivationPaths = (symbol: string, production: string) => {
     const char = production[i]
     console.log(`处理位置 ${i+1} 的字符: ${char}`)
 
-    if (/[a-z]/.test(char)) {
+    if (isTerminal(char)) {
       // 终结符 - 直接添加
       console.log(`找到终结符 ${char}`)
       paths.push({
@@ -975,7 +985,7 @@ const calculateDerivationPaths = (symbol: string, production: string) => {
         finalSymbols: [char]
       })
       break // 遇到终结符就停止
-    } else if (/[A-Z]/.test(char)) {
+    } else if (isNonTerminal(char)) {
       // 非终结符 - 计算其First集
       const firstSetOfChar = calculateFirstSetForSymbol(char)
       const nonEpsilonSymbols = firstSetOfChar.filter(s => s !== 'ε')
@@ -1003,6 +1013,18 @@ const calculateDerivationPaths = (symbol: string, production: string) => {
       }
       // 如果包含ε，继续处理下一个字符
       console.log(`${char} 的First集包含ε，继续处理下一个字符`)
+    } else {
+      // 其他符号（如标点符号、界符等）
+      console.log(`找到其他符号 ${char}`)
+      paths.push({
+        type: 'terminal',
+        description: `产生式${symbol}→${production}：位置${i+1}的其他符号${char} ∈ First(${symbol})`,
+        productions: [`${symbol}->${production}`],
+        rules: ['终结符X：First(X) = {X}'],
+        symbols: [char],
+        finalSymbols: [char]
+      })
+      break // 遇到其他符号就停止
     }
   }
 
@@ -1010,72 +1032,182 @@ const calculateDerivationPaths = (symbol: string, production: string) => {
   return paths
 }
 
-// 计算某个符号的First集（递归）
-const calculateFirstSetForSymbol = (symbol: string): string[] => {
+// 判断是否为非终结符（与后端逻辑保持一致）
+const isNonTerminal = (symbol: string): boolean => {
+  return symbol.length === 1 && symbol.toUpperCase() === symbol && symbol !== 'ε'
+}
+
+// 判断是否为终结符（与后端逻辑保持一致）
+const isTerminal = (symbol: string): boolean => {
+  return symbol.length === 1 && symbol.toLowerCase() === symbol && symbol !== 'ε'
+}
+
+// 计算某个符号的First集（递归）- 修复版本
+const calculateFirstSetForSymbol = (symbol: string, visited: Set<string> = new Set()): string[] => {
   if (!originalData.value) return []
+
+  // 防止循环依赖
+  if (visited.has(symbol)) {
+    console.log(`检测到循环依赖: ${symbol}`)
+    return []
+  }
 
   console.log(`计算 ${symbol} 的First集`)
 
-  const result: string[] = []
-  const productions = originalData.value.formulas_dict[symbol] || []
+  // 如果是终结符，直接返回自身
+  if (isTerminal(symbol)) {
+    console.log(`${symbol} 是终结符，返回 {${symbol}}`)
+    return [symbol]
+  }
 
-  for (const production of productions) {
-    console.log(`处理产生式: ${symbol}->${production}`)
+  // 如果是ε，直接返回ε
+  if (symbol === 'ε') {
+    console.log(`ε 的First集是 {ε}`)
+    return ['ε']
+  }
 
-    if (production === 'ε') {
-      console.log(`添加 ε 到 ${symbol} 的First集`)
-      result.push('ε')
-    } else if (production.length === 1) {
-      const firstChar = production[0]
-      if (/[a-z]/.test(firstChar)) {
-        console.log(`添加终结符 ${firstChar} 到 ${symbol} 的First集`)
-        result.push(firstChar)
-      } else if (/[A-Z]/.test(firstChar)) {
-        // 递归计算非终结符的First集
-        console.log(`递归计算 ${firstChar} 的First集`)
-        const subFirstSet = calculateFirstSetForSymbol(firstChar)
-        console.log(`${firstChar} 的First集: ${subFirstSet.join(', ')}`)
-        result.push(...subFirstSet)
-      }
-    } else {
-      // 多字符产生式，需要处理每个字符
-      console.log(`处理多字符产生式: ${production}`)
-      let allEpsilon = true
-      for (let i = 0; i < production.length; i++) {
-        const char = production[i]
-        console.log(`处理字符 ${char} (位置 ${i+1})`)
+  // 如果是非终结符，计算其First集
+  if (isNonTerminal(symbol)) {
+    const result: string[] = []
+    const productions = originalData.value.formulas_dict[symbol] || []
 
-        if (/[a-z]/.test(char)) {
-          console.log(`添加终结符 ${char} 到 ${symbol} 的First集`)
-          result.push(char)
-          allEpsilon = false
-          break // 遇到终结符就停止
-        } else if (/[A-Z]/.test(char)) {
-          console.log(`递归计算 ${char} 的First集`)
-          const subFirstSet = calculateFirstSetForSymbol(char)
-          const nonEpsilonSymbols = subFirstSet.filter(s => s !== 'ε')
-          console.log(`${char} 的First集: ${subFirstSet.join(', ')}, 非ε符号: ${nonEpsilonSymbols.join(', ')}`)
-          result.push(...nonEpsilonSymbols)
+    // 添加当前符号到已访问集合
+    visited.add(symbol)
 
-          if (!subFirstSet.includes('ε')) {
-            console.log(`${char} 的First集不包含ε，停止处理`)
+    for (const production of productions) {
+      console.log(`处理产生式: ${symbol}->${production}`)
+
+      if (production === 'ε') {
+        console.log(`添加 ε 到 ${symbol} 的First集`)
+        result.push('ε')
+      } else if (production.length === 1) {
+        const firstChar = production[0]
+        if (isTerminal(firstChar)) {
+          console.log(`添加终结符 ${firstChar} 到 ${symbol} 的First集`)
+          result.push(firstChar)
+        } else if (isNonTerminal(firstChar)) {
+          // 递归计算非终结符的First集
+          console.log(`递归计算 ${firstChar} 的First集`)
+          const subFirstSet = calculateFirstSetForSymbol(firstChar, new Set(visited))
+          console.log(`${firstChar} 的First集: ${subFirstSet.join(', ')}`)
+          result.push(...subFirstSet)
+        } else {
+          // 其他符号（如标点符号、界符等）
+          console.log(`添加其他符号 ${firstChar} 到 ${symbol} 的First集`)
+          result.push(firstChar)
+        }
+      } else {
+        // 多字符产生式，需要处理每个字符
+        console.log(`处理多字符产生式: ${production}`)
+        let allEpsilon = true
+        for (let i = 0; i < production.length; i++) {
+          const char = production[i]
+          console.log(`处理字符 ${char} (位置 ${i+1})`)
+
+          if (isTerminal(char)) {
+            console.log(`添加终结符 ${char} 到 ${symbol} 的First集`)
+            result.push(char)
             allEpsilon = false
-            break // 如果这个非终结符的First集不包含ε，就停止
+            break // 遇到终结符就停止
+          } else if (isNonTerminal(char)) {
+            console.log(`递归计算 ${char} 的First集`)
+            const subFirstSet = calculateFirstSetForSymbol(char, new Set(visited))
+            const nonEpsilonSymbols = subFirstSet.filter(s => s !== 'ε')
+            console.log(`${char} 的First集: ${subFirstSet.join(', ')}, 非ε符号: ${nonEpsilonSymbols.join(', ')}`)
+            result.push(...nonEpsilonSymbols)
+
+            if (!subFirstSet.includes('ε')) {
+              console.log(`${char} 的First集不包含ε，停止处理`)
+              allEpsilon = false
+              break // 如果这个非终结符的First集不包含ε，就停止
+            }
+          } else {
+            // 其他符号（如标点符号、界符等）
+            console.log(`添加其他符号 ${char} 到 ${symbol} 的First集`)
+            result.push(char)
+            allEpsilon = false
+            break // 遇到其他符号就停止
           }
         }
-      }
 
-      // 如果所有字符都能推导出ε，那么ε也在First集中
-      if (allEpsilon) {
-        console.log(`所有字符都能推导出ε，添加 ε 到 ${symbol} 的First集`)
-        result.push('ε')
+        // 如果所有字符都能推导出ε，那么ε也在First集中
+        if (allEpsilon) {
+          console.log(`所有字符都能推导出ε，添加 ε 到 ${symbol} 的First集`)
+          result.push('ε')
+        }
       }
     }
+
+    // 去重
+    const uniqueResult = [...new Set(result)]
+    console.log(`${symbol} 的最终First集: ${uniqueResult.join(', ')}`)
+    return uniqueResult
+  }
+
+  // 其他情况，返回空数组
+  console.log(`${symbol} 不是有效的符号`)
+  return []
+}
+
+// 计算字符串的First集（用于多字符字符串）
+const calculateStringFirstSet = (str: string, visited: Set<string> = new Set()): string[] => {
+  if (!originalData.value) return []
+
+  console.log(`计算字符串 "${str}" 的First集`)
+
+  // 如果是空字符串，返回ε
+  if (str === '') {
+    return ['ε']
+  }
+
+  // 如果是单个字符，直接计算
+  if (str.length === 1) {
+    return calculateFirstSetForSymbol(str, visited)
+  }
+
+  // 多字符字符串，按顺序处理每个字符
+  const result: string[] = []
+  let allEpsilon = true
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i]
+    console.log(`处理字符串位置 ${i+1} 的字符: ${char}`)
+
+    if (isTerminal(char)) {
+      console.log(`添加终结符 ${char} 到字符串的First集`)
+      result.push(char)
+      allEpsilon = false
+      break // 遇到终结符就停止
+    } else if (isNonTerminal(char)) {
+      console.log(`递归计算 ${char} 的First集`)
+      const subFirstSet = calculateFirstSetForSymbol(char, new Set(visited))
+      const nonEpsilonSymbols = subFirstSet.filter(s => s !== 'ε')
+      console.log(`${char} 的First集: ${subFirstSet.join(', ')}, 非ε符号: ${nonEpsilonSymbols.join(', ')}`)
+      result.push(...nonEpsilonSymbols)
+
+      if (!subFirstSet.includes('ε')) {
+        console.log(`${char} 的First集不包含ε，停止处理`)
+        allEpsilon = false
+        break // 如果这个非终结符的First集不包含ε，就停止
+      }
+    } else {
+      // 其他符号（如标点符号、界符等）
+      console.log(`添加其他符号 ${char} 到字符串的First集`)
+      result.push(char)
+      allEpsilon = false
+      break // 遇到其他符号就停止
+    }
+  }
+
+  // 如果所有字符都能推导出ε，那么ε也在First集中
+  if (allEpsilon) {
+    console.log(`所有字符都能推导出ε，添加 ε 到字符串的First集`)
+    result.push('ε')
   }
 
   // 去重
   const uniqueResult = [...new Set(result)]
-  console.log(`${symbol} 的最终First集: ${uniqueResult.join(', ')}`)
+  console.log(`字符串 "${str}" 的最终First集: ${uniqueResult.join(', ')}`)
   return uniqueResult
 }
 
@@ -1259,7 +1391,9 @@ const calculateFollowSetHint = (symbol: string) => {
           // 检查是否是规则2：A→αBβ
           if (i < rightPart.length - 1) {
             const beta = rightPart.substring(i + 1)
-            const firstSetOfBeta = calculateFirstSetForSymbol(beta)
+            // 对于多字符的β，需要计算其First集
+            const firstSetOfBeta = calculateStringFirstSet(beta)
+
             const nonEpsilonSymbols = firstSetOfBeta.filter(s => s !== 'ε')
 
             if (nonEpsilonSymbols.length > 0) {
@@ -1289,7 +1423,7 @@ const calculateFollowSetHint = (symbol: string) => {
           } else {
             // A→αBβ 的情况，需要检查ε∈First(β)
             const beta = rightPart.substring(i + 1)
-            const firstSetOfBeta = calculateFirstSetForSymbol(beta)
+            const firstSetOfBeta = calculateStringFirstSet(beta)
 
             if (firstSetOfBeta.includes('ε')) {
               result.steps.push({
