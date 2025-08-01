@@ -601,7 +601,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
@@ -856,6 +856,9 @@ const addTableRow = () => {
       userConversionTable.value[column].push('')
     }
   })
+
+  // 保存数据
+  saveStep3Data()
 }
 
 const removeTableRow = (rowIndex: number) => {
@@ -868,6 +871,9 @@ const removeTableRow = (rowIndex: number) => {
       }
     })
   }
+
+  // 保存数据
+  saveStep3Data()
 }
 
 const clearUserTable = () => {
@@ -877,6 +883,9 @@ const clearUserTable = () => {
   tableFieldValidation.value = {}
   showTableErrors.value = false
   showTableSuccess.value = false
+
+  // 保存数据
+  saveStep3Data()
 }
 
 // 矩阵操作函数 - 矩阵是固定结构，不需要添加/删除行
@@ -892,6 +901,9 @@ const clearUserMatrix = () => {
   matrixFieldValidation.value = {}
   showMatrixErrors.value = false
   showMatrixSuccess.value = false
+
+  // 保存数据
+  saveStep3Data()
 }
 
 // 初始化数据结构
@@ -1457,9 +1469,22 @@ const toggleMatrixAnswer = () => {
   showMatrixAnswer.value = !showMatrixAnswer.value
 }
 
+// 保存03页面数据
+const saveStep3Data = () => {
+  faStore.saveStep3Data(
+    userConversionTable.value,
+    userTransitionMatrix.value,
+    conversionTableRowCount.value
+  )
+  console.log('03页面数据已保存')
+}
+
 // 进入下一步
 const proceedToNext = () => {
   if (constructionComplete.value) {
+    // 保存当前数据
+    saveStep3Data()
+
     const stepData = {
       conversionTable: answerConversionTable.value,
       transitionMatrix: answerTransitionMatrix.value,
@@ -1504,10 +1529,31 @@ onMounted(() => {
 
       console.log('FA数据初始化完成')
     }
+
+    // 5. 尝试恢复03页面的用户数据
+    const savedStep3Data = faStore.loadStep3Data()
+    if (savedStep3Data) {
+      console.log('恢复03页面数据:', savedStep3Data)
+      userConversionTable.value = savedStep3Data.userConversionTable
+      userTransitionMatrix.value = savedStep3Data.userTransitionMatrix
+      conversionTableRowCount.value = savedStep3Data.conversionTableRowCount
+    }
   } catch (error) {
     console.error('处理FA数据失败：', error)
   }
 })
+
+// 监听数据变化，自动保存
+watch(
+  [userConversionTable, userTransitionMatrix, conversionTableRowCount],
+  () => {
+    // 延迟保存，避免频繁保存
+    setTimeout(() => {
+      saveStep3Data()
+    }, 1000)
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>

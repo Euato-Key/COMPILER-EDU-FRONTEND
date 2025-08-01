@@ -28,6 +28,13 @@ export interface FAStoreData {
       timestamp: string
     }
   }
+  // 03页面数据
+  step3Data?: {
+    userConversionTable: Record<string, string[]>
+    userTransitionMatrix: Record<string, Record<string, string>>
+    conversionTableRowCount: number
+    timestamp: string
+  }
 }
 
 export const useFAStore = defineStore('fa', () => {
@@ -44,6 +51,9 @@ export const useFAStore = defineStore('fa', () => {
     step4: undefined,
     step6: undefined
   })
+
+  // 03页面数据状态
+  const step3Data = ref<FAStoreData['step3Data']>(undefined)
 
   // 计算属性 - 从原始数据提取
   const nfaTable = computed(() => originalData.value?.table || null)
@@ -191,6 +201,8 @@ export const useFAStore = defineStore('fa', () => {
       step4: undefined,
       step6: undefined
     }
+    // 清除03页面数据
+    step3Data.value = undefined
   }
 
   // 保存画布数据
@@ -211,6 +223,28 @@ export const useFAStore = defineStore('fa', () => {
   // 清除特定步骤的画布数据
   const clearCanvasData = (step: 'step2' | 'step4' | 'step6') => {
     canvasData.value[step] = undefined
+  }
+
+  // 03页面数据操作方法
+  const saveStep3Data = (
+    userConversionTable: Record<string, string[]>,
+    userTransitionMatrix: Record<string, Record<string, string>>,
+    conversionTableRowCount: number
+  ) => {
+    step3Data.value = {
+      userConversionTable: JSON.parse(JSON.stringify(userConversionTable)), // 深拷贝
+      userTransitionMatrix: JSON.parse(JSON.stringify(userTransitionMatrix)), // 深拷贝
+      conversionTableRowCount,
+      timestamp: new Date().toISOString()
+    }
+  }
+
+  const loadStep3Data = () => {
+    return step3Data.value
+  }
+
+  const clearStep3Data = () => {
+    step3Data.value = undefined
   }
 
   // 检查是否有分析结果
@@ -256,7 +290,7 @@ export const useFAStore = defineStore('fa', () => {
   const persistenceConfig = {
     key: 'fa_store',
     version: '1.0.0',
-    include: ['inputRegex', 'canvasData'],
+    include: ['inputRegex', 'canvasData', 'step3Data'],
     autoSave: true,
     ttl: 7 * 24 * 60 * 60 * 1000, // 7天
     saveDelay: 500,
@@ -267,6 +301,7 @@ export const useFAStore = defineStore('fa', () => {
     store: {
       inputRegex,
       canvasData,
+      step3Data,
     },
     ...persistenceConfig,
   })
@@ -325,6 +360,11 @@ export const useFAStore = defineStore('fa', () => {
     saveCanvasData,
     loadCanvasData,
     clearCanvasData,
+
+    // 03页面数据管理
+    saveStep3Data,
+    loadStep3Data,
+    clearStep3Data,
 
     // 辅助方法
     hasResult,
