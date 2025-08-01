@@ -173,7 +173,7 @@
         </div>
 
       <!-- 答案区域 -->
-        <div class="answer-area">
+      <div class="answer-area">
         <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl shadow-sm">
           <!-- 答案区域头部 -->
           <div class="border-b border-purple-200 p-5">
@@ -267,6 +267,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- 步骤操作栏 -->
