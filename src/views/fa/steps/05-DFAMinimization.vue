@@ -66,7 +66,7 @@
                           @focus="handlePSetFocus(pItem)"
                           @input="handlePSetInput(pItem)"
                           @blur="handlePSetBlur(pItem)"
-                          placeholder="输入状态子集，如：123"
+                          placeholder="输入状态子集，如：1 2 3"
                         />
                         <button
                           v-if="!step6Open && localPSets.length > 1"
@@ -171,7 +171,7 @@
                       <div
                         class="flex-1 px-3 py-2 bg-green-50 border border-green-300 rounded text-sm"
                       >
-                        {{ pSet.join('') }}
+                        {{ Array.isArray(pSet) ? pSet.join(' ') : pSet }}
                       </div>
                       <div class="text-sm text-gray-500">=> {{ index }}</div>
                     </div>
@@ -196,7 +196,7 @@
                   <h3 class="font-semibold text-gray-900">状态转换矩阵（用户填写）</h3>
                 </div>
                 <div class="p-6">
-                  <div v-if="step6Open && minimizedMatrix.length">
+                  <div v-if="showSetsAnswer && minimizedMatrix.length">
                     <!-- 转换矩阵表格 -->
                     <div class="overflow-x-auto">
                       <table class="w-full border-collapse border border-gray-300">
@@ -289,7 +289,7 @@
                   </div>
 
                   <div v-else class="text-center text-gray-500 py-8">
-                    <p>请先完成左侧化简DFA状态子集的填写</p>
+                    <p>请先完成上方化简DFA状态子集的填写</p>
                   </div>
                 </div>
               </div>
@@ -518,12 +518,17 @@ const reductionPercentage = computed(() => {
 
 // 锁定逻辑：只有查看了A区域答案才能操作B区域
 const isMatrixLocked = computed(() => {
-  return !showSetsAnswer.value
+  return false // 移除锁定逻辑，用户查看答案后即可填写矩阵
 })
 
 // 答案显示控制函数
 const toggleSetsAnswer = () => {
   showSetsAnswer.value = !showSetsAnswer.value
+
+  // 如果显示答案，自动初始化矩阵
+  if (showSetsAnswer.value && minimizedMatrix.value.length === 0) {
+    initMinimizedMatrix()
+  }
 }
 
 const toggleMatrixAnswerStep5 = () => {
@@ -539,7 +544,7 @@ const getOriginalStateSet = () => {
       return originalStates.join(', ')
     }
   }
-  
+
   // 如果无法从原始数据获取，尝试从最小化数据推断原始状态数量
   if (faStore.originalData?.table_to_num_min?.['S']) {
     const minimizedStates = faStore.originalData.table_to_num_min['S']
@@ -550,7 +555,7 @@ const getOriginalStateSet = () => {
       return originalStates.join(', ')
     }
   }
-  
+
   // 最后的备选方案
   return Array.from({ length: originalStateCount.value }, (_, i) => i).join(', ')
 }
@@ -581,6 +586,7 @@ onMounted(() => {
     if (faResult) {
       console.log('Step 5 loaded data from store')
       console.log('Step 5 - P data structure:', faResult.P)
+      console.log('Step 5 - P data type check:', faResult.P?.map(p => ({ value: p, type: typeof p, isArray: Array.isArray(p) })))
       console.log('Step 5 - table_to_num_min:', faResult.table_to_num_min)
 
       // 详细打印最小化转换表数据
@@ -683,18 +689,33 @@ const addPSet = (index: number) => {
 
 // 字符集比较函数
 const areCharacterSetsEqual = (str1: string, str2: string): boolean => {
-  const set1 = new Set(str1)
-  const set2 = new Set(str2)
+  console.log(`areCharacterSetsEqual - comparing "${str1}" with "${str2}"`)
+
+  // 移除空格并分割成字符数组
+  const chars1 = str1.replace(/\s+/g, '').split('').filter(char => char.trim())
+  const chars2 = str2.replace(/\s+/g, '').split('').filter(char => char.trim())
+
+  console.log(`areCharacterSetsEqual - chars1: [${chars1.join(', ')}]`)
+  console.log(`areCharacterSetsEqual - chars2: [${chars2.join(', ')}]`)
+
+  const set1 = new Set(chars1)
+  const set2 = new Set(chars2)
+
+  console.log(`areCharacterSetsEqual - set1 size: ${set1.size}, set2 size: ${set2.size}`)
 
   if (set1.size !== set2.size) {
+    console.log('areCharacterSetsEqual - sizes differ, returning false')
     return false
   }
 
   for (const char of set1) {
     if (!set2.has(char)) {
+      console.log(`areCharacterSetsEqual - char "${char}" not found in set2, returning false`)
       return false
     }
   }
+
+  console.log('areCharacterSetsEqual - sets are equal, returning true')
   return true
 }
 
@@ -715,21 +736,34 @@ const isDuplicateAnswer = (pItem: PSetItem): boolean => {
 
 // P集合匹配验证
 const matchPSetsValue = (answerList: string[], inputList: PSetItem[]) => {
+  console.log('matchPSetsValue - answerList:', answerList)
+  console.log('matchPSetsValue - inputList:', inputList.map(item => ({ id: item.id, text: item.text })))
+
   const answerSet = new Set(answerList)
 
   for (const item of inputList) {
-    const itemText = item.text.replace(/\s+/g, '')
-    const answerItem = answerList.find((answer) => areCharacterSetsEqual(answer, itemText))
+    const itemText = item.text.trim()
+    console.log(`matchPSetsValue - checking item ${item.id}: "${itemText}"`)
+
+    const answerItem = answerList.find((answer) => {
+      const isEqual = areCharacterSetsEqual(answer, itemText)
+      console.log(`matchPSetsValue - comparing "${itemText}" with "${answer}": ${isEqual}`)
+      return isEqual
+    })
 
     if (answerItem) {
       item.check = 'isCorrect'
       answerSet.delete(answerItem)
+      console.log(`matchPSetsValue - item ${item.id} is correct`)
     } else {
       item.check = 'isError'
+      console.log(`matchPSetsValue - item ${item.id} is incorrect`)
     }
   }
 
-  return answerSet.size === 0 && inputList.every((item) => item.check === 'isCorrect')
+  const result = answerSet.size === 0 && inputList.every((item) => item.check === 'isCorrect')
+  console.log('matchPSetsValue - final result:', result)
+  return result
 }
 
 // 校验P集合
@@ -742,10 +776,17 @@ const validatePSets = () => {
   })
 
   // 检查是否所有答案都正确且完整匹配
-  const answerList = faStore.originalData.P.map((pSet: string[]) => pSet.join(''))
+  const answerList = faStore.originalData.P.map((pSet: any) => {
+    if (Array.isArray(pSet)) {
+      return pSet.join(' ')
+    } else if (typeof pSet === 'string') {
+      // 如果是字符串，尝试添加空格分隔
+      return pSet.split('').join(' ')
+    }
+    return String(pSet)
+  })
   if (matchPSetsValue(answerList, localPSets.value)) {
     step6Open.value = true
-    initMinimizedMatrix()
     // success message
   }
 }
@@ -885,7 +926,15 @@ const validatePSetField = (pItem: PSetItem) => {
 
   // 3. 检查答案正确性
   if (fieldValue && !isDuplicate && faStore.originalData?.P) {
-    const answerList = faStore.originalData.P.map((pSet: string[]) => pSet.join(''))
+    const answerList = faStore.originalData.P.map((pSet: any) => {
+      if (Array.isArray(pSet)) {
+        return pSet.join(' ')
+      } else if (typeof pSet === 'string') {
+        // 如果是字符串，尝试添加空格分隔
+        return pSet.split('').join(' ')
+      }
+      return String(pSet)
+    })
     const answerItem = answerList.find((answer: string) => areCharacterSetsEqual(answer, fieldValue))
 
     if (!answerItem) {
