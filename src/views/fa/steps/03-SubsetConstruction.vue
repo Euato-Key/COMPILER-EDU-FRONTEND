@@ -9,6 +9,25 @@
         <div>
           <h2 class="text-2xl font-bold text-gray-900">子集构造法</h2>
           <p class="text-gray-600 mt-1">第三步：使用子集构造法生成转换表和状态转换矩阵</p>
+
+          <!-- 总体完成进度 -->
+          <div v-if="overallCompletionRate > 0" class="mt-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-gray-700">总体完成度</span>
+              <span class="text-sm text-gray-600">{{ overallCompletionRate }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div
+                class="h-2 rounded-full transition-all duration-500"
+                :class="overallCompletionRate === 100 ? 'bg-green-500' : 'bg-blue-500'"
+                :style="{ width: overallCompletionRate + '%' }"
+              ></div>
+            </div>
+            <div v-if="overallCompletionRate === 100" class="mt-2 flex items-center gap-2 text-green-600">
+              <Icon icon="lucide:trophy" class="w-4 h-4" />
+              <span class="text-sm font-medium">恭喜！所有内容填写完成</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -72,6 +91,25 @@
                         <Icon icon="lucide:check-circle" class="w-4 h-4 inline mr-1" />
                         检验答案
                       </button>
+                    </div>
+                  </div>
+
+                  <!-- 完成进度提示 -->
+                  <div v-if="conversionTableRowCount > 0" class="mt-3">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm font-medium text-gray-700">完成进度</span>
+                      <span class="text-sm text-gray-600">{{ tableCorrectCompletionRate }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        class="h-2 rounded-full transition-all duration-300"
+                        :class="tableCorrectCompletionRate === 100 ? 'bg-green-500' : 'bg-blue-500'"
+                        :style="{ width: tableCorrectCompletionRate + '%' }"
+                      ></div>
+                    </div>
+                    <div v-if="tableCorrectCompletionRate === 100" class="mt-2 flex items-center gap-2 text-green-600">
+                      <Icon icon="lucide:check-circle" class="w-4 h-4" />
+                      <span class="text-sm font-medium">转换表填写完成！</span>
                     </div>
                   </div>
                 </div>
@@ -166,6 +204,25 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- 转换表成功提示 -->
+                  <div
+                    v-if="tableCompletionRate === 100 && Object.keys(tableValidationErrors).length === 0 && showTableSuccess"
+                    class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg"
+                  >
+                    <div class="flex items-start gap-2">
+                      <Icon
+                        icon="lucide:check-circle"
+                        class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <h4 class="font-medium text-green-800 mb-2">🎉 转换表填写完美！</h4>
+                        <p class="text-sm text-green-700">
+                          恭喜你！转换表的所有字段都已正确填写，可以继续进行下一步了。
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -244,7 +301,10 @@
               <div class="bg-white border border-gray-200 rounded-lg">
                 <div class="border-b border-gray-200 p-4">
                   <div class="flex items-center justify-between">
-                    <h3 class="font-semibold text-gray-900">状态转换矩阵（用户填写）</h3>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">状态转换矩阵（用户填写）</h3>
+                      <p class="text-sm text-gray-600 mt-1">重命名规则：用0,1,2,3...来重命名状态集合</p>
+                    </div>
                     <div class="flex items-center gap-2">
                       <button
                         @click="clearUserMatrix"
@@ -262,6 +322,25 @@
                       </button>
                     </div>
                   </div>
+
+                  <!-- 完成进度提示 -->
+                  <div v-if="matrixStateColumns.length > 0" class="mt-3">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm font-medium text-gray-700">完成进度</span>
+                      <span class="text-sm text-gray-600">{{ matrixCorrectCompletionRate }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        class="h-2 rounded-full transition-all duration-300"
+                        :class="matrixCorrectCompletionRate === 100 ? 'bg-green-500' : 'bg-purple-500'"
+                        :style="{ width: matrixCorrectCompletionRate + '%' }"
+                      ></div>
+                    </div>
+                    <div v-if="matrixCorrectCompletionRate === 100" class="mt-2 flex items-center gap-2 text-green-600">
+                      <Icon icon="lucide:check-circle" class="w-4 h-4" />
+                      <span class="text-sm font-medium">状态转换矩阵填写完成！</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="p-4">
@@ -270,7 +349,21 @@
                     <p>初始化完成后开始填写状态转换矩阵</p>
                   </div>
 
-                  <div v-else class="overflow-x-auto">
+                  <!-- 重命名规则说明 -->
+                  <div v-if="alphabetSymbols.length > 0" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start gap-2">
+                      <Icon icon="lucide:info" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div class="text-sm text-blue-700">
+                        <p class="font-medium mb-1">状态重命名规则：</p>
+                        <ul class="space-y-1 text-xs">
+                          <li>• 将转换表中的状态集合按顺序重命名为：0, 1, 2, 3, ...</li>
+                          <li>• 例如：状态集合 "1 2 X" → 编号 0，"1 2 3" → 编号 1</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-if="alphabetSymbols.length > 0" class="overflow-x-auto">
                     <table class="w-full border-collapse border border-gray-300">
                       <thead>
                         <tr class="bg-purple-50">
@@ -299,7 +392,7 @@
                             <input
                               v-model="userTransitionMatrix[String(rowKey)][state]"
                               type="text"
-                              placeholder="-"
+                              :placeholder="state === 'S' ? '状态编号' : '目标状态编号'"
                               :class="
                                 getFieldClass(Number(rowKey), state, 'matrix') +
                                 ' text-center'
@@ -340,6 +433,25 @@
                             </span>
                           </li>
                         </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 矩阵成功提示 -->
+                  <div
+                    v-if="matrixCompletionRate === 100 && Object.keys(matrixValidationErrors).length === 0 && showMatrixSuccess"
+                    class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg"
+                  >
+                    <div class="flex items-start gap-2">
+                      <Icon
+                        icon="lucide:check-circle"
+                        class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <h4 class="font-medium text-green-800 mb-2">🎉 状态转换矩阵填写完美！</h4>
+                        <p class="text-sm text-green-700">
+                          恭喜你！状态转换矩阵的所有字段都已正确填写，可以继续进行下一步了。
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -405,7 +517,7 @@
                           alphabetSymbols.forEach(symbol => {
                             columnMapping[symbol] = `I${symbol}`
                           })
-                          
+
                           const mappedColumn = columnMapping[col] || col
                           return finalStatePositions.some((pos: {row: number, col: string}) => pos.row === row && pos.col === mappedColumn)
                         }
@@ -510,18 +622,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, type Ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable } from '@/components/fa'
 
 // 类型定义
-interface TableRow {
-  state: string
-  transitions: Record<string, string>
-}
-
 // 新的转换表结构 - 按列组织（每列一个输入符号）
 interface ConversionTableData {
   [inputSymbol: string]: string[] // 每个输入符号对应一列数据
@@ -532,12 +639,10 @@ interface TransitionMatrixData {
   [rowIndex: string]: Record<string, string> // 每行对应一个状态转换
 }
 
-type TableType = 'table' | 'matrix'
-
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
-  complete: [data: any]
+  complete: [data: Record<string, unknown>]
 }>()
 
 // 使用 FA Store
@@ -574,18 +679,13 @@ const tableFieldValidation = ref<Record<string, 'valid' | 'invalid' | 'normal'>>
 const matrixFieldValidation = ref<Record<string, 'valid' | 'invalid' | 'normal'>>({})
 const showTableErrors = ref(false) // 是否显示转换表错误
 const showMatrixErrors = ref(false) // 是否显示矩阵错误
+const showTableSuccess = ref(false) // 是否显示转换表成功提示
+const showMatrixSuccess = ref(false) // 是否显示矩阵成功提示
 
 // 计算属性
 const constructionComplete = computed(() => {
-  const hasTableContent =
-    conversionTableRowCount.value > 0 && conversionTableColumns.value.length > 0
-  const hasMatrixContent = alphabetSymbols.value.length > 0 && matrixStateColumns.value.length > 0
-  const hasNoErrors =
-    Object.keys(tableValidationErrors.value).length === 0 &&
-    Object.keys(matrixValidationErrors.value).length === 0
   // 至少查看过一个答案
   const hasViewedAnyAnswer = showTableAnswer.value || showMatrixAnswer.value
-  // return hasTableContent && hasMatrixContent && hasNoErrors && hasViewedAnyAnswer
   return hasViewedAnyAnswer
 })
 
@@ -596,6 +696,158 @@ const totalTransitions = computed(() => {
     total += columnData.filter((cell) => cell && cell !== '-').length
   })
   return total
+})
+
+// 转换表完成率计算
+const tableCompletionRate = computed(() => {
+  if (conversionTableRowCount.value === 0 || conversionTableColumns.value.length === 0) {
+    return 0
+  }
+
+  // 获取标准答案的行数
+  const answerRowCount = Math.max(
+    ...conversionTableColumns.value.map((col) => {
+      const colData = answerConversionTable.value[col] || []
+      return colData.length
+    })
+  )
+
+  // 计算总体需要的字段数（标准答案的所有字段）
+  const totalRequiredFields = answerRowCount * conversionTableColumns.value.length
+
+  // 计算用户已完成的字段数
+  let completedFields = 0
+
+  conversionTableColumns.value.forEach((column) => {
+    const columnData = userConversionTable.value[column] || []
+    for (let i = 0; i < answerRowCount; i++) {
+      const fieldValue = columnData[i] || ''
+      if (fieldValue.trim() !== '') {
+        completedFields++
+      }
+    }
+  })
+
+  return totalRequiredFields > 0 ? Math.round((completedFields / totalRequiredFields) * 100) : 0
+})
+
+// 状态转换矩阵完成率计算
+const matrixCompletionRate = computed(() => {
+  if (matrixStateColumns.value.length === 0 || Object.keys(userTransitionMatrix.value).length === 0) {
+    return 0
+  }
+
+  // 获取标准答案的行数
+  const answerRowCount = Object.keys(answerTransitionMatrix.value).length
+
+  // 计算总体需要的字段数（标准答案的所有字段）
+  const totalRequiredFields = answerRowCount * matrixStateColumns.value.length
+
+  // 计算用户已完成的字段数
+  let completedFields = 0
+
+  for (let i = 0; i < answerRowCount; i++) {
+    const rowKey = i.toString()
+    matrixStateColumns.value.forEach((state) => {
+      const fieldValue = userTransitionMatrix.value[rowKey]?.[state] || ''
+      if (fieldValue.trim() !== '') {
+        completedFields++
+      }
+    })
+  }
+
+  return totalRequiredFields > 0 ? Math.round((completedFields / totalRequiredFields) * 100) : 0
+})
+
+// 转换表正确完成率计算（只计算填写正确的内容）
+const tableCorrectCompletionRate = computed(() => {
+  if (conversionTableRowCount.value === 0 || conversionTableColumns.value.length === 0) {
+    return 0
+  }
+
+  // 获取标准答案的行数
+  const answerRowCount = Math.max(
+    ...conversionTableColumns.value.map((col) => {
+      const colData = answerConversionTable.value[col] || []
+      return colData.length
+    })
+  )
+
+  // 计算总体需要的字段数（标准答案的所有字段）
+  const totalRequiredFields = answerRowCount * conversionTableColumns.value.length
+
+  // 计算用户正确填写的字段数
+  let correctFields = 0
+
+  conversionTableColumns.value.forEach((column) => {
+    const columnData = userConversionTable.value[column] || []
+    const answerColumnData = answerConversionTable.value[column] || []
+
+    for (let i = 0; i < answerRowCount; i++) {
+      const userValue = columnData[i] || ''
+      const answerValue = answerColumnData[i] || ''
+
+      // 使用状态集合比较函数来判断是否正确
+      if (compareStateSets(userValue, answerValue)) {
+        correctFields++
+      }
+    }
+  })
+
+  return totalRequiredFields > 0 ? Math.round((correctFields / totalRequiredFields) * 100) : 0
+})
+
+// 矩阵正确完成率计算（只计算填写正确的内容）
+const matrixCorrectCompletionRate = computed(() => {
+  if (matrixStateColumns.value.length === 0 || Object.keys(userTransitionMatrix.value).length === 0) {
+    return 0
+  }
+
+  // 获取标准答案的行数
+  const answerRowCount = Object.keys(answerTransitionMatrix.value).length
+
+  // 计算总体需要的字段数（标准答案的所有字段）
+  const totalRequiredFields = answerRowCount * matrixStateColumns.value.length
+
+  // 计算用户正确填写的字段数
+  let correctFields = 0
+
+  for (let i = 0; i < answerRowCount; i++) {
+    const rowKey = i.toString()
+    matrixStateColumns.value.forEach((state) => {
+      const userValue = userTransitionMatrix.value[rowKey]?.[state] || ''
+      const answerValue = answerTransitionMatrix.value[rowKey]?.[state] || ''
+
+      // 使用状态集合比较函数来判断是否正确
+      if (compareStateSets(userValue, answerValue)) {
+        correctFields++
+      }
+    })
+  }
+
+  return totalRequiredFields > 0 ? Math.round((correctFields / totalRequiredFields) * 100) : 0
+})
+
+// 总体完成率计算
+const overallCompletionRate = computed(() => {
+  const tableRate = tableCorrectCompletionRate.value
+  const matrixRate = matrixCorrectCompletionRate.value
+
+  // 如果两个表格都没有数据，返回0
+  if (tableRate === 0 && matrixRate === 0) {
+    return 0
+  }
+
+  // 如果只有一个表格有数据，返回该表格的完成率
+  if (tableRate === 0) {
+    return matrixRate
+  }
+  if (matrixRate === 0) {
+    return tableRate
+  }
+
+  // 如果两个表格都有数据，返回平均值
+  return Math.round((tableRate + matrixRate) / 2)
 })
 
 // 矩阵锁定状态：只有查看了转换表答案后才能操作矩阵
@@ -638,6 +890,7 @@ const clearUserTable = () => {
   tableValidationErrors.value = {}
   tableFieldValidation.value = {}
   showTableErrors.value = false
+  showTableSuccess.value = false
 }
 
 // 矩阵操作函数 - 矩阵是固定结构，不需要添加/删除行
@@ -652,6 +905,7 @@ const clearUserMatrix = () => {
   matrixValidationErrors.value = {}
   matrixFieldValidation.value = {}
   showMatrixErrors.value = false
+  showMatrixSuccess.value = false
 }
 
 // 初始化数据结构
@@ -925,10 +1179,32 @@ const getFieldClass = (rowIndex: number, field: string, tableType: 'table' | 'ma
 // 手动验证按钮处理
 const handleValidateTable = () => {
   validateTable('table')
+
+  // 检查是否全部正确
+  if (Object.keys(tableValidationErrors.value).length === 0 && tableCorrectCompletionRate.value === 100) {
+    showTableSuccess.value = true
+    // 3秒后自动隐藏成功提示
+    setTimeout(() => {
+      showTableSuccess.value = false
+    }, 3000)
+  } else {
+    showTableSuccess.value = false
+  }
 }
 
 const handleValidateMatrix = () => {
   validateTable('matrix')
+
+  // 检查是否全部正确
+  if (Object.keys(matrixValidationErrors.value).length === 0 && matrixCorrectCompletionRate.value === 100) {
+    showMatrixSuccess.value = true
+    // 3秒后自动隐藏成功提示
+    setTimeout(() => {
+      showMatrixSuccess.value = false
+    }, 3000)
+  } else {
+    showMatrixSuccess.value = false
+  }
 }
 
 // 格式化错误信息的辅助函数
