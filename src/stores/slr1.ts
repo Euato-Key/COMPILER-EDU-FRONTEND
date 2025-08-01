@@ -195,14 +195,14 @@ export const useSLR1Store = defineStore('slr1', () => {
           // dfaStates.value = result.all_dfa || []
           dfaStates.value = result.all_dfa.map((item) => {
             return {
-              id: "Item" + item.id,
+              id: 'Item' + item.id,
               pros: item.pros.map((x: string, idx: number) => {
                 return {
-                  id: "Item" + item.id + "_pro" + idx,
+                  id: 'Item' + item.id + '_pro' + idx,
                   text: x,
                 }
               }),
-              next_ids: item.next_ids
+              next_ids: item.next_ids,
             }
           })
           dotItems.value = result.dot_items || []
@@ -216,7 +216,7 @@ export const useSLR1Store = defineStore('slr1', () => {
           console.log('FIRST集:', firstSets.value)
           console.log('FOLLOW集:', followSets.value)
 
-          console.log("dfaStates", dfaStates)
+          console.log('dfaStates', dfaStates)
 
           // 转换为校验数据
           validationData.value = transformToValidationData(result)
@@ -284,8 +284,10 @@ export const useSLR1Store = defineStore('slr1', () => {
         const result = response.data.data
         if (result) {
           inputAnalysisResult.value = result
-          console.log('=== SLR1输入串分析成功 ===')
-          console.log('分析结果数据:', response.data.data)
+          console.log('===== SLR1 输入串分析结果 =====')
+          console.log('输入串:', processedInput)
+          console.log('分析结果数据:', inputAnalysisResult.value)
+          console.log('=====================================')
           return true
         } else {
           commonStore.setError('输入串分析结果为空')
