@@ -251,10 +251,6 @@
                 <div class="space-y-2">
               <!-- 非终结符的First集 -->
               <div class="mb-3">
-                <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <Icon icon="lucide:tag" class="w-3 h-3 text-blue-500" />
-                  非终结符
-                </h4>
                 <div class="space-y-1.5">
               <div
                 v-for="symbol in originalData.Vn"
@@ -310,7 +306,6 @@
               <div class="space-y-1.5">
                 <!-- 非终结符答案 -->
                 <div>
-                  <h5 class="text-xs font-medium text-green-700 mb-1">非终结符：</h5>
                   <div class="space-y-0.5">
                 <div
                   v-for="symbol in originalData.Vn"
