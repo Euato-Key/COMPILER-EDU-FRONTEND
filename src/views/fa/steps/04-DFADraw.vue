@@ -198,7 +198,7 @@
               </div>
             </div>
 
-            <!-- DOT 字符串显示 -->
+            <!-- DFA 构造分析 -->
             <div
               v-if="showAnswer && faStore.dfaDotString"
               class="border-t border-gray-200 bg-green-50 p-4"
@@ -209,26 +209,7 @@
                   class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
                 />
                 <div class="flex-1">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-green-800">DFA 构造分析</h4>
-                    <div class="flex items-center gap-2">
-                      <button
-                        @click="showDotString = !showDotString"
-                        class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                      >
-                        <Icon icon="lucide:code" class="w-3 h-3 inline mr-1" />
-                        {{ showDotString ? '隐藏' : '显示' }} DOT
-                      </button>
-                      <button
-                        v-if="showDotString"
-                        @click="copyDotString"
-                        class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                      >
-                        <Icon icon="lucide:copy" class="w-3 h-3 inline mr-1" />
-                        复制
-                      </button>
-                    </div>
-                  </div>
+                  <h4 class="font-medium text-green-800">DFA 构造分析</h4>
                   <div class="text-sm text-green-700 mt-2 space-y-1">
                     <p>
                       • 正则表达式:
@@ -237,15 +218,6 @@
                     <p>• DFA 构造完成</p>
                     <p>• 使用子集构造法生成</p>
                     <p>• 可进行下一步 DFA 最小化</p>
-                  </div>
-                  <!-- DOT 字符串显示 -->
-                  <div
-                    v-if="showDotString"
-                    class="mt-3 bg-white border border-green-200 rounded p-3"
-                  >
-                    <pre class="text-xs font-mono overflow-auto max-h-32">{{
-                      faStore.dfaDotString
-                    }}</pre>
                   </div>
                 </div>
               </div>
@@ -318,7 +290,6 @@ const answerTransitionMatrix = ref<Record<string, Record<string, any>>>({}) // �
 const finalStatePositions = ref<Array<{row: number, col: string}>>([])
 
 // 状态管理
-const showDotString = ref(false)
 const showAnswer = ref(false) // 默认隐藏答案
 const hasRenderedAnswer = ref(false) // 记录是否已经渲染过答案
 
@@ -599,7 +570,7 @@ const buildConversionTable = () => {
   console.log('Conversion table columns:', conversionTableColumns.value)
 }
 
-// 切换答案显示/隐藏 - 采用06的正确方式
+// 切换答案显示/隐藏
 const toggleAnswer = async () => {
   console.log('Toggling answer display')
 
@@ -630,7 +601,7 @@ const toggleAnswer = async () => {
   }
 }
 
-// 渲染DOT字符串为SVG - 简化版本，参考06的实现
+// 渲染DOT字符串为SVG
 const renderDotToSvg = async () => {
   if (!answerSvgContainer.value || !faStore.dfaDotString) {
     console.warn('renderDotToSvg: 缺少必要条件')
@@ -672,17 +643,6 @@ const renderDotToSvg = async () => {
         </div>
       `
     }
-  }
-}
-
-// 复制DOT字符串
-const copyDotString = async () => {
-  try {
-    await navigator.clipboard.writeText(faStore.dfaDotString || '')
-    // 这里可以添加一个提示
-    console.log('DOT字符串已复制')
-  } catch (error) {
-    console.error('复制失败：', error)
   }
 }
 
