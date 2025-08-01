@@ -91,6 +91,78 @@
           </div>
         </div>
 
+        <!-- 分析结果 -->
+        <transition name="slide-fade" mode="out-in">
+          <div v-if="analysisResult" class="mt-6">
+            <div
+              :class="[
+                'p-6 rounded-xl border-2 transition-all duration-200 shadow-sm',
+                analysisResult.success
+                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-green-800'
+                  : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200 text-red-800',
+              ]"
+            >
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                  <Icon
+                    :icon="analysisResult.success ? 'lucide:check-circle' : 'lucide:alert-circle'"
+                    class="w-6 h-6 text-white"
+                  />
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <h3 class="text-xl font-bold">
+                      {{ analysisResult.success ? '文法分析成功' : '文法分析失败' }}
+                    </h3>
+                    <span
+                      :class="[
+                        'px-3 py-1 text-xs font-medium rounded-full',
+                        analysisResult.success
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      ]"
+                    >
+                      {{ analysisResult.success ? 'SLR1文法' : '分析失败' }}
+                    </span>
+                  </div>
+                  <p class="text-sm mb-4">{{ analysisResult.message }}</p>
+
+                  <!-- 成功时显示文法信息 -->
+                  <div v-if="analysisResult.success && analysisResult.data" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                        <div class="font-medium text-green-700 mb-1">开始符号</div>
+                        <div class="text-lg font-mono text-green-800">{{ analysisResult.data.S }}</div>
+                      </div>
+                      <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                        <div class="font-medium text-green-700 mb-1">非终结符</div>
+                        <div class="text-sm font-mono text-green-800">{{ analysisResult.data.Vn?.join(', ') }}</div>
+                      </div>
+                      <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                        <div class="font-medium text-green-700 mb-1">终结符</div>
+                        <div class="text-sm font-mono text-green-800">{{ analysisResult.data.Vt?.join(', ') }}</div>
+                      </div>
+                    </div>
+
+                    <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-green-200/50">
+                      <div class="font-medium text-green-700 mb-3">原始文法</div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                        <div
+                          v-for="(prod, index) in slr1Store.productions"
+                          :key="index"
+                          class="text-sm bg-white px-3 py-2 rounded-lg border border-green-200 font-mono text-green-800 shadow-sm"
+                        >
+                          {{ prod }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
         <!-- 示例文法 -->
         <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 shadow-sm">
           <div class="flex items-center gap-3 mb-4">
@@ -175,61 +247,6 @@ L -> L , a</pre>
               >
                 使用此示例
               </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 分析结果 -->
-        <div v-if="analysisResult" class="mt-6">
-          <div
-            :class="[
-              'p-4 rounded-lg border',
-              analysisResult.success
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800',
-            ]"
-          >
-            <div class="flex items-start gap-2">
-              <Icon
-                :icon="analysisResult.success ? 'lucide:check-circle' : 'lucide:alert-circle'"
-                class="w-5 h-5 mt-0.5 flex-shrink-0"
-              />
-              <div class="flex-1">
-                <p class="font-medium">
-                  {{ analysisResult.success ? '文法分析成功' : '文法分析失败' }}
-                </p>
-                <p class="text-sm mt-1">{{ analysisResult.message }}</p>
-
-                <!-- 成功时显示文法信息 -->
-                <div v-if="analysisResult.success && analysisResult.data" class="mt-4 space-y-3">
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span class="font-medium">开始符号：</span>{{ analysisResult.data.S }}
-                    </div>
-                    <div>
-                      <span class="font-medium">非终结符：</span
-                      >{{ analysisResult.data.Vn?.join(', ') }}
-                    </div>
-                    <div>
-                      <span class="font-medium">终结符：</span
-                      >{{ analysisResult.data.Vt?.join(', ') }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span class="font-medium">产生式：</span>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                      <div
-                        v-for="(prod, index) in analysisResult.data.formulas_list"
-                        :key="index"
-                        class="text-xs bg-white px-2 py-1 rounded border font-mono"
-                      >
-                        {{ prod }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
