@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { FA_vueflow } from '@/components/fa'
 import { useFAStore } from '@/stores'
@@ -194,10 +194,39 @@ const isConstructionComplete = computed(() => {
   )
 })
 
+// 自动保存功能
+const handleCanvasDataChanged = (event: CustomEvent) => {
+  const { nodes, edges } = event.detail
+  faStore.saveCanvasData('step2', nodes, edges)
+  console.log('步骤2画布数据自动保存')
+}
+
 // 组件初始化
 onMounted(() => {
   if (!hasNFAData.value) {
     console.warn('No FA data found, please complete step 1 first')
+    return
+  }
+
+  // 尝试恢复画布数据
+  const savedData = faStore.loadCanvasData('step2')
+  if (savedData && newFACanvasRef.value) {
+    console.log('恢复步骤2画布数据:', savedData)
+    newFACanvasRef.value.loadData(savedData)
+  }
+
+  // 添加自动保存事件监听
+  document.addEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
+})
+
+// 组件卸载时保存数据并移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
+
+  if (newFACanvasRef.value) {
+    const canvasData = newFACanvasRef.value.saveData()
+    faStore.saveCanvasData('step2', canvasData.nodes, canvasData.edges)
+    console.log('步骤2画布数据已保存')
   }
 })
 

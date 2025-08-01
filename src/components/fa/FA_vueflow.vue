@@ -413,6 +413,22 @@ watch(
   },
 )
 
+// 监听节点和边的变化，自动保存数据
+watch(
+  [() => getNodes.value, () => getEdges.value],
+  () => {
+    // 触发自定义事件，通知父组件数据已变化
+    const event = new CustomEvent('canvas-data-changed', {
+      detail: {
+        nodes: getNodes.value,
+        edges: getEdges.value
+      }
+    })
+    document.dispatchEvent(event)
+  },
+  { deep: true }
+)
+
 // 移除事件监听器，现在使用直接按钮调用
 
 // 组件挂载时的额外设置
@@ -433,6 +449,24 @@ defineExpose({
   reset,
   setInitialState,
   setFinalState,
+  // 新增：保存和加载数据的方法
+  saveData: () => ({
+    nodes: getNodes.value,
+    edges: getEdges.value
+  }),
+  loadData: (data: { nodes: any[], edges: any[] }) => {
+    if (data.nodes && data.edges) {
+      // 清空现有数据
+      nodes.value = []
+      edges.value = []
+
+      // 加载新数据
+      addNodes(data.nodes)
+      addEdges(data.edges)
+
+      console.log('FA_vueflow 数据已加载:', data)
+    }
+  }
 })
 </script>
 

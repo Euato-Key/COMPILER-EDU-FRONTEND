@@ -10,6 +10,24 @@ import { usePersistence, useMultiConfig, useHistory } from '@/composables/persis
  */
 export interface FAStoreData {
   inputRegex: string
+  // 画布数据
+  canvasData: {
+    step2?: {
+      nodes: any[]
+      edges: any[]
+      timestamp: string
+    }
+    step4?: {
+      nodes: any[]
+      edges: any[]
+      timestamp: string
+    }
+    step6?: {
+      nodes: any[]
+      edges: any[]
+      timestamp: string
+    }
+  }
 }
 
 export const useFAStore = defineStore('fa', () => {
@@ -19,6 +37,13 @@ export const useFAStore = defineStore('fa', () => {
   const inputRegex = ref('')
   const originalData = ref<FAResult | null>(null) // 后端原始数据
   const validationData = ref<DataFAType | null>(null) // 前端校验数据
+
+  // 画布数据状态
+  const canvasData = ref<FAStoreData['canvasData']>({
+    step2: undefined,
+    step4: undefined,
+    step6: undefined
+  })
 
   // 计算属性 - 从原始数据提取
   const nfaTable = computed(() => originalData.value?.table || null)
@@ -161,6 +186,31 @@ export const useFAStore = defineStore('fa', () => {
     inputRegex.value = ''
     clearAnalysis()
     commonStore.clearError()
+    canvasData.value = {
+      step2: undefined,
+      step4: undefined,
+      step6: undefined
+    }
+  }
+
+  // 保存画布数据
+  const saveCanvasData = (step: 'step2' | 'step4' | 'step6', nodes: any[], edges: any[]) => {
+    canvasData.value[step] = {
+      nodes: JSON.parse(JSON.stringify(nodes)), // 深拷贝
+      edges: JSON.parse(JSON.stringify(edges)), // 深拷贝
+      timestamp: new Date().toISOString()
+    }
+    console.log(`保存${step}画布数据:`, canvasData.value[step])
+  }
+
+  // 加载画布数据
+  const loadCanvasData = (step: 'step2' | 'step4' | 'step6') => {
+    return canvasData.value[step]
+  }
+
+  // 清除特定步骤的画布数据
+  const clearCanvasData = (step: 'step2' | 'step4' | 'step6') => {
+    canvasData.value[step] = undefined
   }
 
   // 检查是否有分析结果
@@ -206,7 +256,7 @@ export const useFAStore = defineStore('fa', () => {
   const persistenceConfig = {
     key: 'fa_store',
     version: '1.0.0',
-    include: ['inputRegex'],
+    include: ['inputRegex', 'canvasData'],
     autoSave: true,
     ttl: 7 * 24 * 60 * 60 * 1000, // 7天
     saveDelay: 500,
@@ -216,6 +266,7 @@ export const useFAStore = defineStore('fa', () => {
   const persistence = usePersistence({
     store: {
       inputRegex,
+      canvasData,
     },
     ...persistenceConfig,
   })
@@ -252,6 +303,7 @@ export const useFAStore = defineStore('fa', () => {
     inputRegex,
     originalData,
     validationData,
+    canvasData,
 
     // 计算属性
     nfaTable,
@@ -268,6 +320,11 @@ export const useFAStore = defineStore('fa', () => {
     performFAAnalysis: enhancedPerformFAAnalysis,
     clearAnalysis,
     resetAll,
+
+    // 画布数据管理
+    saveCanvasData,
+    loadCanvasData,
+    clearCanvasData,
 
     // 辅助方法
     hasResult,

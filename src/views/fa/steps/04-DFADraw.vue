@@ -285,7 +285,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
@@ -404,8 +404,36 @@ onMounted(() => {
       // 提取终态位置列表
       extractFinalStatePositions(conversionTable.value)
     }
+
+    // 尝试恢复画布数据
+    const savedData = faStore.loadCanvasData('step4')
+    if (savedData && newDFACanvasRef.value) {
+      console.log('恢复步骤4画布数据:', savedData)
+      newDFACanvasRef.value.loadData(savedData)
+    }
+
+    // 添加自动保存事件监听
+    document.addEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
   } catch (error) {
     console.error('处理FA数据失败：', error)
+  }
+})
+
+// 自动保存功能
+const handleCanvasDataChanged = (event: CustomEvent) => {
+  const { nodes, edges } = event.detail
+  faStore.saveCanvasData('step4', nodes, edges)
+  console.log('步骤4画布数据自动保存')
+}
+
+// 组件卸载时保存数据并移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
+
+  if (newDFACanvasRef.value) {
+    const canvasData = newDFACanvasRef.value.saveData()
+    faStore.saveCanvasData('step4', canvasData.nodes, canvasData.edges)
+    console.log('步骤4画布数据已保存')
   }
 })
 

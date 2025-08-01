@@ -174,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
@@ -243,8 +243,36 @@ onMounted(() => {
       // 🟢 修改：基于最小化数据构建接受状态集合
       buildMinimizedAcceptingStatesSet(faResult)
     }
+
+    // 尝试恢复画布数据
+    const savedData = faStore.loadCanvasData('step6')
+    if (savedData && newMinimizedDFACanvasRef.value) {
+      console.log('恢复步骤6画布数据:', savedData)
+      newMinimizedDFACanvasRef.value.loadData(savedData)
+    }
+
+    // 添加自动保存事件监听
+    document.addEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
   } catch (error) {
     console.error('处理FA数据失败：', error)
+  }
+})
+
+// 自动保存功能
+const handleCanvasDataChanged = (event: CustomEvent) => {
+  const { nodes, edges } = event.detail
+  faStore.saveCanvasData('step6', nodes, edges)
+  console.log('步骤6画布数据自动保存')
+}
+
+// 组件卸载时保存数据并移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
+
+  if (newMinimizedDFACanvasRef.value) {
+    const canvasData = newMinimizedDFACanvasRef.value.saveData()
+    faStore.saveCanvasData('step6', canvasData.nodes, canvasData.edges)
+    console.log('步骤6画布数据已保存')
   }
 })
 
