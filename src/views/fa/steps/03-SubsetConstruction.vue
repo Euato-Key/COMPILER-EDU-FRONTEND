@@ -11,22 +11,15 @@
           <p class="text-gray-600 mt-1">第三步：使用子集构造法生成转换表和状态转换矩阵</p>
 
           <!-- 总体完成进度 -->
-          <div v-if="overallCompletionRate > 0" class="mt-3">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-gray-700">总体完成度</span>
-              <span class="text-sm text-gray-600">{{ overallCompletionRate }}%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div
-                class="h-2 rounded-full transition-all duration-500"
-                :class="overallCompletionRate === 100 ? 'bg-green-500' : 'bg-blue-500'"
-                :style="{ width: overallCompletionRate + '%' }"
-              ></div>
-            </div>
-            <div v-if="overallCompletionRate === 100" class="mt-2 flex items-center gap-2 text-green-600">
-              <Icon icon="lucide:trophy" class="w-4 h-4" />
-              <span class="text-sm font-medium">恭喜！所有内容填写完成</span>
-            </div>
+          <div class="mt-3">
+            <ProgressBar
+              :percentage="overallCompletionRate"
+              label="总体完成度"
+              theme="rainbow"
+              :show-completion-message="true"
+              completion-message="恭喜！所有内容填写完成"
+              completion-icon="lucide:trophy"
+            />
           </div>
         </div>
       </div>
@@ -96,21 +89,14 @@
 
                   <!-- 完成进度提示 -->
                   <div v-if="conversionTableRowCount > 0" class="mt-3">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm font-medium text-gray-700">完成进度</span>
-                      <span class="text-sm text-gray-600">{{ tableCorrectCompletionRate }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        class="h-2 rounded-full transition-all duration-300"
-                        :class="tableCorrectCompletionRate === 100 ? 'bg-green-500' : 'bg-blue-500'"
-                        :style="{ width: tableCorrectCompletionRate + '%' }"
-                      ></div>
-                    </div>
-                    <div v-if="tableCorrectCompletionRate === 100" class="mt-2 flex items-center gap-2 text-green-600">
-                      <Icon icon="lucide:check-circle" class="w-4 h-4" />
-                      <span class="text-sm font-medium">转换表填写完成！</span>
-                    </div>
+                    <ProgressBar
+                      :percentage="tableCorrectCompletionRate"
+                      label="完成进度"
+                      theme="green"
+                      :show-completion-message="true"
+                      completion-message="转换表填写完成！"
+                      completion-icon="lucide:check-circle"
+                    />
                   </div>
                 </div>
 
@@ -325,21 +311,14 @@
 
                   <!-- 完成进度提示 -->
                   <div v-if="matrixStateColumns.length > 0" class="mt-3">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm font-medium text-gray-700">完成进度</span>
-                      <span class="text-sm text-gray-600">{{ matrixCorrectCompletionRate }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        class="h-2 rounded-full transition-all duration-300"
-                        :class="matrixCorrectCompletionRate === 100 ? 'bg-green-500' : 'bg-purple-500'"
-                        :style="{ width: matrixCorrectCompletionRate + '%' }"
-                      ></div>
-                    </div>
-                    <div v-if="matrixCorrectCompletionRate === 100" class="mt-2 flex items-center gap-2 text-green-600">
-                      <Icon icon="lucide:check-circle" class="w-4 h-4" />
-                      <span class="text-sm font-medium">状态转换矩阵填写完成！</span>
-                    </div>
+                    <ProgressBar
+                      :percentage="matrixCorrectCompletionRate"
+                      label="完成进度"
+                      theme="orange"
+                      :show-completion-message="true"
+                      completion-message="状态转换矩阵填写完成！"
+                      completion-icon="lucide:check-circle"
+                    />
                   </div>
                 </div>
 
@@ -627,6 +606,7 @@ import { Icon } from '@iconify/vue'
 import { useFAStore } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable } from '@/components/fa'
+import { ProgressBar } from '@/components/shared'
 
 // 类型定义
 // 新的转换表结构 - 按列组织（每列一个输入符号）
@@ -833,21 +813,27 @@ const overallCompletionRate = computed(() => {
   const tableRate = tableCorrectCompletionRate.value
   const matrixRate = matrixCorrectCompletionRate.value
 
-  // 如果两个表格都没有数据，返回0
-  if (tableRate === 0 && matrixRate === 0) {
+  // 检查是否有标准答案数据来确定权重
+  const hasTableAnswer = Object.keys(answerConversionTable.value).length > 0
+  const hasMatrixAnswer = Object.keys(answerTransitionMatrix.value).length > 0
+
+  // 如果两个表格都没有答案数据，返回0
+  if (!hasTableAnswer && !hasMatrixAnswer) {
     return 0
   }
 
-  // 如果只有一个表格有数据，返回该表格的完成率
-  if (tableRate === 0) {
-    return matrixRate
-  }
-  if (matrixRate === 0) {
+  // 如果只有一个表格有答案数据，只计算该表格的完成率
+  if (hasTableAnswer && !hasMatrixAnswer) {
     return tableRate
   }
+  if (!hasTableAnswer && hasMatrixAnswer) {
+    return matrixRate
+  }
 
-  // 如果两个表格都有数据，返回平均值
-  return Math.round((tableRate + matrixRate) / 2)
+  // 如果两个表格都有答案数据，计算加权平均
+  // 转换表和矩阵各占50%的权重
+  const weightedAverage = (tableRate * 0.5) + (matrixRate * 0.5)
+  return Math.round(weightedAverage)
 })
 
 // 矩阵锁定状态：只有查看了转换表答案后才能操作矩阵
