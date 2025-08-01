@@ -218,7 +218,7 @@
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-base font-semibold text-gray-900 flex items-center">
                 <Icon icon="lucide:arrow-right" class="w-4 h-4 mr-2 text-blue-600" />
-                First集合
+                First集合（非终结符）
               </h3>
               <div class="flex gap-2">
                 <button
@@ -301,49 +301,7 @@
                 </div>
               </div>
 
-              <!-- 终结符的First集（只读显示） -->
-              <div class="mb-3">
-                <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <Icon icon="lucide:hash" class="w-3 h-3 text-green-500" />
-                  终结符
-                </h4>
-                <div class="space-y-1.5">
-                  <div
-                    v-for="symbol in originalData.Vt"
-                    :key="'first-vt-' + symbol"
-                    class="flex items-center gap-2"
-                  >
-                    <span class="w-16 text-xs font-medium text-gray-600">
-                      first(<span class="font-mono text-green-600">{{ symbol }}</span>) =
-                    </span>
-                    <div class="flex-1">
-                      <div class="w-full px-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-mono shadow-sm">
-                        {{ correctFirstSets[symbol]?.join(' ') || symbol }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <!-- 其他符号的First集（只读显示） -->
-              <div v-if="correctFirstSets['ε']" class="mb-3">
-                <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <Icon icon="lucide:circle" class="w-3 h-3 text-pink-500" />
-                  其他符号
-                </h4>
-                <div class="space-y-1.5">
-                  <div class="flex items-center gap-2">
-                    <span class="w-16 text-xs font-medium text-gray-600">
-                      first(<span class="font-mono text-pink-600">ε</span>) =
-                    </span>
-                    <div class="flex-1">
-                      <div class="w-full px-2.5 py-1.5 text-xs border-2 border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-mono shadow-sm">
-                        {{ correctFirstSets['ε']?.join(' ') || 'ε' }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <!-- First集答案提示 -->
@@ -364,28 +322,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- 终结符答案 -->
-                <div>
-                  <h5 class="text-xs font-medium text-green-700 mb-1">终结符：</h5>
-                  <div class="space-y-0.5">
-                    <div
-                      v-for="symbol in originalData.Vt"
-                      :key="'answer-first-vt-' + symbol"
-                      class="text-xs"
-                    >
-                      <span class="font-mono text-green-600">{{ symbol }}:</span>
-                      <span class="ml-2 text-green-700">{{ correctFirstSets[symbol]?.join(' ') || symbol }}</span>
-                    </div>
-                  </div>
-                </div>
-                <!-- 其他符号答案 -->
-                <div v-if="correctFirstSets['ε']">
-                  <h5 class="text-xs font-medium text-green-700 mb-1">其他符号：</h5>
-                  <div class="text-xs">
-                    <span class="font-mono text-green-600">ε:</span>
-                    <span class="ml-2 text-green-700">{{ correctFirstSets['ε']?.join(' ') || 'ε' }}</span>
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
