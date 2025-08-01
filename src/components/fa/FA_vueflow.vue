@@ -70,6 +70,9 @@ const edges = ref([])
 addNodes(nodes.value)
 addEdges(edges.value)
 
+// 画布控制状态
+const isLocked = ref(false)
+
 // 设置初态的方法
 const setInitialState = () => {
   const selectedNodes = getNodes.value.filter((node) => node.selected)
@@ -184,6 +187,46 @@ const reset = () => {
   // 移除消息提示，避免样式冲突
   console.log('画布已重置')
 }
+
+// 画布控制方法
+const zoomIn = () => {
+  const currentViewport = getNodes.value.length > 0 ? { x: 0, y: 0, zoom: 1.2 } : { x: 0, y: 0, zoom: 1 }
+  setViewport(currentViewport)
+}
+
+const zoomOut = () => {
+  const currentViewport = getNodes.value.length > 0 ? { x: 0, y: 0, zoom: 0.8 } : { x: 0, y: 0, zoom: 1 }
+  setViewport(currentViewport)
+}
+
+const fitView = () => {
+  // 使用setViewport来适应视图
+  setViewport({ x: 0, y: 0, zoom: 1 })
+}
+
+const toggleLock = () => {
+  isLocked.value = !isLocked.value
+
+  // 添加视觉反馈
+  const lockButton = document.querySelector('.control-btn.lock') as HTMLElement
+  if (lockButton) {
+    if (isLocked.value) {
+      // 锁定时的动画效果
+      lockButton.style.transform = 'scale(1.1)'
+      setTimeout(() => {
+        lockButton.style.transform = 'scale(1)'
+      }, 200)
+    } else {
+      // 解锁时的动画效果
+      lockButton.style.transform = 'scale(0.9)'
+      setTimeout(() => {
+        lockButton.style.transform = 'scale(1)'
+      }, 200)
+    }
+  }
+
+  console.log('画布锁定状态:', isLocked.value ? '已锁定' : '已解锁')
+}
 onPaneReady((instance) => {
   setViewport({ x: 0, y: 0, zoom: 2 })
 
@@ -253,6 +296,12 @@ onNodeClick((params) => {
 const handlePaneDoubleClick = (event: Event) => {
   const mouseEvent = event as MouseEvent
   console.log('FA_vueflow 双击事件触发', mouseEvent)
+
+  // 如果画布被锁定，则不执行添加节点操作
+  if (isLocked.value) {
+    console.log('画布已锁定，无法添加节点')
+    return
+  }
 
   // 阻止事件冒泡
   event.preventDefault()
@@ -391,19 +440,19 @@ defineExpose({
   <div class="fa-flow-container">
     <!-- 工具栏 -->
     <div class="toolbar">
-      <button class="tool-btn add-node" @click="addStates" title="添加节点">
+      <button class="tool-btn add-node" @click="addStates" title="添加节点" :disabled="isLocked">
         <Icon icon="material-symbols:add" class="icon" />
         <span class="text">添加节点</span>
       </button>
-      <button class="tool-btn set-initial" @click="setInitialState" title="设置初态">
+      <button class="tool-btn set-initial" @click="setInitialState" title="设置初态" :disabled="isLocked">
         <Icon icon="material-symbols:play-arrow" class="icon" />
         <span class="text">设置初态</span>
       </button>
-      <button class="tool-btn set-final" @click="setFinalState" title="设置终态">
+      <button class="tool-btn set-final" @click="setFinalState" title="设置终态" :disabled="isLocked">
         <Icon icon="material-symbols:circle" class="icon" />
         <span class="text">设置终态</span>
       </button>
-      <button class="tool-btn reset-canvas" @click="reset" title="重置画布">
+      <button class="tool-btn reset-canvas" @click="reset" title="重置画布" :disabled="isLocked">
         <Icon icon="material-symbols:refresh" class="icon" />
         <span class="text">重置画布</span>
       </button>
@@ -411,21 +460,42 @@ defineExpose({
 
     <div id="FA_flow_wrapper">
       <!-- 双击提示 -->
-      <div class="double-click-hint">
-        <span class="hint-text">💡 双击画布添加节点</span>
+      <div :class="['double-click-hint', { locked: isLocked }]">
+        <span class="hint-text">{{ isLocked ? '🔒 画布已锁定，无法添加节点' : '💡 双击画布添加节点' }}</span>
+      </div>
+
+
+
+      <!-- 画布操作按钮 - 从原始编辑器迁移 -->
+      <div class="canvas-controls">
+        <button class="control-btn zoom-in" @click="zoomIn" title="放大">
+          <Icon icon="material-symbols:add" class="control-icon" />
+        </button>
+        <button class="control-btn zoom-out" @click="zoomOut" title="缩小">
+          <Icon icon="material-symbols:remove" class="control-icon" />
+        </button>
+        <button class="control-btn fit-view" @click="fitView" title="适应视图">
+          <Icon icon="material-symbols:fit-screen" class="control-icon" />
+        </button>
+        <button class="control-btn lock" @click="toggleLock" :class="{ locked: isLocked }" title="锁定画布">
+          <Icon :icon="isLocked ? 'material-symbols:lock' : 'material-symbols:lock-open'" class="control-icon" />
+        </button>
       </div>
 
       <VueFlow
         :nodes="nodes"
         :edges="edges"
-        class="FA_flow"
+        :class="['FA_flow', { locked: isLocked }]"
         fit-view-on-init
         :default-viewport="{ x: 0, y: 0, zoom: 1 }"
         :min-zoom="0.1"
         :max-zoom="4"
         :zoom-on-double-click="false"
-        :pan-on-drag="true"
-        :zoom-on-scroll="true"
+        :pan-on-drag="!isLocked"
+        :zoom-on-scroll="!isLocked"
+        :nodes-draggable="!isLocked"
+        :nodes-connectable="!isLocked"
+        :connect-on-click="!isLocked"
       >
         <template #node-custom="customNodeProps">
           <div
@@ -436,7 +506,7 @@ defineExpose({
               final: customNodeProps.data.isFinal,
             }"
           >
-            <input id="state_id" type="text" v-model="customNodeProps.data.text" />
+            <input id="state_id" type="text" v-model="customNodeProps.data.text" :readonly="isLocked" />
             <Handle id="a" type="source" :position="Position.Top" style="left: 15%; top: 20%" />
             <Handle id="b" type="source" :position="Position.Top" style="left: 50%" />
             <Handle id="c" type="source" :position="Position.Top" style="left: 85%; top: 20%" />
@@ -590,6 +660,13 @@ defineExpose({
   &.reset-canvas {
     background: linear-gradient(135deg, #f44336, #d32f2f);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
 }
 
 #FA_flow_wrapper {
@@ -606,7 +683,7 @@ defineExpose({
   .double-click-hint {
     position: absolute;
     top: 10px;
-    right: 10px;
+    left: 10px;
     z-index: 1000;
     background: rgba(52, 152, 219, 0.9);
     color: white;
@@ -617,6 +694,13 @@ defineExpose({
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     animation: fadeInOut 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+
+    /* 锁定状态下的样式 */
+    &.locked {
+      background: rgba(156, 39, 176, 0.9);
+      animation: lockPulse 2s ease-in-out infinite;
+    }
   }
 
   @keyframes fadeInOut {
@@ -629,16 +713,122 @@ defineExpose({
     }
   }
 
+  @keyframes lockPulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+
   .hint-text {
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
+
+
   .FA_flow {
     height: 100%;
     width: 100%;
     position: relative;
+
+    /* 锁定状态下的样式 */
+    &.locked {
+      cursor: not-allowed;
+
+      .vue-flow__node {
+        cursor: not-allowed;
+      }
+
+      .vue-flow__handle {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+  }
+
+  /* 画布控制按钮样式 - 从原始编辑器迁移 */
+  .canvas-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .control-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 4px;
+    background: white;
+    color: #2c3e50;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 16px;
+
+    &:hover {
+      background: #f8f9fa;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &.zoom-in {
+      .control-icon {
+        color: #4caf50;
+      }
+    }
+
+    &.zoom-out {
+      .control-icon {
+        color: #f44336;
+      }
+    }
+
+    &.fit-view {
+      .control-icon {
+        color: #2196f3;
+      }
+    }
+
+    &.lock {
+      .control-icon {
+        color: #9c27b0;
+      }
+
+      &.locked {
+        background: #9c27b0;
+        color: white;
+
+        .control-icon {
+          color: white;
+        }
+      }
+    }
+  }
+
+  .control-icon {
+    font-size: 18px;
+    font-weight: bold;
   }
   #state {
     border: 2px solid #2c3e50;
@@ -717,6 +907,12 @@ defineExpose({
       outline: none;
       background-color: #ffffff;
       box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    #state_id:read-only {
+      background-color: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
     }
 
     &:hover {
