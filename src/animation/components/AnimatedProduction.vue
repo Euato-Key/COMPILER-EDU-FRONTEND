@@ -115,27 +115,6 @@ const productionKey = computed(() => {
   return JSON.stringify(currentProduction.value)
 })
 
-// 监听产生式变化
-watch(
-  () => props.production,
-  (newProduction, oldProduction) => {
-    if (newProduction !== oldProduction) {
-      animateProductionChange(newProduction)
-    }
-  },
-  { immediate: true },
-)
-
-// 监听激活状态
-watch(
-  () => props.isActive,
-  (isActive) => {
-    if (isActive) {
-      animateActivation()
-    }
-  },
-)
-
 // 产生式变化动画
 const animateProductionChange = async (newProduction: any) => {
   if (animationTimeline.value) {
@@ -348,36 +327,26 @@ const createParticles = () => {
   })
 }
 
-// Vue过渡钩子
-const beforeEnter = (el: Element) => {
-  gsap.set(el, {
-    opacity: 0,
-    scale: 0.9,
-    y: 10,
-  })
-}
+// 监听产生式变化 - 必须在函数定义之后
+watch(
+  () => props.production,
+  (newProduction, oldProduction) => {
+    if (newProduction !== oldProduction) {
+      animateProductionChange(newProduction)
+    }
+  },
+  { immediate: true },
+)
 
-const enter = (el: Element, done: () => void) => {
-  gsap.to(el, {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    duration: 0.4,
-    ease: 'back.out(1.7)',
-    onComplete: done,
-  })
-}
-
-const leave = (el: Element, done: () => void) => {
-  gsap.to(el, {
-    opacity: 0,
-    scale: 0.9,
-    y: -10,
-    duration: 0.2,
-    ease: 'power2.in',
-    onComplete: done,
-  })
-}
+// 监听激活状态
+watch(
+  () => props.isActive,
+  (isActive) => {
+    if (isActive) {
+      animateActivation()
+    }
+  },
+)
 
 // 组件挂载后优化性能
 onMounted(() => {

@@ -95,24 +95,17 @@ const createStackItem = (value: string, state: 'normal' | 'entering' = 'normal')
   state,
 })
 
-// 监听栈数据变化
-watch(
-  () => props.stack,
-  (newStack, oldStack) => {
-    if (!oldStack || oldStack.length === 0) {
-      // 初始化栈
-      initializeStack(newStack)
-    } else {
-      // 计算栈变化并添加到动画队列
-      analyzeStackChanges(oldStack, newStack)
-    }
-  },
-  { immediate: true },
-)
-
 // 初始化栈
 const initializeStack = (stack: string[]) => {
   visibleStack.value = stack.map((value) => createStackItem(value))
+}
+
+// 动画队列管理
+const queueAnimation = (animation: StackAnimation) => {
+  animationQueue.value.push(animation)
+  if (!isAnimating.value) {
+    processAnimationQueue()
+  }
 }
 
 // 分析栈变化
@@ -139,13 +132,20 @@ const analyzeStackChanges = (oldStack: string[], newStack: string[]) => {
   }
 }
 
-// 动画队列管理
-const queueAnimation = (animation: StackAnimation) => {
-  animationQueue.value.push(animation)
-  if (!isAnimating.value) {
-    processAnimationQueue()
-  }
-}
+// 监听栈数据变化
+watch(
+  () => props.stack,
+  (newStack, oldStack) => {
+    if (!oldStack || oldStack.length === 0) {
+      // 初始化栈
+      initializeStack(newStack)
+    } else {
+      // 计算栈变化并添加到动画队列
+      analyzeStackChanges(oldStack, newStack)
+    }
+  },
+  { immediate: true },
+)
 
 const processAnimationQueue = async () => {
   if (animationQueue.value.length === 0 || isAnimating.value) return

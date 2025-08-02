@@ -22,6 +22,7 @@
 
       <!-- 输入串区域 -->
       <AnimatedInput
+        title="输入串"
         :input="currentInput"
         :pointer="pointer"
         :is-matching="currentMsg.type === 'match'"
