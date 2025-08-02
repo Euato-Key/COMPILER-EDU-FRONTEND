@@ -358,10 +358,10 @@
         <!-- LL1分析表和答题区域 -->
         <div
           v-if="originalData?.table && inputString && inputAnalysisResult"
-          class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+          class="grid grid-cols-1 lg:grid-cols-5 gap-8"
         >
           <!-- 左侧：LL1分析表 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-3 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:table" class="w-5 h-5 mr-2 text-blue-600" />
               LL1 分析表
@@ -491,7 +491,7 @@
           </div>
 
           <!-- 右侧：答题区域 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="mb-4">
               <div
                 class="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3 flex items-start gap-2 text-yellow-800 text-sm"
