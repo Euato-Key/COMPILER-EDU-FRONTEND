@@ -257,8 +257,8 @@
                     :key="'first-vn-' + symbol"
                     class="flex items-center gap-2"
               >
-                    <span class="w-16 text-xs font-medium text-gray-600">
-                  first(<span class="font-mono text-blue-600">{{ symbol }}</span>) =
+                    <span class="w-16 text-sm font-medium text-gray-700">
+                  first(<span class="font-mono text-blue-700">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
                   <input
@@ -266,7 +266,7 @@
                     type="text"
                     placeholder="输入First集，用空格分隔"
                     :class="[
-                          'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
+                          'w-full px-3 py-2 text-sm border-2 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white text-gray-800',
                       getInputClass('first', symbol)
                     ]"
                     @focus="clearValidation('first', symbol)"
@@ -278,21 +278,21 @@
                     <Icon
                       v-if="firstValidation[symbol] === 'correct'"
                       icon="lucide:check"
-                          class="w-3.5 h-3.5 text-green-500"
+                          class="w-4 h-4 text-green-600"
                     />
                     <Icon
                       v-else-if="firstValidation[symbol] === 'incorrect'"
                       icon="lucide:x"
-                          class="w-3.5 h-3.5 text-red-500"
+                          class="w-4 h-4 text-red-600"
                     />
                       </div>
                     </div>
                     <button
                       @click="executeHintAnimation(symbol)"
                       :disabled="hintState.isActive || firstValidation[symbol] === 'correct'"
-                      class="inline-flex items-center px-1.5 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
-                      <Icon icon="lucide:lightbulb" class="w-2.5 h-2.5 mr-0.5" />
+                      <Icon icon="lucide:lightbulb" class="w-3 h-3 mr-1" />
                       提示
                     </button>
                   </div>
@@ -368,8 +368,8 @@
                 :key="'follow-' + symbol"
                 class="flex items-center gap-2"
               >
-                <span class="w-16 text-xs font-medium text-gray-600">
-                  follow(<span class="font-mono text-green-600">{{ symbol }}</span>) =
+                <span class="w-16 text-sm font-medium text-gray-700">
+                  follow(<span class="font-mono text-green-700">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
                   <input
@@ -378,7 +378,7 @@
                     placeholder="输入Follow集，用空格分隔"
                     :disabled="!firstStepCompleted"
                     :class="[
-                      'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
+                      'w-full px-3 py-2 text-sm border-2 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white text-gray-800',
                       getInputClass('follow', symbol),
                       !firstStepCompleted && 'bg-gray-100 cursor-not-allowed'
                     ]"
@@ -391,21 +391,21 @@
                     <Icon
                       v-if="followValidation[symbol] === 'correct'"
                       icon="lucide:check"
-                      class="w-3.5 h-3.5 text-green-500"
+                      class="w-4 h-4 text-green-600"
                     />
                     <Icon
                       v-else-if="followValidation[symbol] === 'incorrect'"
                       icon="lucide:x"
-                      class="w-3.5 h-3.5 text-red-500"
+                      class="w-4 h-4 text-red-600"
                     />
                   </div>
                 </div>
                 <button
                   @click="executeFollowHintAnimation(symbol)"
                   :disabled="hintState.isActive || !firstStepCompleted || followValidation[symbol] === 'correct'"
-                  class="inline-flex items-center px-1.5 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
-                  <Icon icon="lucide:lightbulb" class="w-2.5 h-2.5 mr-0.5" />
+                  <Icon icon="lucide:lightbulb" class="w-3 h-3 mr-1" />
                   提示
                 </button>
               </div>
