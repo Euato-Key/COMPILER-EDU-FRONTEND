@@ -1,5 +1,5 @@
 <template>
-  <div class="string-analysis-step">
+  <div class="string-analysis-step" :style="animationSpeedStyle">
     <div class="step-header">
       <div class="flex items-center gap-4">
         <div class="step-icon">
@@ -378,7 +378,10 @@
                     <th
                       v-for="terminal in VtAll"
                       :key="terminal"
-                      class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700"
+                      class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700 transition-colors"
+                      :class="{
+                        'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintCol === terminal
+                      }"
                     >
                       {{ terminal }}
                     </th>
@@ -387,7 +390,10 @@
                 <tbody class="bg-white">
                   <tr v-for="nonTerminal in originalData.Vn" :key="nonTerminal">
                     <td
-                      class="border border-gray-300 px-3 py-2 font-mono font-semibold text-blue-700"
+                      class="border border-gray-300 px-3 py-2 font-mono font-semibold text-blue-700 transition-colors"
+                      :class="{
+                        'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintRow === nonTerminal
+                      }"
                     >
                       {{ nonTerminal }}
                     </td>
@@ -401,6 +407,7 @@
                         'cursor-not-allowed opacity-50': isAnalysisComplete,
                         'bg-yellow-100 ring-2 ring-yellow-400':
                           hintActive && hintRow === nonTerminal && hintCol === terminal,
+                        'bg-yellow-50': hintActive && (hintRow === nonTerminal || hintCol === terminal) && !(hintRow === nonTerminal && hintCol === terminal),
                       }"
                       @dblclick="onLL1CellDblClick(nonTerminal, terminal)"
                     >
@@ -524,6 +531,34 @@
             </div>
 
             <h3 class="text-lg font-semibold text-gray-900 mb-4">输入串分析表（答题区）</h3>
+
+            <!-- 动画速度控制 -->
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-sm text-gray-600">动画速度</span>
+                              <button
+                  @click="decreaseAnimationSpeed"
+                  :disabled="animationSpeed <= 0.25"
+                  class="w-6 h-6 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                >
+                <Icon icon="lucide:minus" class="w-3 h-3 text-gray-600" />
+              </button>
+              <span class="text-sm font-mono text-gray-800 min-w-[2.5rem] text-center">
+                {{ (animationSpeed * 100).toFixed(0) }}%
+              </span>
+              <button
+                @click="increaseAnimationSpeed"
+                :disabled="animationSpeed >= 2.0"
+                class="w-6 h-6 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+              >
+                <Icon icon="lucide:plus" class="w-3 h-3 text-gray-600" />
+              </button>
+              <button
+                @click="resetAnimationSpeed"
+                class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+              >
+                重置
+              </button>
+            </div>
 
             <!-- 操作按钮 -->
             <div class="flex flex-wrap gap-2 mb-4">
@@ -776,6 +811,19 @@
       </div>
     </div>
 
+    <!-- 动画提示弹窗 -->
+    <AnimationHintModal
+      :visible="hintModalVisible"
+      :type="hintModalConfig.type"
+      :title="hintModalConfig.title"
+      :message="hintModalConfig.message"
+      :details="hintModalConfig.details"
+      :action="hintModalConfig.action"
+      :duration="hintModalConfig.duration"
+      :position="hintModalConfig.position"
+      @close="closeHintModal"
+    />
+
     <!-- 消息提示 -->
     <transition name="fade">
       <div
@@ -818,6 +866,7 @@ import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
 import { Icon } from '@iconify/vue'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
+import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
 // 组件事件
 const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: any] }>()
@@ -848,6 +897,21 @@ const message = ref<string | null>(null)
 const messageType = ref<'success' | 'error'>('success')
 let messageTimer: number | null = null
 
+// 动画提示弹窗状态
+const hintModalVisible = ref(false)
+const hintModalConfig = ref({
+  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: '',
+  message: '',
+  details: '',
+  action: '',
+  duration: 3000,
+  position: 'top-right' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+})
+
+// 动画速度控制
+const animationSpeed = ref(1.0) // 1.0 = 100%, 0.25 = 25%, 2.0 = 200%
+
 // 飞行动画状态
 const flyingSymbols = ref<
   Array<{
@@ -864,11 +928,34 @@ const VtAll = computed(() => {
   return [...vt, '#'] // 添加结束符
 })
 
+// 动画速度CSS变量
+const animationSpeedStyle = computed(() => ({
+  '--animation-speed': animationSpeed.value
+}))
+
 // 检查分析是否完成
 const isAnalysisComplete = computed(() => {
   if (userSteps.value.length === 0) return false
   const last = userSteps.value[userSteps.value.length - 1]
   return last.stack === '#' && last.input === '#'
+})
+
+// 监听分析完成状态
+watch(isAnalysisComplete, (newValue) => {
+  if (newValue) {
+    // 延迟显示完成弹窗，避免与其他弹窗冲突
+    setTimeout(() => {
+      showHintModal(
+        'success',
+        'LL1分析完成！',
+        '恭喜！您已成功完成LL1语法分析！',
+        '所有步骤都已正确执行，输入串被成功分析。您可以查看标准答案对比分析过程，或继续学习其他内容。',
+        '分析过程完成',
+        5000,
+        'center'
+      )
+    }, 500)
+  }
 })
 
 // 监听分析结果变化，自动初始化用户步骤
@@ -953,9 +1040,18 @@ const onLL1CellDblClick = (row: string, col: string) => {
   const stackArr = last.stack.split('')
   const top = stackArr[stackArr.length - 1]
   if (top !== row) {
-    showMessage('请先处理栈顶符号: ' + top, 'error')
+    showHintModal(
+      'error',
+      '操作错误',
+      `当前栈顶符号是 "${top}"，但您选择了 "${row}" 行。`,
+      '请先处理栈顶符号，或使用提示功能获取正确的操作指导。',
+      '请检查栈顶符号',
+      3000,
+      'bottom-left'
+    )
     return
   }
+
   // 推导产生式
   stackArr.pop()
   if (prod !== 'ε') {
@@ -965,6 +1061,17 @@ const onLL1CellDblClick = (row: string, col: string) => {
   }
   const newStack = stackArr.join('')
   userSteps.value.push({ stack: newStack, input: last.input })
+
+  // 显示推导成功提示
+  showHintModal(
+    'success',
+    '推导成功',
+    `成功使用产生式 "${row}->${prod}" 进行推导。`,
+    `栈顶符号 "${row}" 被替换为 "${prod}"，分析继续进行。`,
+    '推导操作完成',
+    2500,
+    'bottom-left'
+  )
 
   // 检查是否完成分析（虽然这里通常不会完成，但为了完整性）
   if (newStack === '#' && last.input === '#') {
@@ -994,12 +1101,31 @@ const onMatch = () => {
     const newInput = inputArr.join('')
     userSteps.value.push({ stack: newStack, input: newInput })
 
+    // 显示匹配成功提示
+    showHintModal(
+      'success',
+      '匹配成功',
+      `成功匹配栈顶符号 "${top}" 与输入串首字符 "${cur}"。`,
+      '栈顶符号被弹出，输入串首字符被消耗，分析继续进行。',
+      '匹配操作完成',
+      2500,
+      'bottom-left'
+    )
+
     // 检查是否完成分析
     if (newStack === '#' && newInput === '#') {
       showMessage('分析完成！', 'success')
     }
   } else {
-    showMessage('栈顶符号与输入串首字符不匹配！', 'error')
+    showHintModal(
+      'error',
+      '匹配失败',
+      `栈顶符号 "${top}" 与输入串首字符 "${cur}" 不匹配。`,
+      '请检查当前状态，或使用提示功能获取正确的操作指导。',
+      '请检查符号匹配',
+      3000,
+      'bottom-left'
+    )
   }
 }
 
@@ -1007,6 +1133,25 @@ const onMatch = () => {
 const onUndo = () => {
   if (userSteps.value.length > 1) {
     userSteps.value.pop()
+    showHintModal(
+      'info',
+      '操作回退',
+      '已回退到上一步操作。',
+      '您可以重新执行正确的操作。',
+      '回退操作完成',
+      2000,
+      'bottom-left'
+    )
+  } else {
+    showHintModal(
+      'warning',
+      '无法回退',
+      '当前已是第一步，无法继续回退。',
+      '请继续进行分析操作。',
+      '无法回退',
+      2000,
+      'bottom-left'
+    )
   }
 }
 
@@ -1023,6 +1168,15 @@ const onResetUserSteps = () => {
   hintCol.value = ''
   hintType.value = ''
   flyingSymbols.value = []
+  showHintModal(
+    'info',
+    '重新开始',
+    '已重置分析步骤，重新开始分析。',
+    '您可以重新执行LL1分析过程。',
+    '重置操作完成',
+    2000,
+    'bottom-left'
+  )
 }
 
 // 提示按钮
@@ -1046,6 +1200,17 @@ const onHint = async () => {
     hintActive.value = true
     hintType.value = 'match'
 
+    // 显示匹配提示弹窗
+    showHintModal(
+      'hint',
+      '匹配操作提示',
+      `当前栈顶符号 "${top}" 与输入串首字符 "${cur}" 相同，可以进行匹配操作。`,
+      '匹配操作会将栈顶符号弹出，同时消耗输入串的首字符，这是LL1分析中的基本操作之一。',
+      '点击"匹配"按钮执行操作',
+      4000,
+      'bottom-left'
+    )
+
     // 执行匹配飞行动画
     await executeMatchFlyingAnimation(top, cur)
 
@@ -1053,7 +1218,7 @@ const onHint = async () => {
       onMatch()
       hintActive.value = false
       hintType.value = ''
-    }, 800)
+    }, 1200 / animationSpeed.value)
     return
   }
 
@@ -1065,6 +1230,17 @@ const onHint = async () => {
     hintCol.value = cur
     hintType.value = 'll1'
 
+    // 显示LL1推导提示弹窗
+    showHintModal(
+      'hint',
+      'LL1推导提示',
+      `当前栈顶符号 "${top}" 是非终结符，输入串首字符是 "${cur}"。`,
+      `根据LL1分析表，应该使用产生式 "${top}->${prod}" 进行推导。双击表格中对应的单元格执行推导操作。`,
+      '双击表格单元格执行推导',
+      4000,
+      'bottom-left'
+    )
+
     // 执行LL1推导飞行动画
     await executeLL1FlyingAnimation(top, cur, prod)
 
@@ -1074,10 +1250,18 @@ const onHint = async () => {
       hintRow.value = ''
       hintCol.value = ''
       hintType.value = ''
-    }, 800)
+    }, 1200 / animationSpeed.value)
     return
   }
-  showMessage('提示已完成', 'success')
+  showHintModal(
+    'warning',
+    '无法找到操作',
+    `当前栈顶符号 "${top}" 与输入串首字符 "${cur}" 无法匹配，且LL1分析表中没有对应的产生式。`,
+    '请检查您的分析步骤是否正确，或者查看标准答案了解正确的分析过程。',
+    '请检查分析步骤',
+    4000,
+    'bottom-left'
+  )
 }
 
 // 执行匹配飞行动画
@@ -1120,7 +1304,7 @@ const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
   }
 
   // 等待飞行动画完成
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+  await new Promise((resolve) => setTimeout(resolve, 1500 / animationSpeed.value))
 
   // 清除飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1135,7 +1319,7 @@ const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
     y: inputRect.top + inputRect.height / 2,
   })
 
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100 / animationSpeed.value))
 
   // 飞出到屏幕外
   const flyingSymbolData2 = flyingSymbols.value.find(
@@ -1146,7 +1330,7 @@ const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
     flyingSymbolData2.y = -100 // 飞出到屏幕上方
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000 / animationSpeed.value))
 
   // 清除第二个飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1184,7 +1368,7 @@ const executeLL1FlyingAnimation = async (
   })
 
   // 等待一小段时间让元素出现
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100 / animationSpeed.value))
 
   // 更新位置到栈顶
   const flyingSymbolData = flyingSymbols.value.find(
@@ -1196,13 +1380,59 @@ const executeLL1FlyingAnimation = async (
   }
 
   // 等待飞行动画完成
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+  await new Promise((resolve) => setTimeout(resolve, 1500 / animationSpeed.value))
 
   // 清除飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
     (fs) => !(fs.symbol === production && fs.target === 'stack'),
   )
 }
+
+// 显示动画提示弹窗
+const showHintModal = (
+  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: string,
+  message: string,
+  details?: string,
+  action?: string,
+  duration = 3000,
+  position = 'top-right' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+) => {
+  hintModalConfig.value = {
+    type,
+    title,
+    message,
+    details: details || '',
+    action: action || '',
+    duration,
+    position
+  }
+  hintModalVisible.value = true
+}
+
+// 关闭动画提示弹窗
+const closeHintModal = () => {
+  hintModalVisible.value = false
+}
+
+// 动画速度控制函数
+const increaseAnimationSpeed = () => {
+  if (animationSpeed.value < 2.0) {
+    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
+  }
+}
+
+const decreaseAnimationSpeed = () => {
+  if (animationSpeed.value > 0.25) {
+    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
+  }
+}
+
+const resetAnimationSpeed = () => {
+  animationSpeed.value = 1.0
+}
+
+
 
 // 显示消息
 const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -1279,6 +1509,11 @@ const complete = () => {
   transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 动态动画速度控制 */
+.fixed[style*="transition"] {
+  transition-duration: calc(1.5s / var(--animation-speed, 1));
+}
+
 /* 高亮动画效果 */
 @keyframes highlight-pulse {
   0%,
@@ -1293,5 +1528,43 @@ const complete = () => {
 
 .ring-yellow-400 {
   animation: highlight-pulse 1s ease-in-out infinite;
+}
+
+/* 十字高亮效果 */
+.bg-yellow-100 {
+  background-color: #fef3c7 !important;
+  position: relative;
+}
+
+.bg-yellow-50 {
+  background-color: #fffbeb !important;
+  position: relative;
+}
+
+.ring-yellow-400 {
+  box-shadow: 0 0 0 2px #fbbf24 !important;
+  position: relative;
+  z-index: 10;
+}
+
+/* 增强十字高亮效果 */
+.bg-yellow-100::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(251, 191, 36, 0.1) 50%, transparent 70%);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 </style>
