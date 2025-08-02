@@ -1,7 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { getLL1AnalyseAPI, LL1AnalyseInpStrAPI } from '@/api'
-import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types'
+import type { LL1AnalysisResult } from '@/types'
+import type { AnalysisStepInfo } from '@/types/ll1'
 import { useCommonStore } from './common'
 import { usePersistence, useMultiConfig, useHistory } from '@/composables/persistence'
 import { useLL1AnimationStore } from '@/animation/store'
@@ -25,7 +26,6 @@ export const useLL1Store = defineStore('ll1', () => {
   const validateGrammar = (
     inputText: string,
   ): { isValid: boolean; errorMessage: string; processedProductions: string[] } => {
-    let errorMessage = ''
     let processedProductions: string[] = []
 
     try {
@@ -168,7 +168,7 @@ export const useLL1Store = defineStore('ll1', () => {
       // 7. 检查终结符连续出现
       for (let i = 0; i < processedProductions.length; i++) {
         const production = processedProductions[i]
-        const [left, right] = production.split('->')
+        const [_left, right] = production.split('->')
         const rightParts = right.split('|')
 
         for (const part of rightParts) {
@@ -197,6 +197,7 @@ export const useLL1Store = defineStore('ll1', () => {
 
       return { isValid: true, errorMessage: '', processedProductions }
     } catch (error) {
+      console.error('文法验证过程中发生错误:', error)
       return { isValid: false, errorMessage: '文法验证过程中发生错误', processedProductions: [] }
     }
   }
