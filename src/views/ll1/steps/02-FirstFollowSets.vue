@@ -1,5 +1,5 @@
 <template>
-  <div class="first-follow-step">
+  <div class="first-follow-step" :style="animationSpeedStyle">
     <div class="px-8 py-8 pb-4 border-b border-gray-200">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -248,6 +248,43 @@
               </div>
             </div>
 
+            <!-- 动画速度控制 -->
+            <div class="flex items-center justify-between mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 shadow-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
+                </div>
+                <span class="text-xs font-semibold text-blue-800">动画速度</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="decreaseAnimationSpeed"
+                  :disabled="animationSpeed <= 0.25"
+                  class="w-6 h-6 rounded-md border border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:minus" class="w-3 h-3 text-blue-600" />
+                </button>
+                <div class="bg-white px-2 py-1 rounded-md border border-blue-300 shadow-sm">
+                  <span class="text-xs font-bold text-blue-800 min-w-[2rem] text-center">
+                    {{ (animationSpeed * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <button
+                  @click="increaseAnimationSpeed"
+                  :disabled="animationSpeed >= 2.0"
+                  class="w-6 h-6 rounded-md border border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:plus" class="w-3 h-3 text-blue-600" />
+                </button>
+                <button
+                  @click="resetAnimationSpeed"
+                  class="px-2 py-1 text-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-md hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-sm"
+                >
+                  重置
+                </button>
+              </div>
+            </div>
+
                 <div class="space-y-2">
               <!-- 非终结符的First集 -->
               <div class="mb-3">
@@ -358,6 +395,43 @@
                   <Icon v-if="showFollowAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
                   <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
                   {{ showFollowAnswer ? '隐藏答案' : '显示答案' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 动画速度控制 -->
+            <div class="flex items-center justify-between mb-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 shadow-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
+                </div>
+                <span class="text-xs font-semibold text-green-800">动画速度</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="decreaseAnimationSpeed"
+                  :disabled="animationSpeed <= 0.25"
+                  class="w-6 h-6 rounded-md border border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:minus" class="w-3 h-3 text-green-600" />
+                </button>
+                <div class="bg-white px-2 py-1 rounded-md border border-green-300 shadow-sm">
+                  <span class="text-xs font-bold text-green-800 min-w-[2rem] text-center">
+                    {{ (animationSpeed * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <button
+                  @click="increaseAnimationSpeed"
+                  :disabled="animationSpeed >= 2.0"
+                  class="w-6 h-6 rounded-md border border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:plus" class="w-3 h-3 text-green-600" />
+                </button>
+                <button
+                  @click="resetAnimationSpeed"
+                  class="px-2 py-1 text-xs bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-md hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-sm"
+                >
+                  重置
                 </button>
               </div>
             </div>
@@ -669,6 +743,14 @@ const hintModalConfig = ref({
   position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
 })
 
+// 动画速度控制
+const animationSpeed = ref(1.0) // 1.0 = 100%, 0.25 = 25%, 2.0 = 200%
+
+// 动画速度CSS变量
+const animationSpeedStyle = computed(() => ({
+  '--animation-speed': animationSpeed.value
+}))
+
 // 高亮状态
 const symbolHighlightState = ref<Record<string, boolean>>({})
 const productionHighlightState = ref<Record<string, boolean>>({})
@@ -726,6 +808,23 @@ const showHintModal = (
 // 关闭动画提示弹窗
 const closeHintModal = () => {
   hintModalVisible.value = false
+}
+
+// 动画速度控制函数
+const increaseAnimationSpeed = () => {
+  if (animationSpeed.value < 2.0) {
+    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
+  }
+}
+
+const decreaseAnimationSpeed = () => {
+  if (animationSpeed.value > 0.25) {
+    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
+  }
+}
+
+const resetAnimationSpeed = () => {
+  animationSpeed.value = 1.0
 }
 
 // 工具函数
@@ -1363,7 +1462,7 @@ const executeHintAnimation = async (symbol: string) => {
 
   // 1. 高亮当前符号
   symbolHighlightState.value[symbol] = true
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
 
   // 2. 逐步执行每个步骤，一次只显示一个符号
   for (let i = 0; i < hint.steps.length; i++) {
@@ -1435,7 +1534,7 @@ ${step.description}
       symbolHighlightState.value[sym] = true
     })
 
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise(resolve => setTimeout(resolve, 1500 / animationSpeed.value))
 
     // 执行飞行动画 - 只对终结符和空串执行
     if (step.type === 'terminal' || step.type === 'epsilon') {
@@ -1445,7 +1544,7 @@ ${step.description}
       for (const finalSymbol of step.finalSymbols) {
         await executeFlyingAnimation(symbol, finalSymbol)
         // 等待一小段时间再执行下一个符号
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 500 / animationSpeed.value))
       }
     }
 
@@ -1463,7 +1562,7 @@ ${step.description}
     })
 
     // 等待更长时间，让用户看清每个符号
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 800 / animationSpeed.value))
   }
 
   // 显示完成提示
@@ -1537,7 +1636,7 @@ const executeFlyingAnimation = async (targetSymbol: string, flyingSymbol: string
   }
 
   // 等待飞行动画完成
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  await new Promise(resolve => setTimeout(resolve, 2000 / animationSpeed.value))
 
   // 动画完成后自动填写（避免重复）
   const currentValue = userFirstSets.value[targetSymbol] || ''
@@ -1785,13 +1884,13 @@ ${step.description}
     }
 
     // 等待高亮显示
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
 
     // 执行飞行动画
     for (const finalSymbol of step.finalSymbols) {
       await executeFollowFlyingAnimation(symbol, finalSymbol)
       // 等待一小段时间再执行下一个符号
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 500 / animationSpeed.value))
     }
 
     // 清除高亮
@@ -1811,7 +1910,7 @@ ${step.description}
     }
 
     // 等待更长时间，让用户看清每个步骤
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 800 / animationSpeed.value))
   }
 
   // 显示完成提示
@@ -1887,7 +1986,7 @@ const executeFollowFlyingAnimation = async (targetSymbol: string, flyingSymbol: 
   }
 
   // 等待飞行动画完成
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  await new Promise(resolve => setTimeout(resolve, 2000 / animationSpeed.value))
 
   // 动画完成后自动填写（避免重复）
   const currentValue = userFollowSets.value[targetSymbol] || ''
@@ -1924,6 +2023,11 @@ onMounted(() => {
   pointer-events: none;
   transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translate(-50%, -50%);
+}
+
+/* 动态动画速度控制 */
+.flying-symbol {
+  transition-duration: calc(2s / var(--animation-speed, 1));
 }
 
 /* 高亮动画 */
