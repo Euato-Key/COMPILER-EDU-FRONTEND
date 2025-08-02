@@ -258,7 +258,7 @@
                     <td
                       class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
                     >
-                      I{{ stateIndex - 1 }}
+                      {{ stateIndex - 1 }}
                     </td>
 
                     <!-- ACTION单元格 -->
