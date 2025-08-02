@@ -331,7 +331,7 @@ export const useLR0Store = defineStore('lr0', () => {
           actionTable.value = result.actions || {}
           gotoTable.value = result.gotos || {}
           // dfaStates.value = result.all_dfa || []
-          dfaStates.value = result.all_dfa.map((item, index) => {
+          dfaStates.value = result.all_dfa.map((item) => {
             return {
               id: 'Item' + item.id,
               pros: item.pros.map((x: any, idx: any) => {
