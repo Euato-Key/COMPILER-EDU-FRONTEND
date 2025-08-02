@@ -4,6 +4,7 @@ import { getLL1AnalyseAPI, LL1AnalyseInpStrAPI } from '@/api'
 import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types'
 import { useCommonStore } from './common'
 import { usePersistence, useMultiConfig, useHistory } from '@/composables/persistence'
+import { useLL1AnimationStore } from '@/animation/store'
 
 export const useLL1Store = defineStore('ll1', () => {
   const commonStore = useCommonStore()
@@ -341,6 +342,16 @@ export const useLL1Store = defineStore('ll1', () => {
         console.log('分析结果数据:', inputAnalysisResult.value)
         console.log('=====================================')
 
+        // 自动解析动画数据
+        try {
+          const animationStore = useLL1AnimationStore()
+          await animationStore.parseAnimationData(responseData)
+          console.log('LL1动画数据解析成功')
+        } catch (animationError) {
+          console.warn('LL1动画数据解析失败:', animationError)
+          // 动画解析失败不影响主要的分析功能
+        }
+
         // 检查分析结果
         if (responseData.info_res === 'Success!') {
           return true
@@ -367,6 +378,15 @@ export const useLL1Store = defineStore('ll1', () => {
     inputString.value = ''
     inputAnalysisResult.value = null
     commonStore.clearError()
+
+    // 清空动画数据
+    const animationStore = useLL1AnimationStore()
+    animationStore.clearAnimationData()
+  }
+
+  // 获取动画Store实例
+  const getAnimationStore = () => {
+    return useLL1AnimationStore()
   }
 
   // 配置持久化
@@ -433,6 +453,9 @@ export const useLL1Store = defineStore('ll1', () => {
 
     // 工具方法
     validateGrammar,
+
+    // 动画相关
+    getAnimationStore,
 
     // 持久化功能
     persistence: {
