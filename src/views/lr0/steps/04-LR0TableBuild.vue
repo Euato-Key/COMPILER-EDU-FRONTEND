@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <!-- DFA图显示区域 -->
+      <!-- DFA图和产生式编号显示区域 -->
       <div v-if="hasDFAData" class="bg-white border border-gray-200 rounded-lg mb-6">
         <div class="border-b border-gray-200 p-4">
           <h3 class="font-semibold text-gray-900 flex items-center gap-2">
@@ -45,13 +45,44 @@
           <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
         </div>
         <div class="p-4">
-          <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
-            <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
-              <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 左侧：DFA图 -->
+            <div class="lg:col-span-2">
+              <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
+                <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
+                  <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+                </div>
+                <div v-else class="text-center text-gray-500">
+                  <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500" />
+                  <p class="text-sm">正在渲染DFA图...</p>
+                </div>
+              </div>
             </div>
-            <div v-else class="text-center text-gray-500">
-              <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500" />
-              <p class="text-sm">正在渲染DFA图...</p>
+
+            <!-- 右侧：产生式编号 -->
+            <div class="lg:col-span-1">
+              <div class="h-80 bg-purple-50 rounded-lg p-4 border border-purple-200">
+                <div class="flex items-center gap-2 mb-4">
+                  <Icon icon="lucide:list" class="w-5 h-5 text-purple-600" />
+                  <h4 class="font-medium text-purple-900">产生式编号</h4>
+                </div>
+                <div class="space-y-2 max-h-72 overflow-y-auto">
+                  <div
+                    v-for="(production, index) in numberedProductions"
+                    :key="production"
+                    :data-production="index + 1"
+                    class="bg-white border border-purple-200 rounded p-3 shadow-sm"
+                  >
+                    <div class="text-sm font-mono text-purple-800">
+                      <span class="font-bold text-purple-900">r{{ index + 1 }}:</span> {{ production }}
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 text-xs text-purple-600">
+                  <p>• 用于ACTION表中的规约动作</p>
+                  <p>• r1, r2, r3... 对应产生式编号</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -128,6 +159,15 @@ const dfaRendered = ref(false)
 // 计算属性
 const hasDFAData = computed(() => lr0Store.analysisResult !== null && lr0Store.dotString !== '')
 const lr0DotString = computed(() => lr0Store.dotString)
+
+// 带编号的产生式（去除S'->S）
+const numberedProductions = computed(() => {
+  if (!lr0Store.analysisResult?.formulas_list) return []
+  return lr0Store.analysisResult.formulas_list.filter((production) => {
+    // 过滤掉S'->S的产生式
+    return !production.includes("'") && !production.includes('S->S')
+  })
+})
 
 // 渲染DFA图
 const renderDFA = async () => {
