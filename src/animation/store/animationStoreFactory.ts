@@ -1,4 +1,6 @@
 import { useLL1AnimationStore } from './ll1AnimationStore'
+import { useLR0AnimationStore } from './lr0AnimationStore'
+import { useSLR1AnimationStore } from './slr1AnimationStore'
 
 /**
  * 动画Store工厂
@@ -13,11 +15,9 @@ export class AnimationStoreFactory {
       case 'LL1':
         return useLL1AnimationStore()
       case 'LR0':
-        // TODO: 实现LR0动画Store
-        throw new Error('LR0动画Store尚未实现')
+        return useLR0AnimationStore()
       case 'SLR1':
-        // TODO: 实现SLR1动画Store
-        throw new Error('SLR1动画Store尚未实现')
+        return useSLR1AnimationStore()
       default:
         throw new Error(`不支持的算法类型: ${algorithm}`)
     }

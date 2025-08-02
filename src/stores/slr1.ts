@@ -4,6 +4,7 @@ import { getSLR1AnalyseAPI, SLR1AnalyseInpStrAPI } from '@/api'
 import type { SLR1AnalysisResult, SLR1ValidationItem, AnalysisStepInfo } from '@/types'
 import { useCommonStore } from './common'
 import { usePersistence, useMultiConfig, useHistory } from '@/composables/persistence'
+import { useSLR1AnimationStore } from '@/animation/store'
 
 /**
  * SLR1 Store 持久化数据类型
@@ -288,6 +289,17 @@ export const useSLR1Store = defineStore('slr1', () => {
           console.log('输入串:', processedInput)
           console.log('分析结果数据:', inputAnalysisResult.value)
           console.log('=====================================')
+
+          // 自动解析动画数据
+          try {
+            const animationStore = useSLR1AnimationStore()
+            await animationStore.parseAnimationData(result)
+            console.log('SLR1动画数据解析成功')
+          } catch (animationError) {
+            console.warn('SLR1动画数据解析失败:', animationError)
+            // 动画解析失败不影响主要的分析功能
+          }
+
           return true
         } else {
           commonStore.setError('输入串分析结果为空')
@@ -328,6 +340,10 @@ export const useSLR1Store = defineStore('slr1', () => {
     inputString.value = ''
     clearAnalysisResults()
     commonStore.clearError()
+
+    // 清空动画数据
+    const animationStore = useSLR1AnimationStore()
+    animationStore.clearAnimationData()
   }
 
   // 配置持久化
@@ -405,6 +421,9 @@ export const useSLR1Store = defineStore('slr1', () => {
     updateValidationItem,
     getValidationDataByCategory,
     resetAll,
+
+    // 动画相关
+    getAnimationStore: () => useSLR1AnimationStore(),
 
     // 持久化功能
     persistence: {
