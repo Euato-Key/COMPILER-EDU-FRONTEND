@@ -1,13 +1,13 @@
 // 测试新动画方案的简单示例
 
-import { useLL1Store } from '@/stores/ll1'
+import { useLL1AnimationStore } from '@/animation/store'
 import { createEnhancedLL1Timeline } from '@/animation/composables/useLL1Animation'
 
 /**
  * 测试LL1动画解析功能
  */
 export async function testLL1Animation() {
-  const store = useLL1Store()
+  const animationStore = useLL1AnimationStore()
 
   // 模拟一些测试数据
   const testData = {
@@ -34,11 +34,11 @@ export async function testLL1Animation() {
     console.log('开始测试LL1动画解析...')
 
     // 1. 解析动画数据
-    await store.parseAnimationData(testData)
+    await animationStore.parseAnimationData(testData)
 
-    console.log('解析状态:', store.animationDataStatus)
-    console.log('栈操作数量:', store.animationStackOperations.length)
-    console.log('动画指令数量:', store.animationInstructions.length)
+    console.log('解析状态:', animationStore.parseStatus)
+    console.log('栈操作数量:', animationStore.stackOperations.length)
+    console.log('动画指令数量:', animationStore.animationInstructions.length)
 
     // 2. 测试创建动画时间线
     const mockRefs = {
@@ -55,8 +55,8 @@ export async function testLL1Animation() {
 
     return {
       success: true,
-      stackOperations: store.animationStackOperations,
-      animationInstructions: store.animationInstructions,
+      stackOperations: animationStore.stackOperations,
+      animationInstructions: animationStore.animationInstructions,
       timeline,
     }
   } catch (error) {

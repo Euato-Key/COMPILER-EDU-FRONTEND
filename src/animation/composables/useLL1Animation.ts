@@ -2,6 +2,8 @@ import { gsap } from 'gsap'
 import type { AnalysisStepInfo } from '@/types/ll1'
 import { parseLL1Message } from '../utils/messageParser'
 import { useLL1Store } from '@/stores/ll1'
+import { useLL1AnimationStore } from '@/animation/store'
+import type { AnimationInstruction } from '@/animation/types/animation'
 
 export const ANIMATION_DURATIONS = {
   symbolFly: 0.5,
@@ -51,10 +53,10 @@ export function createLL1Timeline(steps: AnalysisStepInfo, refs: any) {
  * 创建增强版LL1动画时间线（使用Store中的解析数据）
  */
 export function createEnhancedLL1Timeline(refs: any) {
-  const store = useLL1Store()
+  const animationStore = useLL1AnimationStore()
 
-  // 直接从Store获取解析好的动画指令
-  const instructions = store.animationInstructions
+  // 直接从动画Store获取解析好的动画指令
+  const instructions = animationStore.animationInstructions
 
   if (!instructions || instructions.length === 0) {
     console.warn('没有可用的动画指令，请先解析数据')
@@ -64,7 +66,7 @@ export function createEnhancedLL1Timeline(refs: any) {
   // 创建时间线
   const tl = gsap.timeline({ paused: true })
 
-  instructions.forEach((instruction) => {
+  instructions.forEach((instruction: AnimationInstruction) => {
     tl.to(
       refs.stack,
       {
@@ -103,11 +105,19 @@ export function createEnhancedLL1Timeline(refs: any) {
  * 自动解析和创建动画的便捷函数
  */
 export async function createAutoLL1Timeline(refs: any, forceReparse = false) {
-  const store = useLL1Store()
+  const animationStore = useLL1AnimationStore()
 
   // 如果需要重新解析，或者还没有解析过
-  if (forceReparse || store.animationDataStatus !== 'ready') {
-    await store.parseAnimationData()
+  if (forceReparse || animationStore.parseStatus !== 'ready') {
+    // 从主Store获取输入分析结果
+    const ll1Store = useLL1Store()
+    const analysisResult = ll1Store.inputAnalysisResult
+
+    if (!analysisResult) {
+      throw new Error('没有可用的分析结果，请先执行输入串分析')
+    }
+
+    await animationStore.parseAnimationData(analysisResult)
   }
 
   return createEnhancedLL1Timeline(refs)
