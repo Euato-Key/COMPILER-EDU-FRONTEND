@@ -341,6 +341,43 @@
             </div>
           </div>
 
+          <!-- 动画速度控制 -->
+          <div class="px-6 pb-4">
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <Icon icon="lucide:zap" class="w-4 h-4 text-purple-600" />
+                  <span class="text-sm font-medium text-purple-800">动画速度</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="decreaseAnimationSpeed"
+                    :disabled="animationSpeed <= 0.25"
+                    class="w-8 h-8 flex items-center justify-center bg-white border border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Icon icon="lucide:minus" class="w-3 h-3" />
+                  </button>
+                  <span class="w-12 text-center text-sm font-mono text-purple-800 bg-white border border-purple-300 rounded px-2 py-1">
+                    {{ Math.round(animationSpeed * 100) }}%
+                  </span>
+                  <button
+                    @click="increaseAnimationSpeed"
+                    :disabled="animationSpeed >= 2.0"
+                    class="w-8 h-8 flex items-center justify-center bg-white border border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Icon icon="lucide:plus" class="w-3 h-3" />
+                  </button>
+                  <button
+                    @click="resetAnimationSpeed"
+                    class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all shadow-sm"
+                  >
+                    <Icon icon="lucide:rotate-ccw" class="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="p-6">
             <!-- 答题表 -->
             <div class="overflow-x-auto">
@@ -637,24 +674,33 @@
       </div>
     </div>
 
-    <!-- 动画弹窗 -->
-    <div
-      v-if="hintActive"
-      class="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg"
-    >
-      {{ hintMessage }}
-    </div>
     <!-- 飞行动画卡片 -->
     <div
       v-for="item in flyingSymbols"
       :key="item.symbol + item.from"
-      class="fixed z-50 transition-all duration-700"
-      :style="{ left: item.x + 'px', top: item.y + 'px', transform: 'translate(-50%, -50%)' }"
+      class="fixed z-50 flying-symbol"
+      :style="[
+        { left: item.x + 'px', top: item.y + 'px', transform: 'translate(-50%, -50%)' },
+        animationSpeedStyle
+      ]"
     >
       <span class="bg-green-500 text-white px-2 py-1 rounded shadow font-mono">{{
         item.symbol
       }}</span>
     </div>
+
+    <!-- 动画提示弹窗 -->
+    <AnimationHintModal
+      :visible="hintModalVisible"
+      :type="hintModalConfig.type"
+      :title="hintModalConfig.title"
+      :message="hintModalConfig.message"
+      :details="hintModalConfig.details"
+      :action="hintModalConfig.action"
+      :duration="hintModalConfig.duration"
+      :position="hintModalConfig.position"
+      @close="closeHintModal"
+    />
   </div>
 </template>
 
@@ -664,6 +710,7 @@ import { Icon } from '@iconify/vue'
 import { useLR0Store } from '@/stores/lr0'
 import { useCommonStore } from '@/stores/common'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
+import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 import type { AnalysisStepInfo } from '@/types'
 
 const emit = defineEmits<{
@@ -741,6 +788,24 @@ const highlightTableBasis = ref({
   stateStackCell: '',
   inputStringCell: '',
 })
+
+// 动画提示弹窗状态
+const hintModalVisible = ref(false)
+const hintModalConfig = ref({
+  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: '',
+  message: '',
+  details: '',
+  action: '',
+  duration: 3000,
+  position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+})
+
+// 动画速度控制
+const animationSpeed = ref(1.0)
+const animationSpeedStyle = computed(() => ({
+  '--animation-speed': animationSpeed.value
+}))
 
 // 从store获取状态
 const analysisData = computed(() => lr0Store.analysisResult)
@@ -1079,12 +1144,27 @@ const showErrorHint = async () => {
   const stateStack = step.stateStack.trim()
   const state = stateStack.split(/\s+/).pop() || '0'
   const symbol = step.inputString[0]
-  hintMessage.value = `Action[${state},${symbol}]=错误: 无对应动作`
 
-  await sleep(2000)
+  showHintModal(
+    'error',
+    '分析错误',
+    `Action[${state},${symbol}]=错误: 无对应动作`,
+    `在状态${state}下，输入符号${symbol}没有对应的动作。
+
+这表明当前输入串无法被该文法接受，分析失败。
+
+请检查：
+1. 输入串是否符合文法规则
+2. 文法是否正确构造
+3. 分析表是否完整`,
+    '分析失败',
+    4000,
+    'bottom-left'
+  )
+
+  await sleep(2000 / animationSpeed.value)
 
   hintActive.value = false
-  hintMessage.value = ''
 }
 
 function clearHighlight() {
@@ -1143,7 +1223,7 @@ const executeShiftAnimation = async () => {
 
   // 1. 先填写数据到答题行（复制上一行数据）
   await copyDataToAnswerRow(hintStepIndex.value)
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 2. 高亮查表依据：状态栈顶状态和输入串首字符
   highlightTableBasis.value = {
@@ -1152,30 +1232,59 @@ const executeShiftAnimation = async () => {
     stateStackCell: state,
     inputStringCell: symbol,
   }
-  hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
-  await sleep(1000)
+
+  showHintModal(
+    'hint',
+    '查表依据',
+    `查表依据：状态栈顶${state}，输入串首${symbol}`,
+    `当前分析步骤的查表依据：
+• 状态栈顶：${state}
+• 输入串首：${symbol}
+
+根据LR0分析规则，使用状态栈顶状态和输入串首符号查询Action表。`,
+    '观察高亮区域',
+    3000,
+    'bottom-left'
+  )
+
+  await sleep(1000 / animationSpeed.value)
 
   // 3. 高亮Action表对应单元格
   highlightRow.value = Number(state)
   highlightCol.value = symbol
   highlightCell.value = { row: Number(state), col: symbol }
-  hintMessage.value = `Action[${state},${symbol}]=${action}: 状态${newState}入栈`
 
-  await sleep(1000)
+  showHintModal(
+    'hint',
+    '移进动作',
+    `Action[${state},${symbol}]=${action}: 状态${newState}入栈`,
+    `查表结果：Action[${state},${symbol}]=${action}
+
+移进操作说明：
+• 将输入符号${symbol}移进到符号栈
+• 将新状态${newState}移进到状态栈
+• 输入串指针向前移动一位
+
+这是LR0分析中的移进操作。`,
+    '观察飞行动画',
+    3000,
+    'bottom-left'
+  )
+
+  await sleep(1000 / animationSpeed.value)
 
   // 4. 符号移进动画
   await executeSymbolShiftAnimation(symbol, hintStepIndex.value)
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 5. 状态移进动画
   await executeStateShiftAnimation(newState, hintStepIndex.value)
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 6. 动画结束后自动填写答案
   setTimeout(() => {
     fillShiftAnswer(hintStepIndex.value, symbol, newState)
     hintActive.value = false
-    hintMessage.value = ''
     clearHighlight()
     highlightTableBasis.value = {
       stateStack: false,
@@ -1183,6 +1292,21 @@ const executeShiftAnimation = async () => {
       stateStackCell: '',
       inputStringCell: '',
     }
+
+    showHintModal(
+      'success',
+      '移进完成',
+      `移进操作完成：符号${symbol}和状态${newState}已入栈`,
+      `移进操作执行完成：
+• 符号栈：添加了符号${symbol}
+• 状态栈：添加了状态${newState}
+• 输入串：指针向前移动
+
+当前步骤已自动填写到答题表中。`,
+      '移进操作完成',
+      3000,
+      'center'
+    )
   }, 800)
 }
 
@@ -1202,7 +1326,7 @@ const executeReduceAnimation = async () => {
 
   // 1. 先填写数据到答题行（复制上一行数据）
   await copyDataToAnswerRow(hintStepIndex.value)
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 2. 高亮查表依据：状态栈顶状态和输入串首字符
   highlightTableBasis.value = {
@@ -1211,29 +1335,82 @@ const executeReduceAnimation = async () => {
     stateStackCell: state,
     inputStringCell: symbol,
   }
-  hintMessage.value = `查表依据：状态栈顶${state}，输入串首${symbol}`
-  await sleep(500)
+
+  showHintModal(
+    'hint',
+    '查表依据',
+    `查表依据：状态栈顶${state}，输入串首${symbol}`,
+    `当前分析步骤的查表依据：
+• 状态栈顶：${state}
+• 输入串首：${symbol}
+
+根据LR0分析规则，使用状态栈顶状态和输入串首符号查询Action表。`,
+    '观察高亮区域',
+    3000,
+    'bottom-left'
+  )
+
+  await sleep(500 / animationSpeed.value)
 
   // 3. 高亮Action表
   highlightRow.value = Number(state)
   highlightCol.value = symbol
   highlightCell.value = { row: Number(state), col: symbol }
-  hintMessage.value = `Action[${state},${symbol}]=${action}: 用产生式${productionNum}归约`
 
-  await sleep(1000)
+  showHintModal(
+    'hint',
+    '规约动作',
+    `Action[${state},${symbol}]=${action}: 用产生式${productionNum}归约`,
+    `查表结果：Action[${state},${symbol}]=${action}
+
+规约操作说明：
+• 使用产生式${productionNum}进行规约
+• 将产生式右部符号从符号栈中弹出
+• 将产生式左部符号压入符号栈
+• 根据Goto表确定新状态
+
+这是LR0分析中的规约操作。`,
+    '观察高亮和飞行动画',
+    3000,
+    'bottom-left'
+  )
+
+  await sleep(1000 / animationSpeed.value)
 
   // 4. 高亮产生式
   highlightProduction.value = Number(productionNum)
-  await sleep(500)
 
   // 5. 规约动画
   const production = numberedProductions.value[Number(productionNum) - 1]
+
+  showHintModal(
+    'hint',
+    '产生式规约',
+    `使用产生式${productionNum}：${production}`,
+    `规约使用的产生式：
+• 产生式编号：${productionNum}
+• 产生式内容：${production}
+• 左部符号：${production.split('->')[0]}
+• 右部符号：${production.split('->')[1]}
+
+规约过程：
+1. 从符号栈弹出右部符号
+2. 将左部符号压入符号栈
+3. 根据Goto表确定新状态`,
+    '观察规约动画',
+    3000,
+    'bottom-left'
+  )
+
+  await sleep(500 / animationSpeed.value)
+
+  // 6. 规约动画
   if (production) {
     const [left, right] = production.split('->')
     await executeReduceSymbolAnimation(right, left, hintStepIndex.value)
   }
 
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 6. 状态栈出栈动画（弹出右部符号对应数量的状态）
   if (production) {
@@ -1241,7 +1418,7 @@ const executeReduceAnimation = async () => {
     await executeStatePopAnimation(right.length, hintStepIndex.value)
   }
 
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 7. Goto表查询和动画
   const nextStep = analysisSteps.value[hintStepIndex.value]
@@ -1253,12 +1430,30 @@ const executeReduceAnimation = async () => {
     gotoState = nextStateStack[nextStateStack.length - 1]
 
     highlightGoto.value = { row: Number(prevState), col: left }
-    hintMessage.value = `Goto[${prevState},${left}]=${gotoState}入栈`
-    await sleep(500)
+
+    showHintModal(
+      'hint',
+      'Goto查询',
+      `Goto[${prevState},${left}]=${gotoState}入栈`,
+      `Goto表查询结果：
+• 当前状态：${prevState}
+• 左部符号：${left}
+• Goto值：${gotoState}
+
+规约后的状态转移：
+• 规约完成后，状态栈顶变为${prevState}
+• 根据左部符号${left}查询Goto表
+• 新状态${gotoState}将入栈`,
+      '观察Goto动画',
+      3000,
+      'bottom-left'
+    )
+
+    await sleep(500 / animationSpeed.value)
     await executeGotoAnimation(gotoState, hintStepIndex.value)
   }
 
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 8. 动画结束后自动填写答案
   setTimeout(() => {
@@ -1281,15 +1476,21 @@ const executeReduceSymbolAnimation = async (
   leftSymbol: string,
   rowIndex: number,
 ) => {
+  // 等待DOM更新
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   // 查找符号栈和产生式单元格
   const symbolStackCell = document.querySelector(
-    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`,
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3) input, .user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3) span`
   ) as HTMLElement
   const productionCell = document.querySelector(
     `[data-production="${highlightProduction.value}"]`,
   ) as HTMLElement
 
-  if (!symbolStackCell || !productionCell) return
+  if (!symbolStackCell || !productionCell) {
+    console.warn('找不到动画元素:', { symbolStackCell: !!symbolStackCell, productionCell: !!productionCell })
+    return
+  }
 
   const symbolStackRect = symbolStackCell.getBoundingClientRect()
   const productionRect = productionCell.getBoundingClientRect()
@@ -1315,7 +1516,7 @@ const executeReduceSymbolAnimation = async (
     fs.y = productionRect.top + productionRect.height / 2
   })
 
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 移除右部符号动画
   flyingSymbols.value = flyingSymbols.value.filter((fs) => fs.from !== 'symbolStack')
@@ -1339,7 +1540,7 @@ const executeReduceSymbolAnimation = async (
     flyingSymbol2.y = symbolStackRect.top + symbolStackRect.height / 2
   }
 
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 移除左部符号动画（不更新数据，数据在最后统一更新）
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1349,12 +1550,18 @@ const executeReduceSymbolAnimation = async (
 
 // 添加状态栈出栈动画
 async function executeStatePopAnimation(popCount: number, rowIndex: number) {
+  // 等待DOM更新
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   // 查找状态栈单元格
   const stateStackCell = document.querySelector(
-    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`,
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) input, .user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) span`
   ) as HTMLElement
 
-  if (!stateStackCell) return
+  if (!stateStackCell) {
+    console.warn('找不到状态栈单元格')
+    return
+  }
 
   const stateStackRect = stateStackCell.getBoundingClientRect()
 
@@ -1386,7 +1593,7 @@ async function executeStatePopAnimation(popCount: number, rowIndex: number) {
     fs.y = stateStackRect.top - 50 // 向上飞出
   })
 
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 移除出栈动画（不更新数据，数据在最后统一更新）
   flyingSymbols.value = flyingSymbols.value.filter((fs) => fs.from !== 'stateStack')
@@ -1394,15 +1601,21 @@ async function executeStatePopAnimation(popCount: number, rowIndex: number) {
 
 // 执行Goto动画，不修改标准答案数据
 async function executeGotoAnimation(state: string, rowIndex: number) {
+  // 等待DOM更新
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   // 查找Goto表和状态栈单元格
   const gotoCell = document.querySelector(
     `[data-goto-cell="${highlightGoto.value.row}|${highlightGoto.value.col}"]`,
   ) as HTMLElement
   const stateStackCell = document.querySelector(
-    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`,
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) input, .user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) span`
   ) as HTMLElement
 
-  if (!gotoCell || !stateStackCell) return
+  if (!gotoCell || !stateStackCell) {
+    console.warn('找不到动画元素:', { gotoCell: !!gotoCell, stateStackCell: !!stateStackCell })
+    return
+  }
 
   const gotoRect = gotoCell.getBoundingClientRect()
   const stateStackRect = stateStackCell.getBoundingClientRect()
@@ -1427,7 +1640,7 @@ async function executeGotoAnimation(state: string, rowIndex: number) {
     flyingSymbol.y = stateStackRect.top + stateStackRect.height / 2
   }
 
-  await sleep(700)
+  await sleep(700 / animationSpeed.value)
 
   // 移除飞行动画（不更新数据，数据在最后统一更新）
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1436,7 +1649,7 @@ async function executeGotoAnimation(state: string, rowIndex: number) {
 }
 
 // 添加自动填写答案的函数
-function fillShiftAnswer(rowIndex: number, symbol: string, newState: string) {
+const fillShiftAnswer = (rowIndex: number, symbol: string, newState: string) => {
   if (rowIndex >= analysisSteps.value.length) return
 
   // 只更新用户答案，不修改标准答案
@@ -1461,7 +1674,7 @@ function fillShiftAnswer(rowIndex: number, symbol: string, newState: string) {
 }
 
 // 修改自动填写答案的函数，确保正确的规约逻辑
-function fillReduceAnswer(rowIndex: number, production: string, gotoState: string) {
+const fillReduceAnswer = (rowIndex: number, production: string, gotoState: string) => {
   if (rowIndex >= analysisSteps.value.length) return
 
   // 只更新用户答案，不修改标准答案
@@ -1494,7 +1707,7 @@ function fillReduceAnswer(rowIndex: number, production: string, gotoState: strin
   }
 }
 
-function fillAcceptAnswer(rowIndex: number) {
+const fillAcceptAnswer = (rowIndex: number) => {
   if (rowIndex >= analysisSteps.value.length) return
 
   // 只更新用户答案，不修改标准答案
@@ -1509,16 +1722,47 @@ function fillAcceptAnswer(rowIndex: number) {
 }
 
 // 执行符号移进动画
-async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
+const executeSymbolShiftAnimation = async (symbol: string, rowIndex: number) => {
+  // 等待DOM更新
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   // 查找输入串和符号栈单元格
-  const inputCell = document.querySelector(
-    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4)`,
-  ) as HTMLElement
-  const symbolStackCell = document.querySelector(
-    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`,
+  let inputCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4) input`
   ) as HTMLElement
 
-  if (!inputCell || !symbolStackCell) return
+  if (!inputCell) {
+    inputCell = document.querySelector(
+      `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4) span`
+    ) as HTMLElement
+  }
+
+  if (!inputCell) {
+    inputCell = document.querySelector(
+      `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4)`
+    ) as HTMLElement
+  }
+
+  let symbolStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3) input`
+  ) as HTMLElement
+
+  if (!symbolStackCell) {
+    symbolStackCell = document.querySelector(
+      `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3) span`
+    ) as HTMLElement
+  }
+
+  if (!symbolStackCell) {
+    symbolStackCell = document.querySelector(
+      `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3)`
+    ) as HTMLElement
+  }
+
+  if (!inputCell || !symbolStackCell) {
+    console.warn('找不到动画元素:', { inputCell: !!inputCell, symbolStackCell: !!symbolStackCell })
+    return
+  }
 
   const inputRect = inputCell.getBoundingClientRect()
   const symbolStackRect = symbolStackCell.getBoundingClientRect()
@@ -1541,7 +1785,7 @@ async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
     flyingSymbol.y = symbolStackRect.top + symbolStackRect.height / 2
   }
 
-  await sleep(700)
+  await sleep(700 / animationSpeed.value)
 
   // 移除飞行动画（不更新数据）
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1550,16 +1794,40 @@ async function executeSymbolShiftAnimation(symbol: string, rowIndex: number) {
 }
 
 // 执行状态移进动画
-async function executeStateShiftAnimation(state: string, rowIndex: number) {
+const executeStateShiftAnimation = async (state: string, rowIndex: number) => {
+  // 等待DOM更新
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
+  // 调试：检查动画元素
+  debugAnimationElements(rowIndex)
+
   // 查找Action表和状态栈单元格
   const actionCell = document.querySelector(
     `[data-action-cell="${highlightRow.value}|${highlightCol.value}"]`,
   ) as HTMLElement
-  const stateStackCell = document.querySelector(
-    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`,
+
+  // 更精确地查找状态栈单元格
+  let stateStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) input`
   ) as HTMLElement
 
-  if (!actionCell || !stateStackCell) return
+  if (!stateStackCell) {
+    stateStackCell = document.querySelector(
+      `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) span`
+    ) as HTMLElement
+  }
+
+  if (!stateStackCell) {
+    // 如果还是找不到，尝试查找td元素本身
+    stateStackCell = document.querySelector(
+      `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2)`
+    ) as HTMLElement
+  }
+
+  if (!actionCell || !stateStackCell) {
+    console.warn('找不到动画元素:', { actionCell: !!actionCell, stateStackCell: !!stateStackCell })
+    return
+  }
 
   const actionRect = actionCell.getBoundingClientRect()
   const stateStackRect = stateStackCell.getBoundingClientRect()
@@ -1584,7 +1852,7 @@ async function executeStateShiftAnimation(state: string, rowIndex: number) {
     flyingSymbol.y = stateStackRect.top + stateStackRect.height / 2
   }
 
-  await sleep(700)
+  await sleep(700 / animationSpeed.value)
 
   // 移除飞行动画（不更新数据）
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1593,12 +1861,94 @@ async function executeStateShiftAnimation(state: string, rowIndex: number) {
 }
 
 // 重置提示状态
-function resetHint() {
+const resetHint = () => {
   hintStepIndex.value = 1
   clearHighlight()
   hintActive.value = false
   hintMessage.value = ''
   flyingSymbols.value = []
+}
+
+// 显示动画提示弹窗
+const showHintModal = (
+  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: string,
+  message: string,
+  details?: string,
+  action?: string,
+  duration = 3000,
+  position = 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+) => {
+  hintModalConfig.value = {
+    type,
+    title,
+    message,
+    details: details || '',
+    action: action || '',
+    duration,
+    position
+  }
+  hintModalVisible.value = true
+}
+
+// 关闭动画提示弹窗
+const closeHintModal = () => {
+  hintModalVisible.value = false
+}
+
+// 动画速度控制函数
+const increaseAnimationSpeed = () => {
+  if (animationSpeed.value < 2.0) {
+    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
+  }
+}
+
+const decreaseAnimationSpeed = () => {
+  if (animationSpeed.value > 0.25) {
+    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
+  }
+}
+
+const resetAnimationSpeed = () => {
+  animationSpeed.value = 1.0
+}
+
+// 调试函数：检查动画元素
+const debugAnimationElements = (rowIndex: number) => {
+  console.log('=== 调试动画元素 ===')
+  console.log('行索引:', rowIndex)
+
+  // 检查状态栈单元格
+  const stateStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) input, .user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(2) span`
+  )
+  console.log('状态栈单元格:', stateStackCell)
+
+  // 检查符号栈单元格
+  const symbolStackCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3) input, .user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(3) span`
+  )
+  console.log('符号栈单元格:', symbolStackCell)
+
+  // 检查输入串单元格
+  const inputCell = document.querySelector(
+    `.user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4) input, .user-steps-table tbody tr:nth-child(${rowIndex + 1}) td:nth-child(4) span`
+  )
+  console.log('输入串单元格:', inputCell)
+
+  // 检查Action表单元格
+  const actionCell = document.querySelector(
+    `[data-action-cell="${highlightRow.value}|${highlightCol.value}"]`
+  )
+  console.log('Action表单元格:', actionCell)
+
+  // 检查Goto表单元格
+  const gotoCell = document.querySelector(
+    `[data-goto-cell="${highlightGoto.value.row}|${highlightGoto.value.col}"]`
+  )
+  console.log('Goto表单元格:', gotoCell)
+
+  console.log('==================')
 }
 
 // 监听分析结果变化，重置提示状态
@@ -1609,7 +1959,7 @@ watch(analysisResult, () => {
 })
 
 // 添加复制数据到答题行的函数
-async function copyDataToAnswerRow(rowIndex: number) {
+const copyDataToAnswerRow = async (rowIndex: number) => {
   if (rowIndex <= 0 || rowIndex >= analysisSteps.value.length) return
 
   const prevStep = analysisSteps.value[rowIndex - 1]
@@ -1625,7 +1975,7 @@ async function copyDataToAnswerRow(rowIndex: number) {
   ) as HTMLElement
   if (currentRow) {
     currentRow.classList.add('bg-green-50', 'border-green-200')
-    await sleep(300)
+    await sleep(300 / animationSpeed.value)
     currentRow.classList.remove('bg-green-50', 'border-green-200')
   }
 }
@@ -1643,7 +1993,7 @@ const executeAcceptAnimation = async () => {
 
   // 1. 先填写数据到答题行（复制上一行数据）
   await copyDataToAnswerRow(hintStepIndex.value)
-  await sleep(500)
+  await sleep(500 / animationSpeed.value)
 
   // 2. 高亮查表依据
   highlightTableBasis.value = {
@@ -1652,22 +2002,51 @@ const executeAcceptAnimation = async () => {
     stateStackCell: state,
     inputStringCell: '#',
   }
-  hintMessage.value = `查表依据：状态栈顶${state}，输入串首#`
-  await sleep(500)
+
+  showHintModal(
+    'hint',
+    '查表依据',
+    `查表依据：状态栈顶${state}，输入串首#`,
+    `当前分析步骤的查表依据：
+• 状态栈顶：${state}
+• 输入串首：#（结束符）
+
+根据LR0分析规则，使用状态栈顶状态和输入串首符号查询Action表。`,
+    '观察高亮区域',
+    3000,
+    'bottom-left'
+  )
+
+  await sleep(500 / animationSpeed.value)
 
   // 3. 高亮Action表
   highlightRow.value = Number(state)
   highlightCol.value = '#'
   highlightCell.value = { row: Number(state), col: '#' }
-  hintMessage.value = `Action[${state},#]=acc: 分析成功！`
 
-  await sleep(1000)
+  showHintModal(
+    'success',
+    '分析成功',
+    `Action[${state},#]=acc: 分析成功！`,
+    `查表结果：Action[${state},#]=acc
+
+分析成功说明：
+• 当前状态：${state}
+• 输入符号：#（结束符）
+• 动作：acc（接受）
+
+这表明输入串已被成功分析，符合文法规则。`,
+    '分析完成',
+    4000,
+    'center'
+  )
+
+  await sleep(1000 / animationSpeed.value)
 
   // 4. 动画结束后自动填写答案
   setTimeout(() => {
     fillAcceptAnswer(hintStepIndex.value)
     hintActive.value = false
-    hintMessage.value = ''
     clearHighlight()
     highlightTableBasis.value = {
       stateStack: false,
@@ -1700,5 +2079,12 @@ const executeAcceptAnimation = async () => {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* 动态动画速度控制 */
+.flying-symbol {
+  transition: all calc(0.7s / var(--animation-speed, 1)) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+  z-index: 9999;
 }
 </style>
