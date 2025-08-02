@@ -10,6 +10,7 @@ import type {
 } from '@/types'
 import { useCommonStore } from './common'
 import { usePersistence, useMultiConfig, useHistory } from '@/composables/persistence'
+import { useLR0AnimationStore } from '@/animation/store'
 
 /**
  * LR0 Store 持久化数据类型
@@ -330,7 +331,7 @@ export const useLR0Store = defineStore('lr0', () => {
           actionTable.value = result.actions || {}
           gotoTable.value = result.gotos || {}
           // dfaStates.value = result.all_dfa || []
-          dfaStates.value = result.all_dfa.map((item, index) => {
+          dfaStates.value = result.all_dfa.map((item) => {
             return {
               id: 'Item' + item.id,
               pros: item.pros.map((x: any, idx: any) => {
@@ -432,6 +433,17 @@ export const useLR0Store = defineStore('lr0', () => {
         console.log('输入串:', processedInput)
         console.log('分析结果数据:', inputAnalysisResult.value)
         console.log('=====================================')
+
+        // 自动解析动画数据
+        try {
+          const animationStore = useLR0AnimationStore()
+          await animationStore.parseAnimationData(response.data.data)
+          console.log('LR0动画数据解析成功')
+        } catch (animationError) {
+          console.warn('LR0动画数据解析失败:', animationError)
+          // 动画解析失败不影响主要的分析功能
+        }
+
         return true
       } else {
         commonStore.setError(response.data?.message || response.data?.msg || '输入串分析失败')
@@ -464,6 +476,10 @@ export const useLR0Store = defineStore('lr0', () => {
     inputString.value = ''
     clearAnalysisResults()
     commonStore.clearError()
+
+    // 清空动画数据
+    const animationStore = useLR0AnimationStore()
+    animationStore.clearAnimationData()
   }
 
   // 配置持久化
@@ -548,6 +564,9 @@ export const useLR0Store = defineStore('lr0', () => {
     validateProductions, // 导出校验方法
     validateAndFormatInput, // 导出格式化校验方法
     resetAll,
+
+    // 动画相关
+    getAnimationStore: () => useLR0AnimationStore(),
 
     // 持久化功能
     persistence: {

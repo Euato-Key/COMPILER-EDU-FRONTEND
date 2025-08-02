@@ -3,95 +3,41 @@
     <!-- 主要内容区域 -->
     <div class="flex-1 flex flex-col lg:flex-row gap-3 p-3 min-h-0">
       <!-- 动作信息区 -->
-      <div
-        class="flex-1 bg-white rounded-lg shadow-sm p-4 min-h-[120px] flex flex-col justify-center"
-      >
-        <div class="font-semibold mb-3 text-gray-700">动作信息</div>
-        <div class="text-lg">
-          <div v-if="currentMsg.type === 'shift'" class="flex items-center gap-2">
-            <span class="text-blue-600 font-semibold">移进</span>：
-            <span class="font-mono"
-              >状态 {{ currentMsg.currentState }} → {{ currentMsg.newState }}</span
-            >，
-            <span class="text-blue-600 font-mono">符号 '{{ currentMsg.symbol }}' 入栈</span>
-          </div>
-          <div v-else-if="currentMsg.type === 'reduce'" class="flex items-center gap-2">
-            <span class="text-green-600 font-semibold">归约</span>：
-            <span class="font-mono"
-              >用 {{ currentMsg.production }} (r{{ currentMsg.ruleNumber }})</span
-            >
-          </div>
-          <div v-else-if="currentMsg.type === 'accept'">
-            <span class="text-green-600 font-semibold text-xl">接受 acc</span>
-          </div>
-          <div v-else>
-            <span class="text-gray-500">{{ currentMsg.message }}</span>
-          </div>
-        </div>
-      </div>
+      <AnimatedProduction
+        title="动作信息"
+        type="lr"
+        :production="currentMsg"
+        :is-active="isPlaying"
+        @animation-complete="onProductionAnimationComplete"
+      />
 
       <!-- 状态栈 -->
-      <div
-        class="flex flex-col items-center bg-white rounded-lg shadow-sm p-4 min-w-[100px] max-w-[120px]"
-      >
-        <div class="font-semibold mb-3 text-gray-700">状态栈</div>
-        <div class="flex-1 flex flex-col justify-end min-h-[100px] max-h-[300px] overflow-y-auto">
-          <div class="flex flex-col-reverse items-center space-y-reverse space-y-1">
-            <div
-              v-for="(item, idx) in currentStateStack"
-              :key="idx"
-              class="stack-item"
-              :class="{ 'bg-blue-100 border-blue-300': idx === 0 }"
-            >
-              {{ item }}
-            </div>
-          </div>
-        </div>
-        <div class="text-xs text-gray-400 mt-2">栈底 #</div>
-      </div>
+      <AnimatedStack
+        title="状态栈"
+        :stack="currentStateStack"
+        :highlight-top="true"
+        highlight-color="#dbeafe"
+        @animation-complete="onStateStackAnimationComplete"
+      />
 
       <!-- 符号栈 -->
-      <div
-        class="flex flex-col items-center bg-white rounded-lg shadow-sm p-4 min-w-[100px] max-w-[120px]"
-      >
-        <div class="font-semibold mb-3 text-gray-700">符号栈</div>
-        <div class="flex-1 flex flex-col justify-end min-h-[100px] max-h-[300px] overflow-y-auto">
-          <div class="flex flex-col-reverse items-center space-y-reverse space-y-1">
-            <div
-              v-for="(item, idx) in currentSymbolStack"
-              :key="idx"
-              class="stack-item"
-              :class="{ 'bg-green-100 border-green-300': idx === 0 }"
-            >
-              {{ item }}
-            </div>
-          </div>
-        </div>
-        <div class="text-xs text-gray-400 mt-2">栈底 #</div>
-      </div>
+      <AnimatedStack
+        title="符号栈"
+        :stack="currentSymbolStack"
+        :highlight-top="true"
+        highlight-color="#dcfce7"
+        @animation-complete="onSymbolStackAnimationComplete"
+      />
 
       <!-- 输入串区域 -->
-      <div
-        class="flex-1 bg-white rounded-lg shadow-sm p-4 min-h-[120px] flex flex-col justify-center"
-      >
-        <div class="font-semibold mb-3 text-gray-700">输入串</div>
-        <div class="flex flex-wrap gap-1 justify-center">
-          <div
-            v-for="(ch, idx) in currentInput"
-            :key="idx"
-            class="input-symbol"
-            :class="{
-              'bg-green-200 border-green-400 scale-110': idx === pointer,
-              'opacity-50': idx < pointer,
-            }"
-          >
-            {{ ch }}
-          </div>
-        </div>
-        <div class="mt-3 text-xs text-gray-400 text-center">
-          当前位置: {{ pointer + 1 }}/{{ currentInput.length }}
-        </div>
-      </div>
+      <AnimatedInput
+        title="输入串"
+        :input="currentInput"
+        :pointer="pointer"
+        :is-matching="currentMsg.type === 'shift'"
+        :has-error="false"
+        @animation-complete="onInputAnimationComplete"
+      />
     </div>
 
     <!-- 状态信息栏 -->
@@ -110,6 +56,9 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 import { parseLRMessage } from '@/animation/utils/messageParser'
+import AnimatedStack from './AnimatedStack.vue'
+import AnimatedInput from './AnimatedInput.vue'
+import AnimatedProduction from './AnimatedProduction.vue'
 
 const props = defineProps<{
   algorithm: string
@@ -117,6 +66,26 @@ const props = defineProps<{
   currentStep: number
   isPlaying: boolean
 }>()
+
+const onStateStackAnimationComplete = () => {
+  // 状态栈动画完成回调
+  console.log('State stack animation completed')
+}
+
+const onSymbolStackAnimationComplete = () => {
+  // 符号栈动画完成回调
+  console.log('Symbol stack animation completed')
+}
+
+const onInputAnimationComplete = () => {
+  // 输入串动画完成回调
+  console.log('Input animation completed')
+}
+
+const onProductionAnimationComplete = () => {
+  // 产生式动画完成回调
+  console.log('Production animation completed')
+}
 
 const totalSteps = computed(() => props.analysisData?.info_step?.length || 0)
 const currentMsg = computed(() =>

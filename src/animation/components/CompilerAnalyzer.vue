@@ -11,6 +11,7 @@
         @pause="animationControl.pause"
         @reset="animationControl.reset"
         @step="animationControl.step"
+        @step-back="animationControl.stepBack"
         @speed-change="animationControl.setSpeed"
       />
     </div>
@@ -43,7 +44,7 @@ import { useLL1Store, useLR0Store, useSLR1Store } from '@/stores'
 import ControlPanel from './ControlPanel.vue'
 import LL1Analyzer from './LL1Analyzer.vue'
 import LRAnalyzer from './LRAnalyzer.vue'
-import { useAnimationControl } from '../composables/useAnimationControl'
+import { useEnhancedAnimationControl } from '../composables/useEnhancedAnimationControl'
 
 const props = defineProps<{ algorithm: 'LL1' | 'LR0' | 'SLR1' }>()
 
@@ -64,9 +65,9 @@ const totalSteps = computed(() => {
   }
 })
 
-const animationControl = useAnimationControl(totalSteps)
+const animationControl = useEnhancedAnimationControl(totalSteps)
 
-const setupAnimationTimeline = () => {
+const setupEnhancedAnimationTimeline = () => {
   // 添加数据有效性检查
   if (totalSteps.value <= 0) {
     console.log('No steps available for animation')
@@ -74,70 +75,133 @@ const setupAnimationTimeline = () => {
   }
 
   if (props.algorithm === 'LL1' && ll1Data.value) {
-    // 简化的 LL1 动画逻辑
-    console.log('Setting up LL1 animation with data:', ll1Data.value)
-    // 创建一个基础的 GSAP 时间线来测试动画控制
-    import('gsap').then(({ gsap }) => {
-      const tl = gsap.timeline({
-        paused: true,
-        onUpdate: () => {
-          // 根据时间线进度更新当前步骤
-          const progress = tl.progress()
-          const newStep = Math.floor(progress * totalSteps.value)
-          if (newStep !== animationControl.currentStep.value && newStep < totalSteps.value) {
-            animationControl.currentStep.value = newStep
-          }
-        },
-      })
+    // LL1 栈分析器
+    const stackAnalyzer = (step: number) => {
+      const stack = ll1Data.value?.info_symbol_stack?.[step]
+      if (!stack) return []
 
-      // 为每一步创建简单的动画
-      for (let i = 0; i < totalSteps.value; i++) {
-        tl.to(
-          {},
-          {
-            duration: 1,
-            onStart: () => {
-              console.log(`LL1 Animation step ${i + 1}:`, ll1Data.value?.info_msg?.[i])
-              animationControl.currentStep.value = i
-            },
-          },
-        )
+      if (typeof stack === 'string') {
+        return stack
+          .split('')
+          .filter((c: string) => c !== '')
+          .reverse()
+      }
+      return []
+    }
+
+    // LL1 输入分析器
+    const inputAnalyzer = (step: number) => {
+      const all = ll1Data.value?.info_str?.[0]?.length || 0
+      const now = ll1Data.value?.info_str?.[step]?.length || 0
+      const pointer = all - now
+
+      // 检查当前消息是否为匹配操作
+      const msg = ll1Data.value?.info_msg?.[step] || ''
+      const isMatching = msg.includes('符号匹配') || msg.includes('match')
+
+      return { pointer, isMatching }
+    }
+
+    // LL1 产生式分析器
+    const productionAnalyzer = (step: number) => {
+      const msg = ll1Data.value?.info_msg?.[step] || ''
+
+      // 解析LL1消息
+      if (msg.includes('→')) {
+        const parts = msg.split('→')
+        if (parts.length === 2) {
+          return {
+            type: 'production',
+            left: parts[0].trim(),
+            right: parts[1].trim(),
+          }
+        }
+      } else if (msg.includes('符号匹配')) {
+        const match = msg.match(/符号匹配[：:]\s*['"]([^'"]+)['"]/)
+        return {
+          type: 'match',
+          symbol: match ? match[1] : '',
+        }
+      } else if (msg.includes('ε')) {
+        return {
+          type: 'epsilon',
+          left: msg.split('→')[0]?.trim() || '',
+          right: 'ε',
+        }
       }
 
-      animationControl.timeline.value = tl
-    })
+      return { type: 'message', message: msg }
+    }
+
+    // 创建协调动画时间线
+    animationControl.createCoordinatedTimeline(
+      ll1Data.value,
+      stackAnalyzer,
+      inputAnalyzer,
+      productionAnalyzer,
+    )
   } else if ((props.algorithm === 'LR0' || props.algorithm === 'SLR1') && lrData.value) {
-    // 简化的 LR 动画逻辑
-    console.log('Setting up LR animation with data:', lrData.value)
-    import('gsap').then(({ gsap }) => {
-      const tl = gsap.timeline({
-        paused: true,
-        onUpdate: () => {
-          // 根据时间线进度更新当前步骤
-          const progress = tl.progress()
-          const newStep = Math.floor(progress * totalSteps.value)
-          if (newStep !== animationControl.currentStep.value && newStep < totalSteps.value) {
-            animationControl.currentStep.value = newStep
-          }
-        },
-      })
+    // LR 栈分析器（状态栈）
+    const stackAnalyzer = (step: number) => {
+      const stack = lrData.value?.info_state_stack?.[step]
+      return stack ? stack.split('').reverse() : []
+    }
 
-      // 为每一步创建简单的动画
-      for (let i = 0; i < totalSteps.value; i++) {
-        tl.to(
-          {},
-          {
-            duration: 1,
-            onStart: () => {
-              console.log(`LR Animation step ${i + 1}:`, lrData.value?.info_msg?.[i])
-              animationControl.currentStep.value = i
-            },
-          },
-        )
+    // LR 输入分析器
+    const inputAnalyzer = (step: number) => {
+      const all = lrData.value?.info_str?.[0]?.length || 0
+      const now = lrData.value?.info_str?.[step]?.length || 0
+      const pointer = all - now
+
+      // 检查当前消息是否为移进操作
+      const msg = lrData.value?.info_msg?.[step] || ''
+      const isMatching = msg.includes('移进') || msg.includes('shift')
+
+      return { pointer, isMatching }
+    }
+
+    // LR 动作分析器
+    const productionAnalyzer = (step: number) => {
+      const msg = lrData.value?.info_msg?.[step] || ''
+
+      // 解析LR消息
+      if (msg.includes('移进') || msg.includes('shift')) {
+        // 移进操作
+        const stateMatch = msg.match(/状态\s*(\d+)\s*[→-]\s*(\d+)/)
+        const symbolMatch = msg.match(/符号\s*['"]([^'"]+)['"]/)
+
+        return {
+          type: 'shift',
+          currentState: stateMatch ? stateMatch[1] : '',
+          newState: stateMatch ? stateMatch[2] : '',
+          symbol: symbolMatch ? symbolMatch[1] : '',
+        }
+      } else if (msg.includes('归约') || msg.includes('reduce')) {
+        // 归约操作
+        const ruleMatch = msg.match(/r(\d+)/)
+        const productionMatch = msg.match(/用\s*([^(]+)/)
+
+        return {
+          type: 'reduce',
+          ruleNumber: ruleMatch ? ruleMatch[1] : '',
+          production: productionMatch ? productionMatch[1].trim() : msg,
+        }
+      } else if (msg.includes('接受') || msg.includes('acc')) {
+        return {
+          type: 'accept',
+        }
       }
 
-      animationControl.timeline.value = tl
-    })
+      return { type: 'message', message: msg }
+    }
+
+    // 创建协调动画时间线
+    animationControl.createCoordinatedTimeline(
+      lrData.value,
+      stackAnalyzer,
+      inputAnalyzer,
+      productionAnalyzer,
+    )
   }
 }
 
@@ -146,14 +210,14 @@ watch(
   [ll1Data, lrData, totalSteps],
   () => {
     if (totalSteps.value > 0) {
-      console.log('Data changed, setting up new animation timeline')
-      setupAnimationTimeline()
+      console.log('Data changed, setting up enhanced animation timeline')
+      setupEnhancedAnimationTimeline()
     }
   },
   { immediate: false },
 )
 
 onMounted(() => {
-  setupAnimationTimeline()
+  setupEnhancedAnimationTimeline()
 })
 </script>

@@ -3,78 +3,32 @@
     <!-- 主要内容区域 -->
     <div class="flex-1 flex flex-col lg:flex-row gap-3 p-3 min-h-0">
       <!-- 产生式显示区 -->
-      <div
-        class="flex-1 bg-white rounded-lg shadow-sm p-4 min-h-[120px] flex flex-col justify-center"
-      >
-        <div class="font-semibold mb-3 text-gray-700">当前产生式</div>
-        <div class="text-lg">
-          <div v-if="currentMsg.type === 'production'" class="flex items-center gap-2">
-            <span class="text-blue-600 font-mono">{{ currentMsg.left }}</span>
-            <span class="text-gray-400">→</span>
-            <span class="text-green-600 font-mono">{{
-              Array.isArray(currentMsg.right) ? currentMsg.right.join(' ') : currentMsg.right
-            }}</span>
-          </div>
-          <div v-else-if="currentMsg.type === 'epsilon'" class="flex items-center gap-2">
-            <span class="text-blue-600 font-mono">{{ currentMsg.left }}</span>
-            <span class="text-gray-400">→</span>
-            <span class="text-gray-400 font-mono">ε (不入栈)</span>
-          </div>
-          <div v-else-if="currentMsg.type === 'match'">
-            <span class="text-green-600 font-semibold">符号匹配: '{{ currentMsg.symbol }}'</span>
-          </div>
-          <div v-else>
-            <span class="text-gray-500">{{ currentMsg.message }}</span>
-          </div>
-        </div>
-      </div>
+      <AnimatedProduction
+        title="当前产生式"
+        type="ll1"
+        :production="currentMsg"
+        :is-active="isPlaying"
+        @animation-complete="onProductionAnimationComplete"
+      />
 
       <!-- 栈区域 -->
-      <div
-        class="flex flex-col items-center bg-white rounded-lg shadow-sm p-4 min-w-[100px] max-w-[140px]"
-      >
-        <div class="font-semibold mb-3 text-gray-700">分析栈</div>
-        <div class="flex-1 flex flex-col justify-end min-h-[100px] max-h-[300px] overflow-y-auto">
-          <transition-group
-            name="stack"
-            tag="div"
-            class="flex flex-col-reverse items-center space-y-reverse space-y-1"
-          >
-            <div
-              v-for="(item, idx) in currentStack"
-              :key="`${item}-${idx}`"
-              class="stack-item"
-              :class="{ 'bg-blue-100 border-blue-300': idx === 0 }"
-            >
-              {{ item }}
-            </div>
-          </transition-group>
-        </div>
-        <div class="text-xs text-gray-400 mt-2">栈底 #</div>
-      </div>
+      <AnimatedStack
+        title="分析栈"
+        :stack="currentStack"
+        :highlight-top="true"
+        highlight-color="#dbeafe"
+        @animation-complete="onStackAnimationComplete"
+      />
 
       <!-- 输入串区域 -->
-      <div
-        class="flex-1 bg-white rounded-lg shadow-sm p-4 min-h-[120px] flex flex-col justify-center"
-      >
-        <div class="font-semibold mb-3 text-gray-700">输入串</div>
-        <div class="flex flex-wrap gap-1 justify-center">
-          <div
-            v-for="(ch, idx) in currentInput"
-            :key="`${ch}-${idx}`"
-            class="input-symbol"
-            :class="{
-              'bg-green-200 border-green-400 scale-110': idx === pointer,
-              'opacity-50': idx < pointer,
-            }"
-          >
-            {{ ch }}
-          </div>
-        </div>
-        <div class="mt-3 text-xs text-gray-400 text-center">
-          当前位置: {{ pointer + 1 }}/{{ currentInput.length }}
-        </div>
-      </div>
+      <AnimatedInput
+        title="输入串"
+        :input="currentInput"
+        :pointer="pointer"
+        :is-matching="currentMsg.type === 'match'"
+        :has-error="false"
+        @animation-complete="onInputAnimationComplete"
+      />
     </div>
 
     <!-- 状态信息栏 -->
@@ -93,12 +47,30 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 import { parseLL1Message } from '@/animation/utils/messageParser'
+import AnimatedStack from './AnimatedStack.vue'
+import AnimatedInput from './AnimatedInput.vue'
+import AnimatedProduction from './AnimatedProduction.vue'
 
 const props = defineProps<{
   analysisData: any
   currentStep: number
   isPlaying: boolean
 }>()
+
+const onStackAnimationComplete = () => {
+  // 栈动画完成回调
+  console.log('Stack animation completed')
+}
+
+const onInputAnimationComplete = () => {
+  // 输入串动画完成回调
+  console.log('Input animation completed')
+}
+
+const onProductionAnimationComplete = () => {
+  // 产生式动画完成回调
+  console.log('Production animation completed')
+}
 
 const totalSteps = computed(() => props.analysisData?.info_step?.length || 0)
 const currentMsg = computed(() =>
