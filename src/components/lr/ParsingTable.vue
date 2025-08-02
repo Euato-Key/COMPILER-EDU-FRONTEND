@@ -98,7 +98,7 @@
                   <td
                     class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
                   >
-                    I{{ stateIndex - 1 }}
+                    {{ stateIndex - 1 }}
                   </td>
 
                   <!-- ACTION单元格 -->
@@ -256,7 +256,7 @@
                 <tbody>
                   <tr v-for="stateIndex in stateCount" :key="stateIndex - 1">
                     <td class="px-3 py-2 border border-gray-300 font-bold bg-gray-50 text-center">
-                      I{{ stateIndex - 1 }}
+                      {{ stateIndex - 1 }}
                     </td>
                     <!-- ACTION答案 -->
                     <td
@@ -495,7 +495,7 @@ const getCellStyle = (key: string, type: 'action' | 'goto'): string => {
 
 const toggleAnswerDisplay = () => {
   showAnswers.value = !showAnswers.value
-  
+
   // 当显示答案时，自动触发步骤完成状态
   if (showAnswers.value) {
     // 模拟验证所有单元格为正确状态
