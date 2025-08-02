@@ -1,5 +1,5 @@
 <template>
-  <div class="ll1-table-build-step">
+  <div class="ll1-table-build-step" :style="animationSpeedStyle">
     <div class="step-header">
       <div class="flex items-center gap-4">
         <div class="step-icon">
@@ -28,22 +28,18 @@
             </div>
             <h3 class="text-lg font-semibold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">构建说明</h3>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-gray-200 rounded"></div>
-              <span class="text-sm text-gray-700">已知信息</span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="flex items-center gap-3 p-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+              <div class="w-4 h-4 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-sm border-2 border-orange-600"></div>
+              <span class="text-sm font-semibold text-orange-700">待填写</span>
             </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-gradient-to-r from-amber-300 to-orange-300 rounded"></div>
-              <span class="text-sm text-gray-700">待填写</span>
+            <div class="flex items-center gap-3 p-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+              <div class="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full shadow-sm border-2 border-green-600"></div>
+              <span class="text-sm font-semibold text-green-700">校验正确</span>
             </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-green-200 rounded"></div>
-              <span class="text-sm text-gray-700">校验正确</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-red-200 rounded"></div>
-              <span class="text-sm text-gray-700">校验错误</span>
+            <div class="flex items-center gap-3 p-2 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200">
+              <div class="w-4 h-4 bg-gradient-to-r from-red-400 to-pink-500 rounded-full shadow-sm border-2 border-red-600"></div>
+              <span class="text-sm font-semibold text-red-700">校验错误</span>
             </div>
           </div>
           <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-green-200/50">
@@ -256,26 +252,22 @@
                     LL1 分析表
                   </h3>
                   <!-- 表格状态说明 -->
-                  <div class="flex items-center gap-4 text-xs text-gray-600">
-                    <div class="flex items-center gap-1">
-                      <div class="w-3 h-3 bg-gray-100 rounded border border-gray-300"></div>
-                      <span>已知信息</span>
+                  <div class="flex items-center gap-3 text-xs">
+                    <div class="flex items-center gap-2 px-2 py-1 bg-gradient-to-r from-amber-50 to-orange-50 rounded-md border border-amber-200">
+                      <div class="w-3 h-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-sm border border-orange-600"></div>
+                      <span class="font-semibold text-orange-700">待填写</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                      <div class="w-3 h-3 bg-gradient-to-br from-amber-50 to-orange-50 rounded border border-amber-300"></div>
-                      <span>待填写</span>
+                    <div class="flex items-center gap-2 px-2 py-1 bg-gradient-to-r from-green-50 to-emerald-50 rounded-md border border-green-200">
+                      <div class="w-3 h-3 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full shadow-sm border border-green-600"></div>
+                      <span class="font-semibold text-green-700">校验正确</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                      <div class="w-3 h-3 bg-green-50 rounded border border-green-300"></div>
-                      <span>校验正确</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                      <div class="w-3 h-3 bg-red-50 rounded border border-red-300"></div>
-                      <span>校验错误</span>
+                    <div class="flex items-center gap-2 px-2 py-1 bg-gradient-to-r from-red-50 to-pink-50 rounded-md border border-red-200">
+                      <div class="w-3 h-3 bg-gradient-to-br from-red-400 to-pink-500 rounded-full shadow-sm border border-red-600"></div>
+                      <span class="font-semibold text-red-700">校验错误</span>
                     </div>
                   </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                   <button
                     @click="executeTableHintAnimation"
                     :disabled="hintState.isActive || checking"
@@ -290,7 +282,7 @@
                     class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
                     <Icon icon="lucide:trash-2" class="w-4 h-4 mr-1.5" />
-                    清空状态
+                    清空
                   </button>
                   <button
                     @click="checkTable"
@@ -298,7 +290,47 @@
                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
                   >
                     <Icon v-if="checking" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
-                    校验分析表
+                    校验
+                  </button>
+                </div>
+              </div>
+
+              <!-- 动画速度控制 - 独立一行 -->
+              <div class="flex items-center justify-between mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <Icon icon="lucide:zap" class="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <span class="text-sm font-semibold text-blue-800">动画速度控制</span>
+                    <p class="text-xs text-blue-600 mt-0.5">调整提示动画播放速度</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button
+                    @click="decreaseAnimationSpeed"
+                    :disabled="animationSpeed <= 0.25"
+                    class="w-10 h-10 rounded-lg border-2 border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                  >
+                    <Icon icon="lucide:minus" class="w-5 h-5 text-blue-600" />
+                  </button>
+                  <div class="bg-white px-4 py-2 rounded-lg border-2 border-blue-300 shadow-sm">
+                    <span class="text-lg font-bold text-blue-800 min-w-[3rem] text-center">
+                      {{ (animationSpeed * 100).toFixed(0) }}%
+                    </span>
+                  </div>
+                  <button
+                    @click="increaseAnimationSpeed"
+                    :disabled="animationSpeed >= 2.0"
+                    class="w-10 h-10 rounded-lg border-2 border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                  >
+                    <Icon icon="lucide:plus" class="w-5 h-5 text-blue-600" />
+                  </button>
+                  <button
+                    @click="resetAnimationSpeed"
+                    class="px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-sm"
+                  >
+                    重置
                   </button>
                 </div>
               </div>
@@ -519,10 +551,23 @@
       <div v-if="hintState.isActive" class="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg bg-orange-500 text-white text-sm">
         <div class="flex items-center gap-2">
           <Icon icon="lucide:lightbulb" class="w-4 h-4" />
-          <span>提示动画进行中... ({{ hintState.currentStep }}/{{ hintState.totalSteps }})</span>
+          <span>提示步骤 {{ hintState.currentStep }}/{{ hintState.totalSteps }} 进行中...</span>
         </div>
       </div>
     </transition>
+
+    <!-- 动画提示弹窗 -->
+    <AnimationHintModal
+      :visible="hintModalVisible"
+      :type="hintModalConfig.type"
+      :title="hintModalConfig.title"
+      :message="hintModalConfig.message"
+      :details="hintModalConfig.details"
+      :action="hintModalConfig.action"
+      :duration="hintModalConfig.duration"
+      :position="hintModalConfig.position"
+      @close="closeHintModal"
+    />
   </div>
 </template>
 
@@ -531,21 +576,19 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import { useLL1Store } from '@/stores/ll1'
-import { useCommonStore } from '@/stores/common'
+import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
 // 获取 Store 实例
 const ll1Store = useLL1Store()
-const commonStore = useCommonStore()
 
 // 解构响应式状态（用于模板绑定）
-const { originalData, parseTable, firstSets, followSets } = storeToRefs(ll1Store)
-const { loading } = storeToRefs(commonStore)
+const { originalData, firstSets, followSets } = storeToRefs(ll1Store)
 
 // 定义 emits
 defineEmits<{
   'next-step': []
   'prev-step': []
-  complete: [data: any]
+  complete: [data: Record<string, unknown>]
 }>()
 
 // 计算非终结符和终结符
@@ -590,6 +633,26 @@ const flyingSymbols = ref<Array<{
   y: number
 }>>([])
 
+// 动画提示弹窗状态
+const hintModalVisible = ref(false)
+const hintModalConfig = ref({
+  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: '',
+  message: '',
+  details: '',
+  action: '',
+  duration: 3000,
+  position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+})
+
+// 动画速度控制
+const animationSpeed = ref(1.0) // 1.0 = 100%, 0.25 = 25%, 2.0 = 200%
+
+// 动画速度CSS变量
+const animationSpeedStyle = computed(() => ({
+  '--animation-speed': animationSpeed.value
+}))
+
 // 计算属性
 const hasTableErrors = computed(() => {
   return Object.values(tableValidation.value).some((status) => status === 'incorrect')
@@ -615,6 +678,50 @@ const allCompleted = computed(() => {
 // 复制提示
 const copyTip = ref('')
 let copyTipTimer: number | null = null
+
+// 显示动画提示弹窗
+const showHintModal = (
+  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: string,
+  message: string,
+  details?: string,
+  action?: string,
+  duration = 3000,
+  position = 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+) => {
+  hintModalConfig.value = {
+    type,
+    title,
+    message,
+    details: details || '',
+    action: action || '',
+    duration,
+    position
+  }
+  hintModalVisible.value = true
+}
+
+// 关闭动画提示弹窗
+const closeHintModal = () => {
+  hintModalVisible.value = false
+}
+
+// 动画速度控制函数
+const increaseAnimationSpeed = () => {
+  if (animationSpeed.value < 2.0) {
+    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
+  }
+}
+
+const decreaseAnimationSpeed = () => {
+  if (animationSpeed.value > 0.25) {
+    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
+  }
+}
+
+const resetAnimationSpeed = () => {
+  animationSpeed.value = 1.0
+}
 
 // 拖拽事件处理函数
 function onProductionDragStart(production: string, event: DragEvent) {
@@ -803,7 +910,21 @@ const checkTable = async () => {
     if (isAllCorrect) {
       showAnswer.value = false
       console.log('LL1 table validation completed successfully')
-      // 可以在这里添加成功提示
+      const correctEntries = Object.keys(tableValidation.value).filter(key => tableValidation.value[key] === 'correct').length
+      const totalEntries = Object.keys(tableValidation.value).length
+
+      showHintModal(
+        'success',
+        '校验成功',
+        'LL1分析表校验成功！该文法是LL1文法。',
+        `恭喜！您已正确构建了LL1分析表，所有产生式都按照First集和Follow集规则正确填写。
+
+正确填写项：${correctEntries}/${totalEntries}
+所有产生式都正确应用了First集和Follow集规则。`,
+        '分析表构建完成',
+        5000,
+        'center'
+      )
     } else {
       if (attempts.value >= maxAttempts) {
         // 显示正确答案
@@ -814,6 +935,42 @@ const checkTable = async () => {
           tableValidation.value[key] = 'correct'
         }
         showAnswer.value = true
+        const totalEntries = Object.keys(tableValidation.value).length
+
+        showHintModal(
+          'warning',
+          '显示答案',
+          '已达到最大尝试次数，已显示正确答案。',
+          `请仔细对比您的答案与正确答案，理解First集和Follow集规则的应用。
+
+总填写项：${totalEntries}
+建议：
+1. 对比每个错误项，理解为什么填写错误
+2. 回顾First集和Follow集的计算过程
+3. 理解LL1分析表构建规则的应用
+4. 可以重新开始练习，加深理解`,
+          '答案已显示',
+          6000,
+          'bottom-left'
+        )
+      } else {
+        const correctEntries = Object.keys(tableValidation.value).filter(key => tableValidation.value[key] === 'correct').length
+        const totalEntries = Object.keys(tableValidation.value).length
+        const errorEntries = Object.keys(tableValidation.value).filter(key => tableValidation.value[key] === 'incorrect').length
+
+        showHintModal(
+          'error',
+          '校验失败',
+          `LL1分析表校验失败，还有${remainingAttempts.value}次尝试机会。`,
+          `请检查错误项目，确保按照First集和Follow集规则正确填写产生式。
+
+正确填写项：${correctEntries}/${totalEntries}
+错误填写项：${errorEntries}
+请仔细检查错误项目，确保产生式格式正确且符合First集和Follow集规则。`,
+          '请修正错误',
+          5000,
+          'bottom-left'
+        )
       }
     }
   } finally {
@@ -964,68 +1121,76 @@ const calculateFirstSetForProduction = (production: string): string[] => {
   return Array.from(result)
 }
 
+// 当前提示步骤索引
+const currentHintStepIndex = ref(0)
+
 // 执行表格提示动画
 const executeTableHintAnimation = async () => {
   if (!originalData.value) return
 
-  hintState.value.isActive = true
-  hintState.value.currentStep = 0
-
   const hint = calculateTableHint()
   if (!hint || hint.steps.length === 0) {
-    hintState.value.isActive = false
     return
   }
 
-  hintState.value.totalSteps = hint.steps.length
-
-  // 逐步执行每个步骤
-  for (let i = 0; i < hint.steps.length; i++) {
-    const step = hint.steps[i]
-    hintState.value.currentStep = i + 1
-
-    // 高亮相关产生式
-    step.productions.forEach(prod => {
-      productionHighlightState.value[prod] = true
-    })
-
-    // 高亮相关规则
-    step.rules.forEach(rule => {
-      ruleHighlightState.value[rule] = true
-    })
-
-    // 高亮相关符号
-    step.symbols.forEach(sym => {
-      symbolHighlightState.value[sym] = true
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    // 执行表格项飞行动画
-    for (const entry of step.tableEntries) {
-      // 高亮目标表格单元格
-      tableCellHighlightState.value[`${entry.nonTerminal}|${entry.terminal}`] = true
-      await executeTableFlyingAnimation(entry.nonTerminal, entry.terminal, entry.production)
-      // 清除表格单元格高亮
-      tableCellHighlightState.value[`${entry.nonTerminal}|${entry.terminal}`] = false
-      await new Promise(resolve => setTimeout(resolve, 500))
-    }
-
-    // 清除高亮
-    step.productions.forEach(prod => {
-      productionHighlightState.value[prod] = false
-    })
-    step.rules.forEach(rule => {
-      ruleHighlightState.value[rule] = false
-    })
-    step.symbols.forEach(sym => {
-      symbolHighlightState.value[sym] = false
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 800))
+  // 如果已经完成所有提示，重新开始
+  if (currentHintStepIndex.value >= hint.steps.length) {
+    currentHintStepIndex.value = 0
   }
 
-  // 清除所有高亮
+  hintState.value.isActive = true
+  hintState.value.currentStep = currentHintStepIndex.value + 1
+  hintState.value.totalSteps = hint.steps.length
+
+  const step = hint.steps[currentHintStepIndex.value]
+
+  // 显示提示弹窗
+  const stepType = step.type === 'first' ? 'First集规则' : 'Follow集规则'
+  const ruleDescription = step.type === 'first'
+    ? '对每个终结符a ∈ First(A)，将A->α加入到M[A, a]'
+    : '如果ε ∈ First(A)，对于Follow(A)中的每个终结符b，将A->ε加入到M[A, b]'
+
+  // 获取具体的集合信息
+  const production = step.productions[0]
+  const [nonTerminal, rightPart] = production.split('->')
+
+  let firstSetInfo = ''
+  let followSetInfo = ''
+  let terminalList = ''
+
+  if (step.type === 'first') {
+    // First集规则：显示First(α)中的终结符
+    const firstSet = calculateFirstSetForProduction(rightPart)
+    const terminals = firstSet.filter(s => s !== 'ε')
+    firstSetInfo = `First(${rightPart}) = {${firstSet.join(', ')}}`
+    terminalList = `终结符：{${terminals.join(', ')}}`
+  } else {
+    // Follow集规则：显示Follow(A)中的终结符
+    const followSet = originalData.value?.follow[nonTerminal] || []
+    followSetInfo = `Follow(${nonTerminal}) = {${followSet.join(', ')}}`
+    terminalList = `终结符：{${followSet.join(', ')}}`
+  }
+
+  const details = `根据LL1分析表构建规则：${ruleDescription}。
+
+当前处理产生式：${production}
+${firstSetInfo}
+${followSetInfo}
+${terminalList}
+
+将在表格中填写：${step.tableEntries.map(entry => `M[${entry.nonTerminal}, ${entry.terminal}] = ${entry.production}`).join(', ')}`
+
+  showHintModal(
+    'hint',
+    `${stepType}提示`,
+    step.description,
+    details,
+    '观察高亮区域，理解构建依据',
+    5000,
+    'bottom-left'
+  )
+
+  // 清除之前的高亮
   Object.keys(productionHighlightState.value).forEach(key => {
     productionHighlightState.value[key] = false
   })
@@ -1035,6 +1200,65 @@ const executeTableHintAnimation = async () => {
   Object.keys(symbolHighlightState.value).forEach(key => {
     symbolHighlightState.value[key] = false
   })
+  Object.keys(tableCellHighlightState.value).forEach(key => {
+    tableCellHighlightState.value[key] = false
+  })
+
+  // 高亮相关产生式
+  step.productions.forEach(prod => {
+    productionHighlightState.value[prod] = true
+  })
+
+  // 高亮相关规则
+  step.rules.forEach(rule => {
+    ruleHighlightState.value[rule] = true
+  })
+
+  // 高亮相关符号
+  step.symbols.forEach(sym => {
+    symbolHighlightState.value[sym] = true
+  })
+
+  await new Promise(resolve => setTimeout(resolve, 1500 / animationSpeed.value))
+
+  // 执行表格项飞行动画
+  for (const entry of step.tableEntries) {
+    // 高亮目标表格单元格
+    tableCellHighlightState.value[`${entry.nonTerminal}|${entry.terminal}`] = true
+    await executeTableFlyingAnimation(entry.nonTerminal, entry.terminal, entry.production)
+    // 清除表格单元格高亮
+    tableCellHighlightState.value[`${entry.nonTerminal}|${entry.terminal}`] = false
+    await new Promise(resolve => setTimeout(resolve, 500 / animationSpeed.value))
+  }
+
+  // 清除高亮
+  step.productions.forEach(prod => {
+    productionHighlightState.value[prod] = false
+  })
+  step.rules.forEach(rule => {
+    ruleHighlightState.value[rule] = false
+  })
+  step.symbols.forEach(sym => {
+    symbolHighlightState.value[sym] = false
+  })
+
+  // 移动到下一个提示步骤
+  currentHintStepIndex.value++
+
+  // 如果完成了所有步骤，显示完成提示
+  if (currentHintStepIndex.value >= hint.steps.length) {
+    setTimeout(() => {
+      showHintModal(
+        'success',
+        '提示完成',
+        '所有LL1分析表构建步骤已完成！',
+        '您已经了解了所有产生式的First集和Follow集规则应用过程。现在可以尝试独立完成分析表的构建。',
+        '提示步骤全部完成',
+        5000,
+        'center'
+      )
+    }, 800)
+  }
 
   hintState.value.isActive = false
 }
@@ -1074,7 +1298,7 @@ const executeTableFlyingAnimation = async (nonTerminal: string, terminal: string
   }
 
   // 等待飞行动画完成
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  await new Promise(resolve => setTimeout(resolve, 2000 / animationSpeed.value))
 
   // 动画完成后自动填写
   const key = `${nonTerminal}|${terminal}`
@@ -1105,6 +1329,9 @@ const clearAllStates = () => {
   hintState.value.currentStep = 0
   hintState.value.totalSteps = 0
 
+  // 重置提示步骤索引
+  currentHintStepIndex.value = 0
+
   // 清空所有高亮状态
   Object.keys(productionHighlightState.value).forEach(key => {
     productionHighlightState.value[key] = false
@@ -1123,10 +1350,15 @@ const clearAllStates = () => {
   flyingSymbols.value = []
 
   // 显示清空成功提示
-  copyTip.value = '状态已清空'
-  setTimeout(() => {
-    copyTip.value = ''
-  }, 2000)
+  showHintModal(
+    'info',
+    '状态已清空',
+    '所有用户输入和提示状态已重置。',
+    '您可以重新开始填写LL1分析表，或使用提示功能了解构建过程。',
+    '状态重置完成',
+    3000,
+    'bottom-left'
+  )
 }
 </script>
 
@@ -1156,6 +1388,11 @@ const clearAllStates = () => {
 /* 飞行动画过渡效果 */
 .fixed {
   transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 动态动画速度控制 */
+.fixed[style*="transition"] {
+  transition-duration: calc(2s / var(--animation-speed, 1));
 }
 
 /* 高亮动画效果 */

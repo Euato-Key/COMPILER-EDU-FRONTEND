@@ -533,31 +533,40 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">输入串分析表（答题区）</h3>
 
             <!-- 动画速度控制 -->
-            <div class="flex items-center gap-2 mb-4">
-              <span class="text-sm text-gray-600">动画速度</span>
-                              <button
+            <div class="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 shadow-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
+                </div>
+                <span class="text-sm font-semibold text-green-700">动画速度</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
                   @click="decreaseAnimationSpeed"
                   :disabled="animationSpeed <= 0.25"
-                  class="w-6 h-6 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                  class="w-8 h-8 rounded-lg border-2 border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
                 >
-                <Icon icon="lucide:minus" class="w-3 h-3 text-gray-600" />
-              </button>
-              <span class="text-sm font-mono text-gray-800 min-w-[2.5rem] text-center">
-                {{ (animationSpeed * 100).toFixed(0) }}%
-              </span>
-              <button
-                @click="increaseAnimationSpeed"
-                :disabled="animationSpeed >= 2.0"
-                class="w-6 h-6 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              >
-                <Icon icon="lucide:plus" class="w-3 h-3 text-gray-600" />
-              </button>
-              <button
-                @click="resetAnimationSpeed"
-                class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
-              >
-                重置
-              </button>
+                  <Icon icon="lucide:minus" class="w-4 h-4 text-green-600" />
+                </button>
+                <div class="bg-white px-3 py-1.5 rounded-lg border-2 border-green-300 shadow-sm">
+                  <span class="text-base font-bold text-green-700 min-w-[2.5rem] text-center">
+                    {{ (animationSpeed * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <button
+                  @click="increaseAnimationSpeed"
+                  :disabled="animationSpeed >= 2.0"
+                  class="w-8 h-8 rounded-lg border-2 border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:plus" class="w-4 h-4 text-green-600" />
+                </button>
+                <button
+                  @click="resetAnimationSpeed"
+                  class="px-3 py-1.5 text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-sm"
+                >
+                  重置
+                </button>
+              </div>
             </div>
 
             <!-- 操作按钮 -->
