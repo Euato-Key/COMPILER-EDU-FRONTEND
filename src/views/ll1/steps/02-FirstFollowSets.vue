@@ -270,7 +270,9 @@
                       getInputClass('first', symbol)
                     ]"
                     @focus="clearValidation('first', symbol)"
-                        :data-input="symbol"
+                    @dragover.prevent
+                    @drop="onDrop($event, 'first', symbol)"
+                    :data-input="symbol"
                   />
                   <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
                     <Icon
@@ -382,6 +384,8 @@
                     ]"
                     :data-input="`follow-${symbol}`"
                     @focus="clearValidation('follow', symbol)"
+                    @dragover.prevent
+                    @drop="onDrop($event, 'follow', symbol)"
                   />
                   <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
                     <Icon
@@ -783,6 +787,28 @@ const clearFollowSets = () => {
 function onDragStart(symbol: string, event: DragEvent) {
   // 将符号内容写入拖拽数据
   event.dataTransfer?.setData('text/plain', symbol)
+}
+
+// 拖拽放置事件处理函数
+function onDrop(event: DragEvent, type: 'first' | 'follow', symbol: string) {
+  event.preventDefault()
+
+  const draggedSymbol = event.dataTransfer?.getData('text/plain')
+  if (!draggedSymbol) return
+
+  // 根据类型选择对应的数据对象
+  const dataObject = type === 'first' ? userFirstSets : userFollowSets
+  const currentValue = dataObject.value[symbol] || ''
+
+  // 检查符号是否已经存在
+  const currentSymbols = currentValue.split(' ').filter(s => s.trim())
+  if (currentSymbols.includes(draggedSymbol)) {
+    return // 符号已存在，不重复添加
+  }
+
+  // 添加新符号，自动添加空格分隔
+  const newValue = currentValue ? `${currentValue} ${draggedSymbol}` : draggedSymbol
+  dataObject.value[symbol] = newValue
 }
 
 // 双击符号卡片复制到剪贴板并弹出提示
