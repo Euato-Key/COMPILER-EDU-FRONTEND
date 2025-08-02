@@ -11,6 +11,7 @@
         @pause="animationControl.pause"
         @reset="animationControl.reset"
         @step="animationControl.step"
+        @step-back="animationControl.stepBack"
         @speed-change="animationControl.setSpeed"
       />
     </div>

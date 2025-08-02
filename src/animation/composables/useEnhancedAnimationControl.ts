@@ -91,6 +91,14 @@ export function useEnhancedAnimationControl(totalSteps: Ref<number>) {
     }
   }
 
+  const stepBack = () => {
+    if (currentStep.value > 0) {
+      currentStep.value--
+      isPlaying.value = false
+      pendingAnimations.value.clear()
+    }
+  }
+
   const setSpeed = (newSpeed: number) => {
     speed.value = newSpeed
     if (timeline.value) {
@@ -262,6 +270,7 @@ export function useEnhancedAnimationControl(totalSteps: Ref<number>) {
     pause,
     reset,
     step,
+    stepBack,
     setSpeed,
     createCoordinatedTimeline,
     trackAnimationCompletion,
