@@ -380,7 +380,7 @@
                       :key="terminal"
                       class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700 transition-colors"
                       :class="{
-                        'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintCol === terminal
+                        'bg-orange-200 font-bold': hintActive && hintCol === terminal
                       }"
                     >
                       {{ terminal }}
@@ -392,7 +392,7 @@
                     <td
                       class="border border-gray-300 px-3 py-2 font-mono font-semibold text-blue-700 transition-colors"
                       :class="{
-                        'bg-yellow-100 ring-2 ring-yellow-400': hintActive && hintRow === nonTerminal
+                        'bg-orange-200': hintActive && hintRow === nonTerminal
                       }"
                     >
                       {{ nonTerminal }}
@@ -405,9 +405,9 @@
                       :class="{
                         'cursor-pointer hover:bg-blue-50': !isAnalysisComplete,
                         'cursor-not-allowed opacity-50': isAnalysisComplete,
-                        'bg-yellow-100 ring-2 ring-yellow-400':
+                        'bg-red-300 font-bold':
                           hintActive && hintRow === nonTerminal && hintCol === terminal,
-                        'bg-yellow-50': hintActive && (hintRow === nonTerminal || hintCol === terminal) && !(hintRow === nonTerminal && hintCol === terminal),
+                        'bg-orange-100': hintActive && (hintRow === nonTerminal || hintCol === terminal) && !(hintRow === nonTerminal && hintCol === terminal),
                       }"
                       @dblclick="onLL1CellDblClick(nonTerminal, terminal)"
                     >

@@ -228,12 +228,18 @@
                     <th
                       v-for="terminal in terminals"
                       :key="terminal"
-                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50"
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50 transition-colors"
+                      :class="{
+                        'bg-orange-200 font-bold': hintActive && hintCol === terminal
+                      }"
                     >
                       {{ terminal }}
                     </th>
                     <th
-                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50"
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50 transition-colors"
+                      :class="{
+                        'bg-orange-200 font-bold': hintActive && hintCol === '#'
+                      }"
                     >
                       #
                     </th>
@@ -241,7 +247,10 @@
                     <th
                       v-for="nonterminal in nonterminals"
                       :key="nonterminal"
-                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50"
+                      class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50 transition-colors"
+                      :class="{
+                        'bg-orange-200 font-bold': hintActive && hintGotoCol === nonterminal
+                      }"
                     >
                       {{ nonterminal }}
                     </th>
@@ -256,7 +265,10 @@
                     class="hover:bg-gray-50"
                   >
                     <td
-                      class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
+                      class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center transition-colors"
+                      :class="{
+                        'bg-orange-200': hintActive && hintRow === stateIndex - 1
+                      }"
                     >
                       {{ stateIndex - 1 }}
                     </td>
@@ -267,9 +279,15 @@
                       :key="`action-${stateIndex - 1}-${terminal}`"
                       :data-action-cell="`${stateIndex - 1}|${terminal}`"
                       :class="[
-                        'px-2 py-1 border border-gray-300 text-xs text-center',
+                        'px-2 py-1 border border-gray-300 text-xs text-center transition-colors',
                         highlightCell.row === stateIndex - 1 && highlightCell.col === terminal
-                          ? 'bg-orange-300 ring-4 ring-orange-500'
+                          ? 'bg-orange-300'
+                          : '',
+                        hintActive && hintRow === stateIndex - 1 && hintCol === terminal
+                          ? 'bg-red-300 font-bold'
+                          : '',
+                        hintActive && (hintRow === stateIndex - 1 || hintCol === terminal) && !(hintRow === stateIndex - 1 && hintCol === terminal)
+                          ? 'bg-orange-100'
                           : '',
                       ]"
                     >
@@ -282,9 +300,15 @@
                       :key="`goto-${stateIndex - 1}-${nonterminal}`"
                       :data-goto-cell="`${stateIndex - 1}|${nonterminal}`"
                       :class="[
-                        'px-2 py-1 border border-gray-300 text-xs text-center',
+                        'px-2 py-1 border border-gray-300 text-xs text-center transition-colors',
                         highlightGoto.row === stateIndex - 1 && highlightGoto.col === nonterminal
-                          ? 'bg-orange-300 ring-4 ring-orange-500'
+                          ? 'bg-orange-300'
+                          : '',
+                        hintActive && hintGotoRow === stateIndex - 1 && hintGotoCol === nonterminal
+                          ? 'bg-red-300 font-bold'
+                          : '',
+                        hintActive && (hintGotoRow === stateIndex - 1 || hintGotoCol === nonterminal) && !(hintGotoRow === stateIndex - 1 && hintGotoCol === nonterminal)
+                          ? 'bg-orange-100'
                           : '',
                       ]"
                     >
@@ -522,12 +546,16 @@
                 <h4 class="font-medium text-orange-900 mb-1">查表依据</h4>
                 <div class="text-xs text-orange-700 space-y-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <div class="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded"></div>
+                    <div class="w-3 h-3 bg-orange-200 border border-orange-500 rounded"></div>
                     <span>高亮状态栈顶</span>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded"></div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 bg-orange-200 border border-orange-500 rounded"></div>
                     <span>高亮输入串首</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-red-200 border border-red-500 rounded"></div>
+                    <span>高亮查表位置</span>
                   </div>
                 </div>
               </div>
@@ -771,6 +799,10 @@ const showAnswers = ref(false)
 // 1. 新增动画相关状态变量
 const hintActive = ref(false)
 const hintStepIndex = ref(1)
+const hintRow = ref(-1)
+const hintCol = ref('')
+const hintGotoRow = ref(-1)
+const hintGotoCol = ref('')
 const highlightRow = ref(-1)
 const highlightCol = ref('')
 const highlightCell = ref({ row: -1, col: '' })
@@ -1170,6 +1202,10 @@ const showErrorHint = async () => {
 function clearHighlight() {
   highlightRow.value = -1
   highlightCol.value = ''
+  hintRow.value = -1
+  hintCol.value = ''
+  hintGotoRow.value = -1
+  hintGotoCol.value = ''
   highlightCell.value = { row: -1, col: '' }
   highlightGoto.value = { row: -1, col: '' }
   highlightProduction.value = -1
@@ -1253,6 +1289,10 @@ const executeShiftAnimation = async () => {
   highlightRow.value = Number(state)
   highlightCol.value = symbol
   highlightCell.value = { row: Number(state), col: symbol }
+
+  // 设置十字高亮
+  hintRow.value = Number(state)
+  hintCol.value = symbol
 
   showHintModal(
     'hint',
@@ -1357,6 +1397,10 @@ const executeReduceAnimation = async () => {
   highlightCol.value = symbol
   highlightCell.value = { row: Number(state), col: symbol }
 
+  // 设置十字高亮
+  hintRow.value = Number(state)
+  hintCol.value = symbol
+
   showHintModal(
     'hint',
     '规约动作',
@@ -1430,6 +1474,10 @@ const executeReduceAnimation = async () => {
     gotoState = nextStateStack[nextStateStack.length - 1]
 
     highlightGoto.value = { row: Number(prevState), col: left }
+
+    // 设置GOTO表十字高亮
+    hintGotoRow.value = Number(prevState)
+    hintGotoCol.value = left
 
     showHintModal(
       'hint',
@@ -2023,6 +2071,10 @@ const executeAcceptAnimation = async () => {
   highlightRow.value = Number(state)
   highlightCol.value = '#'
   highlightCell.value = { row: Number(state), col: '#' }
+
+  // 设置十字高亮
+  hintRow.value = Number(state)
+  hintCol.value = '#'
 
   showHintModal(
     'success',
