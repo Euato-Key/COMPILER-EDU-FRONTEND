@@ -594,6 +594,19 @@
         </div>
       </div>
     </transition>
+
+    <!-- 动画提示弹窗 -->
+    <AnimationHintModal
+      :visible="hintModalVisible"
+      :type="hintModalConfig.type"
+      :title="hintModalConfig.title"
+      :message="hintModalConfig.message"
+      :details="hintModalConfig.details"
+      :action="hintModalConfig.action"
+      :duration="hintModalConfig.duration"
+      :position="hintModalConfig.position"
+      @close="closeHintModal"
+    />
   </div>
 </template>
 
@@ -601,6 +614,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useLL1Store } from '@/stores/ll1'
+import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
 defineEmits<{
   'next-step': []
@@ -643,6 +657,18 @@ const hintState = ref({
   flyingSymbols: [] as { symbol: string; target: string; x: number; y: number }[]
 })
 
+// 动画提示弹窗状态
+const hintModalVisible = ref(false)
+const hintModalConfig = ref({
+  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: '',
+  message: '',
+  details: '',
+  action: '',
+  duration: 3000,
+  position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+})
+
 // 高亮状态
 const symbolHighlightState = ref<Record<string, boolean>>({})
 const productionHighlightState = ref<Record<string, boolean>>({})
@@ -674,6 +700,33 @@ const allCompleted = computed(() => {
 // 复制提示
 const copyTip = ref('')
 let copyTipTimer: number | null = null
+
+// 显示动画提示弹窗
+const showHintModal = (
+  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: string,
+  message: string,
+  details?: string,
+  action?: string,
+  duration = 3000,
+  position = 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+) => {
+  hintModalConfig.value = {
+    type,
+    title,
+    message,
+    details: details || '',
+    action: action || '',
+    duration,
+    position
+  }
+  hintModalVisible.value = true
+}
+
+// 关闭动画提示弹窗
+const closeHintModal = () => {
+  hintModalVisible.value = false
+}
 
 // 工具函数
 const areCharacterSetsEqual = (str1: string, str2: string): boolean => {
@@ -723,16 +776,54 @@ const checkFirstSets = async () => {
   firstAttempts.value++ // 尝试次数加1
 
   try {
+    let correctCount = 0
+    let totalCount = 0
+
     for (const symbol of originalData.value.Vn) {
       const userInput = userFirstSets.value[symbol] || ''
       const correctSet = correctFirstSets.value[symbol] || []
       const correctSetStr = correctSet.join(' ')
+      totalCount++
 
       if (areCharacterSetsEqual(userInput, correctSetStr)) {
         firstValidation.value[symbol] = 'correct'
+        correctCount++
       } else {
         firstValidation.value[symbol] = 'incorrect'
       }
+    }
+
+    // 显示校验结果弹窗
+    if (correctCount === totalCount) {
+      showHintModal(
+        'success',
+        'First集校验成功',
+        '恭喜！所有First集都填写正确。',
+        `您已成功计算了所有非终结符的First集，共${totalCount}个符号全部正确。
+
+First集是LL1分析表构建的基础，接下来可以继续计算Follow集。`,
+        'First集计算完成',
+        5000,
+        'center'
+      )
+    } else {
+      const errorCount = totalCount - correctCount
+      showHintModal(
+        'error',
+        'First集校验失败',
+        `还有${errorCount}个First集填写错误，请检查并修正。`,
+        `正确填写：${correctCount}/${totalCount}
+错误填写：${errorCount}
+
+请仔细检查错误项，确保：
+1. 符号大小写正确
+2. 多个符号用空格分隔
+3. 空串用ε表示
+4. 按照First集计算规则填写`,
+        '请修正错误',
+        5000,
+        'bottom-left'
+      )
     }
   } finally {
     loading.value.first = false
@@ -745,16 +836,54 @@ const checkFollowSets = async () => {
   loading.value.follow = true
 
   try {
+    let correctCount = 0
+    let totalCount = 0
+
     for (const symbol of originalData.value.Vn) {
       const userInput = userFollowSets.value[symbol] || ''
       const correctSet = correctFollowSets.value[symbol] || []
       const correctSetStr = correctSet.join(' ')
+      totalCount++
 
       if (areCharacterSetsEqual(userInput, correctSetStr)) {
         followValidation.value[symbol] = 'correct'
+        correctCount++
       } else {
         followValidation.value[symbol] = 'incorrect'
       }
+    }
+
+    // 显示校验结果弹窗
+    if (correctCount === totalCount) {
+      showHintModal(
+        'success',
+        'Follow集校验成功',
+        '恭喜！所有Follow集都填写正确。',
+        `您已成功计算了所有非终结符的Follow集，共${totalCount}个符号全部正确。
+
+First集和Follow集都已计算完成，可以进入下一步构建LL1分析表。`,
+        'Follow集计算完成',
+        5000,
+        'center'
+      )
+    } else {
+      const errorCount = totalCount - correctCount
+      showHintModal(
+        'error',
+        'Follow集校验失败',
+        `还有${errorCount}个Follow集填写错误，请检查并修正。`,
+        `正确填写：${correctCount}/${totalCount}
+错误填写：${errorCount}
+
+请仔细检查错误项，确保：
+1. 符号大小写正确
+2. 多个符号用空格分隔
+3. 输入结束符用#表示
+4. 按照Follow集计算规则填写`,
+        '请修正错误',
+        5000,
+        'bottom-left'
+      )
     }
   } finally {
     loading.value.follow = false
@@ -770,6 +899,16 @@ const clearFirstSets = () => {
     })
     showFirstAnswer.value = false
     firstAttempts.value = 0 // 重置尝试次数
+
+    showHintModal(
+      'info',
+      'First集已清空',
+      '所有First集输入已重置。',
+      '您可以重新开始填写First集，或使用提示功能了解计算过程。',
+      '状态重置完成',
+      3000,
+      'bottom-left'
+    )
   }
 }
 
@@ -780,6 +919,16 @@ const clearFollowSets = () => {
       followValidation.value[symbol] = ''
     })
     showFollowAnswer.value = false
+
+    showHintModal(
+      'info',
+      'Follow集已清空',
+      '所有Follow集输入已重置。',
+      '您可以重新开始填写Follow集，或使用提示功能了解计算过程。',
+      '状态重置完成',
+      3000,
+      'bottom-left'
+    )
   }
 }
 
@@ -1187,6 +1336,31 @@ const executeHintAnimation = async (symbol: string) => {
   const hint = calculateFirstSetHint(symbol)
   if (!hint) return
 
+  // 显示提示弹窗
+  const stepType = 'First集计算'
+
+  // 获取该符号的所有产生式
+  const productions = originalData.value.formulas_dict[symbol] || []
+  const productionList = productions.map(prod => `${symbol}->${prod}`).join(', ')
+
+  const details = `正在计算 ${symbol} 的First集：
+
+产生式数量：${hint.steps.length}
+相关产生式：${productionList}
+计算规则：根据产生式右部的符号类型，应用相应的First集计算规则
+
+将逐步显示每个产生式的计算过程，帮助您理解First集的计算方法。`
+
+  showHintModal(
+    'hint',
+    `${stepType}提示`,
+    `开始计算 ${symbol} 的First集`,
+    details,
+    '观察高亮区域，理解计算过程',
+    4000,
+    'bottom-left'
+  )
+
   // 1. 高亮当前符号
   symbolHighlightState.value[symbol] = true
   await new Promise(resolve => setTimeout(resolve, 1000))
@@ -1194,6 +1368,57 @@ const executeHintAnimation = async (symbol: string) => {
   // 2. 逐步执行每个步骤，一次只显示一个符号
   for (let i = 0; i < hint.steps.length; i++) {
     const step = hint.steps[i]
+
+    // 显示步骤详情弹窗
+    let stepDetails = `步骤 ${i + 1}/${hint.steps.length}：
+${step.description}
+
+相关产生式：${step.productions.join(', ')}
+应用规则：${step.rules.join(', ')}
+最终符号：${step.finalSymbols.join(', ')}`
+
+    // 添加具体的依据值
+    if (step.type === 'terminal') {
+      const terminal = step.finalSymbols[0]
+      stepDetails += `
+
+具体依据：
+• 终结符 ${terminal}：First(${terminal}) = {${terminal}}
+• 根据规则：终结符X的First集就是{X}本身`
+    } else if (step.type === 'epsilon') {
+      stepDetails += `
+
+具体依据：
+• 产生式 ${symbol}→ε：空串ε ∈ First(${symbol})
+• 根据规则：产生式右部为ε时，ε ∈ First(左部符号)`
+    } else if (step.type === 'production') {
+      const production = step.productions[0]
+      const [, rightPart] = production.split('->')
+      const firstChar = rightPart[0]
+
+      // 获取First集的具体值
+      const firstSetOfFirstChar = calculateFirstSetForSymbol(firstChar)
+      const nonEpsilonSymbols = firstSetOfFirstChar.filter(s => s !== 'ε')
+
+      stepDetails += `
+
+具体依据：
+• 产生式：${production}
+• 右部第一个符号：${firstChar}
+• First(${firstChar}) = {${firstSetOfFirstChar.join(', ')}}
+• 非ε符号：{${nonEpsilonSymbols.join(', ')}}
+• 根据规则：First(Y₁)中非ε符号 ∈ First(X)`
+    }
+
+    showHintModal(
+      'hint',
+      '计算步骤',
+      step.description,
+      stepDetails,
+      '观察高亮和飞行动画',
+      3000,
+      'bottom-left'
+    )
 
     // 高亮相关产生式
     step.productions.forEach(prod => {
@@ -1240,6 +1465,24 @@ const executeHintAnimation = async (symbol: string) => {
     // 等待更长时间，让用户看清每个符号
     await new Promise(resolve => setTimeout(resolve, 800))
   }
+
+  // 显示完成提示
+  showHintModal(
+    'success',
+    'First集计算完成',
+    `${symbol} 的First集计算完成！`,
+    `已通过${hint.steps.length}个步骤计算出 ${symbol} 的First集。
+
+计算过程包括：
+- 分析所有相关产生式
+- 应用First集计算规则
+- 确定最终符号集合
+
+现在您可以将计算结果填入输入框。`,
+    '计算过程完成',
+    4000,
+    'center'
+  )
 
   // 清除所有高亮
   Object.keys(symbolHighlightState.value).forEach(key => {
@@ -1415,9 +1658,113 @@ const executeFollowHintAnimation = async (symbol: string) => {
   hintState.value.isActive = true
   console.log(`执行 ${symbol} 的Follow集提示动画:`, hintData)
 
+  // 显示提示弹窗
+  const stepType = 'Follow集计算'
+
+  // 获取相关的产生式信息
+  const relatedProductions: string[] = []
+  if (originalData.value) {
+    for (const [leftSymbol, rightParts] of Object.entries(originalData.value.formulas_dict)) {
+      for (const rightPart of rightParts) {
+        if (rightPart.includes(symbol)) {
+          relatedProductions.push(`${leftSymbol}->${rightPart}`)
+        }
+      }
+    }
+  }
+  const productionList = relatedProductions.join(', ')
+
+  const details = `正在计算 ${symbol} 的Follow集：
+
+推导步骤数量：${hintData.steps.length}
+相关产生式：${productionList}
+计算规则：根据产生式中符号的位置，应用相应的Follow集计算规则
+
+将逐步显示每个推导步骤，帮助您理解Follow集的计算方法。`
+
+  showHintModal(
+    'hint',
+    `${stepType}提示`,
+    `开始计算 ${symbol} 的Follow集`,
+    details,
+    '观察高亮区域，理解计算过程',
+    4000,
+    'bottom-left'
+  )
+
   // 逐个执行每个步骤
-  for (const step of hintData.steps) {
+  for (let i = 0; i < hintData.steps.length; i++) {
+    const step = hintData.steps[i]
     console.log(`执行步骤: ${step.description}`)
+
+    // 显示步骤详情弹窗
+    let stepDetails = `步骤 ${i + 1}/${hintData.steps.length}：
+${step.description}
+
+相关产生式：${step.productions.join(', ')}
+应用规则：${step.rules.join(', ')}
+最终符号：${step.finalSymbols.join(', ')}`
+
+    // 添加具体的依据值
+    if (step.type === 'start') {
+      stepDetails += `
+
+具体依据：
+• 开始符号：${symbol}
+• 根据规则：开始符号S的Follow集包含输入结束符#
+• Follow(${symbol}) = {#}`
+    } else if (step.type === 'production') {
+      const production = step.productions[0]
+      const [, rightPart] = production.split('->')
+
+      // 找到目标符号在产生式中的位置
+      let targetIndex = -1
+      for (let i = 0; i < rightPart.length; i++) {
+        if (rightPart[i] === symbol) {
+          targetIndex = i
+          break
+        }
+      }
+
+      if (targetIndex !== -1 && targetIndex < rightPart.length - 1) {
+        const beta = rightPart.substring(targetIndex + 1)
+        const firstSetOfBeta = calculateStringFirstSet(beta)
+        const nonEpsilonSymbols = firstSetOfBeta.filter(s => s !== 'ε')
+
+        stepDetails += `
+
+具体依据：
+• 产生式：${production}
+• 目标符号 ${symbol} 位置：${targetIndex + 1}
+• β = ${beta}（${symbol} 后面的部分）
+• First(${beta}) = {${firstSetOfBeta.join(', ')}}
+• 非ε符号：{${nonEpsilonSymbols.join(', ')}}
+• 根据规则：First(β)中非ε符号 ∈ Follow(${symbol})`
+      }
+    } else if (step.type === 'inclusion') {
+      const production = step.productions[0]
+      const [leftSymbol] = production.split('->')
+      const followSetOfLeft = originalData.value?.follow[leftSymbol] || []
+
+      stepDetails += `
+
+具体依据：
+• 产生式：${production}
+• 左部符号：${leftSymbol}
+• Follow(${leftSymbol}) = {${followSetOfLeft.join(', ')}}
+• 根据规则：Follow(A) ⊆ Follow(B)
+• 因此：Follow(${leftSymbol}) ⊆ Follow(${symbol})`
+    }
+
+    showHintModal(
+      'hint',
+      '推导步骤',
+      step.description,
+      stepDetails,
+      '观察高亮和飞行动画',
+      3000,
+      'bottom-left'
+    )
 
     // 高亮相关元素
     step.productions.forEach(prod => {
@@ -1466,6 +1813,24 @@ const executeFollowHintAnimation = async (symbol: string) => {
     // 等待更长时间，让用户看清每个步骤
     await new Promise(resolve => setTimeout(resolve, 800))
   }
+
+  // 显示完成提示
+  showHintModal(
+    'success',
+    'Follow集计算完成',
+    `${symbol} 的Follow集计算完成！`,
+    `已通过${hintData.steps.length}个步骤计算出 ${symbol} 的Follow集。
+
+计算过程包括：
+- 分析所有相关产生式
+- 应用Follow集计算规则
+- 确定最终符号集合
+
+现在您可以将计算结果填入输入框。`,
+    '计算过程完成',
+    4000,
+    'center'
+  )
 
   // 清除所有高亮
   Object.keys(symbolHighlightState.value).forEach(key => {
