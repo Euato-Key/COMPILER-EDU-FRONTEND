@@ -1,9 +1,9 @@
 <template>
-  <div class="ai-chat-window bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col">
+  <div class="ai-chat-window theme-content-bg border rounded-lg shadow-lg flex flex-col theme-transition">
     <!-- 聊天窗口头部 -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+    <div class="flex items-center justify-between p-4 border-b theme-step-bg">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+        <div class="w-8 h-8 theme-btn-primary rounded-full flex items-center justify-center">
           <Icon icon="lucide:bot" class="w-5 h-5 text-white" />
         </div>
         <div>
@@ -37,8 +37,8 @@
     >
       <!-- 欢迎消息 -->
       <div v-if="messages.length === 0" class="text-center py-8">
-        <div class="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Icon icon="lucide:message-circle" class="w-8 h-8 text-blue-600" />
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Icon icon="lucide:message-circle" class="w-8 h-8 theme-text-primary" />
         </div>
         <h4 class="font-medium text-gray-900 mb-2">欢迎使用AI教学助手</h4>
         <p class="text-sm text-gray-500 mb-4">我可以帮助您理解编译原理的概念和算法</p>
@@ -51,7 +51,7 @@
               v-for="question in presetQuestions"
               :key="question"
               @click="sendPresetQuestion(question)"
-              class="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+              class="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors border border-blue-200 hover:border-blue-300"
             >
               {{ question }}
             </button>
@@ -71,17 +71,17 @@
         >
           <!-- 用户消息 -->
           <div v-if="message.role === 'user'" class="flex items-end gap-2 max-w-[80%]">
-            <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl rounded-br-md flex-1 min-w-0">
+            <div class="theme-btn-primary text-white px-4 py-2 rounded-2xl rounded-br-md flex-1 min-w-0">
               <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
             </div>
-            <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <div class="w-6 h-6 theme-btn-primary rounded-full flex items-center justify-center flex-shrink-0">
               <Icon icon="lucide:user" class="w-3 h-3 text-white" />
             </div>
           </div>
 
           <!-- AI消息 -->
           <div v-else-if="message.role === 'assistant'" class="flex items-start gap-2 max-w-[80%]">
-            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <div class="w-6 h-6 theme-btn-primary rounded-full flex items-center justify-center flex-shrink-0">
               <Icon icon="lucide:bot" class="w-3 h-3 text-white" />
             </div>
             <div class="flex-1 min-w-0">
@@ -104,7 +104,7 @@
 
         <!-- 流式输出 -->
         <div v-if="isStreaming" class="flex items-start gap-2 max-w-[80%]">
-          <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <div class="w-6 h-6 theme-btn-primary rounded-full flex items-center justify-center flex-shrink-0">
             <Icon icon="lucide:bot" class="w-3 h-3 text-white" />
           </div>
           <div class="flex-1 min-w-0">
@@ -149,7 +149,7 @@
             v-model="inputMessage"
             @keydown="handleKeydown"
             placeholder=""
-            class="w-full px-3 py-2 pr-24 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full px-3 py-2 pr-24 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-theme-primary focus:border-transparent"
             :rows="inputRows"
             :disabled="isStreaming"
           ></textarea>
@@ -160,7 +160,7 @@
         <button
           @click="handleSend"
           :disabled="!inputMessage.trim() || isStreaming"
-          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          class="px-4 py-2 theme-btn-primary text-white rounded-lg hover:opacity-90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
           <Icon v-if="isStreaming" icon="lucide:loader-2" class="w-4 h-4 animate-spin" />
           <Icon v-else icon="lucide:send" class="w-4 h-4" />
