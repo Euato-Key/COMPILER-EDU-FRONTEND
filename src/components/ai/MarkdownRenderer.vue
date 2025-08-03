@@ -11,6 +11,8 @@ import { computed, ref, watch, nextTick } from 'vue'
 import MarkdownIt from 'markdown-it'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 
 // Props
 interface Props {
@@ -38,7 +40,19 @@ const themeClass = computed(() => {
 const sizeClass = computed(() => `markdown-size-${props.size}`)
 
 // 创建 markdown-it 实例
-const md = new MarkdownIt()
+const md = new MarkdownIt({
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(str, { language: lang }).value
+      } catch {
+        // 忽略错误，保持原样
+      }
+    }
+    // 如果没有指定语言，返回原样，不进行自动检测
+    return str
+  }
+})
 
 // 自定义表格渲染器
 md.renderer.rules.table_open = function () {
@@ -47,6 +61,47 @@ md.renderer.rules.table_open = function () {
 
 md.renderer.rules.table_close = function () {
   return '</table></div>'
+}
+
+// 自定义代码块渲染器
+md.renderer.rules.fence = function (tokens, idx) {
+  const token = tokens[idx]
+  const lang = token.info.trim()
+  const code = token.content
+
+  // 生成唯一ID
+  const codeId = `code-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+  // 高亮代码
+  let highlightedCode = code
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      highlightedCode = hljs.highlight(code, { language: lang }).value
+    } catch {
+      // 忽略错误，保持原样
+    }
+  } else {
+    // 如果没有指定语言，保持原样，不进行自动检测
+    highlightedCode = code
+  }
+
+  // 获取语言显示名称
+  const langDisplay = lang || 'text'
+
+  return `
+    <div class="code-block-wrapper">
+      <div class="code-header">
+        <span class="code-language">${langDisplay}</span>
+        <button class="copy-button" onclick="copyCode('${codeId}')" title="复制代码">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
+      <pre class="hljs"><code id="${codeId}">${highlightedCode}</code></pre>
+    </div>
+  `
 }
 
 
@@ -110,6 +165,38 @@ const renderContent = async () => {
 
 // 监听内容变化
 watch(() => props.content, renderContent, { immediate: true })
+
+// 复制代码功能
+const copyCode = (codeId: string) => {
+  const codeElement = document.getElementById(codeId)
+  if (codeElement) {
+    const text = codeElement.textContent || ''
+    navigator.clipboard.writeText(text).then(() => {
+      // 显示复制成功提示
+      const button = codeElement.closest('.code-block-wrapper')?.querySelector('.copy-button')
+      if (button) {
+        const originalHTML = button.innerHTML
+        button.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20,6 9,17 4,12"></polyline>
+          </svg>
+        `
+        button.classList.add('copied')
+        setTimeout(() => {
+          button.innerHTML = originalHTML
+          button.classList.remove('copied')
+        }, 2000)
+      }
+    }).catch(err => {
+      console.error('复制失败:', err)
+    })
+  }
+}
+
+// 将复制函数暴露到全局
+if (typeof window !== 'undefined') {
+  ;(window as unknown as Record<string, unknown>).copyCode = copyCode
+}
 </script>
 
 <style scoped>
@@ -462,5 +549,144 @@ watch(() => props.content, renderContent, { immediate: true })
   background-color: rgb(127 29 29 / 0.2);
   border-color: rgb(127 29 29);
   color: rgb(252 165 165);
+}
+
+/* 代码块样式 */
+.markdown-renderer :deep(.code-block-wrapper) {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: rgb(255 255 255);
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+}
+
+.dark .markdown-renderer :deep(.code-block-wrapper) {
+  background-color: rgb(15 23 42);
+  border-color: rgb(51 65 85);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.3);
+}
+
+.markdown-renderer :deep(.code-header) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: rgb(248 250 252);
+  border-bottom: 1px solid rgb(226 232 240);
+  color: rgb(51 65 85);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.dark .markdown-renderer :deep(.code-header) {
+  background-color: rgb(30 41 59);
+  border-bottom-color: rgb(51 65 85);
+  color: rgb(148 163 184);
+}
+
+.markdown-renderer :deep(.code-language) {
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  color: rgb(51 65 85);
+}
+
+.dark .markdown-renderer :deep(.code-language) {
+  color: rgb(148 163 184);
+}
+
+.markdown-renderer :deep(.copy-button) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: transparent;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.25rem;
+  color: rgb(71 85 105);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.markdown-renderer :deep(.copy-button:hover) {
+  background-color: rgb(241 245 249);
+  border-color: rgb(148 163 184);
+  color: rgb(30 41 59);
+}
+
+.dark .markdown-renderer :deep(.copy-button) {
+  border-color: rgb(71 85 105);
+  color: rgb(148 163 184);
+}
+
+.dark .markdown-renderer :deep(.copy-button:hover) {
+  background-color: rgb(51 65 85);
+  border-color: rgb(100 116 139);
+  color: rgb(226 232 240);
+}
+
+.markdown-renderer :deep(.copy-button.copied) {
+  background-color: rgb(34 197 94);
+  border-color: rgb(34 197 94);
+  color: white;
+}
+
+.markdown-renderer :deep(.copy-button.copied:hover) {
+  background-color: rgb(22 163 74);
+  border-color: rgb(22 163 74);
+}
+
+.markdown-renderer :deep(.code-block-wrapper pre) {
+  margin: 0;
+  padding: 1rem;
+  background-color: rgb(255 255 255);
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  color: rgb(17 24 39);
+}
+
+.markdown-renderer :deep(.code-block-wrapper code) {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: rgb(17 24 39);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* 普通代码块样式（没有语言标识的） */
+.markdown-renderer :deep(pre:not(.hljs)) {
+  background: rgb(255 255 255);
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(17 24 39);
+}
+
+.dark .markdown-renderer :deep(pre:not(.hljs)) {
+  background: linear-gradient(135deg, rgb(15 23 42), rgb(30 41 59));
+  border-color: rgb(51 65 85);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.3);
+  color: rgb(226 232 240);
+}
+
+/* 覆盖 highlight.js 的深色背景 */
+.markdown-renderer :deep(.hljs) {
+  background: rgb(255 255 255) !important;
+  color: rgb(17 24 39) !important;
+}
+
+.dark .markdown-renderer :deep(.hljs) {
+  background: rgb(15 23 42) !important;
+  color: rgb(226 232 240) !important;
 }
 </style>
