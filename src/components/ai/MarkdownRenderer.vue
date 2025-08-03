@@ -13,6 +13,7 @@ import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
+import mermaid from 'mermaid'
 
 // Props
 interface Props {
@@ -38,6 +39,14 @@ const themeClass = computed(() => {
 })
 
 const sizeClass = computed(() => `markdown-size-${props.size}`)
+
+// 初始化 mermaid
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+  fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+})
 
 // 创建 markdown-it 实例
 const md = new MarkdownIt({
@@ -71,6 +80,28 @@ md.renderer.rules.fence = function (tokens, idx) {
 
   // 生成唯一ID
   const codeId = `code-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+  // 处理 mermaid 代码块
+  if (lang === 'mermaid') {
+    const mermaidId = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    return `
+      <div class="mermaid-block-wrapper">
+        <div class="mermaid-header">
+          <span class="mermaid-language">MERMAID</span>
+          <button class="copy-button" onclick="copyCode('${codeId}')" title="复制代码">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="mermaid-container">
+          <div class="mermaid" id="${mermaidId}">${code}</div>
+        </div>
+        <pre class="mermaid-code" style="display: none;"><code id="${codeId}">${code}</code></pre>
+      </div>
+    `
+  }
 
   // 高亮代码
   let highlightedCode = code
@@ -155,6 +186,20 @@ const renderContent = async () => {
 
     // 等待DOM更新后执行后续操作
     await nextTick()
+
+    // 渲染 mermaid 图表
+    try {
+      const mermaidElements = document.querySelectorAll('.mermaid')
+      for (const element of mermaidElements) {
+        if (element instanceof HTMLElement) {
+          await mermaid.run({
+            nodes: [element]
+          })
+        }
+      }
+    } catch (error) {
+      console.warn('Mermaid 渲染错误:', error)
+    }
 
   } catch (error) {
     console.error('Markdown渲染错误:', error)
@@ -688,5 +733,77 @@ if (typeof window !== 'undefined') {
 .dark .markdown-renderer :deep(.hljs) {
   background: rgb(15 23 42) !important;
   color: rgb(226 232 240) !important;
+}
+
+/* Mermaid 图表样式 */
+.markdown-renderer :deep(.mermaid-block-wrapper) {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: rgb(255 255 255);
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+}
+
+.dark .markdown-renderer :deep(.mermaid-block-wrapper) {
+  background-color: rgb(15 23 42);
+  border-color: rgb(51 65 85);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.3);
+}
+
+.markdown-renderer :deep(.mermaid-header) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: rgb(248 250 252);
+  border-bottom: 1px solid rgb(226 232 240);
+  color: rgb(51 65 85);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.dark .markdown-renderer :deep(.mermaid-header) {
+  background-color: rgb(30 41 59);
+  border-bottom-color: rgb(51 65 85);
+  color: rgb(148 163 184);
+}
+
+.markdown-renderer :deep(.mermaid-language) {
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  color: rgb(51 65 85);
+}
+
+.dark .markdown-renderer :deep(.mermaid-language) {
+  color: rgb(148 163 184);
+}
+
+.markdown-renderer :deep(.mermaid-container) {
+  padding: 1rem;
+  background-color: rgb(255 255 255);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.dark .markdown-renderer :deep(.mermaid-container) {
+  background-color: rgb(15 23 42);
+}
+
+.markdown-renderer :deep(.mermaid) {
+  width: 100%;
+  text-align: center;
+}
+
+.markdown-renderer :deep(.mermaid svg) {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-renderer :deep(.mermaid-code) {
+  display: none;
 }
 </style>
