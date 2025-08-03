@@ -31,6 +31,7 @@
     "lucide-vue-next": "^0.525.0",
     "markdown-it": "^14.1.0",
     "marked": "^16.1.1",
+    "mermaid": "^11.9.0",
     "openai": "^5.11.0",
     "pinia": "^3.0.3",
     "sass-embedded": "^1.89.2",
