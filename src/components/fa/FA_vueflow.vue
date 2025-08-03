@@ -718,7 +718,7 @@ defineExpose({
     position: absolute;
     top: 10px;
     left: 10px;
-    z-index: 1000;
+    z-index: 10;
     background: rgba(52, 152, 219, 0.9);
     color: white;
     padding: 6px 12px;
@@ -791,7 +791,7 @@ defineExpose({
     position: absolute;
     top: 10px;
     right: 10px;
-    z-index: 1000;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     gap: 4px;
