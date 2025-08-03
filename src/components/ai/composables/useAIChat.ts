@@ -99,6 +99,49 @@ export function useAIChat() {
 
     prompt += '\n\n请根据以上信息，为用户提供有针对性的帮助和解释。回答要简洁明了，重点突出。'
 
+    // 添加图表渲染功能说明
+    prompt += '\n\n重要提示：当前环境支持图表渲染功能！'
+    prompt += '\n\n1. Mermaid图表：你可以使用```mermaid代码块来创建流程图、时序图、甘特图等。例如：'
+    prompt += '\n```mermaid'
+    prompt += '\ngraph LR'
+    prompt += '\n    A[开始] --> B[处理]'
+    prompt += '\n    B --> C[结束]'
+    prompt += '\n```'
+
+    prompt += '\n\n2. Graphviz DOT图表：你可以使用```dot代码块来创建有向图、无向图、状态图等。例如：'
+    prompt += '\n```dot'
+    prompt += '\ndigraph example {'
+    prompt += '\n    A -> B -> C;'
+    prompt += '\n    B -> D;'
+    prompt += '\n}'
+    prompt += '\n```'
+
+    prompt += '\n\n在回答用户问题时，如果可以用图表来更好地展示概念、算法流程、数据结构或关系，请主动使用这些图表功能。图表能够帮助用户更直观地理解复杂的概念。'
+
+    prompt += '\n\n图表选择建议：'
+    prompt += '\n\n默认使用Mermaid图表的情况：'
+    prompt += '\n- 流程图：展示算法流程、决策过程、业务流程'
+    prompt += '\n- 时序图：展示交互时序、消息传递、系统调用'
+    prompt += '\n- 甘特图：展示项目进度、时间安排、任务依赖'
+    prompt += '\n- 类图：展示类关系、对象结构、继承关系'
+    prompt += '\n- 饼图：展示数据分布、比例关系、统计信息'
+    prompt += '\n- 用户旅程图：展示用户体验流程、用户行为'
+    prompt += '\n- Git图：展示版本控制分支、提交历史'
+
+    prompt += '\n\n默认使用Graphviz DOT图表的情况：'
+    prompt += '\n- 自动机图：DFA、NFA、PDA等有限自动机（Graphviz的布局算法特别适合自动机）'
+    prompt += '\n- 语法树：抽象语法树、语法分析树（需要精确的层次结构）'
+    prompt += '\n- 网络拓扑图：计算机网络、系统架构（需要精确的节点位置）'
+    prompt += '\n- 数据库ER图：实体关系图、数据模型（需要专业的图形布局）'
+    prompt += '\n- 复杂状态图：状态转换图、状态机（需要精确的状态布局）'
+    prompt += '\n- 依赖关系图：模块依赖、组件关系（需要清晰的层次结构）'
+
+    prompt += '\n\n特别说明：'
+    prompt += '\n- 对于编译原理中的DFA、NFA等自动机图，优先使用Graphviz DOT，因为其布局算法能够生成更美观、更清晰的自动机图'
+    prompt += '\n- 对于一般的流程图、时序图等，使用Mermaid更简单高效'
+    prompt += '\n- 当需要精确控制节点位置和样式时，使用Graphviz DOT'
+    prompt += '\n- 当需要快速展示简单关系时，使用Mermaid'
+
     return prompt
   }
 
