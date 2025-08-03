@@ -194,19 +194,26 @@ export function useAIChat() {
 
   // 清空聊天记录
   const clearChat = (faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any) => {
+    // 清除所有传入的store
     if (faChatStore) {
       faChatStore.clearChat()
       faChatStore.clearStorage()
-    } else if (ll1ChatStore) {
+    }
+    if (ll1ChatStore) {
       ll1ChatStore.clearChat()
       ll1ChatStore.clearStorage()
-    } else if (lr0ChatStore) {
+    }
+    if (lr0ChatStore) {
       lr0ChatStore.clearChat()
       lr0ChatStore.clearStorage()
-    } else if (slr1ChatStore) {
+    }
+    if (slr1ChatStore) {
       slr1ChatStore.clearChat()
       slr1ChatStore.clearStorage()
-    } else {
+    }
+
+    // 如果没有传入任何store，清除本地状态
+    if (!faChatStore && !ll1ChatStore && !lr0ChatStore && !slr1ChatStore) {
       messages.value = []
       error.value = null
       currentStreamContent.value = ''

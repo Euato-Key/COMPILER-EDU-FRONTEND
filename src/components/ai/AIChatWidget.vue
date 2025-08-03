@@ -8,21 +8,25 @@
         :class="{ 'rotate-180': isExpanded }"
       >
         <Icon
-          :icon="isExpanded ? 'lucide:x' : 'lucide:message-circle'"
-          class="w-6 h-6 transition-transform duration-300"
+          :icon="isExpanded ? 'lucide:x' : 'lucide:sparkles'"
+          class="w-6 h-6 transition-all duration-300"
+          :class="{
+            'animate-pulse': !isExpanded && hasUnreadMessages,
+            'animate-bounce': isExpanded && hasUnreadMessages
+          }"
         />
 
         <!-- 未读消息提示 -->
         <div
           v-if="hasUnreadMessages && !isExpanded"
-          class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"
+          class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center animate-pulse shadow-lg"
         >
-          <span class="text-xs text-white font-bold">{{ unreadCount }}</span>
+          <span class="text-xs text-white font-bold animate-bounce">{{ unreadCount }}</span>
         </div>
 
         <!-- 工具提示 -->
-        <div class="absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-          <div class="bg-gray-900 text-white text-sm px-2 py-1 rounded whitespace-nowrap">
+        <div class="absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none transform scale-95 group-hover:scale-100">
+          <div class="bg-gray-900 text-white text-sm px-2 py-1 rounded whitespace-nowrap shadow-lg">
             {{ isExpanded ? '收起AI助手' : '展开AI助手' }}
           </div>
           <div class="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-r-4 border-r-gray-900 border-t-2 border-t-transparent border-b-2 border-b-transparent"></div>
@@ -32,12 +36,12 @@
 
     <!-- 聊天窗口 -->
     <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0 scale-95 translate-y-4"
-      enter-to-class="opacity-100 scale-100 translate-y-0"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100 scale-100 translate-y-0"
-      leave-to-class="opacity-0 scale-95 translate-y-4"
+      enter-active-class="transition-all duration-500 ease-out"
+      enter-from-class="opacity-0 scale-90 translate-y-8 rotate-2"
+      enter-to-class="opacity-100 scale-100 translate-y-0 rotate-0"
+      leave-active-class="transition-all duration-300 ease-in"
+      leave-from-class="opacity-100 scale-100 translate-y-0 rotate-0"
+      leave-to-class="opacity-0 scale-90 translate-y-8 -rotate-2"
     >
       <div
         v-if="isExpanded"
@@ -46,8 +50,8 @@
         :style="chatWindowStyle"
       >
         <!-- 调整大小手柄 -->
-        <div class="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize" @mousedown="startResize">
-          <div class="absolute bottom-1 right-1 w-4 h-4 border-r-2 border-b-2 border-gray-400"></div>
+        <div class="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize hover:bg-gray-100 rounded-tl-lg transition-colors duration-200" @mousedown="startResize">
+          <div class="absolute bottom-1 right-1 w-4 h-4 border-r-2 border-b-2 border-gray-400 hover:border-gray-600 transition-colors duration-200"></div>
         </div>
 
         <!-- 聊天窗口内容 -->
@@ -191,5 +195,24 @@ watch(() => props.context, (newContext) => {
 .ai-chat-widget textarea,
 .ai-chat-widget input {
   user-select: text;
+}
+
+/* 自定义动画效果 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.ai-chat-widget button:hover {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* 调整大小时的视觉反馈 */
+.ai-chat-widget .cursor-se-resize:active {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 </style>
