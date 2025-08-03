@@ -266,11 +266,12 @@ const {
 } = useAIChat()
 
 // 使用聊天store
-import { useFAChatStore, useLL1ChatStore, useLR0ChatStore, useSLR1ChatStore } from '@/stores'
+import { useFAChatStore, useLL1ChatStore, useLR0ChatStore, useSLR1ChatStore, useHomeChatStore } from '@/stores'
 const faChatStore = useFAChatStore()
 const ll1ChatStore = useLL1ChatStore()
 const lr0ChatStore = useLR0ChatStore()
 const slr1ChatStore = useSLR1ChatStore()
+const homeChatStore = useHomeChatStore()
 
 // 根据页面类型选择store
 const currentStore = computed(() => {
@@ -278,6 +279,7 @@ const currentStore = computed(() => {
   if (props.pageType === 'll1') return ll1ChatStore
   if (props.pageType === 'lr0') return lr0ChatStore
   if (props.pageType === 'slr1') return slr1ChatStore
+  if (props.pageType === 'home') return homeChatStore
   return null
 })
 
@@ -319,7 +321,7 @@ const handleSend = async () => {
     }
 
     // 发送消息到AI
-    await sendMessage(message, props.context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore)
+    await sendMessage(message, props.context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore, homeChatStore)
 
     // 保存到本地存储
     if (currentStore.value) {

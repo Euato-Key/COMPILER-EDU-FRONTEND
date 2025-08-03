@@ -180,12 +180,45 @@
         </div>
       </div>
     </main>
+
+    <!-- AI聊天组件 -->
+    <AIChatWidget
+      page-type="home"
+      :context="chatContext"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+// 定义组件名称
+defineOptions({
+  name: 'HomePage'
+})
+
 import { Icon } from '@iconify/vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
+import { AIChatWidget } from '@/components/ai'
+import { useHomeChatStore } from '@/stores/homeChat'
+import type { ChatContext } from '@/components/ai/types'
+import { ref, onMounted } from 'vue'
+
+// 使用主页AI聊天store
+const homeChatStore = useHomeChatStore()
+
+// 聊天上下文
+const chatContext = ref<ChatContext>({
+  currentPage: 'home',
+  userInput: {},
+  backendData: {},
+  userAnswers: {},
+  pageContext: '编译原理可视化工具主页'
+})
+
+// 组件挂载时的初始化
+onMounted(() => {
+  // 初始化聊天上下文
+  homeChatStore.updateContext(chatContext.value)
+})
 </script>
 
 <style scoped>

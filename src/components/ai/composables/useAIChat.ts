@@ -37,7 +37,7 @@ export function useAIChat() {
   }
 
     // 构建系统提示词
-  const buildSystemPrompt = (context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any): string => {
+  const buildSystemPrompt = (context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any, homeChatStore?: any): string => {
     let prompt = '你是一个编译原理教学助手，专门帮助学生理解编译原理的概念和算法。'
 
     if (context.currentPage) {
@@ -72,6 +72,19 @@ export function useAIChat() {
       prompt += `\n\n当前步骤知识库：${stepKnowledge}`
     }
 
+    // 添加主页项目知识库
+    if (homeChatStore && context.currentPage === 'home') {
+      const projectKnowledge = homeChatStore.getProjectKnowledge('projectOverview')
+      const featuresKnowledge = homeChatStore.getProjectKnowledge('implementedFeatures')
+      const learningPathKnowledge = homeChatStore.getProjectKnowledge('learningPath')
+      const techStackKnowledge = homeChatStore.getProjectKnowledge('technicalStack')
+
+      prompt += `\n\n项目概述：${projectKnowledge}`
+      prompt += `\n\n已实现功能：${featuresKnowledge}`
+      prompt += `\n\n学习路径：${learningPathKnowledge}`
+      prompt += `\n\n技术栈：${techStackKnowledge}`
+    }
+
     if (context.userInput) {
       prompt += `\n\n用户输入数据：${JSON.stringify(context.userInput, null, 2)}`
     }
@@ -90,13 +103,14 @@ export function useAIChat() {
   }
 
           // 发送消息到AI
-  const sendMessage = async (userMessage: string, context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any): Promise<AIResponse> => {
+  const sendMessage = async (userMessage: string, context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any, homeChatStore?: any): Promise<AIResponse> => {
     try {
       // 根据页面类型选择正确的store
       const currentStore = context.currentPage === 'fa' ? faChatStore :
                           context.currentPage === 'll1' ? ll1ChatStore :
                           context.currentPage === 'lr0' ? lr0ChatStore :
-                          context.currentPage === 'slr1' ? slr1ChatStore : null
+                          context.currentPage === 'slr1' ? slr1ChatStore :
+                          context.currentPage === 'home' ? homeChatStore : null
 
       if (currentStore) {
         currentStore.setError(null)
@@ -116,7 +130,7 @@ export function useAIChat() {
       }
 
                   // 构建系统提示词
-      const systemPrompt = buildSystemPrompt(context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore)
+      const systemPrompt = buildSystemPrompt(context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore, homeChatStore)
 
       // 构建消息历史
       const messageHistory: Message[] = [
@@ -172,7 +186,8 @@ export function useAIChat() {
       const errorStore = context.currentPage === 'fa' ? faChatStore :
                         context.currentPage === 'll1' ? ll1ChatStore :
                         context.currentPage === 'lr0' ? lr0ChatStore :
-                        context.currentPage === 'slr1' ? slr1ChatStore : null
+                        context.currentPage === 'slr1' ? slr1ChatStore :
+                        context.currentPage === 'home' ? homeChatStore : null
 
       if (errorStore) {
         errorStore.setError(errorMessage)
@@ -193,7 +208,7 @@ export function useAIChat() {
   }
 
   // 清空聊天记录
-  const clearChat = (faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any) => {
+  const clearChat = (faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any, homeChatStore?: any) => {
     // 清除所有传入的store
     if (faChatStore) {
       faChatStore.clearChat()
@@ -207,13 +222,17 @@ export function useAIChat() {
       lr0ChatStore.clearChat()
       lr0ChatStore.clearStorage()
     }
-    if (slr1ChatStore) {
+        if (slr1ChatStore) {
       slr1ChatStore.clearChat()
       slr1ChatStore.clearStorage()
     }
+    if (homeChatStore) {
+      homeChatStore.clearChat()
+      homeChatStore.clearStorage()
+    }
 
     // 如果没有传入任何store，清除本地状态
-    if (!faChatStore && !ll1ChatStore && !lr0ChatStore && !slr1ChatStore) {
+    if (!faChatStore && !ll1ChatStore && !lr0ChatStore && !slr1ChatStore && !homeChatStore) {
       messages.value = []
       error.value = null
       currentStreamContent.value = ''
@@ -246,6 +265,22 @@ export function useAIChat() {
         'SLR1如何解决LR0的冲突问题？',
         'SLR1分析表的构建过程是什么？',
         '什么时候使用SLR1分析？'
+      ],
+      'home': [
+        '这个项目是做什么的？',
+        '有哪些编译原理算法？',
+        '如何使用这个平台学习？',
+        '项目有什么特色功能？',
+        '支持哪些语法分析方法？',
+        '如何开始学习有限自动机？',
+        'LL1和LR0有什么区别？',
+        '项目的技术栈是什么？',
+        '如何理解编译原理？',
+        '推荐的学习路径是什么？',
+        '项目适合什么水平的学习者？',
+        '有哪些交互式功能？',
+        '如何理解语法分析？',
+        '项目的发展计划是什么？'
       ]
     }
 
