@@ -13,7 +13,7 @@
       </div>
       <div class="flex items-center gap-2">
         <button
-          @click="() => clearChat(faChatStore)"
+          @click="() => clearChat(faChatStore, ll1ChatStore)"
           class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           title="清空聊天记录"
         >
@@ -246,18 +246,26 @@ const {
   clearChat
 } = useAIChat()
 
-// 使用FA聊天store
-import { useFAChatStore } from '@/stores'
+// 使用聊天store
+import { useFAChatStore, useLL1ChatStore } from '@/stores'
 const faChatStore = useFAChatStore()
+const ll1ChatStore = useLL1ChatStore()
+
+// 根据页面类型选择store
+const currentStore = computed(() => {
+  if (props.pageType === 'fa') return faChatStore
+  if (props.pageType === 'll1') return ll1ChatStore
+  return null
+})
 
 // 从store获取状态
-const messages = computed(() => faChatStore.messages)
-const isStreaming = computed(() => faChatStore.isStreaming)
-const currentStreamContent = computed(() => faChatStore.currentStreamContent)
-const error = computed(() => faChatStore.error)
+const messages = computed(() => currentStore.value?.messages || [])
+const isStreaming = computed(() => currentStore.value?.isStreaming || false)
+const currentStreamContent = computed(() => currentStore.value?.currentStreamContent || '')
+const error = computed(() => currentStore.value?.error || null)
 
 // 获取预设问题
-const presetQuestions = computed(() => faChatStore.presetQuestions)
+const presetQuestions = computed(() => currentStore.value?.presetQuestions || [])
 
 // 本地状态
 const inputMessage = ref('')
@@ -275,23 +283,35 @@ const handleSend = async () => {
   const message = inputMessage.value.trim()
   if (!message || isStreaming.value) return
 
+  console.log('发送消息:', message)
+  console.log('当前store:', currentStore.value)
+  console.log('聊天上下文:', props.context)
+
   inputMessage.value = ''
 
-  try {
+    try {
     // 更新上下文
-    faChatStore.updateContext(props.context)
+    if (currentStore.value) {
+      currentStore.value.updateContext(props.context)
+    }
 
     // 发送消息到AI
-    await sendMessage(message, props.context, faChatStore)
+    await sendMessage(message, props.context, faChatStore, ll1ChatStore)
 
     // 保存到本地存储
-    faChatStore.saveToStorage()
+    if (currentStore.value) {
+      currentStore.value.saveToStorage()
+    }
   } catch (err) {
     console.error('发送消息失败:', err)
   }
 }
 
 const sendPresetQuestion = async (question: string) => {
+  console.log('发送预设问题:', question)
+  console.log('当前页面类型:', props.pageType)
+  console.log('当前store:', currentStore.value)
+  console.log('预设问题:', presetQuestions.value)
   inputMessage.value = question
   await handleSend()
 }
@@ -326,7 +346,9 @@ watch(currentStreamContent, scrollToBottom)
 
 // 组件挂载时加载存储的聊天记录
 onMounted(() => {
-  faChatStore.loadFromStorage()
+  if (currentStore.value) {
+    currentStore.value.loadFromStorage()
+  }
 })
 
 
