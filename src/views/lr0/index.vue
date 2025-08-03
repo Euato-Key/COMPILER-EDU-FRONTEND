@@ -70,21 +70,42 @@
       </div>
     </main>
 
+    <!-- AI聊天组件 -->
+    <AIChatWidget
+      page-type="lr0"
+      :context="chatContext"
+    />
+
     <!-- 返回顶部按钮 -->
     <ScrollToTop theme="purple" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, defineAsyncComponent, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
+import { AIChatWidget } from '@/components/ai'
 import { useLR0Store } from '@/stores/lr0'
+import { useLR0ChatStore } from '@/stores'
+import type { ChatContext } from '@/components/ai/types'
 
 const lr0Store = useLR0Store()
+
+// 使用LR0 AI聊天store
+const lr0ChatStore = useLR0ChatStore()
+
+// 聊天上下文
+const chatContext = ref<ChatContext>({
+  currentPage: 'lr0',
+  userInput: {},
+  backendData: {},
+  userAnswers: {},
+  pageContext: 'LR0语法分析学习页面'
+})
 
 // 动态导入所有步骤组件
 const stepComponents = {
@@ -160,6 +181,11 @@ const initializeCurrentStep = () => {
 
 const currentStep = ref(initializeCurrentStep())
 
+// 监听当前步骤变化
+watch(currentStep, () => {
+  updateChatContext()
+})
+
 // 监听路由变化
 watch(
   () => route.params.step,
@@ -196,9 +222,38 @@ const handleStepClick = (stepId: number) => {
   router.push(`/lr0/${stepId}`)
 }
 
+// 更新聊天上下文
+const updateChatContext = () => {
+  // 获取LR0 store中的数据
+  const lr0Data = lr0Store
+
+  // 更新聊天上下文
+  chatContext.value = {
+    currentPage: 'lr0',
+    userInput: {
+      grammar: lr0Data.grammar || '',
+      currentStep: currentStep.value,
+      stepName: lr0Steps[currentStep.value - 1]?.name || ''
+    },
+    backendData: {
+      productions: lr0Data.productions || [],
+      augmentedGrammar: lr0Data.augmentedGrammar || [],
+      itemSets: lr0Data.itemSets || [],
+      parsingTable: lr0Data.parsingTable || {},
+      analysisResult: lr0Data.analysisResult || null
+    },
+    userAnswers: {},
+    pageContext: `LR0语法分析 - ${lr0Steps[currentStep.value - 1]?.name || ''}`
+  }
+
+  // 更新store中的上下文
+  lr0ChatStore.updateContext(chatContext.value)
+}
+
 const completeAnalysis = (data: any) => {
   console.log('LR0 Analysis completed:', data)
-  // 可以添加完成后的逻辑
+  // 更新聊天上下文
+  updateChatContext()
 }
 
 // 重置进度
@@ -206,8 +261,17 @@ const resetProgress = () => {
   if (confirm('确定要重置所有进度吗？')) {
     lr0Store.resetAll()
     handleStepClick(1)
+    // 清空AI聊天上下文
+    lr0ChatStore.clearChat()
+    updateChatContext()
   }
 }
+
+// 组件挂载时的初始化
+onMounted(() => {
+  // 初始化聊天上下文
+  updateChatContext()
+})
 </script>
 
 <style scoped>

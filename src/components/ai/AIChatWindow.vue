@@ -13,7 +13,7 @@
       </div>
       <div class="flex items-center gap-2">
         <button
-          @click="() => clearChat(faChatStore, ll1ChatStore)"
+          @click="() => clearChat(faChatStore, ll1ChatStore, lr0ChatStore)"
           class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           title="清空聊天记录"
         >
@@ -247,14 +247,16 @@ const {
 } = useAIChat()
 
 // 使用聊天store
-import { useFAChatStore, useLL1ChatStore } from '@/stores'
+import { useFAChatStore, useLL1ChatStore, useLR0ChatStore } from '@/stores'
 const faChatStore = useFAChatStore()
 const ll1ChatStore = useLL1ChatStore()
+const lr0ChatStore = useLR0ChatStore()
 
 // 根据页面类型选择store
 const currentStore = computed(() => {
   if (props.pageType === 'fa') return faChatStore
   if (props.pageType === 'll1') return ll1ChatStore
+  if (props.pageType === 'lr0') return lr0ChatStore
   return null
 })
 
@@ -296,7 +298,7 @@ const handleSend = async () => {
     }
 
     // 发送消息到AI
-    await sendMessage(message, props.context, faChatStore, ll1ChatStore)
+    await sendMessage(message, props.context, faChatStore, ll1ChatStore, lr0ChatStore)
 
     // 保存到本地存储
     if (currentStore.value) {
