@@ -13,7 +13,7 @@
       </div>
       <div class="flex items-center gap-2">
         <button
-          @click="clearChat"
+          @click="() => clearChat(faChatStore)"
           class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           title="清空聊天记录"
         >
@@ -172,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useAIChat } from './composables/useAIChat'
 import type { ChatContext } from './types'
@@ -242,14 +242,22 @@ const emit = defineEmits<{
 
 // 使用AI聊天组合式函数
 const {
-  messages,
-  isStreaming,
-  currentStreamContent,
-  error,
   sendMessage,
-  clearChat,
-  getPresetQuestions
+  clearChat
 } = useAIChat()
+
+// 使用FA聊天store
+import { useFAChatStore } from '@/stores'
+const faChatStore = useFAChatStore()
+
+// 从store获取状态
+const messages = computed(() => faChatStore.messages)
+const isStreaming = computed(() => faChatStore.isStreaming)
+const currentStreamContent = computed(() => faChatStore.currentStreamContent)
+const error = computed(() => faChatStore.error)
+
+// 获取预设问题
+const presetQuestions = computed(() => faChatStore.presetQuestions)
 
 // 本地状态
 const inputMessage = ref('')
@@ -257,8 +265,6 @@ const messagesContainer = ref<HTMLElement>()
 const showCopySuccess = ref(false)
 
 // 计算属性
-const presetQuestions = computed(() => getPresetQuestions(props.pageType))
-
 const inputRows = computed(() => {
   const lines = inputMessage.value.split('\n').length
   return Math.min(Math.max(lines, 1), 4)
@@ -272,7 +278,14 @@ const handleSend = async () => {
   inputMessage.value = ''
 
   try {
-    await sendMessage(message, props.context)
+    // 更新上下文
+    faChatStore.updateContext(props.context)
+
+    // 发送消息到AI
+    await sendMessage(message, props.context, faChatStore)
+
+    // 保存到本地存储
+    faChatStore.saveToStorage()
   } catch (err) {
     console.error('发送消息失败:', err)
   }
@@ -310,6 +323,11 @@ watch([messages, currentStreamContent], scrollToBottom, { deep: true })
 
 // 监听流式输出变化
 watch(currentStreamContent, scrollToBottom)
+
+// 组件挂载时加载存储的聊天记录
+onMounted(() => {
+  faChatStore.loadFromStorage()
+})
 
 
 </script>

@@ -36,8 +36,8 @@ export function useAIChat() {
     messages.value.push(message)
   }
 
-  // 构建系统提示词
-  const buildSystemPrompt = (context: ChatContext): string => {
+    // 构建系统提示词
+  const buildSystemPrompt = (context: ChatContext, faChatStore?: any): string => {
     let prompt = '你是一个编译原理教学助手，专门帮助学生理解编译原理的概念和算法。'
 
     if (context.currentPage) {
@@ -46,6 +46,12 @@ export function useAIChat() {
 
     if (context.pageContext) {
       prompt += `\n\n页面内容：${context.pageContext}`
+    }
+
+    // 添加FA步骤知识库
+    if (faChatStore && context.userInput?.currentStep) {
+      const stepKnowledge = faChatStore.getStepKnowledge(context.userInput.currentStep)
+      prompt += `\n\n当前步骤知识库：${stepKnowledge}`
     }
 
     if (context.userInput) {
@@ -65,23 +71,33 @@ export function useAIChat() {
     return prompt
   }
 
-        // 发送消息到AI
-  const sendMessage = async (userMessage: string, context: ChatContext): Promise<AIResponse> => {
+          // 发送消息到AI
+  const sendMessage = async (userMessage: string, context: ChatContext, faChatStore?: any): Promise<AIResponse> => {
     try {
-      error.value = null
-      isStreaming.value = true
-      currentStreamContent.value = ''
+      if (faChatStore) {
+        faChatStore.setError(null)
+        faChatStore.setStreaming(true)
+        faChatStore.updateStreamContent('')
+      } else {
+        error.value = null
+        isStreaming.value = true
+        currentStreamContent.value = ''
+      }
 
       // 添加用户消息
-      addMessage('user', userMessage)
+      if (faChatStore) {
+        faChatStore.addMessage('user', userMessage)
+      } else {
+        addMessage('user', userMessage)
+      }
 
       // 构建系统提示词
-      const systemPrompt = buildSystemPrompt(context)
+      const systemPrompt = buildSystemPrompt(context, faChatStore)
 
       // 构建消息历史
       const messageHistory: Message[] = [
         { role: 'system', content: systemPrompt },
-        ...messages.value
+        ...(faChatStore ? faChatStore.messages : messages.value)
       ]
 
       // 发送请求
@@ -93,47 +109,69 @@ export function useAIChat() {
         stream: aiConfig.stream
       })
 
-            // 处理流式响应
+                  // 处理流式响应
       let fullContent = ''
 
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || ''
         if (content) {
           fullContent += content
-          currentStreamContent.value = fullContent
+          if (faChatStore) {
+            faChatStore.updateStreamContent(fullContent)
+          } else {
+            currentStreamContent.value = fullContent
+          }
         }
       }
 
       // 添加AI回复
-      addMessage('assistant', fullContent)
-
-      isStreaming.value = false
-      currentStreamContent.value = ''
+      if (faChatStore) {
+        faChatStore.addMessage('assistant', fullContent)
+        faChatStore.setStreaming(false)
+        faChatStore.updateStreamContent('')
+      } else {
+        addMessage('assistant', fullContent)
+        isStreaming.value = false
+        currentStreamContent.value = ''
+      }
 
       return {
         content: fullContent,
         isStreaming: false
       }
 
-        } catch (err) {
+            } catch (err) {
       console.error('AI聊天错误:', err)
-      error.value = err instanceof Error ? err.message : '未知错误'
-      isStreaming.value = false
-      currentStreamContent.value = ''
+      const errorMessage = err instanceof Error ? err.message : '未知错误'
+
+      if (faChatStore) {
+        faChatStore.setError(errorMessage)
+        faChatStore.setStreaming(false)
+        faChatStore.updateStreamContent('')
+      } else {
+        error.value = errorMessage
+        isStreaming.value = false
+        currentStreamContent.value = ''
+      }
 
       return {
         content: '',
         isStreaming: false,
-        error: error.value
+        error: errorMessage
       }
     }
   }
 
   // 清空聊天记录
-  const clearChat = () => {
-    messages.value = []
-    error.value = null
-    currentStreamContent.value = ''
+  const clearChat = (faChatStore?: any) => {
+    if (faChatStore) {
+      faChatStore.clearChat()
+      faChatStore.clearStorage()
+    } else {
+      messages.value = []
+      error.value = null
+      currentStreamContent.value = ''
+    }
   }
 
   // 获取预设问题
