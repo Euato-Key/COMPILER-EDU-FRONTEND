@@ -85,21 +85,42 @@ md.renderer.rules.fence = function (tokens, idx) {
   // 处理 mermaid 代码块
   if (lang === 'mermaid') {
     const mermaidId = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const blockId = `mermaid-block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     return `
-      <div class="mermaid-block-wrapper">
+      <div class="mermaid-block-wrapper" id="${blockId}">
         <div class="mermaid-header">
-          <span class="mermaid-language">MERMAID</span>
-          <button class="copy-button" onclick="copyCode('${codeId}')" title="复制代码">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
+          <div class="mermaid-tabs">
+            <button class="tab-button active" onclick="switchMermaidView('${blockId}', 'image')" data-view="image">图片</button>
+            <button class="tab-button" onclick="switchMermaidView('${blockId}', 'code')" data-view="code">代码</button>
+          </div>
+          <div class="mermaid-actions">
+            <button class="action-button" onclick="downloadMermaidSVG('${blockId}')" title="下载图片">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7,10 12,15 17,10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </button>
+            <button class="action-button" onclick="copyMermaidContent('${blockId}')" title="复制">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+            <button class="action-button" onclick="fullscreenMermaid('${blockId}')" title="全屏查看">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15,3 21,3 21,9"></polyline>
+                <polyline points="9,21 3,21 3,15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="mermaid-container">
+        <div class="mermaid-container" data-view="image">
           <div class="mermaid" id="${mermaidId}">${code}</div>
         </div>
-        <pre class="mermaid-code" style="display: none;"><code id="${codeId}">${code}</code></pre>
+        <pre class="mermaid-code" data-view="code" style="display: none;"><code id="${codeId}">${code}</code></pre>
       </div>
     `
   }
@@ -107,21 +128,42 @@ md.renderer.rules.fence = function (tokens, idx) {
   // 处理 DOT 代码块
   if (lang === 'dot') {
     const dotId = `dot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const blockId = `dot-block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     return `
-      <div class="dot-block-wrapper">
+      <div class="dot-block-wrapper" id="${blockId}">
         <div class="dot-header">
-          <span class="dot-language">DOT</span>
-          <button class="copy-button" onclick="copyCode('${codeId}')" title="复制代码">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
+          <div class="dot-tabs">
+            <button class="tab-button active" onclick="switchDotView('${blockId}', 'image')" data-view="image">图片</button>
+            <button class="tab-button" onclick="switchDotView('${blockId}', 'code')" data-view="code">代码</button>
+          </div>
+          <div class="dot-actions">
+            <button class="action-button" onclick="downloadDotSVG('${blockId}')" title="下载图片">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7,10 12,15 17,10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </button>
+            <button class="action-button" onclick="copyDotContent('${blockId}')" title="复制">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+            <button class="action-button" onclick="fullscreenDot('${blockId}')" title="全屏查看">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15,3 21,3 21,9"></polyline>
+                <polyline points="9,21 3,21 3,15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="dot-container">
+        <div class="dot-container" data-view="image">
           <div class="dot-graph" id="${dotId}">${code}</div>
         </div>
-        <pre class="dot-code" style="display: none;"><code id="${codeId}">${code}</code></pre>
+        <pre class="dot-code" data-view="code" style="display: none;"><code id="${codeId}">${code}</code></pre>
       </div>
     `
   }
@@ -139,7 +181,7 @@ md.renderer.rules.fence = function (tokens, idx) {
     highlightedCode = code
   }
 
-  // 获取语言显示名称
+  // 获取语言显示名称 - 保持原始格式
   const langDisplay = lang || 'text'
 
   return `
@@ -282,6 +324,275 @@ const copyCode = (codeId: string) => {
 // 将复制函数暴露到全局
 if (typeof window !== 'undefined') {
   ;(window as unknown as Record<string, unknown>).copyCode = copyCode
+}
+
+// Mermaid 功能函数
+const switchMermaidView = (blockId: string, view: 'image' | 'code') => {
+  const block = document.getElementById(blockId)
+  if (!block) {
+    console.error('Block not found:', blockId)
+    return
+  }
+
+  // 切换标签状态
+  const tabs = block.querySelectorAll('.tab-button')
+  tabs.forEach(tab => {
+    tab.classList.remove('active')
+    if (tab.getAttribute('data-view') === view) {
+      tab.classList.add('active')
+    }
+  })
+
+  // 切换内容显示 - 只针对内容容器，不包括标签按钮
+  const containers = block.querySelectorAll('.mermaid-container, .mermaid-code')
+  containers.forEach(container => {
+    if (container instanceof HTMLElement) {
+      if (container.getAttribute('data-view') === view) {
+        container.style.display = 'block'
+        console.log('Showing container:', container.className, 'for view:', view)
+      } else {
+        container.style.display = 'none'
+        console.log('Hiding container:', container.className, 'for view:', view)
+      }
+    }
+  })
+
+  // 确保代码内容存在
+  if (view === 'code') {
+    const codeContainer = block.querySelector('.mermaid-code')
+    const codeElement = block.querySelector('.mermaid-code code')
+    if (codeContainer && codeElement) {
+      console.log('Code content:', codeElement.textContent)
+    }
+  }
+}
+
+const downloadMermaidSVG = async (blockId: string) => {
+  const block = document.getElementById(blockId)
+  if (!block) return
+
+  const svg = block.querySelector('.mermaid svg')
+  if (!svg) return
+
+  const svgData = new XMLSerializer().serializeToString(svg)
+  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+  const svgUrl = URL.createObjectURL(svgBlob)
+
+  const downloadLink = document.createElement('a')
+  downloadLink.href = svgUrl
+  downloadLink.download = 'mermaid-chart.svg'
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  document.body.removeChild(downloadLink)
+  URL.revokeObjectURL(svgUrl)
+}
+
+const copyMermaidContent = async (blockId: string) => {
+  const block = document.getElementById(blockId)
+  if (!block) return
+
+  const activeTab = block.querySelector('.tab-button.active')
+  const view = activeTab?.getAttribute('data-view')
+
+  let content = ''
+  if (view === 'image') {
+    const svg = block.querySelector('.mermaid svg')
+    if (svg) {
+      content = new XMLSerializer().serializeToString(svg)
+    }
+  } else {
+    const code = block.querySelector('.mermaid-code code')
+    if (code) {
+      content = code.textContent || ''
+    }
+  }
+
+  if (content) {
+    await navigator.clipboard.writeText(content)
+    // 显示复制成功提示
+    const button = block.querySelector('.action-button[onclick*="copyMermaidContent"]')
+    if (button) {
+      const originalHTML = button.innerHTML
+      button.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20,6 9,17 4,12"></polyline>
+        </svg>
+      `
+      button.classList.add('copied')
+      setTimeout(() => {
+        button.innerHTML = originalHTML
+        button.classList.remove('copied')
+      }, 2000)
+    }
+  }
+}
+
+const fullscreenMermaid = (blockId: string) => {
+  const block = document.getElementById(blockId)
+  if (!block) return
+
+  const svg = block.querySelector('.mermaid svg')
+  if (!svg) return
+
+  const svgData = new XMLSerializer().serializeToString(svg)
+  const fullscreenWindow = window.open('', '_blank')
+  if (fullscreenWindow) {
+    fullscreenWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Mermaid Chart - Fullscreen</title>
+          <style>
+            body { margin: 0; padding: 20px; background: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+            svg { max-width: 100%; max-height: 100vh; }
+          </style>
+        </head>
+        <body>${svgData}</body>
+      </html>
+    `)
+    fullscreenWindow.document.close()
+  }
+}
+
+// DOT 功能函数
+const switchDotView = (blockId: string, view: 'image' | 'code') => {
+  const block = document.getElementById(blockId)
+  if (!block) {
+    console.error('Block not found:', blockId)
+    return
+  }
+
+  // 切换标签状态
+  const tabs = block.querySelectorAll('.tab-button')
+  tabs.forEach(tab => {
+    tab.classList.remove('active')
+    if (tab.getAttribute('data-view') === view) {
+      tab.classList.add('active')
+    }
+  })
+
+  // 切换内容显示 - 只针对内容容器，不包括标签按钮
+  const containers = block.querySelectorAll('.dot-container, .dot-code')
+  containers.forEach(container => {
+    if (container instanceof HTMLElement) {
+      if (container.getAttribute('data-view') === view) {
+        container.style.display = 'block'
+        console.log('Showing container:', container.className, 'for view:', view)
+      } else {
+        container.style.display = 'none'
+        console.log('Hiding container:', container.className, 'for view:', view)
+      }
+    }
+  })
+
+  // 确保代码内容存在
+  if (view === 'code') {
+    const codeContainer = block.querySelector('.dot-code')
+    const codeElement = block.querySelector('.dot-code code')
+    if (codeContainer && codeElement) {
+      console.log('Code content:', codeElement.textContent)
+    }
+  }
+}
+
+const downloadDotSVG = async (blockId: string) => {
+  const block = document.getElementById(blockId)
+  if (!block) return
+
+  const svg = block.querySelector('.dot-graph svg')
+  if (!svg) return
+
+  const svgData = new XMLSerializer().serializeToString(svg)
+  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+  const svgUrl = URL.createObjectURL(svgBlob)
+
+  const downloadLink = document.createElement('a')
+  downloadLink.href = svgUrl
+  downloadLink.download = 'dot-chart.svg'
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  document.body.removeChild(downloadLink)
+  URL.revokeObjectURL(svgUrl)
+}
+
+const copyDotContent = async (blockId: string) => {
+  const block = document.getElementById(blockId)
+  if (!block) return
+
+  const activeTab = block.querySelector('.tab-button.active')
+  const view = activeTab?.getAttribute('data-view')
+
+  let content = ''
+  if (view === 'image') {
+    const svg = block.querySelector('.dot-graph svg')
+    if (svg) {
+      content = new XMLSerializer().serializeToString(svg)
+    }
+  } else {
+    const code = block.querySelector('.dot-code code')
+    if (code) {
+      content = code.textContent || ''
+    }
+  }
+
+  if (content) {
+    await navigator.clipboard.writeText(content)
+    // 显示复制成功提示
+    const button = block.querySelector('.action-button[onclick*="copyDotContent"]')
+    if (button) {
+      const originalHTML = button.innerHTML
+      button.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20,6 9,17 4,12"></polyline>
+        </svg>
+      `
+      button.classList.add('copied')
+      setTimeout(() => {
+        button.innerHTML = originalHTML
+        button.classList.remove('copied')
+      }, 2000)
+    }
+  }
+}
+
+const fullscreenDot = (blockId: string) => {
+  const block = document.getElementById(blockId)
+  if (!block) return
+
+  const svg = block.querySelector('.dot-graph svg')
+  if (!svg) return
+
+  const svgData = new XMLSerializer().serializeToString(svg)
+  const fullscreenWindow = window.open('', '_blank')
+  if (fullscreenWindow) {
+    fullscreenWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>DOT Chart - Fullscreen</title>
+          <style>
+            body { margin: 0; padding: 20px; background: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+            svg { max-width: 100%; max-height: 100vh; }
+          </style>
+        </head>
+        <body>${svgData}</body>
+      </html>
+    `)
+    fullscreenWindow.document.close()
+  }
+}
+
+// 将所有函数暴露到全局
+if (typeof window !== 'undefined') {
+  const globalWindow = window as unknown as Record<string, unknown>
+  globalWindow.switchMermaidView = switchMermaidView
+  globalWindow.downloadMermaidSVG = downloadMermaidSVG
+  globalWindow.copyMermaidContent = copyMermaidContent
+  globalWindow.fullscreenMermaid = fullscreenMermaid
+  globalWindow.switchDotView = switchDotView
+  globalWindow.downloadDotSVG = downloadDotSVG
+  globalWindow.copyDotContent = copyDotContent
+  globalWindow.fullscreenDot = fullscreenDot
 }
 </script>
 
@@ -672,9 +983,8 @@ if (typeof window !== 'undefined') {
 }
 
 .markdown-renderer :deep(.code-language) {
-  text-transform: uppercase;
-  font-size: 0.625rem;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: rgb(51 65 85);
 }
 
@@ -804,10 +1114,98 @@ if (typeof window !== 'undefined') {
   font-weight: 500;
 }
 
+.markdown-renderer :deep(.mermaid-tabs) {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.markdown-renderer :deep(.tab-button) {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.375rem;
+  background-color: rgb(241 245 249);
+  color: rgb(71 85 105);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.markdown-renderer :deep(.tab-button:hover) {
+  background-color: rgb(226 232 240);
+  border-color: rgb(148 163 184);
+}
+
+.markdown-renderer :deep(.tab-button.active) {
+  background-color: rgb(255 255 255);
+  border-color: rgb(59 130 246);
+  color: rgb(59 130 246);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.markdown-renderer :deep(.mermaid-actions) {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.markdown-renderer :deep(.action-button) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: transparent;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.375rem;
+  color: rgb(71 85 105);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.markdown-renderer :deep(.action-button:hover) {
+  background-color: rgb(241 245 249);
+  border-color: rgb(148 163 184);
+  color: rgb(30 41 59);
+}
+
+.markdown-renderer :deep(.action-button.copied) {
+  background-color: rgb(34 197 94);
+  border-color: rgb(34 197 94);
+  color: white;
+}
+
 .dark .markdown-renderer :deep(.mermaid-header) {
   background-color: rgb(30 41 59);
   border-bottom-color: rgb(51 65 85);
   color: rgb(148 163 184);
+}
+
+.dark .markdown-renderer :deep(.tab-button) {
+  border-color: rgb(71 85 105);
+  background-color: rgb(51 65 85);
+  color: rgb(148 163 184);
+}
+
+.dark .markdown-renderer :deep(.tab-button:hover) {
+  background-color: rgb(71 85 105);
+  border-color: rgb(100 116 139);
+}
+
+.dark .markdown-renderer :deep(.tab-button.active) {
+  background-color: rgb(15 23 42);
+  border-color: rgb(59 130 246);
+  color: rgb(147 197 253);
+}
+
+.dark .markdown-renderer :deep(.action-button) {
+  border-color: rgb(71 85 105);
+  color: rgb(148 163 184);
+}
+
+.dark .markdown-renderer :deep(.action-button:hover) {
+  background-color: rgb(51 65 85);
+  border-color: rgb(100 116 139);
+  color: rgb(226 232 240);
 }
 
 .markdown-renderer :deep(.mermaid-language) {
@@ -852,6 +1250,25 @@ if (typeof window !== 'undefined') {
 
 .markdown-renderer :deep(.mermaid-code) {
   display: none;
+  margin: 0;
+  padding: 1rem;
+  background-color: rgb(255 255 255);
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  color: rgb(17 24 39);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.markdown-renderer :deep(.mermaid-code code) {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  font-family: inherit;
 }
 
 /* DOT 图表样式 */
@@ -880,6 +1297,16 @@ if (typeof window !== 'undefined') {
   color: rgb(51 65 85);
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+.markdown-renderer :deep(.dot-tabs) {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.markdown-renderer :deep(.dot-actions) {
+  display: flex;
+  gap: 0.25rem;
 }
 
 .dark .markdown-renderer :deep(.dot-header) {
@@ -930,5 +1357,24 @@ if (typeof window !== 'undefined') {
 
 .markdown-renderer :deep(.dot-code) {
   display: none;
+  margin: 0;
+  padding: 1rem;
+  background-color: rgb(255 255 255);
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  color: rgb(17 24 39);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.markdown-renderer :deep(.dot-code code) {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  font-family: inherit;
 }
 </style>
