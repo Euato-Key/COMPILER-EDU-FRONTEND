@@ -1,0 +1,5 @@
+export { default as AIChatWidget } from './AIChatWidget.vue'
+export { default as AIChatWindow } from './AIChatWindow.vue'
+export { useAIChat } from './composables/useAIChat'
+export { useAIGlobal } from './composables/useAIGlobal'
+export type { Message, ChatContext, AIConfig, AIResponse } from './types'

@@ -54,18 +54,26 @@
       </div>
     </main>
 
+    <!-- AI聊天组件 -->
+    <AIChatWidget
+      page-type="fa"
+      :context="chatContext"
+    />
+
     <!-- 返回顶部按钮 -->
     <ScrollToTop theme="blue" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFAStore } from '@/stores'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
+import { AIChatWidget, useAIGlobal } from '@/components/ai'
+import type { ChatContext } from '@/components/ai/types'
 
 // 导入步骤组件
 import RegexInput from './steps/01-RegexInput.vue'
@@ -80,6 +88,18 @@ const route = useRoute()
 
 // 使用FA Store
 const faStore = useFAStore()
+
+// 使用全局AI状态管理
+const { updatePageInfo, updateUserInput, updateBackendData, updateUserAnswers, getCurrentContext } = useAIGlobal()
+
+// 聊天上下文
+const chatContext = ref<ChatContext>({
+  currentPage: 'fa',
+  userInput: {},
+  backendData: {},
+  userAnswers: {},
+  pageContext: '有限自动机学习页面'
+})
 
 // FA流程步骤定义
 const faSteps = [
@@ -173,9 +193,17 @@ const prevStep = () => {
 }
 
 // 步骤完成回调
-const onStepComplete = (data: any) => {
+const onStepComplete = (data: Record<string, unknown>) => {
   console.log('Step completed:', currentStep.value, data)
-  // 数据已经通过store管理，这里可以做其他处理
+  // 更新AI聊天上下文
+  updateUserAnswers({
+    [`step${currentStep.value}`]: {
+      completed: true,
+      data: data,
+      timestamp: Date.now()
+    }
+  })
+  updateChatContext()
 }
 
 // 重置进度
@@ -183,8 +211,50 @@ const resetProgress = () => {
   if (confirm('确定要重置所有进度吗？')) {
     faStore.resetAll() // 使用store的重置方法
     navigateToStep(1)
+    // 清空AI聊天上下文
+    updateUserAnswers({})
+    updateChatContext()
   }
 }
+
+// 更新聊天上下文
+const updateChatContext = () => {
+  // 获取FA store中的数据
+  const faData = faStore
+
+  // 更新用户输入数据
+  updateUserInput({
+    regex: faData.inputRegex || '',
+    currentStep: currentStep.value,
+    stepName: faSteps[currentStep.value - 1]?.name || ''
+  })
+
+  // 更新后端数据
+  updateBackendData({
+    originalData: faData.originalData || {},
+    validationData: faData.validationData || {},
+    nfaTable: faData.nfaTable || {},
+    dfaTable: faData.dfaTable || {},
+    minDfaTable: faData.minDfaTable || {},
+    nfaDotString: faData.nfaDotString || '',
+    dfaDotString: faData.dfaDotString || '',
+    minDfaDotString: faData.minDfaDotString || '',
+    partitions: faData.partitions || {},
+    partitionChanges: faData.partitionChanges || {}
+  })
+
+  // 更新聊天上下文
+  chatContext.value = getCurrentContext()
+}
+
+// 监听FA store变化
+watch(() => faStore.$state, updateChatContext, { deep: true })
+
+// 监听当前步骤变化
+watch(currentStep, () => {
+  updatePageInfo('fa', `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`)
+  updateChatContext()
+})
 
 // 组件挂载时从路由获取步骤
 onMounted(() => {
@@ -192,6 +262,10 @@ onMounted(() => {
   if (step >= 1 && step <= faSteps.length) {
     currentStep.value = step
   }
+
+  // 初始化AI聊天上下文
+  updatePageInfo('fa', `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`)
+  updateChatContext()
 })
 
 // 组件卸载时可以选择性保留数据

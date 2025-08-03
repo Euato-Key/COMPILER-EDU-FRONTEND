@@ -1,0 +1,372 @@
+<template>
+  <div class="ai-chat-window bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col">
+    <!-- 聊天窗口头部 -->
+    <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <Icon icon="lucide:bot" class="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900">AI 教学助手</h3>
+          <p class="text-xs text-gray-500">编译原理智能问答</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          @click="clearChat"
+          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          title="清空聊天记录"
+        >
+          <Icon icon="lucide:trash-2" class="w-4 h-4" />
+        </button>
+        <button
+          @click="$emit('close')"
+          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          title="关闭聊天"
+        >
+          <Icon icon="lucide:x" class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 聊天消息区域 -->
+    <div
+      ref="messagesContainer"
+      class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+      style="max-height: calc(100vh - 300px);"
+    >
+      <!-- 欢迎消息 -->
+      <div v-if="messages.length === 0" class="text-center py-8">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Icon icon="lucide:message-circle" class="w-8 h-8 text-blue-600" />
+        </div>
+        <h4 class="font-medium text-gray-900 mb-2">欢迎使用AI教学助手</h4>
+        <p class="text-sm text-gray-500 mb-4">我可以帮助您理解编译原理的概念和算法</p>
+
+        <!-- 预设问题 -->
+        <div class="space-y-2">
+          <p class="text-xs text-gray-400">快速提问：</p>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <button
+              v-for="question in presetQuestions"
+              :key="question"
+              @click="sendPresetQuestion(question)"
+              class="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+            >
+              {{ question }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 消息列表 -->
+      <div v-else class="space-y-4">
+        <div
+          v-for="(message, index) in messages"
+          :key="index"
+          :class="[
+            'flex gap-3',
+            message.role === 'user' ? 'justify-end' : 'justify-start'
+          ]"
+        >
+          <!-- 用户消息 -->
+          <div v-if="message.role === 'user'" class="flex items-end gap-2 max-w-[80%]">
+            <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl rounded-br-md flex-1 min-w-0">
+              <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
+            </div>
+            <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <Icon icon="lucide:user" class="w-3 h-3 text-white" />
+            </div>
+          </div>
+
+          <!-- AI消息 -->
+          <div v-else-if="message.role === 'assistant'" class="flex items-start gap-2 max-w-[80%]">
+            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <Icon icon="lucide:bot" class="w-3 h-3 text-white" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="bg-gray-100 text-gray-900 px-4 py-2 rounded-2xl rounded-bl-md">
+                <div class="text-sm whitespace-pre-wrap markdown-content" v-html="renderMarkdown(message.content)"></div>
+              </div>
+              <!-- 操作按钮行 -->
+              <div class="flex items-center gap-2 mt-2 ml-2">
+                <button
+                  @click="copyToClipboard(message.content)"
+                  class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  title="复制原始Markdown"
+                >
+                  <Icon icon="lucide:copy" class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 流式输出 -->
+        <div v-if="isStreaming" class="flex items-start gap-2 max-w-[80%]">
+          <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <Icon icon="lucide:bot" class="w-3 h-3 text-white" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="bg-gray-100 text-gray-900 px-4 py-2 rounded-2xl rounded-bl-md">
+              <div class="text-sm whitespace-pre-wrap markdown-content" v-html="renderMarkdown(currentStreamContent)"></div>
+              <span class="inline-block w-2 h-4 bg-gray-400 animate-pulse"></span>
+            </div>
+            <!-- 操作按钮行 -->
+            <div class="flex items-center gap-2 mt-2 ml-2">
+              <button
+                @click="copyToClipboard(currentStreamContent)"
+                class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                title="复制原始Markdown"
+              >
+                <Icon icon="lucide:copy" class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 错误提示 -->
+      <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div class="flex items-center gap-2 text-red-700">
+          <Icon icon="lucide:alert-circle" class="w-4 h-4" />
+          <span class="text-sm">{{ error }}</span>
+        </div>
+      </div>
+
+      <!-- 复制成功提示 -->
+      <div v-if="showCopySuccess" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2">
+        <Icon icon="lucide:check" class="w-4 h-4" />
+        <span class="text-sm">已复制到剪贴板</span>
+      </div>
+    </div>
+
+    <!-- 输入区域 -->
+    <div class="border-t border-gray-200 p-4">
+      <div class="flex gap-2">
+        <div class="flex-1 relative">
+          <textarea
+            v-model="inputMessage"
+            @keydown="handleKeydown"
+            placeholder=""
+            class="w-full px-3 py-2 pr-24 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            :rows="inputRows"
+            :disabled="isStreaming"
+          ></textarea>
+          <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+            <span class="hidden sm:inline">Enter 发送，</span>Shift+Enter 换行
+          </div>
+        </div>
+        <button
+          @click="handleSend"
+          :disabled="!inputMessage.trim() || isStreaming"
+          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+        >
+          <Icon v-if="isStreaming" icon="lucide:loader-2" class="w-4 h-4 animate-spin" />
+          <Icon v-else icon="lucide:send" class="w-4 h-4" />
+          <span class="hidden sm:inline">发送</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, nextTick, watch } from 'vue'
+import { Icon } from '@iconify/vue'
+import { useAIChat } from './composables/useAIChat'
+import type { ChatContext } from './types'
+
+// 简单的Markdown渲染函数
+const renderMarkdown = (text: string): string => {
+  if (!text) return ''
+
+  return text
+    // 处理标题
+    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-900 mb-2">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-gray-900 mb-3">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-900 mb-4">$1</h1>')
+    // 处理粗体
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+    // 处理斜体
+    .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+    // 处理代码块
+    .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-100 p-3 rounded-lg overflow-x-auto my-2"><code>$1</code></pre>')
+    // 处理行内代码
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-gray-800 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+    // 处理列表
+    .replace(/^\d+\.\s+(.*$)/gim, '<li class="ml-4">$1</li>')
+    .replace(/^-\s+(.*$)/gim, '<li class="ml-4">$1</li>')
+    // 处理换行
+    .replace(/\n/g, '<br>')
+}
+
+// 复制到剪贴板函数
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    // 显示成功提示
+    showCopySuccess.value = true
+    setTimeout(() => {
+      showCopySuccess.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('复制失败:', err)
+    // 降级方案：使用传统的复制方法
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+    // 显示成功提示
+    showCopySuccess.value = true
+    setTimeout(() => {
+      showCopySuccess.value = false
+    }, 2000)
+  }
+}
+
+// Props
+interface Props {
+  pageType: string
+  context: ChatContext
+}
+
+const props = defineProps<Props>()
+
+// Emits
+const emit = defineEmits<{
+  close: []
+}>()
+
+// 使用AI聊天组合式函数
+const {
+  messages,
+  isStreaming,
+  currentStreamContent,
+  error,
+  sendMessage,
+  clearChat,
+  getPresetQuestions
+} = useAIChat()
+
+// 本地状态
+const inputMessage = ref('')
+const messagesContainer = ref<HTMLElement>()
+const showCopySuccess = ref(false)
+
+// 计算属性
+const presetQuestions = computed(() => getPresetQuestions(props.pageType))
+
+const inputRows = computed(() => {
+  const lines = inputMessage.value.split('\n').length
+  return Math.min(Math.max(lines, 1), 4)
+})
+
+// 方法
+const handleSend = async () => {
+  const message = inputMessage.value.trim()
+  if (!message || isStreaming.value) return
+
+  inputMessage.value = ''
+
+  try {
+    await sendMessage(message, props.context)
+  } catch (err) {
+    console.error('发送消息失败:', err)
+  }
+}
+
+const sendPresetQuestion = async (question: string) => {
+  inputMessage.value = question
+  await handleSend()
+}
+
+// 处理键盘事件
+const handleKeydown = (e: KeyboardEvent) => {
+  // Shift+Enter 换行
+  if (e.shiftKey && e.key === 'Enter') {
+    // 允许默认行为（换行）
+    return
+  }
+  // 普通Enter 发送消息
+  else if (e.key === 'Enter') {
+    e.preventDefault()
+    handleSend()
+  }
+}
+
+// 自动滚动到底部
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+// 监听消息变化，自动滚动
+watch([messages, currentStreamContent], scrollToBottom, { deep: true })
+
+// 监听流式输出变化
+watch(currentStreamContent, scrollToBottom)
+
+
+</script>
+
+<style scoped>
+.ai-chat-window {
+  min-height: 500px;
+  max-height: calc(100vh - 120px);
+  height: 100%;
+}
+
+/* 自定义滚动条 */
+.ai-chat-window ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-chat-window ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.ai-chat-window ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.ai-chat-window ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Markdown内容样式 */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content h1:first-child,
+.markdown-content h2:first-child,
+.markdown-content h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-content pre {
+  margin: 0.5rem 0;
+}
+
+.markdown-content code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.markdown-content strong {
+  color: #1f2937;
+}
+
+.markdown-content em {
+  color: #4b5563;
+}
+</style>
