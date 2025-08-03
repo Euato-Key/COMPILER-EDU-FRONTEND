@@ -72,7 +72,8 @@ import { useFAStore } from '@/stores'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
-import { AIChatWidget, useAIGlobal } from '@/components/ai'
+import { AIChatWidget } from '@/components/ai'
+import { useFAChatStore } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
 // 导入步骤组件
@@ -89,8 +90,8 @@ const route = useRoute()
 // 使用FA Store
 const faStore = useFAStore()
 
-// 使用全局AI状态管理
-const { updatePageInfo, updateUserInput, updateBackendData, updateUserAnswers, getCurrentContext } = useAIGlobal()
+// 使用FA AI聊天store
+const faChatStore = useFAChatStore()
 
 // 聊天上下文
 const chatContext = ref<ChatContext>({
@@ -195,14 +196,7 @@ const prevStep = () => {
 // 步骤完成回调
 const onStepComplete = (data: Record<string, unknown>) => {
   console.log('Step completed:', currentStep.value, data)
-  // 更新AI聊天上下文
-  updateUserAnswers({
-    [`step${currentStep.value}`]: {
-      completed: true,
-      data: data,
-      timestamp: Date.now()
-    }
-  })
+  // 更新聊天上下文
   updateChatContext()
 }
 
@@ -212,7 +206,7 @@ const resetProgress = () => {
     faStore.resetAll() // 使用store的重置方法
     navigateToStep(1)
     // 清空AI聊天上下文
-    updateUserAnswers({})
+    faChatStore.clearChat()
     updateChatContext()
   }
 }
@@ -222,29 +216,32 @@ const updateChatContext = () => {
   // 获取FA store中的数据
   const faData = faStore
 
-  // 更新用户输入数据
-  updateUserInput({
-    regex: faData.inputRegex || '',
-    currentStep: currentStep.value,
-    stepName: faSteps[currentStep.value - 1]?.name || ''
-  })
-
-  // 更新后端数据
-  updateBackendData({
-    originalData: faData.originalData || {},
-    validationData: faData.validationData || {},
-    nfaTable: faData.nfaTable || {},
-    dfaTable: faData.dfaTable || {},
-    minDfaTable: faData.minDfaTable || {},
-    nfaDotString: faData.nfaDotString || '',
-    dfaDotString: faData.dfaDotString || '',
-    minDfaDotString: faData.minDfaDotString || '',
-    partitions: faData.partitions || {},
-    partitionChanges: faData.partitionChanges || {}
-  })
-
   // 更新聊天上下文
-  chatContext.value = getCurrentContext()
+  chatContext.value = {
+    currentPage: 'fa',
+    userInput: {
+      regex: faData.inputRegex || '',
+      currentStep: currentStep.value,
+      stepName: faSteps[currentStep.value - 1]?.name || ''
+    },
+    backendData: {
+      originalData: faData.originalData || {},
+      validationData: faData.validationData || {},
+      nfaTable: faData.nfaTable || {},
+      dfaTable: faData.dfaTable || {},
+      minDfaTable: faData.minDfaTable || {},
+      nfaDotString: faData.nfaDotString || '',
+      dfaDotString: faData.dfaDotString || '',
+      minDfaDotString: faData.minDfaDotString || '',
+      partitions: faData.partitions || {},
+      partitionChanges: faData.partitionChanges || {}
+    },
+    userAnswers: {},
+    pageContext: `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`
+  }
+
+  // 更新store中的上下文
+  faChatStore.updateContext(chatContext.value)
 }
 
 // 监听FA store变化
@@ -252,7 +249,6 @@ watch(() => faStore.$state, updateChatContext, { deep: true })
 
 // 监听当前步骤变化
 watch(currentStep, () => {
-  updatePageInfo('fa', `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`)
   updateChatContext()
 })
 
@@ -263,8 +259,7 @@ onMounted(() => {
     currentStep.value = step
   }
 
-  // 初始化AI聊天上下文
-  updatePageInfo('fa', `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`)
+  // 初始化聊天上下文
   updateChatContext()
 })
 
