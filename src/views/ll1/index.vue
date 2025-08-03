@@ -79,6 +79,12 @@
       </div>
     </main>
 
+    <!-- AI聊天组件 -->
+    <AIChatWidget
+      page-type="ll1"
+      :context="chatContext"
+    />
+
     <!-- 返回顶部按钮 -->
     <ScrollToTop theme="green" />
   </div>
@@ -92,8 +98,11 @@ import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
+import { AIChatWidget } from '@/components/ai'
 import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
+import { useLL1ChatStore } from '@/stores'
+import type { ChatContext } from '@/components/ai/types'
 
 // 导入步骤组件
 import GrammarInput from './steps/01-GrammarInput.vue'
@@ -107,6 +116,18 @@ const route = useRoute()
 // 获取 Store 实例
 const ll1Store = useLL1Store()
 const commonStore = useCommonStore()
+
+// 使用LL1 AI聊天store
+const ll1ChatStore = useLL1ChatStore()
+
+// 聊天上下文
+const chatContext = ref<ChatContext>({
+  currentPage: 'll1',
+  userInput: {},
+  backendData: {},
+  userAnswers: {},
+  pageContext: 'LL1语法分析学习页面'
+})
 
 // 解构响应式状态（用于模板绑定）
 const { productions, originalData, inputString } = storeToRefs(ll1Store)
@@ -195,6 +216,8 @@ const prevStep = () => {
 // 步骤完成回调
 const completeAnalysis = (data: any) => {
   console.log('LL1 Step completed:', currentStep.value, data)
+  // 更新聊天上下文
+  updateChatContext()
   // 可以在这里添加完成分析后的逻辑，比如显示完成提示
 }
 
@@ -224,10 +247,41 @@ const saveProgress = () => {
   }
 }
 
+// 更新聊天上下文
+const updateChatContext = () => {
+  // 获取LL1 store中的数据
+  const ll1Data = ll1Store
+
+  // 更新聊天上下文
+  chatContext.value = {
+    currentPage: 'll1',
+    userInput: {
+      grammar: ll1Data.grammar || '',
+      currentStep: currentStep.value,
+      stepName: ll1Steps[currentStep.value - 1]?.name || ''
+    },
+    backendData: {
+      productions: ll1Data.productions || [],
+      firstSets: ll1Data.firstSets || {},
+      followSets: ll1Data.followSets || {},
+      parsingTable: ll1Data.parsingTable || {},
+      analysisResult: ll1Data.analysisResult || null
+    },
+    userAnswers: {},
+    pageContext: `LL1语法分析 - ${ll1Steps[currentStep.value - 1]?.name || ''}`
+  }
+
+  // 更新store中的上下文
+  ll1ChatStore.updateContext(chatContext.value)
+}
+
 // 重置进度
 const resetProgress = () => {
   ll1Store.resetAll()
   navigateToStep(1)
+  // 清空AI聊天上下文
+  ll1ChatStore.clearChat()
+  updateChatContext()
   console.log('Progress reset')
 }
 
@@ -235,6 +289,11 @@ const resetProgress = () => {
 const clearError = () => {
   commonStore.clearError()
 }
+
+// 监听当前步骤变化
+watch(currentStep, () => {
+  updateChatContext()
+})
 
 // 组件挂载时的初始化
 onMounted(() => {
@@ -250,6 +309,9 @@ onMounted(() => {
   } catch (err) {
     console.warn('Failed to load persisted data:', err)
   }
+
+  // 初始化聊天上下文
+  updateChatContext()
 })
 
 // 监听路由变化，同步步骤状态
@@ -263,12 +325,14 @@ watch(
   },
 )
 
-// 监听数据变化，自动保存
+// 监听数据变化，自动保存和更新聊天上下文
 watch(
   [productions, inputString],
   () => {
     // 防抖保存
     ll1Store.persistence.save()
+    // 更新聊天上下文
+    updateChatContext()
   },
   { deep: true },
 )

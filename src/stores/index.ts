@@ -8,4 +8,5 @@ export { useFAStore } from './fa'
 
 // 导出AI聊天store
 export { useFAChatStore } from './faChat'
+export { useLL1ChatStore } from './ll1Chat'
 
