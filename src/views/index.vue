@@ -1,7 +1,7 @@
 <template>
   <div class="home-page min-h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
-    <header class="theme-header-bg backdrop-blur-sm border-b theme-header-border">
+    <header class="fixed top-0 left-0 right-0 z-50 theme-header-bg backdrop-blur-sm border-b theme-header-border">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
@@ -21,7 +21,7 @@
     </header>
 
     <!-- 主要内容 -->
-    <main class="max-w-7xl mx-auto px-4 py-16">
+    <main class="max-w-7xl mx-auto px-4 py-16 mt-20">
       <!-- 欢迎区域 -->
       <div class="text-center mb-16">
         <h2 class="text-4xl font-bold text-gray-900 mb-4">
