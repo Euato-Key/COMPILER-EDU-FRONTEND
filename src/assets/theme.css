@@ -66,3 +66,8 @@ html, body {
 .theme-border-primary {
   border-color: var(--theme-primary);
 }
+
+/* 主题焦点样式 */
+.focus\:ring-theme-primary:focus {
+  --tw-ring-color: var(--theme-primary);
+}

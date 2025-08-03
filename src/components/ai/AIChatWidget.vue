@@ -4,7 +4,7 @@
     <div class="fixed top-4 left-4 z-50">
       <button
         @click="toggleChat"
-        class="group relative bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+        class="group relative theme-btn-primary text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
         :class="{ 'rotate-180': isExpanded }"
       >
         <Icon
@@ -42,7 +42,7 @@
       <div
         v-if="isExpanded"
         ref="chatContainer"
-        class="fixed top-20 left-4 z-50 bg-white border border-gray-200 rounded-lg shadow-2xl"
+        class="fixed top-20 left-4 z-50 theme-content-bg border rounded-lg shadow-2xl theme-transition"
         :style="chatWindowStyle"
       >
         <!-- 调整大小手柄 -->
