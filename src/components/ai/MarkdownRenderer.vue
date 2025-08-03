@@ -7,8 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import MarkdownIt from 'markdown-it'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 // Props
 interface Props {
@@ -47,16 +49,58 @@ md.renderer.rules.table_close = function () {
   return '</table></div>'
 }
 
+
+
 // 渲染Markdown内容
-const renderContent = () => {
+const renderContent = async () => {
   if (!props.content) {
     renderedContent.value = ''
     return
   }
 
   try {
-    const html = md.render(props.content)
-    renderedContent.value = html
+    // 先处理数学公式，用特殊标记替换
+    const processedContent = props.content
+      .replace(/\\\(([\s\S]*?)\\\)/g, 'MATH_INLINE_START$1MATH_INLINE_END')
+      .replace(/\\\[([\s\S]*?)\\\]/g, 'MATH_DISPLAY_START$1MATH_DISPLAY_END')
+      .replace(/\$([^\$\n]+?)\$/g, 'MATH_INLINE_START$1MATH_INLINE_END')
+      .replace(/\$\$([\s\S]*?)\$\$/g, 'MATH_DISPLAY_START$1MATH_DISPLAY_END')
+
+    // 渲染Markdown
+    const html = md.render(processedContent)
+
+    // 替换特殊标记为KaTeX渲染结果
+    const finalHtml = html
+      .replace(/MATH_INLINE_START([\s\S]*?)MATH_INLINE_END/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            displayMode: false,
+            throwOnError: false,
+            errorColor: '#cc0000'
+          })
+        } catch (error) {
+          console.warn('KaTeX inline error:', error)
+          return match
+        }
+      })
+      .replace(/MATH_DISPLAY_START([\s\S]*?)MATH_DISPLAY_END/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            displayMode: true,
+            throwOnError: false,
+            errorColor: '#cc0000'
+          })
+        } catch (error) {
+          console.warn('KaTeX block error:', error)
+          return match
+        }
+      })
+
+    renderedContent.value = finalHtml
+
+    // 等待DOM更新后执行后续操作
+    await nextTick()
+
   } catch (error) {
     console.error('Markdown渲染错误:', error)
     const errorMessage = error instanceof Error ? error.message : '未知错误'
@@ -382,6 +426,27 @@ watch(() => props.content, renderContent, { immediate: true })
 
 .dark .markdown-renderer :deep(.table-wrapper) {
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+}
+
+/* 数学公式样式 */
+.markdown-renderer :deep(.katex) {
+  color: rgb(17 24 39);
+  font-size: 1em;
+}
+
+.dark .markdown-renderer :deep(.katex) {
+  color: rgb(243 244 246);
+}
+
+.markdown-renderer :deep(.katex-display) {
+  margin: 1rem 0;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.markdown-renderer :deep(.katex-display .katex) {
+  font-size: 1.1em;
 }
 
 /* 错误样式 */
