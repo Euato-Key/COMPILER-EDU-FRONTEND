@@ -85,7 +85,7 @@ const props = defineProps<Props>()
 const isExpanded = ref(false)
 const chatContainer = ref<HTMLElement>()
 const isResizing = ref(false)
-const chatWidth = ref(400)
+const chatWidth = ref(600)
 const chatHeight = ref(Math.min(window.innerHeight - 120, 800)) // 动态计算初始高度
 const unreadCount = ref(0)
 const hasUnreadMessages = ref(false)
@@ -94,9 +94,9 @@ const hasUnreadMessages = ref(false)
 const chatWindowStyle = computed(() => ({
   width: `${chatWidth.value}px`,
   height: `${chatHeight.value}px`,
-  minWidth: '350px',
+  minWidth: '400px',
   minHeight: '500px',
-  maxWidth: '600px',
+  maxWidth: '90vw',
   maxHeight: 'calc(100vh - 120px)' // 减去顶部空间，更好地利用屏幕高度
 }))
 
@@ -125,7 +125,7 @@ const startResize = (e: MouseEvent) => {
     const deltaY = e.clientY - startY
 
     // 在左侧时，向右调整宽度，向下调整高度
-    chatWidth.value = Math.max(350, Math.min(600, startWidth + deltaX))
+    chatWidth.value = Math.max(400, Math.min(window.innerWidth * 0.9, startWidth + deltaX))
     chatHeight.value = Math.max(500, Math.min(window.innerHeight - 120, startHeight + deltaY))
   }
 
