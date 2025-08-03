@@ -88,7 +88,11 @@
             </div>
             <div class="flex-1 min-w-0 w-full">
               <div class="bg-gray-100 text-gray-900 px-4 py-2 rounded-2xl rounded-bl-md shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 w-full">
-                <div class="text-sm whitespace-pre-wrap markdown-content w-full" v-html="renderMarkdown(message.content)"></div>
+                <MarkdownRenderer
+                  :content="message.content"
+                  theme="auto"
+                  size="sm"
+                />
               </div>
               <!-- 操作按钮行 -->
               <div class="flex items-center gap-2 mt-2 ml-2">
@@ -111,7 +115,11 @@
           </div>
           <div class="flex-1 min-w-0 w-full">
             <div class="bg-gray-100 text-gray-900 px-4 py-2 rounded-2xl rounded-bl-md shadow-sm border-l-4 border-purple-400 w-full">
-              <div class="text-sm whitespace-pre-wrap markdown-content w-full" v-html="renderMarkdown(currentStreamContent)"></div>
+              <MarkdownRenderer
+                :content="currentStreamContent"
+                theme="auto"
+                size="sm"
+              />
               <span class="inline-block w-2 h-4 bg-purple-400 animate-pulse rounded"></span>
             </div>
             <!-- 操作按钮行 -->
@@ -196,30 +204,9 @@ import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useAIChat } from './composables/useAIChat'
 import type { ChatContext } from './types'
+import MarkdownRenderer from '@/components/ai/MarkdownRenderer.vue'
 
-// 简单的Markdown渲染函数
-const renderMarkdown = (text: string): string => {
-  if (!text) return ''
-
-  return text
-    // 处理标题
-    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-900 mb-2">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-gray-900 mb-3">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-900 mb-4">$1</h1>')
-    // 处理粗体
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    // 处理斜体
-    .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
-    // 处理代码块
-    .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-100 p-3 rounded-lg overflow-x-auto my-2"><code>$1</code></pre>')
-    // 处理行内代码
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-gray-800 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
-    // 处理列表
-    .replace(/^\d+\.\s+(.*$)/gim, '<li class="ml-4">$1</li>')
-    .replace(/^-\s+(.*$)/gim, '<li class="ml-4">$1</li>')
-    // 处理换行
-    .replace(/\n/g, '<br>')
-}
+// 移除简单的Markdown渲染函数，使用新的MarkdownRenderer组件
 
 // 复制到剪贴板函数
 const copyToClipboard = async (text: string) => {
