@@ -95,6 +95,7 @@ export const useHomeChatStore = defineStore('home-chat', () => {
    - 步骤流程图导航
    - 进度保存和恢复
    - 动画效果和交互反馈
+   - AI教学助手智能问答
     `,
 
     learningPath: `
