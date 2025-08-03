@@ -26,6 +26,8 @@
     "clsx": "^2.1.1",
     "gsap": "^3.13.0",
     "lucide-vue-next": "^0.525.0",
+    "marked": "^16.1.1",
+    "openai": "^5.11.0",
     "pinia": "^3.0.3",
     "sass-embedded": "^1.89.2",
     "tailwind-merge": "^3.3.1",
