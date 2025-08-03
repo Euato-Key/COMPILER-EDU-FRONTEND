@@ -37,7 +37,7 @@ export function useAIChat() {
   }
 
     // 构建系统提示词
-  const buildSystemPrompt = (context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any): string => {
+  const buildSystemPrompt = (context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any): string => {
     let prompt = '你是一个编译原理教学助手，专门帮助学生理解编译原理的概念和算法。'
 
     if (context.currentPage) {
@@ -66,6 +66,12 @@ export function useAIChat() {
       prompt += `\n\n当前步骤知识库：${stepKnowledge}`
     }
 
+    // 添加SLR1步骤知识库
+    if (slr1ChatStore && context.userInput?.currentStep) {
+      const stepKnowledge = slr1ChatStore.getStepKnowledge(context.userInput.currentStep)
+      prompt += `\n\n当前步骤知识库：${stepKnowledge}`
+    }
+
     if (context.userInput) {
       prompt += `\n\n用户输入数据：${JSON.stringify(context.userInput, null, 2)}`
     }
@@ -84,12 +90,13 @@ export function useAIChat() {
   }
 
           // 发送消息到AI
-  const sendMessage = async (userMessage: string, context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any): Promise<AIResponse> => {
+  const sendMessage = async (userMessage: string, context: ChatContext, faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any): Promise<AIResponse> => {
     try {
       // 根据页面类型选择正确的store
       const currentStore = context.currentPage === 'fa' ? faChatStore :
                           context.currentPage === 'll1' ? ll1ChatStore :
-                          context.currentPage === 'lr0' ? lr0ChatStore : null
+                          context.currentPage === 'lr0' ? lr0ChatStore :
+                          context.currentPage === 'slr1' ? slr1ChatStore : null
 
       if (currentStore) {
         currentStore.setError(null)
@@ -109,7 +116,7 @@ export function useAIChat() {
       }
 
                   // 构建系统提示词
-      const systemPrompt = buildSystemPrompt(context, faChatStore, ll1ChatStore, lr0ChatStore)
+      const systemPrompt = buildSystemPrompt(context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore)
 
       // 构建消息历史
       const messageHistory: Message[] = [
@@ -164,7 +171,8 @@ export function useAIChat() {
       // 根据页面类型选择正确的store进行错误处理
       const errorStore = context.currentPage === 'fa' ? faChatStore :
                         context.currentPage === 'll1' ? ll1ChatStore :
-                        context.currentPage === 'lr0' ? lr0ChatStore : null
+                        context.currentPage === 'lr0' ? lr0ChatStore :
+                        context.currentPage === 'slr1' ? slr1ChatStore : null
 
       if (errorStore) {
         errorStore.setError(errorMessage)
@@ -185,7 +193,7 @@ export function useAIChat() {
   }
 
   // 清空聊天记录
-  const clearChat = (faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any) => {
+  const clearChat = (faChatStore?: any, ll1ChatStore?: any, lr0ChatStore?: any, slr1ChatStore?: any) => {
     if (faChatStore) {
       faChatStore.clearChat()
       faChatStore.clearStorage()
@@ -195,6 +203,9 @@ export function useAIChat() {
     } else if (lr0ChatStore) {
       lr0ChatStore.clearChat()
       lr0ChatStore.clearStorage()
+    } else if (slr1ChatStore) {
+      slr1ChatStore.clearChat()
+      slr1ChatStore.clearStorage()
     } else {
       messages.value = []
       error.value = null

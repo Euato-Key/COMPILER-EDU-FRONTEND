@@ -10,4 +10,5 @@ export { useFAStore } from './fa'
 export { useFAChatStore } from './faChat'
 export { useLL1ChatStore } from './ll1Chat'
 export { useLR0ChatStore } from './lr0Chat'
+export { useSLR1ChatStore } from './slr1Chat'
 
