@@ -956,6 +956,9 @@ const proceedToNext = () => {
       timestamp: new Date().toISOString(),
     }
 
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
     // 触发下一步事件
     emit('next-step')
   }

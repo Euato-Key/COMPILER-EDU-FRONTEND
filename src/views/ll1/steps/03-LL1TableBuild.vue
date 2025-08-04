@@ -501,7 +501,7 @@
         </button>
         <div class="text-sm text-gray-500">步骤 3 / 4</div>
         <button
-          @click="$emit('next-step')"
+          @click="handleNextStep"
           :disabled="!allCompleted"
           :class="[
             'px-6 py-2 rounded-lg transition-colors flex items-center gap-2',
@@ -585,7 +585,7 @@ const ll1Store = useLL1Store()
 const { originalData, firstSets, followSets } = storeToRefs(ll1Store)
 
 // 定义 emits
-defineEmits<{
+const emit = defineEmits<{
   'next-step': []
   'prev-step': []
   complete: [data: Record<string, unknown>]
@@ -1311,6 +1311,13 @@ const executeTableFlyingAnimation = async (nonTerminal: string, terminal: string
   flyingSymbols.value = flyingSymbols.value.filter(
     fs => !(fs.symbol === production && fs.target === `${nonTerminal}|${terminal}`)
   )
+}
+
+// 处理下一步
+const handleNextStep = () => {
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  emit('next-step')
 }
 
 // 一键清空所有状态

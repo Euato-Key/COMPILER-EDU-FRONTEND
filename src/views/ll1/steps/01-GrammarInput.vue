@@ -731,6 +731,8 @@ function useExample(example: { name: string; grammar: string; description: strin
 // 处理下一步
 function handleNextStep() {
   if (canProceed.value) {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
 }

@@ -1555,6 +1555,10 @@ const proceedToNext = () => {
     }
 
     localStorage.setItem('fa-step3-data', JSON.stringify(stepData))
+
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
     emit('next-step')
   }
 }
