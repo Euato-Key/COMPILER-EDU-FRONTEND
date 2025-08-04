@@ -98,8 +98,11 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
             }
             break
           case 'match':
-            this.inputPointer++
-            this.remainingInput.shift() // 消耗一个输入符号
+            // LR分析器的match操作：只在移进时消耗输入字符
+            if (this.remainingInput.length > 0) {
+              this.inputPointer++
+              this.remainingInput.shift() // 消耗一个输入符号
+            }
             break
         }
 

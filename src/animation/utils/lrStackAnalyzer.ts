@@ -69,9 +69,9 @@ export class LRStackAnalyzer extends StackDiffAnalyzer {
     currSymbolStack: string[],
     prevStateStack: string[],
     currStateStack: string[],
-    _message: string,
-    _prevInput: string,
-    _currInput: string,
+    message: string,
+    prevInput: string,
+    currInput: string,
   ): StackOperation[] {
     const operations: StackOperation[] = []
 
@@ -87,9 +87,47 @@ export class LRStackAnalyzer extends StackDiffAnalyzer {
       op.stackType = 'state'
     })
 
-    // 合并两个栈的操作
+    // 分析输入串变化（根据LR动作类型）
+    const inputChanged = prevInput !== currInput
+    if (inputChanged) {
+      // 判断是否为移进操作
+      const isShiftAction = this.isShiftAction(message)
+      if (isShiftAction) {
+        // 移进操作：添加匹配操作（消耗输入字符）
+        const consumedChar = this.getConsumedCharacter(prevInput, currInput)
+        if (consumedChar) {
+          operations.push({
+            type: 'match',
+            symbol: consumedChar,
+            step: this.currentStep,
+            index: 999, // 匹配操作放在最后
+          })
+        }
+      }
+    }
+
+    // 合并所有操作
     operations.push(...symbolStackDiff, ...stateStackDiff)
 
     return operations
+  }
+
+  /**
+   * 判断是否为移进操作
+   */
+  private isShiftAction(message: string): boolean {
+    // 移进操作格式：Action[3,b]=s4: 状态4入栈
+    return message.includes('=s') && !message.includes('=r') && !message.includes('Goto')
+  }
+
+  /**
+   * 获取被消耗的字符
+   */
+  private getConsumedCharacter(prevInput: string, currInput: string): string | null {
+    if (prevInput.length > currInput.length) {
+      // 输入串变短了，返回被消耗的字符
+      return prevInput[prevInput.length - currInput.length - 1] || null
+    }
+    return null
   }
 }
