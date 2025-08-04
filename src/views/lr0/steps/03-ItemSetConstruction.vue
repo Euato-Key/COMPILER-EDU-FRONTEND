@@ -286,7 +286,13 @@
 
         <button
           @click="proceedToNext"
-          class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          :disabled="!isConstructionComplete"
+          :class="[
+            'px-6 py-2 rounded-lg transition-colors',
+            isConstructionComplete
+              ? 'bg-purple-600 text-white hover:bg-purple-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+          ]"
         >
           下一步
           <Icon icon="lucide:chevron-right" class="w-4 h-4 inline ml-2" />
@@ -396,9 +402,9 @@ const toggleAnswer = async () => {
   }
 }
 
-// 是否构造完成 - 简化逻辑，允许用户直接进入下一步
+// 是否构造完成 - 必须查看答案后才能进入下一步
 const isConstructionComplete = computed(() => {
-  return lr0Store.analysisResult !== null
+  return showAnswerFlag.value
 })
 
 // 进入下一步
