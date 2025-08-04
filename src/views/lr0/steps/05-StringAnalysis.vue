@@ -769,7 +769,12 @@ const commonStore = useCommonStore()
 const inputString = ref('')
 
 // 示例字符串（单字符格式，不包含#）
-const exampleStrings = ['aaabb', 'a+b', 'a*b', '(a)', 'a', 'b']
+// 根据LR0示例文法设定：
+// 示例1: S->Aa, A->BD, B->b, D->d -> 生成: bad
+// 示例2: S->BB, B->aB, B->b -> 生成: bb, abb, aabb
+// 示例3: S->aSd, S->bAc, A->e, A->f -> 生成: aed, afd, baed, bafd
+// 示例4: S->aX, S->bY, X->c, X->dS, Y->c, Y->eS -> 生成: ac, bc, adac, beac
+const exampleStrings = ['bad', 'bb', 'abb', 'aabb', 'aed', 'afd', 'ac', 'bc']
 
 // 答题相关状态
 const userAnswers = ref<{

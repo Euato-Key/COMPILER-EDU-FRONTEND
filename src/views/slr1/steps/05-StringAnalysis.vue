@@ -757,7 +757,12 @@ const commonStore = useCommonStore()
 const inputString = ref('')
 
 // 示例字符串（单字符格式，不包含#）
-const exampleStrings = ['ab', 'a+b', 'a*b', '(a)', 'a', 'b']
+// 根据SLR1示例文法设定：
+// 示例1: S->E, E->E+T|T, T->T*F|F, F->(E)|i -> 生成: i, i+i, i*i, (i), i+i*i
+// 示例2: S->Aa|b, A->c -> 生成: ca, b
+// 示例3: S->A, A->i=E|E, E->E+i|i|(A) -> 生成: i, i=i, i+i, (i)
+// 示例4: S->L, L->a, L->L,a -> 生成: a, a,a, a,a,a
+const exampleStrings = ['i', 'i+i', 'i*i', '(i)', 'i+i*i', 'ca', 'b', 'i=i', 'a', 'a,a']
 
 // 答题相关状态
 const userAnswers = ref<{

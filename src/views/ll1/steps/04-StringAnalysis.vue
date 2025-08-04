@@ -893,7 +893,11 @@ const analyzing = computed(() => loading.value)
 const isStepComplete = computed(() => inputAnalysisResult.value !== null)
 
 // 示例字符串 (不包含结束符，系统会自动添加#)
-const exampleStrings = ['a', 'ab', 'aab', 'b']
+// 根据LL1示例文法设定：
+// 基础文法1: S->AB, A->a|ε, B->b -> 生成: ab
+// 基础文法2: E->TG, G->+TG|ε, T->FH, H->*FH|ε, F->(E)|i -> 生成: i, i+i, i*i, (i)
+// 基础文法3: S->AB, A->aA|ε, B->bB|c -> 生成: c, bc, abc, aabc
+const exampleStrings = ['ab', 'i', 'i+i', 'i*i', 'c', 'bc', 'abc']
 
 // 答题相关状态
 const userSteps = ref<{ stack: string; input: string }[]>([])
