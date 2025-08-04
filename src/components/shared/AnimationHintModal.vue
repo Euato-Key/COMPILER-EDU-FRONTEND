@@ -43,7 +43,7 @@ export interface AnimationHintModalProps {
   details?: string
   action?: string
   duration?: number
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center' | 'top-center'
 }
 
 const props = withDefaults(defineProps<AnimationHintModalProps>(), {
@@ -68,7 +68,8 @@ const containerClass = computed(() => {
     'top-left': 'top-4 left-4',
     'bottom-right': 'bottom-4 right-4',
     'bottom-left': 'bottom-4 left-4',
-    'center': 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
+    'center': 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2',
+    'top-center': 'top-4 left-1/2 transform -translate-x-1/2'
   }
   return positionClass[props.position]
 })

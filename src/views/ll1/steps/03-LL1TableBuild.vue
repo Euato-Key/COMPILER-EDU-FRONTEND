@@ -951,7 +951,7 @@ const checkTable = async () => {
 4. 可以重新开始练习，加深理解`,
           '答案已显示',
           6000,
-          'bottom-left'
+          'top-center'
         )
       } else {
         const correctEntries = Object.keys(tableValidation.value).filter(key => tableValidation.value[key] === 'correct').length
@@ -969,7 +969,7 @@ const checkTable = async () => {
 请仔细检查错误项目，确保产生式格式正确且符合First集和Follow集规则。`,
           '请修正错误',
           5000,
-          'bottom-left'
+          'top-center'
         )
       }
     }
@@ -1357,7 +1357,7 @@ const clearAllStates = () => {
     '您可以重新开始填写LL1分析表，或使用提示功能了解构建过程。',
     '状态重置完成',
     3000,
-    'bottom-left'
+    'top-center'
   )
 }
 </script>

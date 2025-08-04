@@ -1056,7 +1056,7 @@ const onLL1CellDblClick = (row: string, col: string) => {
       '请先处理栈顶符号，或使用提示功能获取正确的操作指导。',
       '请检查栈顶符号',
       3000,
-      'bottom-left'
+      'top-center'
     )
     return
   }
@@ -1079,7 +1079,7 @@ const onLL1CellDblClick = (row: string, col: string) => {
     `栈顶符号 "${row}" 被替换为 "${prod}"，分析继续进行。`,
     '推导操作完成',
     2500,
-    'bottom-left'
+    'top-center'
   )
 
   // 检查是否完成分析（虽然这里通常不会完成，但为了完整性）
@@ -1118,7 +1118,7 @@ const onMatch = () => {
       '栈顶符号被弹出，输入串首字符被消耗，分析继续进行。',
       '匹配操作完成',
       2500,
-      'bottom-left'
+      'top-center'
     )
 
     // 检查是否完成分析
@@ -1133,7 +1133,7 @@ const onMatch = () => {
       '请检查当前状态，或使用提示功能获取正确的操作指导。',
       '请检查符号匹配',
       3000,
-      'bottom-left'
+      'top-center'
     )
   }
 }
@@ -1149,7 +1149,7 @@ const onUndo = () => {
       '您可以重新执行正确的操作。',
       '回退操作完成',
       2000,
-      'bottom-left'
+      'top-center'
     )
   } else {
     showHintModal(
@@ -1159,7 +1159,7 @@ const onUndo = () => {
       '请继续进行分析操作。',
       '无法回退',
       2000,
-      'bottom-left'
+      'top-center'
     )
   }
 }
@@ -1184,7 +1184,7 @@ const onResetUserSteps = () => {
     '您可以重新执行LL1分析过程。',
     '重置操作完成',
     2000,
-    'bottom-left'
+    'top-center'
   )
 }
 
@@ -1269,7 +1269,7 @@ const onHint = async () => {
     '请检查您的分析步骤是否正确，或者查看标准答案了解正确的分析过程。',
     '请检查分析步骤',
     4000,
-    'bottom-left'
+    'top-center'
   )
 }
 

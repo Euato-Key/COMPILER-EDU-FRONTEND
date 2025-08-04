@@ -294,7 +294,7 @@
                     :key="'first-vn-' + symbol"
                     class="flex items-center gap-2"
               >
-                    <span class="w-16 text-sm font-medium text-gray-700">
+                    <span class="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
                   first(<span class="font-mono text-blue-700">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
@@ -442,7 +442,7 @@
                 :key="'follow-' + symbol"
                 class="flex items-center gap-2"
               >
-                <span class="w-16 text-sm font-medium text-gray-700">
+                <span class="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
                   follow(<span class="font-mono text-green-700">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
@@ -921,7 +921,7 @@ First集是LL1分析表构建的基础，接下来可以继续计算Follow集。
 4. 按照First集计算规则填写`,
         '请修正错误',
         5000,
-        'bottom-left'
+        'top-center'
       )
     }
   } finally {
@@ -981,7 +981,7 @@ First集和Follow集都已计算完成，可以进入下一步构建LL1分析表
 4. 按照Follow集计算规则填写`,
         '请修正错误',
         5000,
-        'bottom-left'
+        'top-center'
       )
     }
   } finally {
@@ -1006,7 +1006,7 @@ const clearFirstSets = () => {
       '您可以重新开始填写First集，或使用提示功能了解计算过程。',
       '状态重置完成',
       3000,
-      'bottom-left'
+      'top-center'
     )
   }
 }
@@ -1026,7 +1026,7 @@ const clearFollowSets = () => {
       '您可以重新开始填写Follow集，或使用提示功能了解计算过程。',
       '状态重置完成',
       3000,
-      'bottom-left'
+      'top-center'
     )
   }
 }
