@@ -162,14 +162,15 @@
                             class="border border-gray-300 px-3 py-2"
                           >
                             <input
-                              v-model="userConversionTable[column][rowIndex]"
+                              :value="userConversionTable[column]?.[rowIndex] || ''"
+                              @input="(event) => updateConversionTable(column, rowIndex, (event.target as HTMLInputElement).value)"
                               type="text"
                               :placeholder="column === 'I' ? '状态集合' : '符号间用空格分隔'"
                               :class="getFieldClass(rowIndex, column, 'table') + ' text-center'"
                               @blur="
                                 () =>
                                   validateField(
-                                    userConversionTable[column][rowIndex],
+                                    userConversionTable[column]?.[rowIndex] || '',
                                     rowIndex,
                                     column,
                                     'table',
@@ -925,6 +926,17 @@ const removeTableRow = (rowIndex: number) => {
 
   // 保存数据
   saveStep3Data()
+}
+
+// 更新转换表单元格值
+const updateConversionTable = (column: string, rowIndex: number, value: string) => {
+  if (!userConversionTable.value[column]) {
+    userConversionTable.value[column] = []
+  }
+  if (!userConversionTable.value[column][rowIndex]) {
+    userConversionTable.value[column][rowIndex] = ''
+  }
+  userConversionTable.value[column][rowIndex] = value
 }
 
 const clearUserTable = () => {
