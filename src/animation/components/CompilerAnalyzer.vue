@@ -85,19 +85,26 @@ const setupAnimationData = async () => {
     const rawData = getRawAnalysisData()
 
     if (!rawData) {
-      console.log('No analysis data available')
+      console.log('CompilerAnalyzer: No analysis data available')
       return
     }
 
+    console.log('CompilerAnalyzer: Raw analysis data:', rawData)
+
     // 检查Store是否已解析数据
     if (animationStore.parseStatus !== 'ready') {
-      console.log('Parsing animation data for', props.algorithm)
+      console.log('CompilerAnalyzer: Parsing animation data for', props.algorithm)
       await animationStore.parseAnimationData(rawData)
+      console.log('CompilerAnalyzer: Parse status after parsing:', animationStore.parseStatus)
     }
 
-    console.log('Animation setup complete, total steps:', totalSteps.value)
+    console.log('CompilerAnalyzer: Animation setup complete, total steps:', totalSteps.value)
+    console.log(
+      'CompilerAnalyzer: Animation store hasAnimationData:',
+      animationStore.hasAnimationData,
+    )
   } catch (error) {
-    console.error('Failed to setup animation data:', error)
+    console.error('CompilerAnalyzer: Failed to setup animation data:', error)
   }
 }
 

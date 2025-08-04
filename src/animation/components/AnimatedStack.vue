@@ -100,16 +100,19 @@ const initializeStack = (stack: string[]) => {
   visibleStack.value = stack.map((value) => createStackItem(value))
 }
 
-// 动画队列管理
+// 动画队列管理（简化版本）
 const queueAnimation = (animation: StackAnimation) => {
-  animationQueue.value.push(animation)
-  if (!isAnimating.value) {
-    processAnimationQueue()
-  }
+  // 暂时禁用复杂的动画队列
+  // animationQueue.value.push(animation)
+  // if (!isAnimating.value) {
+  //   processAnimationQueue()
+  // }
 }
 
-// 分析栈变化
+// 分析栈变化（简化版本，暂时不使用）
 const analyzeStackChanges = (oldStack: string[], newStack: string[]) => {
+  // 暂时禁用复杂的差异分析
+  /*
   const oldLength = oldStack.length
   const newLength = newStack.length
 
@@ -130,23 +133,40 @@ const analyzeStackChanges = (oldStack: string[], newStack: string[]) => {
       queueAnimation({ type: 'multiple-pop', items: Array(removedCount).fill('') })
     }
   }
+  */
 }
 
 // 监听栈数据变化
 watch(
   () => props.stack,
   (newStack, oldStack) => {
+    console.log('AnimatedStack: Stack changed from', oldStack, 'to', newStack)
+
+    // 简化逻辑：直接更新显示，不做复杂的差异分析
     if (!oldStack || oldStack.length === 0) {
       // 初始化栈
       initializeStack(newStack)
     } else {
-      // 计算栈变化并添加到动画队列
-      analyzeStackChanges(oldStack, newStack)
+      // 直接更新栈显示，添加简单的过渡效果
+      updateStackDirectly(newStack)
     }
   },
   { immediate: true },
 )
 
+// 直接更新栈显示
+const updateStackDirectly = (newStack: string[]) => {
+  // 直接替换整个栈，让Vue的transition-group处理动画
+  visibleStack.value = newStack.map((value, index) => createStackItem(value))
+
+  // 触发简单的完成回调
+  nextTick(() => {
+    emit('animationComplete')
+  })
+}
+
+// 注释掉复杂的动画队列处理，使用简化版本
+/*
 const processAnimationQueue = async () => {
   if (animationQueue.value.length === 0 || isAnimating.value) return
 
@@ -175,6 +195,7 @@ const executeAnimation = async (animation: StackAnimation): Promise<void> => {
       return animateMultiplePop((animation.items as string[]).length)
   }
 }
+*/
 
 // 入栈动画
 const animatePush = async (value: string): Promise<void> => {

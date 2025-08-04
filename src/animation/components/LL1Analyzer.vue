@@ -60,6 +60,18 @@ const props = defineProps<{
 // 获取对应的动画Store
 const animationStore = AnimationStoreFactory.getStore(props.algorithm)
 
+// 获取初始输入串（从原始数据）
+const getInitialInput = () => {
+  // 尝试从动画Store的第一个指令获取完整输入
+  const firstInstruction = animationStore.getInstructionAtStep(0)
+  if (firstInstruction?.targetState?.remainingInput) {
+    return firstInstruction.targetState.remainingInput
+  }
+
+  // 如果没有，返回空数组
+  return []
+}
+
 const onStackAnimationComplete = () => {
   console.log('Stack animation completed')
 }
@@ -74,11 +86,32 @@ const onProductionAnimationComplete = () => {
 
 // 基于动画指令计算当前状态
 const currentAnimationState = computed(() => {
-  if (!animationStore.hasAnimationData) return null
+  if (!animationStore.hasAnimationData) {
+    console.log('LL1Analyzer: No animation data available')
+    return null
+  }
 
   // 获取当前步骤的指令
   const currentInstruction = animationStore.getInstructionAtStep(props.currentStep)
+
+  // 调试信息
+  console.log('LL1Analyzer - Current Step:', props.currentStep)
+  console.log('LL1Analyzer - Current Instruction:', currentInstruction)
+
+  // 如果是第0步，显示初始状态
+  if (props.currentStep === 0) {
+    console.log('LL1Analyzer: Showing initial state for step 0')
+    const initialInput = getInitialInput()
+    return {
+      stack: ['S', '#'], // 初始状态：起始符号在栈顶
+      inputPointer: 0,
+      remainingInput: initialInput,
+      production: null,
+    }
+  }
+
   if (!currentInstruction || !currentInstruction.targetState) {
+    console.log('LL1Analyzer: No instruction or target state for step', props.currentStep)
     return {
       stack: ['#'],
       inputPointer: 0,
@@ -87,12 +120,15 @@ const currentAnimationState = computed(() => {
     }
   }
 
-  return {
+  const state = {
     stack: currentInstruction.targetState.stack || ['#'],
     inputPointer: currentInstruction.targetState.inputPointer || 0,
     remainingInput: currentInstruction.targetState.remainingInput || [],
     production: currentInstruction.productionInfo || null,
   }
+
+  console.log('LL1Analyzer - Computed State:', state)
+  return state
 })
 
 const totalSteps = computed(() => animationStore.totalSteps)

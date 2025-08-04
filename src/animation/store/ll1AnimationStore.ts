@@ -53,14 +53,15 @@ export const useLL1AnimationStore = defineStore('ll1Animation', () => {
       const stackOps = analyzer.analyzeStackDifferences()
       stackOperations.value = stackOps
 
-      console.log('栈操作分析完成:', stackOps)
+      console.log('LL1AnimationStore: 栈操作分析完成:', stackOps)
+      console.log('LL1AnimationStore: 原始栈数据:', stepData.info_stack)
 
       // 2. 生成动画指令，传递原始数据
       const instructionGen = new AnimationInstructionGenerator()
       const instructions = instructionGen.generate(stackOps, stepData)
       animationInstructions.value = instructions
 
-      console.log('动画指令生成完成:', instructions)
+      console.log('LL1AnimationStore: 动画指令生成完成:', instructions)
 
       // 3. 建立步骤映射关系
       buildStepMappings()
