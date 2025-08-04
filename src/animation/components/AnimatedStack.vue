@@ -27,10 +27,16 @@
           ]"
           :style="{
             zIndex: visibleStack.length - index,
-            transform: `translateY(${index * stackItemHeight}px)`,
+            position: 'absolute',
+            top: `${index * (stackItemHeight + stackItemGap)}px`,
+            left: '50%',
+            transform: 'translateX(-50%)',
           }"
+          :title="`Item ${index}: ${item.value}, top: ${index * (stackItemHeight + stackItemGap)}px`"
         >
           {{ item.value }}
+          <!-- 调试信息 -->
+          <span v-if="false" class="debug-info">{{ index }}:{{ item.value }}</span>
         </div>
       </transition-group>
     </div>
@@ -72,14 +78,18 @@ const animationQueue = ref<StackAnimation[]>([])
 const isAnimating = ref(false)
 
 // 常量配置
-const stackItemHeight = 32 // 1.8rem + gap
+const stackItemHeight = 28.8 // 1.8rem 实际像素值
+const stackItemGap = 2 // 元素间距
 const baseHeight = 160 // 基础容器高度
 const maxItems = 8 // 最大可见栈项数
 
 // 计算属性
 const containerHeight = computed(() => {
   const itemsCount = Math.min(visibleStack.value.length, maxItems)
-  return baseHeight + itemsCount * stackItemHeight
+  if (itemsCount === 0) return baseHeight
+  // 计算实际需要的高度：基础高度 + 元素高度 * 数量 + 间距 * (数量-1)
+  const stackHeight = itemsCount * stackItemHeight + (itemsCount - 1) * stackItemGap
+  return baseHeight + stackHeight
 })
 
 // 生成唯一ID
@@ -97,7 +107,20 @@ const createStackItem = (value: string, state: 'normal' | 'entering' = 'normal')
 
 // 初始化栈
 const initializeStack = (stack: string[]) => {
+  console.log('AnimatedStack: initializeStack called with:', stack)
   visibleStack.value = stack.map((value) => createStackItem(value))
+  console.log('AnimatedStack: visibleStack after init:', visibleStack.value)
+
+  // 调试容器高度
+  nextTick(() => {
+    console.log('AnimatedStack: containerHeight:', containerHeight.value)
+    console.log('AnimatedStack: stackItemHeight:', stackItemHeight)
+    console.log('AnimatedStack: visibleStack.length:', visibleStack.value.length)
+    if (stackWrapper.value) {
+      console.log('AnimatedStack: stackWrapper offsetHeight:', stackWrapper.value.offsetHeight)
+      console.log('AnimatedStack: stackWrapper scrollHeight:', stackWrapper.value.scrollHeight)
+    }
+  })
 }
 
 // 动画队列管理（简化版本）
@@ -156,8 +179,10 @@ watch(
 
 // 直接更新栈显示
 const updateStackDirectly = (newStack: string[]) => {
+  console.log('AnimatedStack: updateStackDirectly called with:', newStack)
   // 直接替换整个栈，让Vue的transition-group处理动画
   visibleStack.value = newStack.map((value, index) => createStackItem(value))
+  console.log('AnimatedStack: visibleStack after update:', visibleStack.value)
 
   // 触发简单的完成回调
   nextTick(() => {
@@ -391,10 +416,9 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start; /* 改为从顶部开始 */
   min-height: 100px;
   max-height: 300px;
-  overflow: hidden;
   position: relative;
   width: 100%;
 }
@@ -404,7 +428,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column; /* 改为正常方向：栈顶在上，栈底在下 */
   align-items: center;
-  gap: 2px;
+  /* 移除gap，使用transform定位 */
 }
 
 .stack-item {
@@ -418,7 +442,6 @@ onMounted(() => {
   font-family: ui-monospace, SFMono-Regular, monospace;
   border-radius: 0.375rem;
   background-color: #f9fafb;
-  position: relative;
   will-change: transform, opacity, background-color;
   user-select: none;
 }

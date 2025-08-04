@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
+import { useLL1Store } from '@/stores'
 import { AnimationStoreFactory } from '@/animation/store/animationStoreFactory'
 import AnimatedStack from './AnimatedStack.vue'
 import AnimatedInput from './AnimatedInput.vue'
@@ -62,14 +63,47 @@ const animationStore = AnimationStoreFactory.getStore(props.algorithm)
 
 // 获取初始输入串（从原始数据）
 const getInitialInput = () => {
+  // 尝试从CompilerAnalyzer的原始数据获取初始输入
+  const ll1Store = useLL1Store()
+  const rawData = ll1Store.inputAnalysisResult
+  if (rawData?.info_str?.[0]) {
+    return rawData.info_str[0].split('')
+  }
+
   // 尝试从动画Store的第一个指令获取完整输入
   const firstInstruction = animationStore.getInstructionAtStep(0)
   if (firstInstruction?.targetState?.remainingInput) {
     return firstInstruction.targetState.remainingInput
   }
 
-  // 如果没有，返回空数组
+  // 如果都没有，返回空数组
   return []
+}
+
+// 获取初始栈状态
+const getInitialStack = () => {
+  // 从原始数据获取初始栈状态
+  const ll1Store = useLL1Store()
+  const rawData = ll1Store.inputAnalysisResult
+
+  console.log('getInitialStack - rawData:', rawData)
+  console.log('getInitialStack - info_stack:', rawData?.info_stack)
+  console.log('getInitialStack - info_stack[0]:', rawData?.info_stack?.[0])
+
+  if (rawData?.info_stack?.[0]) {
+    // 解析初始栈状态 #S -> ['S', '#']
+    const parsed = rawData.info_stack[0]
+      .split('')
+      .filter((c: string) => c !== '')
+      .reverse()
+
+    console.log('getInitialStack - parsed result:', parsed)
+    return parsed
+  }
+
+  // 默认初始状态
+  console.log("getInitialStack - using default: ['S', '#']")
+  return ['S', '#']
 }
 
 const onStackAnimationComplete = () => {
@@ -102,12 +136,20 @@ const currentAnimationState = computed(() => {
   if (props.currentStep === 0) {
     console.log('LL1Analyzer: Showing initial state for step 0')
     const initialInput = getInitialInput()
-    return {
-      stack: ['S', '#'], // 初始状态：起始符号在栈顶
+    const initialStack = getInitialStack()
+
+    console.log('LL1Analyzer - initialInput:', initialInput)
+    console.log('LL1Analyzer - initialStack:', initialStack)
+
+    const initialState = {
+      stack: initialStack, // 使用真正的初始栈状态
       inputPointer: 0,
       remainingInput: initialInput,
       production: null,
     }
+
+    console.log('LL1Analyzer - returning initial state:', initialState)
+    return initialState
   }
 
   if (!currentInstruction || !currentInstruction.targetState) {
