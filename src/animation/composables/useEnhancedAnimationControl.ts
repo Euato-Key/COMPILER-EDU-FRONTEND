@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 
 export interface AnimationStep {
@@ -22,13 +22,31 @@ export interface AnimationStep {
   delay: number
 }
 
-export function useEnhancedAnimationControl(totalSteps: Ref<number>) {
+export function useEnhancedAnimationControl(animationStore: any) {
   const isPlaying = ref(false)
   const currentStep = ref(0)
   const speed = ref(1)
   const timeline = ref<gsap.core.Timeline | null>(null)
   const animationSteps = ref<AnimationStep[]>([])
   const pendingAnimations = ref<Set<string>>(new Set())
+
+  // 基于Store数据的总步数
+  const totalSteps = computed(() => animationStore.totalSteps)
+
+  // 同步当前步骤到Store
+  watch(currentStep, (newStep) => {
+    animationStore.setCurrentStep(newStep)
+  })
+
+  // 从Store同步当前步骤
+  watch(
+    () => animationStore.currentStep,
+    (newStep) => {
+      if (newStep !== currentStep.value) {
+        currentStep.value = newStep
+      }
+    },
+  )
 
   // 动画完成追踪
   const trackAnimationCompletion = (animationType: string) => {
@@ -58,18 +76,22 @@ export function useEnhancedAnimationControl(totalSteps: Ref<number>) {
     }
   }
 
-  // 播放控制
+  // 播放控制基于Store状态
   const play = () => {
-    isPlaying.value = true
-    if (timeline.value) {
-      timeline.value.play()
-    } else {
-      proceedToNextStep()
+    if (animationStore.canPlay) {
+      isPlaying.value = true
+      animationStore.play()
+      if (timeline.value) {
+        timeline.value.play()
+      } else {
+        proceedToNextStep()
+      }
     }
   }
 
   const pause = () => {
     isPlaying.value = false
+    animationStore.pause()
     if (timeline.value) {
       timeline.value.pause()
     }
@@ -79,40 +101,46 @@ export function useEnhancedAnimationControl(totalSteps: Ref<number>) {
     isPlaying.value = false
     currentStep.value = 0
     pendingAnimations.value.clear()
+    animationStore.resetPlayback()
     if (timeline.value) {
       timeline.value.restart().pause()
     }
   }
 
+  // 步骤控制同步到Store
   const step = () => {
     if (currentStep.value < totalSteps.value - 1) {
       currentStep.value++
-      isPlaying.value = false
     }
+    isPlaying.value = false
   }
 
   const stepBack = () => {
     if (currentStep.value > 0) {
       currentStep.value--
-      isPlaying.value = false
-      pendingAnimations.value.clear()
     }
+    isPlaying.value = false
+    pendingAnimations.value.clear()
   }
 
   const setSpeed = (newSpeed: number) => {
     speed.value = newSpeed
+    animationStore.setPlaybackSpeed(newSpeed)
     if (timeline.value) {
       timeline.value.timeScale(newSpeed)
     }
   }
 
-  // 创建协调动画时间线
+  // 创建协调动画时间线（保持向后兼容）
   const createCoordinatedTimeline = (
     analysisData: any,
     stackAnalyzer: (step: number) => string[],
     inputAnalyzer: (step: number) => { pointer: number; isMatching: boolean },
     productionAnalyzer: (step: number) => any,
   ) => {
+    // 这个方法保持向后兼容，但实际上应该使用Store中的数据
+    console.warn('createCoordinatedTimeline is deprecated, use animation store data instead')
+
     const steps: AnimationStep[] = []
 
     for (let i = 0; i < totalSteps.value; i++) {

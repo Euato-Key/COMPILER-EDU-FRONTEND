@@ -45,7 +45,7 @@
       <div class="flex justify-between items-center text-sm text-gray-600">
         <div class="truncate max-w-[60%]">
           <span class="font-medium">当前动作:</span>
-          {{ analysisData.info_msg?.[currentStep] || '-' }}
+          {{ analysisMessage }}
         </div>
         <div class="font-medium">步骤: {{ currentStep + 1 }}/{{ totalSteps }}</div>
       </div>
@@ -55,58 +55,112 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
-import { parseLRMessage } from '@/animation/utils/messageParser'
+import { AnimationStoreFactory } from '@/animation/store/animationStoreFactory'
 import AnimatedStack from './AnimatedStack.vue'
 import AnimatedInput from './AnimatedInput.vue'
 import AnimatedProduction from './AnimatedProduction.vue'
 
 const props = defineProps<{
-  algorithm: string
-  analysisData: any
+  algorithm: 'LR0' | 'SLR1'
   currentStep: number
   isPlaying: boolean
 }>()
 
+// 获取对应的动画Store
+const animationStore = AnimationStoreFactory.getStore(props.algorithm)
+
 const onStateStackAnimationComplete = () => {
-  // 状态栈动画完成回调
   console.log('State stack animation completed')
 }
 
 const onSymbolStackAnimationComplete = () => {
-  // 符号栈动画完成回调
   console.log('Symbol stack animation completed')
 }
 
 const onInputAnimationComplete = () => {
-  // 输入串动画完成回调
   console.log('Input animation completed')
 }
 
 const onProductionAnimationComplete = () => {
-  // 产生式动画完成回调
   console.log('Production animation completed')
 }
 
-const totalSteps = computed(() => props.analysisData?.info_step?.length || 0)
-const currentMsg = computed(() =>
-  parseLRMessage(props.analysisData?.info_msg?.[props.currentStep] || ''),
-)
+// 基于动画指令计算当前状态
+const currentAnimationState = computed(() => {
+  if (!animationStore.hasAnimationData) return null
+
+  // 获取当前步骤的指令
+  const currentInstruction = animationStore.getInstructionAtStep(props.currentStep)
+  if (!currentInstruction || !currentInstruction.targetState) {
+    return {
+      stateStack: ['0'],
+      symbolStack: ['#'],
+      inputPointer: 0,
+      remainingInput: [],
+      production: null,
+    }
+  }
+
+  // 从动画指令中获取状态信息
+  const targetState = currentInstruction.targetState
+  return {
+    stateStack: targetState.stateStack || targetState.stack || ['0'],
+    symbolStack: targetState.symbolStack || ['#'],
+    inputPointer: targetState.inputPointer || 0,
+    remainingInput: targetState.remainingInput || [],
+    production: currentInstruction.productionInfo || null,
+  }
+})
+
+const totalSteps = computed(() => animationStore.totalSteps)
+
 const currentStateStack = computed(() => {
-  const stack = props.analysisData?.info_state_stack?.[props.currentStep]
-  return stack ? stack.split('').reverse() : []
+  const state = currentAnimationState.value
+  return state ? state.stateStack : ['0']
 })
+
 const currentSymbolStack = computed(() => {
-  const stack = props.analysisData?.info_symbol_stack?.[props.currentStep]
-  return stack ? stack.split('').reverse() : []
+  const state = currentAnimationState.value
+  if (state && state.symbolStack) {
+    return state.symbolStack
+  }
+  // 如果没有符号栈信息，返回默认值
+  return state ? ['#'] : ['#']
 })
+
 const currentInput = computed(() => {
-  const str = props.analysisData?.info_str?.[props.currentStep]
-  return str ? str.split('') : []
+  const state = currentAnimationState.value
+  return state ? state.remainingInput : []
 })
+
 const pointer = computed(() => {
-  const all = props.analysisData?.info_str?.[0]?.length || 0
-  const now = props.analysisData?.info_str?.[props.currentStep]?.length || 0
-  return all - now
+  const state = currentAnimationState.value
+  return state ? state.inputPointer : 0
+})
+
+const currentMsg = computed(() => {
+  const state = currentAnimationState.value
+  const production = state?.production
+
+  if (!production) {
+    return { type: 'message', message: '-' }
+  }
+
+  return {
+    type: production.type || 'message',
+    left: production.left || '',
+    right: production.right || '',
+    message: production.message || '',
+    currentState: '',
+    newState: '',
+    symbol: production.left || '',
+  }
+})
+
+// 获取当前分析步骤的消息
+const analysisMessage = computed(() => {
+  const instruction = animationStore.getInstructionAtStep(props.currentStep)
+  return instruction?.productionInfo?.message || '-'
 })
 </script>
 

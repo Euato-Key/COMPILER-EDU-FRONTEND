@@ -20,6 +20,10 @@ export const useLL1AnimationStore = defineStore('ll1Animation', () => {
   const isPlaying = ref(false)
   const playbackSpeed = ref(1)
 
+  // 新增：步骤映射系统
+  const stepMapping = ref<Map<number, number[]>>(new Map()) // analysisStep -> animationSteps
+  const reverseStepMapping = ref<Map<number, number>>(new Map()) // animationStep -> analysisStep
+
   // 计算属性
   const totalSteps = computed(() => animationInstructions.value.length)
   const hasAnimationData = computed(() => animationInstructions.value.length > 0)
@@ -49,14 +53,18 @@ export const useLL1AnimationStore = defineStore('ll1Animation', () => {
       const stackOps = analyzer.analyzeStackDifferences()
       stackOperations.value = stackOps
 
-      console.log('栈操作分析完成:', stackOps)
+      console.log('LL1AnimationStore: 栈操作分析完成:', stackOps)
+      console.log('LL1AnimationStore: 原始栈数据:', stepData.info_stack)
 
-      // 2. 生成动画指令
+      // 2. 生成动画指令，传递原始数据
       const instructionGen = new AnimationInstructionGenerator()
-      const instructions = instructionGen.generate(stackOps)
+      const instructions = instructionGen.generate(stackOps, stepData)
       animationInstructions.value = instructions
 
-      console.log('动画指令生成完成:', instructions)
+      console.log('LL1AnimationStore: 动画指令生成完成:', instructions)
+
+      // 3. 建立步骤映射关系
+      buildStepMappings()
 
       parseStatus.value = 'ready'
       console.log('LL1动画数据解析完成')
@@ -152,6 +160,51 @@ export const useLL1AnimationStore = defineStore('ll1Animation', () => {
     return animationInstructions.value.slice(startStep, endStep + 1)
   }
 
+  /**
+   * 建立步骤映射关系
+   */
+  const buildStepMappings = () => {
+    stepMapping.value.clear()
+    reverseStepMapping.value.clear()
+
+    animationInstructions.value.forEach((instruction) => {
+      // 建立分析步骤到动画步骤的映射
+      if (!stepMapping.value.has(instruction.analysisStep)) {
+        stepMapping.value.set(instruction.analysisStep, [])
+      }
+      stepMapping.value.get(instruction.analysisStep)!.push(instruction.step)
+
+      // 建立动画步骤到分析步骤的反向映射
+      reverseStepMapping.value.set(instruction.step, instruction.analysisStep)
+    })
+  }
+
+  /**
+   * 根据分析步骤获取对应的动画指令
+   */
+  const getInstructionsForAnalysisStep = (analysisStep: number): AnimationInstruction[] => {
+    return animationInstructions.value.filter((inst) => inst.analysisStep === analysisStep)
+  }
+
+  /**
+   * 跳转到指定分析步骤
+   */
+  const jumpToAnalysisStep = (analysisStep: number) => {
+    const targetInstructions = getInstructionsForAnalysisStep(analysisStep)
+    if (targetInstructions.length > 0) {
+      // 跳转到该分析步骤的第一个动画指令
+      currentStep.value = targetInstructions[0].step
+    }
+  }
+
+  /**
+   * 获取当前分析步骤
+   */
+  const getCurrentAnalysisStep = computed(() => {
+    const currentInstruction = getCurrentInstruction.value
+    return currentInstruction?.analysisStep || 0
+  })
+
   return {
     // 状态
     stackOperations,
@@ -167,6 +220,7 @@ export const useLL1AnimationStore = defineStore('ll1Animation', () => {
     hasAnimationData,
     canPlay,
     getCurrentInstruction,
+    getCurrentAnalysisStep,
 
     // 方法
     parseAnimationData,
@@ -179,5 +233,11 @@ export const useLL1AnimationStore = defineStore('ll1Animation', () => {
     setPlaybackSpeed,
     getInstructionAtStep,
     getInstructionsInRange,
+
+    // 新增步骤管理方法
+    stepMapping,
+    reverseStepMapping,
+    getInstructionsForAnalysisStep,
+    jumpToAnalysisStep,
   }
 })

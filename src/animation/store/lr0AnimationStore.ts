@@ -20,6 +20,10 @@ export const useLR0AnimationStore = defineStore('lr0Animation', () => {
   const isPlaying = ref(false)
   const playbackSpeed = ref(1)
 
+  // 新增：步骤映射系统
+  const stepMapping = ref<Map<number, number[]>>(new Map()) // analysisStep -> animationSteps
+  const reverseStepMapping = ref<Map<number, number>>(new Map()) // animationStep -> analysisStep
+
   // 计算属性
   const totalSteps = computed(() => animationInstructions.value.length)
   const hasAnimationData = computed(() => animationInstructions.value.length > 0)
@@ -55,12 +59,15 @@ export const useLR0AnimationStore = defineStore('lr0Animation', () => {
 
       console.log('LR0栈操作解析完成:', stackOps)
 
-      // 2. 生成动画指令
+      // 2. 生成动画指令，传递原始数据
       const instructionGen = new AnimationInstructionGenerator()
-      const instructions = instructionGen.generate(stackOps)
+      const instructions = instructionGen.generate(stackOps, stepData)
       animationInstructions.value = instructions
 
       console.log('LR0动画指令生成完成:', instructions)
+
+      // 3. 建立步骤映射关系
+      buildStepMappings()
 
       parseStatus.value = 'ready'
     } catch (error) {
@@ -96,6 +103,95 @@ export const useLR0AnimationStore = defineStore('lr0Animation', () => {
    */
   const setPlaybackSpeed = (speed: number) => {
     playbackSpeed.value = Math.max(0.1, Math.min(5, speed))
+  }
+
+  /**
+   * 建立步骤映射关系
+   */
+  const buildStepMappings = () => {
+    stepMapping.value.clear()
+    reverseStepMapping.value.clear()
+
+    animationInstructions.value.forEach((instruction) => {
+      // 建立分析步骤到动画步骤的映射
+      if (!stepMapping.value.has(instruction.analysisStep)) {
+        stepMapping.value.set(instruction.analysisStep, [])
+      }
+      stepMapping.value.get(instruction.analysisStep)!.push(instruction.step)
+
+      // 建立动画步骤到分析步骤的反向映射
+      reverseStepMapping.value.set(instruction.step, instruction.analysisStep)
+    })
+  }
+
+  /**
+   * 根据分析步骤获取对应的动画指令
+   */
+  const getInstructionsForAnalysisStep = (analysisStep: number): AnimationInstruction[] => {
+    return animationInstructions.value.filter((inst) => inst.analysisStep === analysisStep)
+  }
+
+  /**
+   * 跳转到指定分析步骤
+   */
+  const jumpToAnalysisStep = (analysisStep: number) => {
+    const targetInstructions = getInstructionsForAnalysisStep(analysisStep)
+    if (targetInstructions.length > 0) {
+      // 跳转到该分析步骤的第一个动画指令
+      currentStep.value = targetInstructions[0].step
+    }
+  }
+
+  /**
+   * 获取当前分析步骤
+   */
+  const getCurrentAnalysisStep = computed(() => {
+    const reverseMap = reverseStepMapping.value
+    return reverseMap.get(currentStep.value) || 0
+  })
+
+  /**
+   * 获取当前步骤的动画指令
+   */
+  const getCurrentInstruction = computed(() => {
+    return animationInstructions.value[currentStep.value] || null
+  })
+
+  /**
+   * 设置当前步骤
+   */
+  const setCurrentStep = (step: number) => {
+    if (step >= 0 && step <= totalSteps.value) {
+      currentStep.value = step
+    }
+  }
+
+  /**
+   * 播放控制
+   */
+  const play = () => {
+    if (canPlay.value) {
+      isPlaying.value = true
+    }
+  }
+
+  const pause = () => {
+    isPlaying.value = false
+  }
+
+  const stop = () => {
+    pause()
+    resetPlayback()
+  }
+
+  /**
+   * 获取指定步骤的动画指令
+   */
+  const getInstructionAtStep = (step: number): AnimationInstruction | null => {
+    if (step >= 0 && step < animationInstructions.value.length) {
+      return animationInstructions.value[step]
+    }
+    return null
   }
 
   /**
@@ -146,14 +242,27 @@ export const useLR0AnimationStore = defineStore('lr0Animation', () => {
     totalSteps,
     hasAnimationData,
     canPlay,
+    getCurrentInstruction,
+    getCurrentAnalysisStep,
 
     // 方法
     parseAnimationData,
     clearAnimationData,
     resetPlayback,
+    setCurrentStep,
+    play,
+    pause,
+    stop,
     setPlaybackSpeed,
+    getInstructionAtStep,
     getInstructionsInRange,
     getStackOperationsForStep,
     getAnimationStats,
+
+    // 新增步骤管理方法
+    stepMapping,
+    reverseStepMapping,
+    getInstructionsForAnalysisStep,
+    jumpToAnalysisStep,
   }
 })

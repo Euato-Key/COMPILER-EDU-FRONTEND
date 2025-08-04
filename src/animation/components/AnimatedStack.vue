@@ -27,10 +27,16 @@
           ]"
           :style="{
             zIndex: visibleStack.length - index,
-            transform: `translateY(${index * stackItemHeight}px)`,
+            position: 'absolute',
+            top: `${index * (stackItemHeight + stackItemGap)}px`,
+            left: '50%',
+            transform: 'translateX(-50%)',
           }"
+          :title="`Item ${index}: ${item.value}, top: ${index * (stackItemHeight + stackItemGap)}px`"
         >
           {{ item.value }}
+          <!-- 调试信息 -->
+          <span v-if="false" class="debug-info">{{ index }}:{{ item.value }}</span>
         </div>
       </transition-group>
     </div>
@@ -72,14 +78,18 @@ const animationQueue = ref<StackAnimation[]>([])
 const isAnimating = ref(false)
 
 // 常量配置
-const stackItemHeight = 32 // 1.8rem + gap
+const stackItemHeight = 28.8 // 1.8rem 实际像素值
+const stackItemGap = 2 // 元素间距
 const baseHeight = 160 // 基础容器高度
 const maxItems = 8 // 最大可见栈项数
 
 // 计算属性
 const containerHeight = computed(() => {
   const itemsCount = Math.min(visibleStack.value.length, maxItems)
-  return baseHeight + itemsCount * stackItemHeight
+  if (itemsCount === 0) return baseHeight
+  // 计算实际需要的高度：基础高度 + 元素高度 * 数量 + 间距 * (数量-1)
+  const stackHeight = itemsCount * stackItemHeight + (itemsCount - 1) * stackItemGap
+  return baseHeight + stackHeight
 })
 
 // 生成唯一ID
@@ -97,19 +107,35 @@ const createStackItem = (value: string, state: 'normal' | 'entering' = 'normal')
 
 // 初始化栈
 const initializeStack = (stack: string[]) => {
+  console.log('AnimatedStack: initializeStack called with:', stack)
   visibleStack.value = stack.map((value) => createStackItem(value))
+  console.log('AnimatedStack: visibleStack after init:', visibleStack.value)
+
+  // 调试容器高度
+  nextTick(() => {
+    console.log('AnimatedStack: containerHeight:', containerHeight.value)
+    console.log('AnimatedStack: stackItemHeight:', stackItemHeight)
+    console.log('AnimatedStack: visibleStack.length:', visibleStack.value.length)
+    if (stackWrapper.value) {
+      console.log('AnimatedStack: stackWrapper offsetHeight:', stackWrapper.value.offsetHeight)
+      console.log('AnimatedStack: stackWrapper scrollHeight:', stackWrapper.value.scrollHeight)
+    }
+  })
 }
 
-// 动画队列管理
+// 动画队列管理（简化版本）
 const queueAnimation = (animation: StackAnimation) => {
-  animationQueue.value.push(animation)
-  if (!isAnimating.value) {
-    processAnimationQueue()
-  }
+  // 暂时禁用复杂的动画队列
+  // animationQueue.value.push(animation)
+  // if (!isAnimating.value) {
+  //   processAnimationQueue()
+  // }
 }
 
-// 分析栈变化
+// 分析栈变化（简化版本，暂时不使用）
 const analyzeStackChanges = (oldStack: string[], newStack: string[]) => {
+  // 暂时禁用复杂的差异分析
+  /*
   const oldLength = oldStack.length
   const newLength = newStack.length
 
@@ -130,23 +156,42 @@ const analyzeStackChanges = (oldStack: string[], newStack: string[]) => {
       queueAnimation({ type: 'multiple-pop', items: Array(removedCount).fill('') })
     }
   }
+  */
 }
 
 // 监听栈数据变化
 watch(
   () => props.stack,
   (newStack, oldStack) => {
+    console.log('AnimatedStack: Stack changed from', oldStack, 'to', newStack)
+
+    // 简化逻辑：直接更新显示，不做复杂的差异分析
     if (!oldStack || oldStack.length === 0) {
       // 初始化栈
       initializeStack(newStack)
     } else {
-      // 计算栈变化并添加到动画队列
-      analyzeStackChanges(oldStack, newStack)
+      // 直接更新栈显示，添加简单的过渡效果
+      updateStackDirectly(newStack)
     }
   },
   { immediate: true },
 )
 
+// 直接更新栈显示
+const updateStackDirectly = (newStack: string[]) => {
+  console.log('AnimatedStack: updateStackDirectly called with:', newStack)
+  // 直接替换整个栈，让Vue的transition-group处理动画
+  visibleStack.value = newStack.map((value, index) => createStackItem(value))
+  console.log('AnimatedStack: visibleStack after update:', visibleStack.value)
+
+  // 触发简单的完成回调
+  nextTick(() => {
+    emit('animationComplete')
+  })
+}
+
+// 注释掉复杂的动画队列处理，使用简化版本
+/*
 const processAnimationQueue = async () => {
   if (animationQueue.value.length === 0 || isAnimating.value) return
 
@@ -175,6 +220,7 @@ const executeAnimation = async (animation: StackAnimation): Promise<void> => {
       return animateMultiplePop((animation.items as string[]).length)
   }
 }
+*/
 
 // 入栈动画
 const animatePush = async (value: string): Promise<void> => {
@@ -370,10 +416,9 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start; /* 改为从顶部开始 */
   min-height: 100px;
   max-height: 300px;
-  overflow: hidden;
   position: relative;
   width: 100%;
 }
@@ -381,9 +426,9 @@ onMounted(() => {
 .stack-container {
   position: relative;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column; /* 改为正常方向：栈顶在上，栈底在下 */
   align-items: center;
-  gap: 2px;
+  /* 移除gap，使用transform定位 */
 }
 
 .stack-item {
@@ -397,7 +442,6 @@ onMounted(() => {
   font-family: ui-monospace, SFMono-Regular, monospace;
   border-radius: 0.375rem;
   background-color: #f9fafb;
-  position: relative;
   will-change: transform, opacity, background-color;
   user-select: none;
 }
