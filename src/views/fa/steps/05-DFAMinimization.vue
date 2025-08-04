@@ -231,12 +231,12 @@
                             >
                               <input
                                 v-if="getMatrixCell(rowIndex, colIndex)?.category !== 'onlyRead'"
-                                v-model="getMatrixCell(rowIndex, colIndex)!.value"
-                                :class="getMatrixFieldClass(getMatrixCell(rowIndex, colIndex)!)"
+                                :value="getMatrixCell(rowIndex, colIndex)?.value || ''"
+                                @input="(event) => updateMatrixCell(rowIndex, colIndex, event.target.value)"
+                                :class="getMatrixFieldClass(getMatrixCell(rowIndex, colIndex))"
                                 :disabled="step7Open"
-                                @focus="handleMatrixCellFocus(getMatrixCell(rowIndex, colIndex)!)"
-                                @input="handleMatrixCellInput(getMatrixCell(rowIndex, colIndex)!)"
-                                @blur="handleMatrixCellBlur(getMatrixCell(rowIndex, colIndex)!)"
+                                @focus="handleMatrixCellFocus(getMatrixCell(rowIndex, colIndex))"
+                                @blur="handleMatrixCellBlur(getMatrixCell(rowIndex, colIndex))"
                                 placeholder="-"
                               />
                               <span v-else class="text-gray-600">{{
@@ -527,6 +527,7 @@ const toggleSetsAnswer = () => {
 
   // 如果显示答案，自动初始化矩阵
   if (showSetsAnswer.value && minimizedMatrix.value.length === 0) {
+    console.log('自动初始化矩阵')
     initMinimizedMatrix()
   }
 }
@@ -627,8 +628,18 @@ onMounted(() => {
       const savedStep5Data = faStore.loadStep5Data()
       if (savedStep5Data) {
         console.log('恢复05页面数据:', savedStep5Data)
-        localPSets.value = savedStep5Data.userPSets
-        minimizedMatrix.value = savedStep5Data.userMinimizedMatrix
+        localPSets.value = savedStep5Data.userPSets || []
+
+        // 确保矩阵数据有正确的结构
+        if (savedStep5Data.userMinimizedMatrix && savedStep5Data.userMinimizedMatrix.length > 0) {
+          minimizedMatrix.value = savedStep5Data.userMinimizedMatrix
+        } else {
+          // 如果没有保存的矩阵数据，初始化矩阵
+          initMinimizedMatrix()
+        }
+      } else {
+        // 如果没有保存的数据，初始化矩阵
+        initMinimizedMatrix()
       }
     }
   } catch (error) {
@@ -813,7 +824,10 @@ const validatePSets = () => {
 
 // 初始化最小化矩阵
 const initMinimizedMatrix = () => {
-  if (!faStore.originalData?.table_to_num_min) return
+  if (!faStore.originalData?.table_to_num_min) {
+    console.log('initMinimizedMatrix: 没有table_to_num_min数据')
+    return
+  }
 
   const tableToNumMin = faStore.originalData.table_to_num_min
   const symbols = alphabetSymbols.value // 已排除S列
@@ -821,6 +835,17 @@ const initMinimizedMatrix = () => {
 
   console.log('initMinimizedMatrix - rowCount:', rowCount)
   console.log('initMinimizedMatrix - symbols:', symbols)
+  console.log('initMinimizedMatrix - tableToNumMin:', tableToNumMin)
+
+  if (rowCount === 0) {
+    console.log('initMinimizedMatrix: rowCount为0，无法初始化矩阵')
+    return
+  }
+
+  if (symbols.length === 0) {
+    console.log('initMinimizedMatrix: symbols为空，无法初始化矩阵')
+    return
+  }
 
   minimizedMatrix.value = []
 
@@ -842,6 +867,8 @@ const initMinimizedMatrix = () => {
     }
   }
 
+  console.log('initMinimizedMatrix - 创建的矩阵单元格数量:', minimizedMatrix.value.length)
+
   // 清除矩阵错误状态
   matrixValidationErrors.value = {}
   matrixFieldValidation.value = {}
@@ -849,23 +876,38 @@ const initMinimizedMatrix = () => {
 }
 
 // 矩阵单元格焦点处理
-const handleMatrixCellFocus = (cell: MatrixCell) => {
+const handleMatrixCellFocus = (cell: MatrixCell | undefined) => {
+  if (!cell) return
+
   if (cell.check === ValidationState.ERROR) {
     cell.check = cell.value.trim() ? ValidationState.NORMAL : ValidationState.EMPTY
   }
 }
 
 // 矩阵单元格失焦处理
-const handleMatrixCellBlur = (cell: MatrixCell) => {
-  if (step7Open.value) return
+const handleMatrixCellBlur = (cell: MatrixCell | undefined) => {
+  if (!cell || step7Open.value) return
 
   // 失焦时进行验证
   validateMatrixField(cell)
 }
 
+// 更新矩阵单元格值
+const updateMatrixCell = (rowIndex: number, colIndex: number, value: string) => {
+  const cell = getMatrixCell(rowIndex, colIndex)
+  if (!cell || step7Open.value) return
+
+  cell.value = value
+  const inputValue = cell.value.trim()
+  cell.check = inputValue ? ValidationState.NORMAL : ValidationState.EMPTY
+
+  // 使用新的验证逻辑
+  validateMatrixField(cell)
+}
+
 // 矩阵单元格输入处理
-const handleMatrixCellInput = (cell: MatrixCell) => {
-  if (step7Open.value) return
+const handleMatrixCellInput = (cell: MatrixCell | undefined) => {
+  if (!cell || step7Open.value) return
 
   const inputValue = cell.value.trim()
   cell.check = inputValue ? ValidationState.NORMAL : ValidationState.EMPTY
@@ -984,7 +1026,9 @@ const validatePSetField = (pItem: PSetItem) => {
   console.log('PSet validation complete for field:', fieldKey, 'Errors count:', errors.length)
 }
 
-const validateMatrixField = (cell: MatrixCell) => {
+const validateMatrixField = (cell: MatrixCell | undefined) => {
+  if (!cell) return
+
   const fieldKey = `matrix-${cell.rowIndex}-${cell.colIndex}`
   const errors: string[] = []
 
@@ -1044,7 +1088,11 @@ const getPSetFieldClass = (pItem: PSetItem) => {
 }
 
 // 获取矩阵字段的CSS类
-const getMatrixFieldClass = (cell: MatrixCell) => {
+const getMatrixFieldClass = (cell: MatrixCell | undefined) => {
+  if (!cell) {
+    return 'w-full text-center border-none bg-transparent text-sm focus:outline-none focus:ring-1 rounded focus:ring-gray-500'
+  }
+
   const fieldKey = `matrix-${cell.rowIndex}-${cell.colIndex}`
   const validationStatus = matrixFieldValidation.value[fieldKey]
 
