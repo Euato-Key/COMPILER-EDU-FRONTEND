@@ -658,6 +658,9 @@ const proceedToNext = () => {
     // 保存数据
     localStorage.setItem('fa-step4-data', JSON.stringify(stepData))
 
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
     // 触发下一步事件
     emit('next-step')
   }

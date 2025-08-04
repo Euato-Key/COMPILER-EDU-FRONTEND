@@ -213,6 +213,9 @@ const prevStep = () => {
 
 const handleStepClick = (stepId: number) => {
   router.push(`/slr1/${stepId}`)
+
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 // 更新聊天上下文

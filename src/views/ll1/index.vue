@@ -190,6 +190,9 @@ const currentStepComponent = computed(() => {
 const navigateToStep = (stepId: number) => {
   currentStep.value = stepId
   router.push({ query: { step: stepId } })
+
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 // 下一步

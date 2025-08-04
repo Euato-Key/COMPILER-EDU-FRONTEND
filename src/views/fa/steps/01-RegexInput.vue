@@ -416,6 +416,9 @@ const proceedToNext = () => {
 
   console.log('Step 1 completed with data:', stepData)
 
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
   // 直接进入下一步，数据已经保存在 Pinia store 中
   emit('complete', stepData)
   emit('next-step')

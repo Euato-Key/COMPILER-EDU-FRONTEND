@@ -1161,6 +1161,9 @@ const complete = () => {
     timestamp: new Date().toISOString(),
   }
 
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
   emit('complete', completionData)
 }
 

@@ -443,6 +443,9 @@ const complete = () => {
     timestamp: new Date().toISOString(),
   }
 
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
   // 触发完成事件
   emit('complete', stepData)
 }

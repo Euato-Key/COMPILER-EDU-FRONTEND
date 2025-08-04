@@ -367,6 +367,8 @@ const handleStepComplete = (isComplete: boolean) => {
 // 下一步
 const nextStep = () => {
   if (isStepComplete.value) {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
 }

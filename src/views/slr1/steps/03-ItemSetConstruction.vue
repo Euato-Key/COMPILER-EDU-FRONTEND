@@ -401,6 +401,9 @@ const toggleAnswer = async () => {
 
 // 进入下一步
 const proceedToNext = () => {
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
   // 触发下一步事件
   emit('next-step')
 }
