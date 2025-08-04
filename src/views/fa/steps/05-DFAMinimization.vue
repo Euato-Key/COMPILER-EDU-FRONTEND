@@ -129,16 +129,16 @@
                           ? 'bg-green-50 border-green-200'
                           : 'bg-red-50 border-red-200'
                       ]"
-                    >
-                      <div class="flex items-start gap-2">
-                        <Icon
+                  >
+                    <div class="flex items-start gap-2">
+                      <Icon
                           :icon="pSetValidationResult.success ? 'lucide:check-circle' : 'lucide:x-circle'"
                           :class="[
                             'w-5 h-5 flex-shrink-0 mt-0.5',
                             pSetValidationResult.success ? 'text-green-600' : 'text-red-600'
                           ]"
-                        />
-                        <div>
+                      />
+                      <div>
                           <h4
                             :class="[
                               'font-medium mb-1',
@@ -155,9 +155,9 @@
                           >
                             {{ pSetValidationResult.message }}
                           </p>
-                        </div>
                       </div>
                     </div>
+                  </div>
                   </div>
 
 
@@ -446,11 +446,12 @@
           <div class="flex items-start gap-3">
             <Icon icon="lucide:check-circle" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 class="font-medium text-green-800">DFA 最小化完成</h4>
+              <h4 class="font-medium text-green-800">DFA 最小化答案已显示</h4>
               <div class="text-sm text-green-700 mt-2 space-y-1">
                 <p>• 最小化状态数: {{ originalStateCount }}</p>
                 <p>• 状态分区数: {{ localPSets.length }}</p>
-                <p>• 状态转换矩阵已完成</p>
+                <p>• 状态转换矩阵答案已显示</p>
+                <p class="text-blue-600 font-medium">• 可以进入下一步查看最小化DFA图</p>
               </div>
             </div>
           </div>
@@ -597,7 +598,8 @@ const matrixValidationResult = ref<{
 
 // 计算属性
 const isComplete = computed(() => {
-  return step6Open.value && step7Open.value
+  // 修改为：只要显示了答案就可以进入下一步，不需要完成校验
+  return showSetsAnswer.value && showMatrixAnswerStep5.value
 })
 
 const reductionPercentage = computed(() => {
@@ -737,7 +739,7 @@ onMounted(() => {
 
         // 确保矩阵数据有正确的结构
         if (savedStep5Data.userMinimizedMatrix && savedStep5Data.userMinimizedMatrix.length > 0) {
-          minimizedMatrix.value = savedStep5Data.userMinimizedMatrix
+        minimizedMatrix.value = savedStep5Data.userMinimizedMatrix
         } else {
           // 如果没有保存的矩阵数据，初始化矩阵
           initMinimizedMatrix()
@@ -1153,7 +1155,7 @@ const validateMatrix = () => {
   // 检查是否所有答案都正确
   const hasErrors = Object.keys(matrixValidationErrors.value).length > 0
   if (!hasErrors) {
-    step7Open.value = true
+  step7Open.value = true
     matrixValidationResult.value = {
       show: true,
       success: true,
@@ -1270,7 +1272,7 @@ const validateMatrixField = (cell: MatrixCell | undefined) => {
   // 1. 检查是否为空（留空和填写"-"都视为有效输入，不需要检查空值）
   // 移除空值检查，因为留空和填写"-"都是有效的
 
-    // 2. 检查答案正确性
+  // 2. 检查答案正确性
   if (faStore.originalData?.table_to_num_min) {
     const tableToNumMin = faStore.originalData.table_to_num_min
     const symbol = alphabetSymbols.value[cell.colIndex]
@@ -1359,7 +1361,7 @@ const formatFieldKey = (fieldKey: string, fieldType: 'matrix') => {
     const rowIndex = parseInt(parts[1])
     const colIndex = parseInt(parts[2])
     const symbol = alphabetSymbols.value[colIndex] || ''
-    return `第${rowIndex}行${symbol}列`
+      return `第${rowIndex}行${symbol}列`
   }
   return fieldKey
 }

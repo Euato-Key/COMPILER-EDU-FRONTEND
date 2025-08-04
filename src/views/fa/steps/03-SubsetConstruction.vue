@@ -672,9 +672,9 @@ const showMatrixSuccess = ref(false) // 是否显示矩阵成功提示
 
 // 计算属性
 const constructionComplete = computed(() => {
-  // 至少查看过一个答案
-  const hasViewedAnyAnswer = showTableAnswer.value || showMatrixAnswer.value
-  return hasViewedAnyAnswer
+  // 必须同时查看两个答案
+  const hasViewedBothAnswers = showTableAnswer.value && showMatrixAnswer.value
+  return hasViewedBothAnswers
 })
 
 const totalTransitions = computed(() => {
