@@ -28,26 +28,49 @@
     <!-- 主要内容 -->
     <div class="p-8">
       <div class="space-y-6">
-        <!-- NFA 参考图 -->
-        <div class="nfa-reference">
-          <div class="bg-white border border-gray-200 rounded-lg">
-            <div class="border-b border-gray-200 p-4">
-              <h3 class="font-semibold text-gray-900 flex items-center gap-2">
-                <Icon icon="lucide:share-2" class="w-5 h-5 text-blue-600" />
-                NFA 图（参考）
-              </h3>
-              <p class="text-sm text-gray-600 mt-1">根据此 NFA 图填写下方的转换表和状态转换矩阵</p>
-            </div>
-            <div class="p-6">
-              <div
-                v-if="faStore.nfaDotString"
-                class="nfa-svg-container bg-gray-50 rounded-lg p-4 overflow-auto"
-              >
-                <div v-html="nfaSvg" class="flex justify-center"></div>
+        <!-- NFA 参考图和填写提示 -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <!-- NFA 参考图 -->
+          <div class="lg:col-span-3">
+            <div class="bg-white border border-gray-200 rounded-lg h-full">
+              <div class="border-b border-gray-200 p-4">
+                <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                  <Icon icon="lucide:share-2" class="w-5 h-5 text-blue-600" />
+                  NFA 图（参考）
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">根据此 NFA 图填写下方的转换表和状态转换矩阵</p>
               </div>
-              <div v-else class="text-center py-8 text-gray-500">
-                <Icon icon="lucide:image-off" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>暂无 NFA 图数据</p>
+              <div class="p-6">
+                <div
+                  v-if="faStore.nfaDotString"
+                  class="nfa-svg-container bg-gray-50 rounded-lg p-4 overflow-auto"
+                >
+                  <div v-html="nfaSvg" class="flex justify-center"></div>
+                </div>
+                <div v-else class="text-center py-8 text-gray-500">
+                  <Icon icon="lucide:image-off" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                  <p>暂无 NFA 图数据</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 填写提示 -->
+          <div class="lg:col-span-2">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 h-full sticky top-24">
+              <div class="flex items-start gap-3">
+                <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 class="font-medium text-blue-800">填写提示</h4>
+                  <ul class="text-sm text-blue-700 mt-2 space-y-1">
+                    <li>• 转换表：记录从NFA状态集合到新DFA状态的映射关系</li>
+                    <li>• <strong>多个符号之间必须用空格分隔（如：1 2 3）</strong></li>
+                    <li>• 状态转换矩阵：用数字编号表示状态间的转换关系</li>
+                    <li>• <strong>无转换的格子可以填写"-"</strong></li>
+                    <li>• 完成填写后可以查看标准答案进行对比</li>
+                    <li>• <strong>必须查看转换表和状态转换矩阵的标准答案后才能进入下一步</strong></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -548,23 +571,7 @@
           </div>
         </div>
 
-        <!-- 填写提示 -->
-        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div class="flex items-start gap-3">
-            <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 class="font-medium text-blue-800">填写提示</h4>
-              <ul class="text-sm text-blue-700 mt-2 space-y-1">
-                <li>• 转换表：记录从NFA状态集合到新DFA状态的映射关系</li>
-                <li>• <strong>多个符号之间必须用空格分隔（如：1 2 3）</strong></li>
-                <li>• 状态转换矩阵：用数字编号表示状态间的转换关系</li>
-                <li>• 无转换的格子可以填写"-"或留空</li>
-                <li>• 完成填写后可以查看标准答案进行对比</li>
-                <li>• <strong>必须查看转换表和状态转换矩阵的标准答案后才能进入下一步</strong></li>
-              </ul>
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
 
@@ -680,7 +687,13 @@ const totalTransitions = computed(() => {
 
 // 转换表完成率计算
 const tableCompletionRate = computed(() => {
-  if (conversionTableRowCount.value === 0 || conversionTableColumns.value.length === 0) {
+  // 如果用户没有添加任何行，返回0
+  if (conversionTableRowCount.value === 0) {
+    return 0
+  }
+
+  // 如果没有列定义，返回0
+  if (conversionTableColumns.value.length === 0) {
     return 0
   }
 
@@ -691,6 +704,11 @@ const tableCompletionRate = computed(() => {
       return colData.length
     })
   )
+
+  // 如果没有答案数据，返回0
+  if (answerRowCount === 0) {
+    return 0
+  }
 
   // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * conversionTableColumns.value.length
@@ -713,12 +731,23 @@ const tableCompletionRate = computed(() => {
 
 // 状态转换矩阵完成率计算
 const matrixCompletionRate = computed(() => {
-  if (matrixStateColumns.value.length === 0 || Object.keys(userTransitionMatrix.value).length === 0) {
+  // 如果没有状态列定义，返回0
+  if (matrixStateColumns.value.length === 0) {
+    return 0
+  }
+
+  // 如果用户矩阵没有初始化，返回0
+  if (Object.keys(userTransitionMatrix.value).length === 0) {
     return 0
   }
 
   // 获取标准答案的行数
   const answerRowCount = Object.keys(answerTransitionMatrix.value).length
+
+  // 如果没有答案数据，返回0
+  if (answerRowCount === 0) {
+    return 0
+  }
 
   // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * matrixStateColumns.value.length
@@ -741,7 +770,13 @@ const matrixCompletionRate = computed(() => {
 
 // 转换表正确完成率计算（只计算填写正确的内容）
 const tableCorrectCompletionRate = computed(() => {
-  if (conversionTableRowCount.value === 0 || conversionTableColumns.value.length === 0) {
+  // 如果用户没有添加任何行，返回0
+  if (conversionTableRowCount.value === 0) {
+    return 0
+  }
+
+  // 如果没有列定义，返回0
+  if (conversionTableColumns.value.length === 0) {
     return 0
   }
 
@@ -752,6 +787,11 @@ const tableCorrectCompletionRate = computed(() => {
       return colData.length
     })
   )
+
+  // 如果没有答案数据，返回0
+  if (answerRowCount === 0) {
+    return 0
+  }
 
   // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * conversionTableColumns.value.length
@@ -779,12 +819,23 @@ const tableCorrectCompletionRate = computed(() => {
 
 // 矩阵正确完成率计算（只计算填写正确的内容）
 const matrixCorrectCompletionRate = computed(() => {
-  if (matrixStateColumns.value.length === 0 || Object.keys(userTransitionMatrix.value).length === 0) {
+  // 如果没有状态列定义，返回0
+  if (matrixStateColumns.value.length === 0) {
+    return 0
+  }
+
+  // 如果用户矩阵没有初始化，返回0
+  if (Object.keys(userTransitionMatrix.value).length === 0) {
     return 0
   }
 
   // 获取标准答案的行数
   const answerRowCount = Object.keys(answerTransitionMatrix.value).length
+
+  // 如果没有答案数据，返回0
+  if (answerRowCount === 0) {
+    return 0
+  }
 
   // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * matrixStateColumns.value.length
@@ -924,17 +975,22 @@ const initializeDataStructures = () => {
   conversionTableRowCount.value = 0
   console.log('转换表初始化为空，用户需要手动添加行')
 
-    // 初始化矩阵数据结构
-  Object.keys(answerTransitionMatrix.value).forEach((rowKey) => {
-    if (!userTransitionMatrix.value[rowKey]) {
-      userTransitionMatrix.value[rowKey] = {}
-    }
-    matrixStateColumns.value.forEach((state) => {
-      if (!userTransitionMatrix.value[rowKey][state]) {
-        userTransitionMatrix.value[rowKey][state] = ''
+  // 初始化矩阵数据结构 - 只有在有答案数据时才初始化
+  if (Object.keys(answerTransitionMatrix.value).length > 0) {
+    Object.keys(answerTransitionMatrix.value).forEach((rowKey) => {
+      if (!userTransitionMatrix.value[rowKey]) {
+        userTransitionMatrix.value[rowKey] = {}
       }
+      matrixStateColumns.value.forEach((state) => {
+        if (!userTransitionMatrix.value[rowKey][state]) {
+          userTransitionMatrix.value[rowKey][state] = ''
+        }
+      })
     })
-  })
+  } else {
+    // 如果没有答案数据，清空用户矩阵
+    userTransitionMatrix.value = {}
+  }
 }
 
 // 验证功能
@@ -1534,9 +1590,15 @@ onMounted(() => {
     const savedStep3Data = faStore.loadStep3Data()
     if (savedStep3Data) {
       console.log('恢复03页面数据:', savedStep3Data)
-      userConversionTable.value = savedStep3Data.userConversionTable
-      userTransitionMatrix.value = savedStep3Data.userTransitionMatrix
-      conversionTableRowCount.value = savedStep3Data.conversionTableRowCount
+      userConversionTable.value = savedStep3Data.userConversionTable || {}
+      userTransitionMatrix.value = savedStep3Data.userTransitionMatrix || {}
+      conversionTableRowCount.value = savedStep3Data.conversionTableRowCount || 0
+    } else {
+      // 如果没有保存的数据，确保初始化为空状态
+      console.log('没有保存的数据，初始化为空状态')
+      userConversionTable.value = {}
+      userTransitionMatrix.value = {}
+      conversionTableRowCount.value = 0
     }
   } catch (error) {
     console.error('处理FA数据失败：', error)
