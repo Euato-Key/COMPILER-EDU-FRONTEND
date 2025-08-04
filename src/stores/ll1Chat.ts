@@ -34,13 +34,15 @@ export const useLL1ChatStore = defineStore('ll1-chat', () => {
   // LL1各步骤的知识库
   const stepKnowledgeBases = {
     1: `
-LL1文法输入和验证：
+LL(1)分析法基本定义：
 
-LL1文法定义：
-LL1文法是一种特殊的上下文无关文法，满足以下条件：
-1. 无左递归
-2. 无左公因子
-3. 对于每个非终结符A和每个输入符号a，最多只有一个产生式可以推导出以a开头的串
+LL(1)分析法是一种自顶向下语法分析方法，通过"从左到右扫描输入、最左推导、向前查看1个符号"确定产生式。
+
+文法要求：
+- 无左递归（直接/间接）
+- 无回溯：对A的任意两个产生式A→α|β，需满足：
+  - FIRST(α)∩FIRST(β) = ∅
+  - 若β→*ε，则FIRST(α)∩FOLLOW(A) = ∅
 
 文法表示法：
 - 大写字母表示非终结符（如S, A, B）
@@ -64,40 +66,46 @@ B → b | aS
 `,
 
     2: `
-First集合和Follow集合计算：
+关键集合计算：
 
-First集合定义：
-First(α) = {a | α =>* aβ} ∪ {ε | α =>* ε}
-即从α可以推导出的所有串的首个终结符集合。
+FIRST集：
+对符号串α，FIRST(α) 是α推导的首个终结符集合。
+- 若α→*ε，则ε∈FIRST(α)
+- 空串ε本身没有FIRST集
 
-First集合计算规则：
-1. 对于终结符a：First(a) = {a}
-2. 对于ε：First(ε) = {ε}
-3. 对于非终结符A：
-   - 如果A → α1 | α2 | ... | αn
-   - 则First(A) = First(α1) ∪ First(α2) ∪ ... ∪ First(αn)
-4. 对于串α = X1X2...Xn：
-   - First(α) = First(X1) - {ε} ∪ First(X2...Xn) (如果ε ∈ First(X1))
-   - 如果所有Xi都能推导出ε，则ε ∈ First(α)
+计算规则：
+1. 若X是终结符，FIRST(X) = {X}
+2. 若X是非终结符，X→Y₁Y₂...Yₖ，则FIRST(Y₁)中非ε元素属于FIRST(X)
+3. 若Y₁→*ε，则FIRST(Y₂)中非ε元素属于FIRST(X)，以此类推
+4. 若所有Yᵢ→*ε，则ε∈FIRST(X)
 
-Follow集合定义：
-Follow(A) = {a | S =>* αAaβ}
-即紧跟在非终结符A后面的终结符集合。
+FOLLOW集：
+对非终结符A，FOLLOW(A) 是所有句型中紧跟A后的终结符集合（含#）。
 
-Follow集合计算规则：
-1. $ ∈ Follow(S)，其中S是开始符号
-2. 如果A → αBβ：
-   - Follow(B) = Follow(B) ∪ (First(β) - {ε})
-   - 如果ε ∈ First(β)，则Follow(B) = Follow(B) ∪ Follow(A)
-3. 如果A → αB：
-   - Follow(B) = Follow(B) ∪ Follow(A)
+计算规则：
+1. #∈FOLLOW(S)（S为开始符）
+2. 若A→αBβ，则FIRST(β)中非ε元素属于FOLLOW(B)
+3. 若A→αB或A→αBβ且β→*ε，则FOLLOW(A)⊆FOLLOW(B)
 `,
 
     3: `
-LL1分析表构造：
+分析表构造：
 
-LL1分析表定义：
+LL(1)分析表构造规则：
+对产生式A→α：
+1. 若a∈FIRST(α)，则M[A, a] = A→α
+2. 若ε∈FIRST(α)且a∈FOLLOW(A)，则M[A, a] = A→α
+
+分析表定义：
 M[A, a]表示在栈顶为A，输入符号为a时应该使用的产生式。
+
+构造步骤：
+1. 计算所有非终结符的FIRST集
+2. 计算所有非终结符的FOLLOW集
+3. 对每个产生式A→α：
+   - 对FIRST(α)中的每个终结符a，在M[A, a]中填入A→α
+   - 如果ε∈FIRST(α)，对FOLLOW(A)中的每个终结符a，在M[A, a]中填入A→α
+4. 检查冲突：如果某个表项有多个产生式，则文法不是LL(1)文法
 
 构造算法：
 对于每个产生式A → α：
