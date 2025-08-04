@@ -947,7 +947,7 @@ const validateField = (
   const fieldKey = `${tableType}-${rowIndex}-${field}`
   const errors: string[] = []
 
-  // 确保value是字符串
+    // 确保value是字符串
   const fieldValue = value || ''
 
   console.log('Validating field:', { fieldKey, fieldValue, rowIndex, field, tableType })
@@ -956,12 +956,13 @@ const validateField = (
   const validationRef = tableType === 'table' ? tableValidationErrors : matrixValidationErrors
   const fieldValidationRef = tableType === 'table' ? tableFieldValidation : matrixFieldValidation
 
-  // 如果字段为空，清除错误并设置为正常状态（不是错误）
+  // 1. 检查是否为空
   if (!fieldValue || fieldValue.trim() === '') {
-    console.log('Field is empty, clearing errors for:', fieldKey)
-    delete validationRef.value[fieldKey]
-    fieldValidationRef.value[fieldKey] = 'normal'
-    return
+    if (field === 'state') {
+      errors.push('状态名称不能为空')
+    } else {
+      errors.push('转换关系不能为空')
+    }
   }
 
   // 2. 检查输入格式：确保符号之间用空格隔开
@@ -1145,7 +1146,7 @@ const validateTable = (tableType: 'table' | 'matrix') => {
     })
   }
 
-  // 显示错误信息 - 只有当有实际错误时才显示
+  // 显示错误信息
   if (tableType === 'table') {
     showTableErrors.value = Object.keys(tableValidationErrors.value).length > 0
     console.log('转换表验证完成，错误数量:', Object.keys(tableValidationErrors.value).length)
