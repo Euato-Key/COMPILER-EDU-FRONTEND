@@ -402,7 +402,7 @@ onMounted(() => {
 .stack-container {
   position: relative;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column; /* 改为正常方向：栈顶在上，栈底在下 */
   align-items: center;
   gap: 2px;
 }
