@@ -268,8 +268,8 @@ const animateActionHighlight = (element: HTMLElement, actionType: string) => {
 const animateActivation = () => {
   if (!productionWrapper.value) return
 
-  // 创建粒子效果
-  createParticles()
+  // 暂时禁用粒子效果，避免视觉干扰
+  // createParticles()
 
   // 容器发光效果
   gsap.to(productionWrapper.value, {

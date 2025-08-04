@@ -62,17 +62,42 @@ export function useEnhancedAnimationControl(animationStore: any) {
     }
   }
 
+  // 自动播放定时器
+  const autoPlayTimer = ref<NodeJS.Timeout | null>(null)
+
   // 继续下一步
   const proceedToNextStep = () => {
     if (currentStep.value < totalSteps.value - 1) {
       setTimeout(() => {
         if (isPlaying.value) {
           currentStep.value++
+          // 继续自动播放
+          scheduleNextStep()
         }
       }, 200) // 短暂延迟确保动画完成
     } else {
       // 播放完成
       isPlaying.value = false
+      if (autoPlayTimer.value) {
+        clearTimeout(autoPlayTimer.value)
+        autoPlayTimer.value = null
+      }
+    }
+  }
+
+  // 安排下一步
+  const scheduleNextStep = () => {
+    if (autoPlayTimer.value) {
+      clearTimeout(autoPlayTimer.value)
+    }
+
+    if (isPlaying.value && currentStep.value < totalSteps.value - 1) {
+      const delay = Math.max(500, 1000 / speed.value) // 根据速度调整延迟
+      autoPlayTimer.value = setTimeout(() => {
+        if (isPlaying.value) {
+          proceedToNextStep()
+        }
+      }, delay)
     }
   }
 
@@ -84,7 +109,8 @@ export function useEnhancedAnimationControl(animationStore: any) {
       if (timeline.value) {
         timeline.value.play()
       } else {
-        proceedToNextStep()
+        // 如果没有时间线，使用定时器进行自动播放
+        scheduleNextStep()
       }
     }
   }
@@ -94,6 +120,11 @@ export function useEnhancedAnimationControl(animationStore: any) {
     animationStore.pause()
     if (timeline.value) {
       timeline.value.pause()
+    }
+    // 清除自动播放定时器
+    if (autoPlayTimer.value) {
+      clearTimeout(autoPlayTimer.value)
+      autoPlayTimer.value = null
     }
   }
 
@@ -105,6 +136,11 @@ export function useEnhancedAnimationControl(animationStore: any) {
     if (timeline.value) {
       timeline.value.restart().pause()
     }
+    // 清除自动播放定时器
+    if (autoPlayTimer.value) {
+      clearTimeout(autoPlayTimer.value)
+      autoPlayTimer.value = null
+    }
   }
 
   // 步骤控制同步到Store
@@ -113,6 +149,11 @@ export function useEnhancedAnimationControl(animationStore: any) {
       currentStep.value++
     }
     isPlaying.value = false
+    // 清除自动播放定时器
+    if (autoPlayTimer.value) {
+      clearTimeout(autoPlayTimer.value)
+      autoPlayTimer.value = null
+    }
   }
 
   const stepBack = () => {
@@ -121,6 +162,11 @@ export function useEnhancedAnimationControl(animationStore: any) {
     }
     isPlaying.value = false
     pendingAnimations.value.clear()
+    // 清除自动播放定时器
+    if (autoPlayTimer.value) {
+      clearTimeout(autoPlayTimer.value)
+      autoPlayTimer.value = null
+    }
   }
 
   const setSpeed = (newSpeed: number) => {
@@ -128,6 +174,10 @@ export function useEnhancedAnimationControl(animationStore: any) {
     animationStore.setPlaybackSpeed(newSpeed)
     if (timeline.value) {
       timeline.value.timeScale(newSpeed)
+    }
+    // 如果正在自动播放，重新安排下一步以应用新的速度
+    if (isPlaying.value && autoPlayTimer.value) {
+      scheduleNextStep()
     }
   }
 
