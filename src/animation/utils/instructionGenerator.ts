@@ -66,7 +66,7 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
     const initialInput = rawData?.info_str?.[0] || ''
 
     // 初始化符号栈和状态栈（用于LR分析器）
-    const initialSymbolStack = rawData?.info_symbol_stack?.[0] || '#S'
+    const initialSymbolStack = rawData?.info_symbol_stack?.[0] || '#' // 修复：LR符号栈初始状态是'#'
     const initialStateStack = rawData?.info_state_stack?.[0] || '0'
 
     return {
