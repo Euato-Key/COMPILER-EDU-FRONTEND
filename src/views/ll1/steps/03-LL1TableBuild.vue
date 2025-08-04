@@ -661,18 +661,8 @@ const hasTableErrors = computed(() => {
 const remainingAttempts = computed(() => Math.max(0, maxAttempts - attempts.value))
 
 const allCompleted = computed(() => {
-  if (!originalData.value) return false
-
-  // 检查所有需要填写的表格项是否都正确
-  const requiredEntries = getRequiredTableEntries()
-
-  // 如果没有需要填写的项，需要至少完成一次校验且没有错误
-  if (requiredEntries.length === 0) {
-    return tableValidated.value && !hasTableErrors.value
-  }
-
-  // 检查是否所有需要填写的项都已正确校验
-  return requiredEntries.every((key) => tableValidation.value[key] === 'correct')
+  // 必须点击3次校验后显示答案才能进入下一步
+  return attempts.value >= maxAttempts && showAnswer.value
 })
 
 // 复制提示

@@ -774,9 +774,9 @@ watch(firstStepCompleted, (completed: boolean) => {
 })
 
 const allCompleted = computed(() => {
-  const firstCompleted = originalData.value?.Vn.every(symbol => firstValidation.value[symbol] === 'correct') || false
-  const followCompleted = originalData.value?.Vn.every(symbol => followValidation.value[symbol] === 'correct') || false
-  return firstCompleted && followCompleted
+  // 必须同时查看两个答案
+  const hasViewedBothAnswers = showFirstAnswer.value && showFollowAnswer.value
+  return hasViewedBothAnswers
 })
 
 // 复制提示
