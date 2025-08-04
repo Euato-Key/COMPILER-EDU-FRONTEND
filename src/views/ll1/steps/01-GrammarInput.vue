@@ -288,7 +288,7 @@
             <div
               v-for="(example, index) in exampleGrammars"
               :key="index"
-              class="bg-white rounded-lg p-4 border-2 border-purple-200 cursor-pointer hover:border-purple-400 hover:shadow-xl transition-all duration-300 group transform hover:scale-105"
+              class="bg-white rounded-lg p-4 border-2 border-purple-200 cursor-pointer hover:border-purple-400 hover:shadow-xl transition-all duration-300 group transform hover:scale-105 flex flex-col"
               @click="useExample(example)"
             >
               <div class="flex items-center justify-between mb-3">
@@ -302,13 +302,13 @@
                 />
                 </div>
               </div>
-              <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200 mb-3">
+              <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200 mb-3 flex-1">
                 <pre class="text-xs text-gray-700 font-mono leading-tight whitespace-pre-wrap">{{
                 example.grammar
               }}</pre>
               </div>
-              <div class="pt-2 border-t border-gray-200">
-                <span class="text-xs text-gray-600">{{ example.description }}</span>
+              <div class="pt-1 border-t border-gray-200">
+                <span class="text-xs text-gray-600 leading-tight line-clamp-2">{{ example.description }}</span>
               </div>
             </div>
           </div>
@@ -340,8 +340,8 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧统计信息 -->
             <div class="lg:col-span-1">
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white rounded-lg p-4 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div class="grid grid-cols-2 gap-4 h-full">
+                <div class="bg-white rounded-lg p-4 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col">
                   <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                       <Icon icon="lucide:play" class="w-4 h-4 text-white" />
@@ -351,7 +351,7 @@
                   <p class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-mono">{{ originalData.S }}</p>
             </div>
 
-                <div class="bg-white rounded-lg p-4 border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div class="bg-white rounded-lg p-4 border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col">
                   <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
                       <Icon icon="lucide:tag" class="w-4 h-4 text-white" />
@@ -359,10 +359,10 @@
                     <span class="text-sm font-semibold text-gray-800">非终结符</span>
               </div>
                   <p class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent font-mono">{{ originalData.Vn.length }}</p>
-                  <p class="text-xs text-gray-600 mt-1 font-mono">{{ originalData.Vn.join(', ') }}</p>
+                  <p class="text-sm font-semibold text-gray-700 mt-1 font-mono">{{ originalData.Vn.join(', ') }}</p>
             </div>
 
-                <div class="bg-white rounded-lg p-4 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div class="bg-white rounded-lg p-4 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col">
                   <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                       <Icon icon="lucide:hash" class="w-4 h-4 text-white" />
@@ -370,10 +370,10 @@
                     <span class="text-sm font-semibold text-gray-800">终结符</span>
               </div>
                   <p class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent font-mono">{{ originalData.Vt.length }}</p>
-                  <p class="text-xs text-gray-600 mt-1 font-mono">{{ originalData.Vt.join(', ') }}</p>
+                  <p class="text-sm font-semibold text-gray-700 mt-1 font-mono">{{ originalData.Vt.join(', ') }}</p>
             </div>
 
-                <div class="bg-white rounded-lg p-4 border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div class="bg-white rounded-lg p-4 border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col">
                   <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
                       <Icon icon="lucide:list" class="w-4 h-4 text-white" />
@@ -389,7 +389,7 @@
 
             <!-- 右侧文法信息 -->
             <div class="lg:col-span-1">
-              <div class="bg-white rounded-lg border-2 border-blue-200 p-4 shadow-lg h-full">
+              <div class="bg-white rounded-lg border-2 border-blue-200 p-4 shadow-lg h-full flex flex-col">
                 <div class="flex items-center gap-2 mb-4">
                   <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                     <Icon icon="lucide:file-text" class="w-4 h-4 text-white" />
@@ -401,7 +401,7 @@
                     <p class="text-xs text-gray-500">Grammar Information</p>
                   </div>
                 </div>
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 flex-1">
               <div
                 v-for="(productions, nonTerminal) in originalData.formulas_dict"
                 :key="nonTerminal"
@@ -780,5 +780,12 @@ watch(grammarInput, (newValue) => {
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
