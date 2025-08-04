@@ -89,6 +89,25 @@ const onProductionAnimationComplete = () => {
 const currentAnimationState = computed(() => {
   if (!animationStore.hasAnimationData) return null
 
+  // 如果是第0步，显示初始状态
+  if (props.currentStep === 0) {
+    // 获取初始状态数据
+    const firstInstruction = animationStore.getInstructionAtStep(0)
+    const initialInput = firstInstruction?.targetState?.remainingInput || []
+
+    // 获取初始符号栈和状态栈
+    const initialSymbolStack = ['#'] // LR符号栈初始状态
+    const initialStateStack = ['0'] // LR状态栈初始状态
+
+    return {
+      stateStack: initialStateStack,
+      symbolStack: initialSymbolStack,
+      inputPointer: 0,
+      remainingInput: initialInput,
+      production: null,
+    }
+  }
+
   // 获取当前步骤的指令
   const currentInstruction = animationStore.getInstructionAtStep(props.currentStep)
   if (!currentInstruction || !currentInstruction.targetState) {

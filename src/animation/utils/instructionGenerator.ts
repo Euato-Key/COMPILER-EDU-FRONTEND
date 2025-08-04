@@ -65,19 +65,37 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
     const initialStack = rawData?.info_stack?.[0] || '#S'
     const initialInput = rawData?.info_str?.[0] || ''
 
+    // 初始化符号栈和状态栈（用于LR分析器）
+    const initialSymbolStack = rawData?.info_symbol_stack?.[0] || '#' // 修复：LR符号栈初始状态是'#'
+    const initialStateStack = rawData?.info_state_stack?.[0] || '0'
+
     return {
-      stack: this.parseStackString(initialStack),
+      stack: this.parseStackString(initialStack), // LL1使用的栈
+      symbolStack: this.parseStackString(initialSymbolStack), // LR符号栈
+      stateStack: this.parseStackString(initialStateStack), // LR状态栈
       inputPointer: 0,
       remainingInput: initialInput.split(''),
 
       // 执行栈操作并返回新状态
       executeOperation(operation: StackOperation) {
+        const stackType = operation.stackType || 'symbol'
+
         switch (operation.type) {
           case 'push':
-            this.stack.unshift(operation.symbol) // 添加到栈顶
+            if (stackType === 'state') {
+              this.stateStack.unshift(operation.symbol) // 添加到状态栈顶
+            } else {
+              this.symbolStack.unshift(operation.symbol) // 添加到符号栈顶
+              this.stack.unshift(operation.symbol) // LL1兼容
+            }
             break
           case 'pop':
-            this.stack.shift() // 从栈顶移除
+            if (stackType === 'state') {
+              this.stateStack.shift() // 从状态栈顶移除
+            } else {
+              this.symbolStack.shift() // 从符号栈顶移除
+              this.stack.shift() // LL1兼容
+            }
             break
           case 'match':
             this.inputPointer++
@@ -86,7 +104,9 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
         }
 
         return {
-          stack: [...this.stack],
+          stack: [...this.stack], // LL1兼容
+          symbolStack: [...this.symbolStack], // LR符号栈
+          stateStack: [...this.stateStack], // LR状态栈
           inputPointer: this.inputPointer,
           remainingInput: [...this.remainingInput],
         }
@@ -176,21 +196,24 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
     let action: AnimationInstruction['action']
     let duration: number
 
+    // 根据栈类型和操作类型确定动画动作
+    const stackType = operation.stackType || 'symbol' // 默认为符号栈
+
     switch (operation.type) {
       case 'push':
-        action = 'pushToStack'
+        action = stackType === 'state' ? 'pushToStateStack' : 'pushToStack'
         duration = ANIMATION_DURATIONS.push
         break
       case 'pop':
-        action = 'popFromStack'
+        action = stackType === 'state' ? 'popFromStateStack' : 'popFromStack'
         duration = ANIMATION_DURATIONS.pop
         break
       case 'match':
-        action = 'matchSymbol'
+        action = 'matchSymbol' // 匹配操作不分栈类型
         duration = ANIMATION_DURATIONS.match
         break
       default:
-        action = 'pushToStack'
+        action = stackType === 'state' ? 'pushToStateStack' : 'pushToStack'
         duration = ANIMATION_DURATIONS.push
     }
 
@@ -202,6 +225,7 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
       step: instructionStep || 0, // 使用连续的动画步骤索引（从0开始）
       analysisStep: analysisStep || operation.step, // 分析步骤号（从1开始）
       syncId: `sync-${analysisStep || operation.step}`,
+      stackType, // 添加栈类型信息
     }
 
     // 使用模拟的目标状态或从原始数据提取
@@ -263,7 +287,7 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
       remainingInput: this.getInputAtStep(rawData, targetArrayIndex),
     }
 
-    // 如果是LR分析器，添加符号栈信息
+    // 如果是LR分析器，添加符号栈和状态栈信息
     if (rawData.info_symbol_stack && rawData.info_state_stack) {
       const symbolStack = rawData.info_symbol_stack?.[targetArrayIndex]
       const stateStack = rawData.info_state_stack?.[targetArrayIndex]

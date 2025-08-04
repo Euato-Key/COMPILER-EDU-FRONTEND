@@ -57,7 +57,13 @@ export const useLR0AnimationStore = defineStore('lr0Animation', () => {
       const stackOps = analyzer.analyzeStackDifferences()
       stackOperations.value = stackOps
 
-      console.log('LR0栈操作解析完成:', stackOps)
+      // 分别打印符号栈和状态栈操作
+      const symbolStackOps = stackOps.filter((op) => op.stackType === 'symbol')
+      const stateStackOps = stackOps.filter((op) => op.stackType === 'state')
+
+      console.log('LR0符号栈操作解析完成:', symbolStackOps)
+      console.log('LR0状态栈操作解析完成:', stateStackOps)
+      console.log('LR0总栈操作解析完成:', stackOps)
 
       // 2. 生成动画指令，传递原始数据
       const instructionGen = new AnimationInstructionGenerator()

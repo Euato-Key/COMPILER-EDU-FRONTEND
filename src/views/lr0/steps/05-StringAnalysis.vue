@@ -769,7 +769,7 @@ const commonStore = useCommonStore()
 const inputString = ref('')
 
 // 示例字符串（单字符格式，不包含#）
-const exampleStrings = ['ab', 'a+b', 'a*b', '(a)', 'a', 'b']
+const exampleStrings = ['aaabb', 'a+b', 'a*b', '(a)', 'a', 'b']
 
 // 答题相关状态
 const userAnswers = ref<{
