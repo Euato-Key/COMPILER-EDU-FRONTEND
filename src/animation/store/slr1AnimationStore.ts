@@ -57,7 +57,13 @@ export const useSLR1AnimationStore = defineStore('slr1Animation', () => {
       const stackOps = analyzer.analyzeStackDifferences()
       stackOperations.value = stackOps
 
-      console.log('SLR1栈操作解析完成:', stackOps)
+      // 分别打印符号栈和状态栈操作
+      const symbolStackOps = stackOps.filter((op) => op.stackType === 'symbol')
+      const stateStackOps = stackOps.filter((op) => op.stackType === 'state')
+
+      console.log('SLR1符号栈操作解析完成:', symbolStackOps)
+      console.log('SLR1状态栈操作解析完成:', stateStackOps)
+      console.log('SLR1总栈操作解析完成:', stackOps)
 
       // 2. 生成动画指令，传递原始数据
       const instructionGen = new AnimationInstructionGenerator()

@@ -5,14 +5,22 @@ export interface StackOperation {
   symbol: string
   step: number
   index?: number
+  stackType?: 'symbol' | 'state' // LR分析器专用：区分符号栈和状态栈
 }
 
 export interface AnimationInstruction {
-  action: 'pushToStack' | 'popFromStack' | 'matchSymbol' | 'movePointer'
+  action:
+    | 'pushToStack'
+    | 'popFromStack'
+    | 'matchSymbol'
+    | 'movePointer'
+    | 'pushToStateStack'
+    | 'popFromStateStack'
   symbol: string
   duration: number
   delay: number
   step: number
+  stackType?: 'symbol' | 'state' // 栈类型标识
 
   // 新增：完整状态信息
   targetState?: {
