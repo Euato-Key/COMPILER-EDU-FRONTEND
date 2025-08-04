@@ -114,13 +114,13 @@
             </div>
           </div>
 
-          <!-- 终结符 -->
+          <!-- 终结符和其他符号 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:hash" class="w-4 h-4 mr-2 text-green-600" />
               终结符 Vt
             </h3>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 mb-4">
               <!-- 拖拽：终结符卡片 -->
               <span
                 v-for="symbol in originalData.Vt"
@@ -139,10 +139,7 @@
                 {{ symbol }}
               </span>
             </div>
-          </div>
 
-          <!-- 其他符号 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:circle" class="w-4 h-4 mr-2 text-pink-600" />
               其他符号
@@ -182,29 +179,30 @@
           </div>
 
           <!-- 产生式 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:list" class="w-4 h-4 mr-2 text-blue-600" />
               产生式
             </h3>
-            <div class="space-y-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 auto-rows-min">
               <div
                 v-for="(productions, nonTerminal) in originalData.formulas_dict"
                 :key="'prod-' + nonTerminal"
+                class="contents"
               >
                 <div
                   v-for="(production, index) in productions"
                   :key="'prod-' + nonTerminal + '-' + index"
                   :class="[
-                    'text-sm p-1 rounded transition-all',
+                    'text-base p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md',
                     productionHighlightState[`${nonTerminal}->${production}`]
-                      ? 'bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 shadow-sm'
-                      : ''
+                      ? 'bg-gradient-to-r from-yellow-100 via-orange-50 to-yellow-50 border-2 border-yellow-300 shadow-md'
+                      : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 hover:border-blue-300 hover:from-blue-100 hover:via-indigo-100 hover:to-purple-100'
                   ]"
               >
-                <span class="font-mono text-blue-600">{{ nonTerminal }}</span>
-                  <span class="text-gray-500 mx-1">-></span>
-                  <span class="font-mono text-gray-700">{{ production }}</span>
+                <span class="font-mono text-blue-700 font-bold text-lg">{{ nonTerminal }}</span>
+                  <span class="text-gray-400 mx-2 font-semibold">→</span>
+                  <span class="font-mono text-gray-800 text-base">{{ production }}</span>
                 </div>
               </div>
             </div>
