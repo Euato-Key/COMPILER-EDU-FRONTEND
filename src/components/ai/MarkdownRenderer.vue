@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue'
 import MarkdownIt from 'markdown-it'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
@@ -202,6 +202,40 @@ md.renderer.rules.fence = function (tokens, idx) {
 
 
 
+// 防抖定时器
+let renderTimeout: NodeJS.Timeout | null = null
+
+// 渲染图表的函数
+const renderDiagrams = async () => {
+  try {
+    // 渲染 mermaid 图表
+    const mermaidElements = document.querySelectorAll('.mermaid')
+    for (const element of mermaidElements) {
+      if (element instanceof HTMLElement) {
+        await mermaid.run({
+          nodes: [element]
+        })
+      }
+    }
+
+    // 渲染 DOT 图表
+    const dotElements = document.querySelectorAll('.dot-graph')
+    for (const element of dotElements) {
+      if (element instanceof HTMLElement) {
+        const dotCode = element.textContent || ''
+        if (dotCode.trim()) {
+          const vizInstance = await viz()
+          const result = await vizInstance.renderSVGElement(dotCode)
+          element.innerHTML = ''
+          element.appendChild(result)
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('图表渲染错误:', error)
+  }
+}
+
 // 渲染Markdown内容
 const renderContent = async () => {
   if (!props.content) {
@@ -252,37 +286,15 @@ const renderContent = async () => {
     // 等待DOM更新后执行后续操作
     await nextTick()
 
-    // 渲染 mermaid 图表
-    try {
-      const mermaidElements = document.querySelectorAll('.mermaid')
-      for (const element of mermaidElements) {
-        if (element instanceof HTMLElement) {
-          await mermaid.run({
-            nodes: [element]
-          })
-        }
-      }
-    } catch (error) {
-      console.warn('Mermaid 渲染错误:', error)
+    // 清除之前的定时器
+    if (renderTimeout) {
+      clearTimeout(renderTimeout)
     }
 
-    // 渲染 DOT 图表
-    try {
-      const dotElements = document.querySelectorAll('.dot-graph')
-      for (const element of dotElements) {
-        if (element instanceof HTMLElement) {
-          const dotCode = element.textContent || ''
-          if (dotCode.trim()) {
-            const vizInstance = await viz()
-            const result = await vizInstance.renderSVGElement(dotCode)
-            element.innerHTML = ''
-            element.appendChild(result)
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('DOT 渲染错误:', error)
-    }
+    // 延迟渲染图表，等待内容稳定
+    renderTimeout = setTimeout(async () => {
+      await renderDiagrams()
+    }, 500) // 500ms延迟，等待流式生成完成
 
   } catch (error) {
     console.error('Markdown渲染错误:', error)
@@ -293,6 +305,14 @@ const renderContent = async () => {
 
 // 监听内容变化
 watch(() => props.content, renderContent, { immediate: true })
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (renderTimeout) {
+    clearTimeout(renderTimeout)
+    renderTimeout = null
+  }
+})
 
 // 复制代码功能
 const copyCode = (codeId: string) => {
