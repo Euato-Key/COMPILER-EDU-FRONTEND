@@ -26,10 +26,11 @@ export interface AnimationInstruction {
 
   // 新增：产生式信息
   productionInfo?: {
-    type: 'production' | 'match' | 'epsilon' | 'shift' | 'reduce' | 'accept'
+    type: 'production' | 'match' | 'epsilon' | 'shift' | 'reduce' | 'accept' | 'message'
     left?: string
     right?: string | string[]
     message?: string
+    rawMessage?: string // 原始后端消息
   }
 
   // 新增：同步信息

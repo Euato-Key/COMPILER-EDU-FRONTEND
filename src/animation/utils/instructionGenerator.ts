@@ -174,18 +174,22 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
 
   /**
    * 从原始数据中提取目标状态信息
+   * 注意：后端步骤从1开始，前端数组索引从0开始
    */
   private extractTargetState(operation: StackOperation, rawData: any, stepIndex: number) {
+    // 将分析步骤号转换为数组索引
+    const arrayIndex = Math.max(0, stepIndex - 1)
+
     const targetState: any = {
-      stack: this.getStackAtStep(rawData, stepIndex),
-      inputPointer: this.getPointerAtStep(rawData, stepIndex),
-      remainingInput: this.getInputAtStep(rawData, stepIndex),
+      stack: this.getStackAtStep(rawData, arrayIndex),
+      inputPointer: this.getPointerAtStep(rawData, arrayIndex),
+      remainingInput: this.getInputAtStep(rawData, arrayIndex),
     }
 
     // 如果是LR分析器，添加符号栈信息
     if (rawData.info_symbol_stack && rawData.info_state_stack) {
-      const symbolStack = rawData.info_symbol_stack?.[stepIndex]
-      const stateStack = rawData.info_state_stack?.[stepIndex]
+      const symbolStack = rawData.info_symbol_stack?.[arrayIndex]
+      const stateStack = rawData.info_state_stack?.[arrayIndex]
 
       if (symbolStack && typeof symbolStack === 'string') {
         targetState.symbolStack = symbolStack.split('').reverse()
@@ -203,9 +207,13 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
 
   /**
    * 从原始数据中提取产生式信息
+   * 注意：后端步骤从1开始，前端数组索引从0开始
+   * 注意：一个消息可能对应多个分析步骤
    */
   private extractProductionInfo(operation: StackOperation, rawData: any, stepIndex: number) {
-    const message = rawData.info_msg?.[stepIndex] || ''
+    // 将分析步骤号转换为数组索引
+    const arrayIndex = Math.max(0, stepIndex - 1)
+    const message = rawData.info_msg?.[arrayIndex] || ''
     return this.parseMessageToProductionInfo(message)
   }
 
@@ -262,56 +270,15 @@ export class AnimationInstructionGenerator implements IAnimationInstructionGener
   }
 
   /**
-   * 解析消息文本为产生式信息
+   * 直接使用后端消息数据，不做复杂解析
+   * 注意：一个消息可能对应多个分析步骤
    */
   private parseMessageToProductionInfo(message: string) {
-    // LL1消息解析
-    if (message.includes('→')) {
-      const parts = message.split('→')
-      if (parts.length === 2) {
-        return {
-          type: 'production' as const,
-          left: parts[0].trim(),
-          right: parts[1].trim(),
-          message,
-        }
-      }
-    } else if (message.includes('符号匹配')) {
-      const match = message.match(/符号匹配[：:]\s*['"]([^'"]+)['"]/)
-      return {
-        type: 'match' as const,
-        message,
-        left: match ? match[1] : '',
-      }
-    } else if (message.includes('ε')) {
-      return {
-        type: 'epsilon' as const,
-        left: message.split('→')[0]?.trim() || '',
-        right: 'ε',
-        message,
-      }
-    }
-    // LR消息解析
-    else if (message.includes('移进') || message.includes('shift')) {
-      return {
-        type: 'shift' as const,
-        message,
-      }
-    } else if (message.includes('归约') || message.includes('reduce')) {
-      return {
-        type: 'reduce' as const,
-        message,
-      }
-    } else if (message.includes('接受') || message.includes('acc')) {
-      return {
-        type: 'accept' as const,
-        message,
-      }
-    }
-
+    // 直接返回原始消息，让前端组件自行处理显示
     return {
-      type: 'production' as const,
-      message,
+      type: 'message' as const,
+      message: message || '',
+      rawMessage: message || '',
     }
   }
 }
