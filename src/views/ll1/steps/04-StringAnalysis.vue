@@ -309,15 +309,17 @@
                 <button
                   @click="analyzeString"
                   :disabled="!inputString.trim() || analyzing"
-                  class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                  class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                 >
-                  <Icon v-if="analyzing" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
+                  <Icon v-if="analyzing" icon="lucide:loader-2" class="w-5 h-5 animate-spin" />
+                  <Icon v-else icon="lucide:play" class="w-5 h-5" />
                   {{ analyzing ? '分析中...' : '开始分析' }}
                 </button>
                 <button
                   @click="resetAnalysis"
-                  class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold"
+                  class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-400 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
                 >
+                  <Icon icon="lucide:rotate-ccw" class="w-5 h-5" />
                   重置
                 </button>
               </div>
@@ -346,7 +348,7 @@
                   v-for="example in exampleStrings"
                   :key="example"
                   @click="inputString = example"
-                  class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-200 border border-gray-200 hover:border-gray-300 font-mono"
+                  class="px-4 py-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 transform hover:scale-105 hover:shadow-md border-2 border-blue-200 hover:border-blue-300 font-mono font-bold shadow-sm"
                 >
                   {{ example }}
                 </button>
@@ -570,35 +572,35 @@
             </div>
 
             <!-- 操作按钮 -->
-            <div class="flex flex-wrap gap-2 mb-4">
+            <div class="flex flex-wrap gap-1 mb-4">
               <button
                 @click="onMatch"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 匹配
               </button>
               <button
                 @click="onUndo"
                 :disabled="userSteps.length <= 1"
-                class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none"
               >
                 回退
               </button>
               <button
                 @click="onShowAnswer"
-                class="px-4 py-2 border border-blue-300 text-blue-700 bg-white rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 {{ showAnswer ? '隐藏答案' : '查看答案' }}
               </button>
               <button
                 @click="onResetUserSteps"
-                class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 重做
               </button>
               <button
                 @click="onHint"
-                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 提示
               </button>
@@ -780,7 +782,7 @@
               <tr v-for="(step, index) in inputAnalysisResult.info_step" :key="index">
                 <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
                 <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                  {{ inputAnalysisResult.info_state_stack?.[index] || '' }}
+                  {{ inputAnalysisResult.info_stack?.[index] || '' }}
                 </td>
                 <td class="border border-gray-300 px-3 py-2 font-mono text-center">
                   {{ inputAnalysisResult.info_str?.[index] || '' }}
@@ -804,18 +806,18 @@
       <div class="flex justify-between items-center">
         <button
           @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
         >
-          <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
+          <Icon icon="lucide:chevron-left" class="w-5 h-5" />
           上一步
         </button>
-        <div class="text-sm text-gray-500">步骤 4 / 4</div>
+        <div class="text-sm text-gray-500 font-medium">步骤 4 / 4</div>
         <button
           @click="complete"
-          class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
         >
           完成
-          <Icon icon="lucide:check" class="w-4 h-4 inline ml-2" />
+          <Icon icon="lucide:check" class="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -1060,7 +1062,7 @@ const onLL1CellDblClick = (row: string, col: string) => {
       '请先处理栈顶符号，或使用提示功能获取正确的操作指导。',
       '请检查栈顶符号',
       3000,
-      'top-center'
+      'center'
     )
     return
   }
@@ -1083,7 +1085,7 @@ const onLL1CellDblClick = (row: string, col: string) => {
     `栈顶符号 "${row}" 被替换为 "${prod}"，分析继续进行。`,
     '推导操作完成',
     2500,
-    'top-center'
+    'center'
   )
 
   // 检查是否完成分析（虽然这里通常不会完成，但为了完整性）
@@ -1120,9 +1122,9 @@ const onMatch = () => {
       '匹配成功',
       `成功匹配栈顶符号 "${top}" 与输入串首字符 "${cur}"。`,
       '栈顶符号被弹出，输入串首字符被消耗，分析继续进行。',
-      '匹配操作完成',
-      2500,
-      'top-center'
+          '匹配操作完成',
+    2500,
+    'center'
     )
 
     // 检查是否完成分析
