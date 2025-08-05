@@ -38,19 +38,19 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div class="flex items-center gap-2 p-2 rounded-md bg-gray-50 border border-gray-200">
                 <div class="w-3 h-3 bg-gray-300 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-gray-600">已知信息</span>
+                <span class="text-sm font-medium text-gray-700">已知信息</span>
               </div>
               <div class="flex items-center gap-2 p-2 rounded-md bg-amber-50 border border-amber-200">
                 <div class="w-3 h-3 bg-gradient-to-r from-amber-300 to-orange-300 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-amber-700">待填写</span>
+                <span class="text-sm font-medium text-amber-800">待填写</span>
               </div>
               <div class="flex items-center gap-2 p-2 rounded-md bg-green-50 border border-green-200">
                 <div class="w-3 h-3 bg-green-400 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-green-700">校验正确</span>
+                <span class="text-sm font-medium text-green-800">校验正确</span>
               </div>
               <div class="flex items-center gap-2 p-2 rounded-md bg-red-50 border border-red-200">
                 <div class="w-3 h-3 bg-red-400 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-red-700">校验错误</span>
+                <span class="text-sm font-medium text-red-800">校验错误</span>
               </div>
             </div>
           </div>
@@ -61,8 +61,8 @@
               <Icon icon="lucide:edit-3" class="w-4 h-4 mr-2 text-blue-500" />
               填写规则
             </h4>
-            <div class="space-y-2 text-sm text-gray-600">
-              <p class="text-gray-700 font-medium">根据非终结符、终结符和产生式等已知信息，填写First集和Follow集合。</p>
+            <div class="space-y-2 text-base text-gray-700">
+              <p class="text-gray-800 font-semibold">根据非终结符、终结符和产生式等已知信息，填写First集和Follow集合。</p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div class="flex items-center gap-2">
                   <Icon icon="lucide:check" class="w-3 h-3 text-green-500 flex-shrink-0" />
@@ -221,7 +221,7 @@
               <div class="flex gap-2">
                 <button
                   @click="clearFirstSets"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                 >
                   <Icon icon="lucide:refresh-cw" class="w-3 h-3 mr-1" />
                   清空重填
@@ -229,7 +229,7 @@
                 <button
                   @click="checkFirstSets"
                   :disabled="loading.first"
-                  class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-xs"
+                  class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-sm"
                 >
                   <Icon v-if="loading.first" icon="lucide:loader-2" class="w-3 h-3 animate-spin mr-1" />
                   <Icon v-else icon="lucide:check-circle" class="w-3 h-3 mr-1" />
@@ -237,7 +237,7 @@
                 </button>
                 <button
                   @click="showFirstAnswer = !showFirstAnswer"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                 >
                   <Icon v-if="showFirstAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
                   <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
@@ -252,7 +252,7 @@
                 <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
                 </div>
-                <span class="text-xs font-semibold text-blue-800">动画速度</span>
+                <span class="text-sm font-semibold text-blue-900">动画速度</span>
               </div>
               <div class="flex items-center gap-2">
                 <button
@@ -263,7 +263,7 @@
                   <Icon icon="lucide:minus" class="w-3 h-3 text-blue-600" />
                 </button>
                 <div class="bg-white px-2 py-1 rounded-md border border-blue-300 shadow-sm">
-                  <span class="text-xs font-bold text-blue-800 min-w-[2rem] text-center">
+                  <span class="text-sm font-bold text-blue-900 min-w-[2rem] text-center">
                     {{ (animationSpeed * 100).toFixed(0) }}%
                   </span>
                 </div>
@@ -276,7 +276,7 @@
                 </button>
                 <button
                   @click="resetAnimationSpeed"
-                  class="px-2 py-1 text-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-md hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-sm"
+                  class="px-2 py-1 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-md hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-sm"
                 >
                   重置
                 </button>
@@ -339,7 +339,7 @@
 
             <!-- First集答案提示 -->
             <div v-if="showFirstAnswer" class="mt-3 p-3 bg-green-50 rounded-lg">
-              <h4 class="text-xs font-medium text-green-800 mb-2">正确答案：</h4>
+              <h4 class="text-sm font-medium text-green-900 mb-2">正确答案：</h4>
               <div class="space-y-1.5">
                 <!-- 非终结符答案 -->
                 <div>
@@ -347,10 +347,10 @@
                 <div
                   v-for="symbol in originalData.Vn"
                       :key="'answer-first-vn-' + symbol"
-                      class="text-xs"
+                      class="text-sm"
                 >
-                  <span class="font-mono text-green-600">{{ symbol }}:</span>
-                  <span class="ml-2 text-green-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
+                  <span class="font-mono text-green-700 font-semibold">{{ symbol }}:</span>
+                  <span class="ml-2 text-green-800 font-medium">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
                     </div>
                   </div>
                 </div>
@@ -371,7 +371,7 @@
               <div class="flex gap-2">
                 <button
                   @click="clearFollowSets"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200"
                 >
                   <Icon icon="lucide:refresh-cw" class="w-3 h-3 mr-1" />
                   清空重填
@@ -379,7 +379,7 @@
                 <button
                   @click="checkFollowSets"
                   :disabled="loading.follow || !firstStepCompleted"
-                  class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 transition-colors text-xs"
+                  class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 transition-colors text-sm"
                 >
                   <Icon v-if="loading.follow" icon="lucide:loader-2" class="w-3 h-3 animate-spin mr-1" />
                   <Icon v-else icon="lucide:check-circle" class="w-3 h-3 mr-1" />
@@ -388,7 +388,7 @@
                 <button
                   @click="showFollowAnswer = !showFollowAnswer"
                   :disabled="!firstStepCompleted"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <Icon v-if="showFollowAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
                   <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
@@ -403,7 +403,7 @@
                 <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
                   <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
                 </div>
-                <span class="text-xs font-semibold text-green-800">动画速度</span>
+                <span class="text-sm font-semibold text-green-900">动画速度</span>
               </div>
               <div class="flex items-center gap-2">
                 <button
@@ -414,7 +414,7 @@
                   <Icon icon="lucide:minus" class="w-3 h-3 text-green-600" />
                 </button>
                 <div class="bg-white px-2 py-1 rounded-md border border-green-300 shadow-sm">
-                  <span class="text-xs font-bold text-green-800 min-w-[2rem] text-center">
+                  <span class="text-sm font-bold text-green-900 min-w-[2rem] text-center">
                     {{ (animationSpeed * 100).toFixed(0) }}%
                   </span>
                 </div>
@@ -427,7 +427,7 @@
                 </button>
                 <button
                   @click="resetAnimationSpeed"
-                  class="px-2 py-1 text-xs bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-md hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-sm"
+                  class="px-2 py-1 text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-md hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-sm"
                 >
                   重置
                 </button>
@@ -485,15 +485,15 @@
 
             <!-- Follow集答案提示 -->
             <div v-if="showFollowAnswer" class="mt-3 p-3 bg-green-50 rounded-lg">
-              <h4 class="text-xs font-medium text-green-800 mb-2">正确答案：</h4>
+              <h4 class="text-sm font-medium text-green-900 mb-2">正确答案：</h4>
               <div class="space-y-0.5">
                 <div
                   v-for="symbol in originalData.Vn"
                   :key="'answer-follow-' + symbol"
-                  class="text-xs"
+                  class="text-sm"
                 >
-                  <span class="font-mono text-green-600">{{ symbol }}:</span>
-                  <span class="ml-2 text-green-700">{{ correctFollowSets[symbol]?.join(' ') || '$' }}</span>
+                  <span class="font-mono text-green-700 font-semibold">{{ symbol }}:</span>
+                  <span class="ml-2 text-green-800 font-medium">{{ correctFollowSets[symbol]?.join(' ') || '$' }}</span>
                 </div>
               </div>
             </div>
@@ -508,13 +508,13 @@
             </div>
             <h4 class="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">计算提示</h4>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base">
             <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-200/50">
               <h5 class="font-semibold text-blue-800 mb-3 flex items-center">
                 <Icon icon="lucide:arrow-right" class="w-4 h-4 mr-2 text-blue-600" />
                 First集计算规则
               </h5>
-              <ul class="space-y-2 text-gray-700">
+              <ul class="space-y-2 text-gray-800 font-medium">
                 <li class="flex items-start">
                   <span class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span :class="[
@@ -554,7 +554,7 @@
                 <Icon icon="lucide:arrow-left" class="w-4 h-4 mr-2 text-purple-600" />
                 Follow集计算规则
               </h5>
-              <ul class="space-y-2 text-gray-700">
+              <ul class="space-y-2 text-gray-800 font-medium">
                 <li class="flex items-start">
                   <span class="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span :class="[
@@ -590,7 +590,7 @@
             <Icon icon="lucide:check-circle" class="w-6 h-6 text-green-500 mr-3" />
             <div>
               <p class="text-lg font-medium text-green-800">恭喜！First集和Follow集验证成功</p>
-              <p class="text-sm text-green-600 mt-1">可以进入下一步构建LL1分析表</p>
+                              <p class="text-base text-green-700 mt-1 font-medium">可以进入下一步构建LL1分析表</p>
             </div>
           </div>
         </div>
@@ -606,7 +606,7 @@
           <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
           上一步
         </button>
-        <div class="text-sm text-gray-500">步骤 2 / 4</div>
+        <div class="text-base text-gray-600 font-medium">步骤 2 / 4</div>
         <button
           @click="handleNextStep"
           :disabled="!allCompleted"

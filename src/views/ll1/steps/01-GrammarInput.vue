@@ -26,7 +26,7 @@
                 <h3 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   输入产生式
                 </h3>
-                <p class="text-sm text-gray-500 mt-1">定义上下文无关文法规则</p>
+                <p class="text-base text-gray-600 mt-1 font-medium">定义上下文无关文法规则</p>
               </div>
             </div>
             <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-full">
@@ -42,7 +42,7 @@
                 <Icon icon="lucide:edit-3" class="w-4 h-4 text-blue-500" />
                 文法规则
                 <span class="text-red-500 text-lg">*</span>
-                <span class="text-xs font-normal text-gray-500 ml-2">(每行一个产生式，使用单字符作为符号)</span>
+                <span class="text-sm font-normal text-gray-600 ml-2">(每行一个产生式，使用单字符作为符号)</span>
               </label>
               <textarea
                 v-model="grammarInput"
@@ -50,12 +50,12 @@
                 class="w-full h-36 px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-400 resize-y transition-all duration-200 font-mono text-sm bg-gradient-to-br from-gray-50 to-white"
                 @input="handleInput"
               />
-              <div class="mt-3 flex items-center justify-between text-xs">
-                <div class="flex items-center gap-2 text-gray-500">
+              <div class="mt-3 flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2 text-gray-600 font-medium">
                   <Icon icon="lucide:alert-triangle" class="w-3 h-3" />
                   <span>不支持中文字符，不能有重复产生式</span>
                 </div>
-                <div class="flex items-center gap-1 text-blue-600 font-medium">
+                <div class="flex items-center gap-1 text-blue-700 font-medium">
                   <Icon icon="lucide:hash" class="w-3 h-3" />
                   <span>{{ grammarInput.length }} 字符</span>
                 </div>
@@ -81,8 +81,8 @@
                       <Icon icon="lucide:play" class="w-2.5 h-2.5 text-blue-600" />
                     </div>
                     <div>
-                      <p class="text-xs font-semibold text-gray-800 mb-0.5">开始符</p>
-                      <p class="text-xs text-gray-600 leading-tight">第一个产生式的左侧大写字母为开始符</p>
+                      <p class="text-sm font-semibold text-gray-900 mb-0.5">开始符</p>
+                      <p class="text-sm text-gray-700 leading-tight font-medium">第一个产生式的左侧大写字母为开始符</p>
                     </div>
                   </div>
 
@@ -91,8 +91,8 @@
                       <Icon icon="lucide:type" class="w-2.5 h-2.5 text-purple-600" />
                     </div>
                     <div>
-                      <p class="text-xs font-semibold text-gray-800 mb-0.5">字符规定</p>
-                      <p class="text-xs text-gray-600 leading-tight">每个符号必须是单个字符（如A、B、C，而非E1、id等）</p>
+                      <p class="text-sm font-semibold text-gray-900 mb-0.5">字符规定</p>
+                      <p class="text-sm text-gray-700 leading-tight font-medium">每个符号必须是单个字符（如A、B、C，而非E1、id等）</p>
                     </div>
                   </div>
 
@@ -101,8 +101,8 @@
                       <Icon icon="lucide:arrow-right" class="w-2.5 h-2.5 text-green-600" />
                     </div>
                     <div>
-                      <p class="text-xs font-semibold text-gray-800 mb-0.5">产生式格式</p>
-                      <p class="text-xs text-gray-600 leading-tight">必须为"大写字母->右部"格式（如：S->AB）</p>
+                      <p class="text-sm font-semibold text-gray-900 mb-0.5">产生式格式</p>
+                      <p class="text-sm text-gray-700 leading-tight font-medium">必须为"大写字母->右部"格式（如：S->AB）</p>
                     </div>
                   </div>
                 </div>
@@ -114,8 +114,8 @@
                       <Icon icon="lucide:list" class="w-2.5 h-2.5 text-indigo-600" />
                     </div>
                     <div>
-                      <p class="text-xs font-semibold text-gray-800 mb-0.5">右部格式</p>
-                      <p class="text-xs text-gray-600 leading-tight">可以是单个符号或由"|"分隔的多个候选式（如：A->a|ε）</p>
+                      <p class="text-sm font-semibold text-gray-900 mb-0.5">右部格式</p>
+                      <p class="text-sm text-gray-700 leading-tight font-medium">可以是单个符号或由"|"分隔的多个候选式（如：A->a|ε）</p>
                     </div>
                   </div>
 
@@ -124,8 +124,8 @@
                       <Icon icon="lucide:ban" class="w-2.5 h-2.5 text-red-600" />
                     </div>
                     <div>
-                      <p class="text-xs font-semibold text-gray-800 mb-0.5">限制条件</p>
-                      <p class="text-xs text-gray-600 leading-tight">不能有左递归，每个非终结符必须有产生式定义</p>
+                      <p class="text-sm font-semibold text-gray-900 mb-0.5">限制条件</p>
+                      <p class="text-sm text-gray-700 leading-tight font-medium">不能有左递归，每个非终结符必须有产生式定义</p>
                     </div>
                   </div>
 
@@ -134,8 +134,8 @@
                       <Icon icon="lucide:circle" class="w-2.5 h-2.5 text-pink-600" />
                     </div>
                     <div>
-                      <p class="text-xs font-semibold text-gray-800 mb-0.5">ε符号</p>
-                      <p class="text-xs text-gray-600 leading-tight">ε只能单独作为一个候选式，如G->+TG|ε是正确的</p>
+                      <p class="text-sm font-semibold text-gray-900 mb-0.5">ε符号</p>
+                      <p class="text-sm text-gray-700 leading-tight font-medium">ε只能单独作为一个候选式，如G->+TG|ε是正确的</p>
                     </div>
                   </div>
                 </div>
@@ -276,12 +276,12 @@
                 <h4 class="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                   示例文法
                 </h4>
-                <p class="text-xs text-gray-600 mt-0.5">点击卡片使用示例文法</p>
+                <p class="text-sm text-gray-700 mt-0.5 font-medium">点击卡片使用示例文法</p>
               </div>
             </div>
             <div class="flex items-center gap-2 px-2 py-1 bg-purple-100 rounded-full">
               <Icon icon="lucide:mouse-pointer" class="w-3 h-3 text-purple-600" />
-              <span class="text-xs font-medium text-purple-700">点击使用示例</span>
+                              <span class="text-sm font-medium text-purple-800">点击使用示例</span>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -303,12 +303,12 @@
                 </div>
               </div>
               <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-3 border border-gray-200 mb-3 flex-1">
-                <pre class="text-xs text-gray-700 font-mono leading-tight whitespace-pre-wrap">{{
+                                  <pre class="text-sm text-gray-800 font-mono leading-tight whitespace-pre-wrap font-semibold">{{
                 example.grammar
               }}</pre>
               </div>
               <div class="pt-1 border-t border-gray-200">
-                <span class="text-xs text-gray-600 leading-tight line-clamp-2">{{ example.description }}</span>
+                <span class="text-sm text-gray-700 leading-tight line-clamp-2 font-medium">{{ example.description }}</span>
               </div>
             </div>
           </div>
@@ -328,12 +328,12 @@
                 <h4 class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   当前文法分析结果
                 </h4>
-                <p class="text-xs text-gray-600 mt-0.5">LL(1)文法分析完成</p>
+                <p class="text-sm text-gray-700 mt-0.5 font-medium">LL(1)文法分析完成</p>
               </div>
             </div>
             <div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg">
               <Icon icon="lucide:check-circle" class="w-3 h-3 text-white" />
-              <span class="text-xs font-semibold text-white">LL(1)文法</span>
+                              <span class="text-sm font-semibold text-white">LL(1)文法</span>
             </div>
           </div>
 
@@ -398,7 +398,7 @@
                     <h5 class="text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                       文法信息
                     </h5>
-                    <p class="text-xs text-gray-500">Grammar Information</p>
+                    <p class="text-sm text-gray-600 font-medium">Grammar Information</p>
                   </div>
                 </div>
                 <div class="space-y-1.5 flex-1">
@@ -409,7 +409,7 @@
                   >
                     <span class="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-mono">{{ nonTerminal }}</span>
                     <span class="text-gray-400 font-mono text-sm">→</span>
-                    <span class="font-mono text-gray-700 text-xs flex-1">{{ productions.join(' | ') }}</span>
+                    <span class="font-mono text-gray-800 text-sm flex-1 font-semibold">{{ productions.join(' | ') }}</span>
                   </div>
                 </div>
               </div>

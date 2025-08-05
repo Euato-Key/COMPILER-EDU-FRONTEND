@@ -20,24 +20,24 @@
         </div>
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-purple-800 mb-3">操作指南</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-purple-700">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base text-purple-800">
             <div class="space-y-2">
-              <h4 class="font-medium text-purple-800 flex items-center gap-2">
+              <h4 class="font-semibold text-purple-900 flex items-center gap-2">
                 <Icon icon="lucide:circle-dot" class="w-4 h-4" />
                 项目集管理
               </h4>
-              <ul class="space-y-1 ml-6">
+              <ul class="space-y-1.5 ml-6">
                 <li>• 双击画布空白处创建新项目集</li>
                 <li>• 点击项目集节点可编辑LR项目内容</li>
                 <li>• 拖拽节点调整位置</li>
               </ul>
             </div>
             <div class="space-y-2">
-              <h4 class="font-medium text-purple-800 flex items-center gap-2">
+              <h4 class="font-semibold text-purple-900 flex items-center gap-2">
                 <Icon icon="lucide:arrow-right-left" class="w-4 h-4" />
                 转移关系
               </h4>
-              <ul class="space-y-1 ml-6">
+              <ul class="space-y-1.5 ml-6">
                 <li>• 拖拽节点连接创建转移边</li>
                 <li>• 点击边可编辑转移符号</li>
                 <li>• 右键删除不需要的连接</li>
@@ -94,7 +94,7 @@
                       >
                         {{ index }}
                       </span>
-                      <span class="font-mono text-sm flex-1">{{ production }}</span>
+                      <span class="font-mono text-base flex-1 font-semibold">{{ production }}</span>
                       <span
                         v-if="index === 0"
                         class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium"
@@ -144,23 +144,23 @@
               </div>
               <div class="flex-1">
                 <h4 class="font-semibold text-amber-800 text-lg mb-3">构造提示</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-amber-700">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base text-amber-800">
                   <div class="space-y-2">
-                    <h5 class="font-medium text-amber-800 flex items-center gap-2">
+                    <h5 class="font-semibold text-amber-900 flex items-center gap-2">
                       <Icon icon="lucide:circle-dot" class="w-4 h-4" />
                       初始构造
                     </h5>
-                    <ul class="space-y-1 ml-6">
+                    <ul class="space-y-1.5 ml-6">
                       <li>• 从增广文法的初始项目 [S' -> .S] 开始构造 I₀</li>
                       <li>• 使用 CLOSURE 函数求闭包，添加所有相关项目</li>
                     </ul>
                   </div>
                   <div class="space-y-2">
-                    <h5 class="font-medium text-amber-800 flex items-center gap-2">
+                    <h5 class="font-semibold text-amber-900 flex items-center gap-2">
                       <Icon icon="lucide:arrow-right-left" class="w-4 h-4" />
                       状态转移
                     </h5>
-                    <ul class="space-y-1 ml-6">
+                    <ul class="space-y-1.5 ml-6">
                       <li>• 使用 GOTO 函数计算状态转移</li>
                       <li>• 继续构造直到没有新的项目集产生</li>
                       <li>• 确保所有项目集和转移关系都正确标记</li>
@@ -240,15 +240,15 @@
               </div>
               <div class="flex-1">
                 <h4 class="font-semibold text-green-800 text-lg mb-3">SLR1项目集规范族构造分析</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-700">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-base text-green-800">
                   <div class="space-y-2">
                     <div class="flex items-center gap-2">
                       <Icon icon="lucide:hash" class="w-4 h-4" />
-                      <span>项目集数量: <span class="font-mono font-bold">{{ answerData?.itemSets?.length || 0 }}</span></span>
+                      <span>项目集数量: <span class="font-mono font-bold text-lg">{{ answerData?.itemSets?.length || 0 }}</span></span>
                     </div>
                     <div class="flex items-center gap-2">
                       <Icon icon="lucide:arrow-right-left" class="w-4 h-4" />
-                      <span>转移关系数量: <span class="font-mono font-bold">{{ answerData?.transitions?.length || 0 }}</span></span>
+                      <span>转移关系数量: <span class="font-mono font-bold text-lg">{{ answerData?.transitions?.length || 0 }}</span></span>
                     </div>
                   </div>
                   <div class="space-y-2">

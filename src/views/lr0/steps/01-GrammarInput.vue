@@ -30,10 +30,10 @@
                   <Icon icon="lucide:check-circle" class="w-4 h-4 mr-2 text-blue-600" />
                   基本规则
                 </h4>
-                <ul class="space-y-1 text-sm text-blue-700">
-                  <li>• 每行一个产生式，格式：<code class="bg-blue-100 px-1 rounded">A -> αβγ</code></li>
+                <ul class="space-y-1.5 text-base text-blue-800">
+                  <li>• 每行一个产生式，格式：<code class="bg-blue-100 px-1.5 rounded font-semibold">A -> αβγ</code></li>
                   <li>• 左侧为非终结符，右侧为产生式体</li>
-                  <li>• 使用 <code class="bg-blue-100 px-1 rounded">-></code> 表示产生</li>
+                  <li>• 使用 <code class="bg-blue-100 px-1.5 rounded font-semibold">-></code> 表示产生</li>
                 </ul>
               </div>
               <div>
@@ -41,10 +41,10 @@
                   <Icon icon="lucide:settings" class="w-4 h-4 mr-2 text-blue-600" />
                   特殊符号
                 </h4>
-                <ul class="space-y-1 text-sm text-blue-700">
-                  <li>• 使用 <code class="bg-blue-100 px-1 rounded">|</code> 表示或者关系</li>
-                  <li>• 使用 <code class="bg-blue-100 px-1 rounded">ε</code> 表示空串</li>
-                  <li>• 支持多候选式：<code class="bg-blue-100 px-1 rounded">A -> α | β | γ</code></li>
+                <ul class="space-y-1.5 text-base text-blue-800">
+                  <li>• 使用 <code class="bg-blue-100 px-1.5 rounded font-semibold">|</code> 表示或者关系</li>
+                  <li>• 使用 <code class="bg-blue-100 px-1.5 rounded font-semibold">ε</code> 表示空串</li>
+                  <li>• 支持多候选式：<code class="bg-blue-100 px-1.5 rounded font-semibold">A -> α | β | γ</code></li>
                 </ul>
               </div>
             </div>
@@ -62,24 +62,24 @@
             </div>
             <div>
               <h3 class="text-xl font-bold text-blue-900">输入LR0文法产生式</h3>
-              <p class="text-blue-600 text-sm">请输入符合LR0文法规范的产生式</p>
+              <p class="text-blue-700 text-base font-medium">请输入符合LR0文法规范的产生式</p>
             </div>
           </div>
 
           <div class="bg-white rounded-lg p-4 border border-blue-100 shadow-inner">
-            <textarea
-              v-model="grammarInput"
-              placeholder="请输入文法产生式，例如：&#10;S -> aAb&#10;A -> c&#10;A -> ε"
-              :class="[
-                'w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-400 resize-none font-mono text-sm transition-all duration-200 bg-gradient-to-r from-gray-50 to-white',
-                lr0Store.validationErrors.length > 0
-                  ? 'border-red-300 focus:border-red-500 bg-red-50'
-                  : lr0Store.isValidGrammar === true
-                    ? 'border-green-300 focus:border-green-500 bg-green-50'
-                    : 'border-gray-300 focus:border-blue-500',
-              ]"
-              @input="onInputChange"
-            ></textarea>
+                          <textarea
+                v-model="grammarInput"
+                placeholder="请输入文法产生式，例如：&#10;S -> aAb&#10;A -> c&#10;A -> ε"
+                :class="[
+                  'w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-400 resize-none font-mono text-base transition-all duration-200 bg-gradient-to-r from-gray-50 to-white',
+                  lr0Store.validationErrors.length > 0
+                    ? 'border-red-300 focus:border-red-500 bg-red-50'
+                    : lr0Store.isValidGrammar === true
+                      ? 'border-green-300 focus:border-green-500 bg-green-50'
+                      : 'border-gray-300 focus:border-blue-500',
+                ]"
+                @input="onInputChange"
+              ></textarea>
           </div>
 
           <!-- 分析按钮 -->
@@ -145,7 +145,7 @@
                       {{ analysisResult.success ? 'LR0文法' : analysisResult.hasConflicts ? '存在冲突' : '分析失败' }}
                     </span>
                   </div>
-                  <p class="text-sm mb-4">{{ analysisResult.message }}</p>
+                  <p class="text-base mb-4 font-medium">{{ analysisResult.message }}</p>
 
                   <!-- 成功或有冲突时显示文法信息 -->
                   <div
@@ -154,28 +154,28 @@
                     "
                     class="space-y-4"
                   >
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-base">
                       <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
-                        <div class="font-medium text-green-700 mb-1">开始符号</div>
-                        <div class="text-lg font-mono text-green-800">{{ analysisResult.data.S }}</div>
+                        <div class="font-semibold text-green-800 mb-1">开始符号</div>
+                        <div class="text-lg font-mono text-green-900 font-bold">{{ analysisResult.data.S }}</div>
                       </div>
                       <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
-                        <div class="font-medium text-green-700 mb-1">非终结符</div>
-                        <div class="text-sm font-mono text-green-800">{{ analysisResult.data.Vn?.join(', ') }}</div>
+                        <div class="font-semibold text-green-800 mb-1">非终结符</div>
+                        <div class="text-base font-mono text-green-900 font-semibold">{{ analysisResult.data.Vn?.join(', ') }}</div>
                       </div>
                       <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
-                        <div class="font-medium text-green-700 mb-1">终结符</div>
-                        <div class="text-sm font-mono text-green-800">{{ analysisResult.data.Vt?.join(', ') }}</div>
+                        <div class="font-semibold text-green-800 mb-1">终结符</div>
+                        <div class="text-base font-mono text-green-900 font-semibold">{{ analysisResult.data.Vt?.join(', ') }}</div>
                       </div>
                     </div>
 
                     <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-green-200/50">
-                      <div class="font-medium text-green-700 mb-3">原始文法</div>
+                      <div class="font-semibold text-green-800 mb-3 text-base">原始文法</div>
                       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                         <div
                           v-for="(prod, index) in lr0Store.productions"
                           :key="index"
-                          class="text-sm bg-white px-3 py-2 rounded-lg border border-green-200 font-mono text-green-800 shadow-sm"
+                          class="text-base bg-white px-3 py-2 rounded-lg border border-green-200 font-mono text-green-900 shadow-sm font-semibold"
                         >
                           {{ prod }}
                         </div>
@@ -204,7 +204,7 @@
                   <h4 class="font-semibold text-gray-900">简单文法</h4>
                 </div>
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-xs font-mono text-blue-800">
+                  <pre class="text-base font-mono text-blue-900 font-semibold">
 S -> Aa
 A -> BD
 B -> b
@@ -224,7 +224,7 @@ D -> d</pre>
                   <h4 class="font-semibold text-gray-900">递归文法</h4>
                 </div>
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-xs font-mono text-green-800">
+                  <pre class="text-base font-mono text-green-900 font-semibold">
 S -> BB
 B -> aB
 B -> b</pre>
@@ -243,7 +243,7 @@ B -> b</pre>
                   <h4 class="font-semibold text-gray-900">多候选式</h4>
                 </div>
                 <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-xs font-mono text-purple-800">
+                  <pre class="text-base font-mono text-purple-900 font-semibold">
 S -> aSd
 S -> bAc
 A -> e
@@ -263,7 +263,7 @@ A -> f</pre>
                   <h4 class="font-semibold text-gray-900">复杂文法</h4>
                 </div>
                 <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-xs font-mono text-orange-800">
+                  <pre class="text-base font-mono text-orange-900 font-semibold">
 S -> aX
 S -> bY
 X -> c
@@ -287,8 +287,8 @@ Y -> eS</pre>
             <div class="flex items-start">
               <Icon icon="lucide:alert-circle" class="w-5 h-5 text-red-600 mt-0.5 mr-3" />
               <div>
-                <h4 class="text-sm font-medium text-red-900 mb-2">输入校验错误</h4>
-                <ul class="text-sm text-red-800 space-y-1">
+                <h4 class="text-base font-semibold text-red-900 mb-2">输入校验错误</h4>
+                <ul class="text-base text-red-800 space-y-1 font-medium">
                   <li v-for="error in lr0Store.validationErrors" :key="error">• {{ error }}</li>
                 </ul>
               </div>
@@ -302,8 +302,8 @@ Y -> eS</pre>
             <div class="flex items-start">
               <Icon icon="lucide:alert-triangle" class="w-5 h-5 text-yellow-600 mt-0.5 mr-3" />
               <div>
-                <h4 class="text-sm font-medium text-yellow-900 mb-2">警告</h4>
-                <ul class="text-sm text-yellow-800 space-y-1">
+                <h4 class="text-base font-semibold text-yellow-900 mb-2">警告</h4>
+                <ul class="text-base text-yellow-800 space-y-1 font-medium">
                   <li v-for="warning in lr0Store.validationWarnings" :key="warning">
                     • {{ warning }}
                   </li>

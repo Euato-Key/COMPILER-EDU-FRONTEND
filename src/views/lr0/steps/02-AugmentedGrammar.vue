@@ -26,7 +26,7 @@
                 </div>
                 <h3 class="text-xl font-bold text-blue-900">增广文法构造规则</h3>
               </div>
-              <ul class="space-y-1 text-sm text-blue-800">
+              <ul class="space-y-1.5 text-base text-blue-900">
                 <li>• 为原文法添加新的开始符号{{ startSymbol }}'</li>
                 <li>• 添加产生式：{{ startSymbol }}'->{{ startSymbol }}</li>
                 <li>• 将含有多个候选式的产生式分解为多个单独的产生式</li>
@@ -34,8 +34,8 @@
               </ul>
 
               <div class="mt-4 p-3 bg-blue-100/50 rounded-lg border border-blue-200/50">
-                <p class="text-xs text-blue-700 font-medium mb-1">💡 增广文法的重要性：</p>
-                <p class="text-xs text-blue-600">增广文法确保LR分析器有一个唯一的接受状态，简化了分析表的构造过程。</p>
+                <p class="text-sm text-blue-800 font-semibold mb-1">💡 增广文法的重要性：</p>
+                <p class="text-sm text-blue-700">增广文法确保LR分析器有一个唯一的接受状态，简化了分析表的构造过程。</p>
               </div>
             </div>
           </div>
@@ -56,9 +56,9 @@
                   <div
               v-for="(production, index) in originalGrammar"
                     :key="index"
-              class="font-mono text-sm bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800 shadow-sm hover:shadow-md transition-shadow"
+              class="font-mono text-base bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <span class="text-blue-600 font-medium">{{ index + 1 }}.</span> {{ production }}
+                    <span class="text-blue-600 font-semibold">{{ index + 1 }}.</span> {{ production }}
                   </div>
                 </div>
               </div>
@@ -80,26 +80,26 @@
             </div>
             <h4 class="text-lg font-semibold text-blue-900">构造步骤</h4>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-base">
             <div class="flex items-start gap-2">
               <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
               <div>
-                <p class="font-medium text-blue-800">添加增广产生式</p>
-                <p class="text-blue-600 text-xs">引入新的开始符号{{ startSymbol }}'</p>
+                <p class="font-semibold text-blue-800">添加增广产生式</p>
+                <p class="text-blue-700 text-sm">引入新的开始符号{{ startSymbol }}'</p>
               </div>
             </div>
             <div class="flex items-start gap-2">
               <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
               <div>
-                <p class="font-medium text-blue-800">分解多候选式</p>
-                <p class="text-blue-600 text-xs">将A->α|β分解为A->α和A->β</p>
+                <p class="font-semibold text-blue-800">分解多候选式</p>
+                <p class="text-blue-700 text-sm">将A->α|β分解为A->α和A->β</p>
               </div>
             </div>
             <div class="flex items-start gap-2">
               <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
               <div>
-                <p class="font-medium text-blue-800">验证完整性</p>
-                <p class="text-blue-600 text-xs">确保所有产生式都正确</p>
+                <p class="font-semibold text-blue-800">验证完整性</p>
+                <p class="text-blue-700 text-sm">确保所有产生式都正确</p>
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@
                     type="text"
                     :placeholder="`请输入产生式 ${index + 1}，例如：S'->S`"
                     :class="[
-                      'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-sm',
+                      'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-base',
                       'focus:ring-4 focus:ring-blue-100 focus:border-blue-400',
                       getInputClass(formula.status),
                     ]"
@@ -175,10 +175,10 @@
               <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
                 <p class="font-semibold text-blue-900 mb-2">填写提示：</p>
-                <ul class="space-y-1 text-sm text-blue-800">
-                  <li>• 首先添加增广产生式：<code class="bg-blue-100 px-1 rounded">{{ startSymbol }}'->{{ startSymbol }}</code></li>
+                <ul class="space-y-1.5 text-base text-blue-800">
+                  <li>• 首先添加增广产生式：<code class="bg-blue-100 px-1.5 rounded font-semibold">{{ startSymbol }}'->{{ startSymbol }}</code></li>
                   <li>• 然后将多候选式产生式分解为单个候选式</li>
-                  <li>• 例如：<code class="bg-blue-100 px-1 rounded">S->aB|bA</code> 分解为 <code class="bg-blue-100 px-1 rounded">S->aB</code> 和 <code class="bg-blue-100 px-1 rounded">S->bA</code></li>
+                  <li>• 例如：<code class="bg-blue-100 px-1.5 rounded font-semibold">S->aB|bA</code> 分解为 <code class="bg-blue-100 px-1.5 rounded font-semibold">S->aB</code> 和 <code class="bg-blue-100 px-1.5 rounded font-semibold">S->bA</code></li>
                 </ul>
               </div>
             </div>

@@ -19,17 +19,27 @@
           <Icon icon="lucide:info" class="w-5 h-5 text-indigo-600 mt-0.5 mr-3" />
           <div>
             <h3 class="text-lg font-semibold text-indigo-900 mb-2">LR0分析表构造规则</h3>
-            <ul class="space-y-1 text-sm text-indigo-800">
-              <li>• <strong>ACTION表：</strong>根据项目集中的项目填写移进和规约动作</li>
-              <li>• <strong>GOTO表：</strong>根据DFA的转移关系填写状态转移</li>
-              <li>
-                • <strong>移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）
+            <ul class="space-y-2 text-base text-indigo-900">
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">ACTION表：</strong>根据项目集中的项目填写移进和规约动作</span>
               </li>
-              <li>
-                • <strong>规约动作：</strong>A → α·，则对所有终结符a，ACTION[i,a] =
-                rk（第k个产生式）
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">GOTO表：</strong>根据DFA的转移关系填写状态转移</span>
               </li>
-              <li>• <strong>接受动作：</strong>S' → S·，则ACTION[i,#] = acc</li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">规约动作：</strong>A → α·，则对所有终结符a，ACTION[i,a] = rk（第k个产生式）</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">接受动作：</strong>S' → S·，则ACTION[i,#] = acc</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -73,12 +83,12 @@
                     :data-production="index + 1"
                     class="bg-white border border-purple-200 rounded p-3 shadow-sm"
                   >
-                    <div class="text-sm font-mono text-purple-800">
-                      <span class="font-bold text-purple-900">r{{ index + 1 }}:</span> {{ production }}
-                    </div>
+                                    <div class="text-base font-mono text-purple-800 font-semibold">
+                  <span class="font-bold text-purple-900 text-lg">r{{ index + 1 }}:</span> {{ production }}
+                </div>
                   </div>
                 </div>
-                <div class="mt-4 text-xs text-purple-600">
+                <div class="mt-4 text-sm text-purple-700 font-medium">
                   <p>• 用于ACTION表中的规约动作</p>
                   <p>• r1, r2, r3... 对应产生式编号</p>
                 </div>

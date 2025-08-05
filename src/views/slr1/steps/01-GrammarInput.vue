@@ -30,10 +30,10 @@
                   <Icon icon="lucide:check-circle" class="w-4 h-4 mr-2 text-pink-600" />
                   基本规则
                 </h4>
-                <ul class="space-y-1 text-sm text-pink-700">
-                  <li>• 每行一个产生式，格式：<code class="bg-pink-100 px-1 rounded">A -> αβγ</code></li>
+                <ul class="space-y-1.5 text-base text-pink-800">
+                  <li>• 每行一个产生式，格式：<code class="bg-pink-100 px-1.5 rounded font-semibold">A -> αβγ</code></li>
                   <li>• 左侧为非终结符，右侧为产生式体</li>
-                  <li>• 使用 <code class="bg-pink-100 px-1 rounded">-></code> 表示产生</li>
+                  <li>• 使用 <code class="bg-pink-100 px-1.5 rounded font-semibold">-></code> 表示产生</li>
                 </ul>
               </div>
               <div>
@@ -41,10 +41,10 @@
                   <Icon icon="lucide:settings" class="w-4 h-4 mr-2 text-pink-600" />
                   特殊符号
                 </h4>
-                <ul class="space-y-1 text-sm text-pink-700">
-                  <li>• 使用 <code class="bg-pink-100 px-1 rounded">|</code> 表示或者关系</li>
-                  <li>• 使用 <code class="bg-pink-100 px-1 rounded">ε</code> 表示空串</li>
-                  <li>• 支持多候选式：<code class="bg-pink-100 px-1 rounded">A -> α | β | γ</code></li>
+                <ul class="space-y-1.5 text-base text-pink-800">
+                  <li>• 使用 <code class="bg-pink-100 px-1.5 rounded font-semibold">|</code> 表示或者关系</li>
+                  <li>• 使用 <code class="bg-pink-100 px-1.5 rounded font-semibold">ε</code> 表示空串</li>
+                  <li>• 支持多候选式：<code class="bg-pink-100 px-1.5 rounded font-semibold">A -> α | β | γ</code></li>
                 </ul>
               </div>
             </div>
@@ -70,7 +70,7 @@
             <textarea
               v-model="grammarInput"
               placeholder="请输入文法产生式，例如：&#10;S -> E&#10;E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | i"
-              class="w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-pink-100 focus:border-pink-400 resize-none font-mono text-sm transition-all duration-200 bg-gradient-to-r from-gray-50 to-white"
+              class="w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-pink-100 focus:border-pink-400 resize-none font-mono text-base transition-all duration-200 bg-gradient-to-r from-gray-50 to-white"
               @input="onInputChange"
             ></textarea>
           </div>
@@ -150,7 +150,7 @@
                         <div
                           v-for="(prod, index) in slr1Store.productions"
                           :key="index"
-                          class="text-sm bg-white px-3 py-2 rounded-lg border border-green-200 font-mono text-green-800 shadow-sm"
+                          class="text-base bg-white px-3 py-2 rounded-lg border border-green-200 font-mono text-green-800 shadow-sm font-semibold"
                         >
                           {{ prod }}
                         </div>
@@ -179,7 +179,7 @@
                 <h4 class="font-semibold text-gray-900">算术表达式</h4>
               </div>
               <div class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-xs font-mono text-pink-800">
+                <pre class="text-sm font-mono text-pink-800 font-semibold">
 S -> E
 E -> E + T | T
 T -> T * F | F
@@ -199,7 +199,7 @@ F -> ( E ) | i</pre>
                 <h4 class="font-semibold text-gray-900">简单文法</h4>
               </div>
               <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-xs font-mono text-purple-800">
+                <pre class="text-sm font-mono text-purple-800 font-semibold">
 S -> A a | b
 A -> c</pre>
               </div>
@@ -217,7 +217,7 @@ A -> c</pre>
                 <h4 class="font-semibold text-gray-900">赋值语句</h4>
               </div>
               <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-xs font-mono text-indigo-800">
+                <pre class="text-sm font-mono text-indigo-800 font-semibold">
 S -> A
 A -> i = E | E
 E -> E + i | i | ( A )</pre>
@@ -236,7 +236,7 @@ E -> E + i | i | ( A )</pre>
                 <h4 class="font-semibold text-gray-900">列表文法</h4>
               </div>
               <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-xs font-mono text-blue-800">
+                <pre class="text-sm font-mono text-blue-800 font-semibold">
 S -> L
 L -> a
 L -> L , a</pre>

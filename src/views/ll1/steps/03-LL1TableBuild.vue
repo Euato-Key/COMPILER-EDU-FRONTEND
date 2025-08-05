@@ -383,7 +383,7 @@
                         <input
                           v-model="userTable[`${nonTerminal}|${terminal}`]"
                           type="text"
-                          placeholder="拖拽产生式到此处或手动输入"
+                          placeholder="拖拽产生式到此"
                           :class="[
                             'w-full px-2 py-1 text-xs text-center border-0 focus:ring-2 focus:ring-green-500 transition-colors pr-6',
                             getTableCellClass(nonTerminal, terminal),

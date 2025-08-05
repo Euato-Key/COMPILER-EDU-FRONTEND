@@ -21,11 +21,23 @@
             <Icon icon="lucide:info" class="w-5 h-5 text-green-600 mt-0.5 mr-3" />
             <div>
               <h3 class="text-lg font-semibold text-green-900 mb-2">SLR1分析过程</h3>
-              <ul class="space-y-1 text-sm text-green-800">
-                <li>• <strong>移进：</strong>将输入符号压入符号栈，状态压入状态栈</li>
-                <li>• <strong>规约：</strong>根据产生式弹出栈中符号和状态，压入左部符号</li>
-                <li>• <strong>接受：</strong>当遇到接受动作时，输入串被成功分析</li>
-                <li>• <strong>错误：</strong>无对应动作时，分析失败</li>
+              <ul class="space-y-2 text-base text-green-900">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-600 font-bold">•</span>
+                  <span><strong class="text-green-800 bg-green-100 px-2 py-1 rounded">移进：</strong>将输入符号压入符号栈，状态压入状态栈</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-600 font-bold">•</span>
+                  <span><strong class="text-green-800 bg-green-100 px-2 py-1 rounded">规约：</strong>根据产生式弹出栈中符号和状态，压入左部符号</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-600 font-bold">•</span>
+                  <span><strong class="text-green-800 bg-green-100 px-2 py-1 rounded">接受：</strong>当遇到接受动作时，输入串被成功分析</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-600 font-bold">•</span>
+                  <span><strong class="text-green-800 bg-green-100 px-2 py-1 rounded">错误：</strong>无对应动作时，分析失败</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -45,24 +57,24 @@
                       v-for="(production, index) in numberedProductions"
                       :key="production"
                       :data-production="index + 1"
-                      class="text-xs font-mono text-purple-700"
+                      class="text-sm font-mono text-purple-700 font-semibold"
                     >
                       r{{ index + 1 }}: {{ production }}
                     </div>
                   </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-xs">
+                <div class="grid grid-cols-2 gap-3 text-sm">
                   <div class="bg-white/60 rounded p-2 border border-purple-200">
-                    <span class="text-purple-600 font-medium">开始符号：</span>
-                    <span class="font-mono font-semibold text-purple-800">{{ grammarInfo.S }}</span>
+                    <span class="text-purple-700 font-semibold">开始符号：</span>
+                    <span class="font-mono font-bold text-purple-900 text-base">{{ grammarInfo.S }}</span>
                   </div>
                   <div class="bg-white/60 rounded p-2 border border-purple-200">
-                    <span class="text-purple-600 font-medium">非终结符：</span>
-                    <span class="font-mono text-purple-800">{{ grammarInfo.Vn.join(', ') }}</span>
+                    <span class="text-purple-700 font-semibold">非终结符：</span>
+                    <span class="font-mono text-purple-900 font-semibold">{{ grammarInfo.Vn.join(', ') }}</span>
                   </div>
                 </div>
               </div>
-              <div v-else class="text-sm text-purple-600 italic">
+              <div v-else class="text-base text-purple-700 italic font-medium">
                 暂无文法信息，请先完成前面的步骤
               </div>
             </div>
@@ -97,18 +109,19 @@
                 <button
                   @click="analyzeString"
                   :disabled="!inputString.trim() || isAnalyzing"
-                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center gap-2"
+                  class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
                 >
                   <Icon
                     :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
-                    :class="['w-4 h-4', isAnalyzing ? 'animate-spin' : '']"
+                    :class="['w-5 h-5', isAnalyzing ? 'animate-spin' : '']"
                   />
                   {{ isAnalyzing ? '分析中...' : '开始分析' }}
                 </button>
                 <button
                   @click="resetAnalysis"
-                  class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-sm flex items-center gap-2 font-semibold"
                 >
+                  <Icon icon="lucide:rotate-ccw" class="w-5 h-5" />
                   重置
                 </button>
               </div>
@@ -116,30 +129,30 @@
 
             <!-- 输入提示 -->
             <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div class="flex items-start gap-2 text-sm text-purple-700">
-                <Icon icon="lucide:info" class="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p class="font-medium mb-1">💡 输入建议</p>
-                  <p class="text-xs">• 建议使用单字符（如：a、b、c、1、2、+、-、(、)等）</p>
-                  <p class="text-xs">• 系统会自动添加结束符 #，无需手动输入</p>
-                  <p class="text-xs">• 支持各种符号，如运算符、括号等</p>
+                              <div class="flex items-start gap-2 text-base text-purple-800">
+                  <Icon icon="lucide:info" class="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p class="font-semibold mb-1">💡 输入建议</p>
+                    <p class="text-sm font-medium">• 建议使用单字符（如：a、b、c、1、2、+、-、(、)等）</p>
+                    <p class="text-sm font-medium">• 系统会自动添加结束符 #，无需手动输入</p>
+                    <p class="text-sm font-medium">• 支持各种符号，如运算符、括号等</p>
+                  </div>
                 </div>
-              </div>
             </div>
 
             <!-- 示例字符串 -->
             <div class="bg-gray-50 rounded-lg p-4">
               <div class="flex items-center gap-2 mb-3">
                 <Icon icon="lucide:list" class="w-4 h-4 text-gray-500" />
-                <span class="text-sm font-semibold text-gray-800">示例字符串</span>
-                <span class="text-xs text-gray-500">(点击使用)</span>
+                <span class="text-base font-semibold text-gray-900">示例字符串</span>
+                <span class="text-sm text-gray-600 font-medium">(点击使用)</span>
               </div>
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="example in exampleStrings"
                   :key="example"
                   @click="inputString = example"
-                  class="px-3 py-1.5 text-sm bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200 hover:border-gray-300 font-mono"
+                  class="px-4 py-2 text-sm bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-800 rounded-lg hover:from-purple-100 hover:to-indigo-100 transition-all duration-300 transform hover:scale-105 hover:shadow-md border-2 border-purple-200 hover:border-purple-300 font-mono font-bold shadow-sm"
                 >
                   {{ example }}
                 </button>
@@ -192,7 +205,7 @@
             <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div class="bg-purple-50 p-3 rounded">
                 <h4 class="font-medium text-purple-900 mb-1">ACTION动作</h4>
-                <ul class="text-xs text-purple-700 space-y-1">
+                <ul class="text-sm text-purple-800 space-y-1 font-medium">
                   <li>• Si: 移进到状态i</li>
                   <li>• rj: 用产生式j规约</li>
                   <li>• acc: 接受</li>
@@ -200,7 +213,7 @@
               </div>
               <div class="bg-green-50 p-3 rounded">
                 <h4 class="font-medium text-green-900 mb-1">GOTO函数</h4>
-                <ul class="text-xs text-green-700 space-y-1">
+                <ul class="text-sm text-green-800 space-y-1 font-medium">
                   <li>• 数字: 转移到对应状态</li>
                   <li>• 空白: 无转移</li>
                 </ul>
@@ -213,7 +226,7 @@
                     :key="production"
                     :data-production="index + 1"
                     :class="[
-                      'text-xs font-mono text-purple-700',
+                      'text-sm font-mono text-purple-800 font-semibold',
                       highlightProduction === index + 1
                         ? 'bg-yellow-200 ring-2 ring-yellow-400 px-2 py-1 rounded'
                         : '',
@@ -366,25 +379,25 @@
                 <button
                   @click="decreaseAnimationSpeed"
                   :disabled="animationSpeed <= 0.25"
-                  class="w-8 h-8 flex items-center justify-center bg-white border border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  class="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 text-purple-600 rounded-xl hover:from-purple-100 hover:to-blue-100 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-md shadow-sm"
                 >
-                  <Icon icon="lucide:minus" class="w-3 h-3" />
+                  <Icon icon="lucide:minus" class="w-4 h-4" />
                 </button>
-                <span class="w-12 text-center text-sm font-mono text-purple-800 bg-white border border-purple-300 rounded px-2 py-1">
+                <span class="w-16 text-center text-sm font-mono text-purple-800 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl px-3 py-2 shadow-sm font-bold">
                   {{ Math.round(animationSpeed * 100) }}%
                 </span>
                 <button
                   @click="increaseAnimationSpeed"
                   :disabled="animationSpeed >= 2.0"
-                  class="w-8 h-8 flex items-center justify-center bg-white border border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  class="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 text-purple-600 rounded-xl hover:from-purple-100 hover:to-blue-100 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-md shadow-sm"
                 >
-                  <Icon icon="lucide:plus" class="w-3 h-3" />
+                  <Icon icon="lucide:plus" class="w-4 h-4" />
                 </button>
                 <button
                   @click="resetAnimationSpeed"
-                  class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all shadow-sm"
+                  class="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md"
                 >
-                  <Icon icon="lucide:rotate-ccw" class="w-3 h-3" />
+                  <Icon icon="lucide:rotate-ccw" class="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -405,28 +418,28 @@
               <div class="flex items-center gap-2">
                 <button
                   @click="validateAll"
-                  class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                  class="px-5 py-2.5 text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
                 >
                   <Icon icon="lucide:check-circle" class="w-4 h-4" />
                   校验
                 </button>
                 <button
                   @click="showCorrectAnswers"
-                  class="px-4 py-2 text-sm border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                  class="px-5 py-2.5 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 text-blue-700 rounded-xl hover:from-blue-100 hover:to-indigo-100 hover:border-blue-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
                 >
                   <Icon icon="lucide:eye" class="w-4 h-4" />
                   {{ showAnswers ? '隐藏答案' : '查看答案' }}
                 </button>
                 <button
                   @click="clearAll"
-                  class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                  class="px-5 py-2.5 text-sm bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 text-red-700 rounded-xl hover:from-red-100 hover:to-pink-100 hover:border-red-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
                 >
                   <Icon icon="lucide:trash-2" class="w-4 h-4" />
                   清除
                 </button>
                 <button
                   @click="onHintClick"
-                  class="px-4 py-2 text-sm border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors shadow-sm hover:shadow-md flex items-center gap-1"
+                  class="px-5 py-2.5 text-sm bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 text-yellow-700 rounded-xl hover:from-yellow-100 hover:to-orange-100 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
                 >
                   <Icon icon="lucide:lightbulb" class="w-4 h-4" />
                   提示
@@ -560,7 +573,7 @@
             <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div class="bg-yellow-50 p-3 rounded">
                 <h4 class="font-medium text-yellow-900 mb-1">验证状态</h4>
-                <div class="text-xs text-yellow-700 space-y-1">
+                <div class="text-sm text-yellow-800 space-y-1 font-medium">
                   <div class="flex items-center gap-2 mb-1">
                     <div class="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded"></div>
                     <span>未填写</span>
@@ -577,7 +590,7 @@
               </div>
               <div class="bg-orange-50 p-3 rounded">
                 <h4 class="font-medium text-orange-900 mb-1">查表依据</h4>
-                <div class="text-xs text-orange-700 space-y-1">
+                <div class="text-sm text-orange-800 space-y-1 font-medium">
                   <div class="flex items-center gap-2 mb-1">
                     <div class="w-3 h-3 bg-orange-200 border border-orange-500 rounded"></div>
                     <span>高亮状态栈顶</span>
@@ -594,7 +607,7 @@
               </div>
               <div class="bg-purple-50 p-3 rounded">
                 <h4 class="font-medium text-purple-900 mb-1">填写说明</h4>
-                <ul class="text-xs text-purple-700 space-y-1">
+                <ul class="text-sm text-purple-800 space-y-1 font-medium">
                   <li>• 第一行：初始状态（固定显示）</li>
                   <li>• 状态栈：当前状态序列</li>
                   <li>• 符号栈：当前符号序列</li>
@@ -682,26 +695,26 @@
       <div class="flex justify-between items-center">
         <button
           @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
         >
-          <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
+          <Icon icon="lucide:chevron-left" class="w-5 h-5" />
           上一步
         </button>
 
-        <div class="text-sm text-gray-500">步骤 5 / 5</div>
+        <div class="text-sm text-gray-500 font-medium">步骤 5 / 5</div>
 
         <button
           @click="complete"
           :disabled="!isStepComplete"
           :class="[
-            'px-6 py-2 rounded-lg transition-colors',
+            'px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold',
             isStepComplete
-              ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
+              : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed',
           ]"
         >
           完成分析
-          <Icon icon="lucide:check" class="w-4 h-4 inline ml-2" />
+          <Icon icon="lucide:check" class="w-5 h-5" />
         </button>
       </div>
     </div>
