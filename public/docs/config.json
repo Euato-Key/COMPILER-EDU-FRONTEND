@@ -1,0 +1,64 @@
+{
+  "title": "编译原理官方文档",
+  "description": "编译原理算法详解与可视化教程",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "入门指南",
+      "icon": "book-open",
+      "children": [
+        {
+          "id": "getting-started",
+          "title": "快速开始",
+          "file": "markdown/getting-started.md",
+          "order": 1
+        },
+        {
+          "id": "basic-concepts",
+          "title": "基础概念",
+          "file": "markdown/basic-concepts.md",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "id": "finite-automata",
+      "title": "有限自动机",
+      "icon": "git-branch",
+      "children": [
+        {
+          "id": "fa-overview",
+          "title": "概述",
+          "file": "markdown/fa-overview.md",
+          "order": 1
+        },
+        {
+          "id": "fa-construction",
+          "title": "构造方法",
+          "file": "markdown/fa-construction.md",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "id": "parsing",
+      "title": "语法分析",
+      "icon": "layers",
+      "children": [
+        {
+          "id": "ll1-parsing",
+          "title": "LL1分析",
+          "file": "markdown/ll1-parsing.md",
+          "order": 1
+        },
+        {
+          "id": "lr-parsing",
+          "title": "LR分析",
+          "file": "markdown/lr-parsing.md",
+          "order": 2
+        }
+      ]
+    }
+  ]
+} 
