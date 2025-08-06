@@ -134,6 +134,7 @@ const toggleSection = (sectionId: string) => {
 
 // 导航到页面
 const navigateToPage = (sectionId: string, pageId: string) => {
+  console.log('DocSidebar navigateToPage被调用:', { sectionId, pageId }) // 调试信息
   emit('navigate', sectionId, pageId)
 }
 

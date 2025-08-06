@@ -40,6 +40,38 @@ export const useDocStore = defineStore('doc', () => {
         ]
       },
       {
+        id: 'documentation',
+        title: '文档说明',
+        icon: 'file-text',
+        children: [
+          {
+            id: 'readme',
+            title: '文档结构说明',
+            file: 'markdown/README.md',
+            order: 1
+          }
+        ]
+      },
+      {
+        id: 'started-guide',
+        title: '新手指南',
+        icon: 'graduation-cap',
+        children: [
+          {
+            id: 'quick-start',
+            title: '快速开始',
+            file: 'markdown/Started_Guide/quick-start.md',
+            order: 1
+          },
+          {
+            id: 'basic-concepts-new',
+            title: '基础概念',
+            file: 'markdown/Started_Guide/basic-concepts.md',
+            order: 2
+          }
+        ]
+      },
+      {
         id: 'finite-automata',
         title: '有限自动机',
         icon: 'git-branch',
@@ -89,6 +121,178 @@ export const useDocStore = defineStore('doc', () => {
         ]
       },
       {
+        id: 'fa-new',
+        title: 'FA模块详解',
+        icon: 'git-branch',
+        children: [
+          {
+            id: 'fa-overview-new',
+            title: 'FA模块概述',
+            file: 'markdown/fa/overview.md',
+            order: 1
+          },
+          {
+            id: 'fa-step1',
+            title: '第一步：正则表达式输入',
+            file: 'markdown/fa/step1-regex-input.md',
+            order: 2
+          },
+          {
+            id: 'fa-step2',
+            title: '第二步：NFA构造',
+            file: 'markdown/fa/step2-nfa-construction.md',
+            order: 3
+          },
+          {
+            id: 'fa-step3',
+            title: '第三步：子集构造法',
+            file: 'markdown/fa/step3-subset-construction.md',
+            order: 4
+          },
+          {
+            id: 'fa-step4',
+            title: '第四步：DFA可视化',
+            file: 'markdown/fa/step4-dfa-visualization.md',
+            order: 5
+          },
+          {
+            id: 'fa-step5',
+            title: '第五步：DFA最小化',
+            file: 'markdown/fa/step5-dfa-minimization.md',
+            order: 6
+          },
+          {
+            id: 'fa-step6',
+            title: '第六步：最小化DFA可视化',
+            file: 'markdown/fa/step6-minimized-dfa-visualization.md',
+            order: 7
+          }
+        ]
+      },
+      {
+        id: 'll1-new',
+        title: 'LL1模块详解',
+        icon: 'layers',
+        children: [
+          {
+            id: 'll1-overview-new',
+            title: 'LL1模块概述',
+            file: 'markdown/ll1/overview.md',
+            order: 1
+          },
+          {
+            id: 'll1-step1',
+            title: '第一步：文法输入',
+            file: 'markdown/ll1/step1-grammar-input.md',
+            order: 2
+          },
+          {
+            id: 'll1-step2',
+            title: '第二步：First/Follow集计算',
+            file: 'markdown/ll1/step2-first-follow-sets.md',
+            order: 3
+          },
+          {
+            id: 'll1-step3',
+            title: '第三步：LL1分析表构造',
+            file: 'markdown/ll1/step3-ll1-table-build.md',
+            order: 4
+          },
+          {
+            id: 'll1-step4',
+            title: '第四步：字符串分析',
+            file: 'markdown/ll1/step4-string-analysis.md',
+            order: 5
+          }
+        ]
+      },
+      {
+        id: 'lr0-new',
+        title: 'LR0模块详解',
+        icon: 'workflow',
+        children: [
+          {
+            id: 'lr0-overview-new',
+            title: 'LR0模块概述',
+            file: 'markdown/lr0/overview.md',
+            order: 1
+          },
+          {
+            id: 'lr0-step1',
+            title: '第一步：文法输入',
+            file: 'markdown/lr0/step1-grammar-input.md',
+            order: 2
+          },
+          {
+            id: 'lr0-step2',
+            title: '第二步：增广文法',
+            file: 'markdown/lr0/step2-augmented-grammar.md',
+            order: 3
+          },
+          {
+            id: 'lr0-step3',
+            title: '第三步：项目集构造',
+            file: 'markdown/lr0/step3-itemset-construction.md',
+            order: 4
+          },
+          {
+            id: 'lr0-step4',
+            title: '第四步：LR0分析表构造',
+            file: 'markdown/lr0/step4-lr0-table-build.md',
+            order: 5
+          },
+          {
+            id: 'lr0-step5',
+            title: '第五步：字符串分析',
+            file: 'markdown/lr0/step5-string-analysis.md',
+            order: 6
+          }
+        ]
+      },
+      {
+        id: 'slr1-new',
+        title: 'SLR1模块详解',
+        icon: 'zap',
+        children: [
+          {
+            id: 'slr1-overview-new',
+            title: 'SLR1模块概述',
+            file: 'markdown/slr1/overview.md',
+            order: 1
+          },
+          {
+            id: 'slr1-step1',
+            title: '第一步：文法输入',
+            file: 'markdown/slr1/step1-grammar-input.md',
+            order: 2
+          },
+          {
+            id: 'slr1-step2',
+            title: '第二步：增广文法',
+            file: 'markdown/slr1/step2-augmented-grammar.md',
+            order: 3
+          },
+          {
+            id: 'slr1-step3',
+            title: '第三步：项目集构造',
+            file: 'markdown/slr1/step3-itemset-construction.md',
+            order: 4
+          },
+          {
+            id: 'slr1-step4',
+            title: '第四步：SLR1分析表构造',
+            file: 'markdown/slr1/step4-slr1-table-build.md',
+            order: 5
+          },
+          {
+            id: 'slr1-step5',
+            title: '第五步：字符串分析',
+            file: 'markdown/slr1/step5-string-analysis.md',
+            order: 6
+          }
+        ]
+      },
+      {
         id: 'parsing',
         title: '语法分析',
         icon: 'layers',
@@ -104,6 +308,19 @@ export const useDocStore = defineStore('doc', () => {
             title: 'LR分析',
             file: 'markdown/lr-parsing.md',
             order: 2
+          }
+        ]
+      },
+      {
+        id: 'ai',
+        title: 'AI智能助手',
+        icon: 'brain',
+        children: [
+          {
+            id: 'ai-overview',
+            title: 'AI功能概述',
+            file: 'markdown/AI/ai-overview.md',
+            order: 1
           }
         ]
       }

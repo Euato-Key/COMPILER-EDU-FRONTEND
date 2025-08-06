@@ -36,7 +36,7 @@ export class MarkdownRenderer {
     this.md.use(anchor, {
       level: [1, 2, 3, 4, 5, 6],
       permalink: false,
-      slugify: (str) => {
+      slugify: (str: string) => {
         return str
           .toLowerCase()
           .trim()
@@ -218,6 +218,10 @@ export class MarkdownRenderer {
         const id = this.generateId(content)
         // 移除可能存在的id属性，然后添加新的id
         const cleanAttrs = attrs.replace(/\s*id="[^"]*"/g, '')
+
+        // 添加调试信息
+        console.log(`为标题添加ID: Level ${level}, Title: ${content}, ID: ${id}`)
+
         return `<h${level} id="${id}"${cleanAttrs}>${content}</h${level}>`
       }
     )
@@ -266,7 +270,8 @@ export class MarkdownRenderer {
               successCount++
             } catch (renderError) {
               console.error('Mermaid渲染详细错误:', renderError) // 调试信息
-              element.innerHTML = `<div class="error">Mermaid图表渲染失败: ${renderError.message}</div>`
+              const errorMessage = renderError instanceof Error ? renderError.message : String(renderError)
+              element.innerHTML = `<div class="error">Mermaid图表渲染失败: ${errorMessage}</div>`
             }
           }
         } catch (error) {
@@ -707,14 +712,23 @@ export class MarkdownRenderer {
     const toc: TocItem[] = []
     const stack: TocItem[] = []
 
-    // 使用正则表达式匹配HTML中的标题
-    const headingRegex = /<h([1-6])[^>]*id="([^"]*)"[^>]*>(.*?)<\/h[1-6]>/g
+    // 使用更宽松的正则表达式匹配HTML中的标题，支持没有id属性的标题
+    const headingRegex = /<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/g
     let match
 
     while ((match = headingRegex.exec(html)) !== null) {
       const level = parseInt(match[1])
-      const id = match[2]
+      const attrs = match[2]
       const title = match[3].replace(/<[^>]*>/g, '').trim() // 移除HTML标签
+
+      // 提取id属性，如果没有则生成一个
+      let id = ''
+      const idMatch = attrs.match(/id="([^"]*)"/)
+      if (idMatch) {
+        id = idMatch[1]
+      } else {
+        id = this.generateId(title)
+      }
 
       const item: TocItem = {
         id,
@@ -736,6 +750,13 @@ export class MarkdownRenderer {
 
       stack.push(item)
     }
+
+    // 添加调试信息
+    console.log('TOC提取结果:', toc)
+    console.log('找到的标题数量:', toc.length)
+    toc.forEach(item => {
+      console.log(`Level ${item.level}: ${item.title}`)
+    })
 
     return toc
   }

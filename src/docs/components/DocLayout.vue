@@ -80,11 +80,14 @@ const currentPageTitle = computed(() => {
 
 // 处理导航
 const handleNavigation = (sectionId: string, pageId: string) => {
+  console.log('handleNavigation被调用:', { sectionId, pageId }) // 调试信息
   docStore.setCurrentSection(sectionId)
   docStore.setCurrentPage(pageId)
 
   // 更新路由
-  router.push(`/docs/${sectionId}/${pageId}`)
+  const routePath = `/docs/${sectionId}/${pageId}`
+  console.log('准备跳转到路由:', routePath) // 调试信息
+  router.push(routePath)
 }
 
 // 滚动到指定标题
@@ -115,12 +118,21 @@ const loadDocument = async (sectionId: string, pageId: string) => {
     }
 
     // 加载 Markdown 文件
-    const response = await fetch(`/docs/${page.file}`)
-    if (!response.ok) {
-      throw new Error('文件加载失败')
-    }
+    let markdownContent: string
 
-    const markdownContent = await response.text()
+    try {
+      // 尝试从 src/docs/markdown 加载新文档
+      const module = await import(`../markdown/${page.file.replace('markdown/', '')}`)
+      markdownContent = module.default
+    } catch (error) {
+      console.log('从src/docs/markdown加载失败，尝试从public/docs加载:', error)
+      // 如果失败，回退到从 public/docs 加载旧文档
+      const response = await fetch(`/docs/${page.file}`)
+      if (!response.ok) {
+        throw new Error('文件加载失败')
+      }
+      markdownContent = await response.text()
+    }
     console.log('Markdown内容长度:', markdownContent.length) // 调试信息
     console.log('Markdown内容前100字符:', markdownContent.substring(0, 100)) // 调试信息
 
@@ -188,8 +200,9 @@ const loadDocument = async (sectionId: string, pageId: string) => {
 watch(
   () => [route.params.section, route.params.page],
   ([section, page]) => {
-    console.log('路由变化:', { section, page }) // 调试信息
+    console.log('路由变化:', { section, page, fullPath: route.fullPath }) // 调试信息
     if (section && page) {
+      console.log('设置当前章节和页面:', { section, page }) // 调试信息
       docStore.setCurrentSection(section as string)
       docStore.setCurrentPage(page as string)
       loadDocument(section as string, page as string)
