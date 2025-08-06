@@ -179,6 +179,8 @@
                 <div class="text-gray-700">
                   • 以及特殊字符
                   <code class="px-1 bg-white rounded text-blue-600 font-mono">ε</code>
+                  和
+                  <code class="px-1 bg-white rounded text-blue-600 font-mono">•</code>
                 </div>
                 <div class="text-gray-700">• 输入的空格不会被视为有效字符参与正则表达式匹配</div>
               </div>
@@ -253,7 +255,7 @@ import { useFAStore, useCommonStore } from '@/stores'
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
-  complete: [data: any]
+  complete: [data: Record<string, unknown>]
 }>()
 
 // 使用 Pinia stores
@@ -332,13 +334,13 @@ const validateRegex = async () => {
       return
     }
 
-    // 检查ASCII字符范围（32-126）和特殊字符ε
+    // 检查ASCII字符范围（32-126）、特殊字符ε和•符号
     for (const char of pattern) {
       const charCode = char.charCodeAt(0)
-      if (char !== 'ε' && (charCode < 32 || charCode > 126)) {
+      if (char !== 'ε' && char !== '•' && (charCode < 32 || charCode > 126)) {
         validationResult.value = {
           valid: false,
-          message: `字符 "${char}" 不在允许范围内。只能输入ASCII字符(32-126)和特殊字符ε`,
+          message: `字符 "${char}" 不在允许范围内。只能输入ASCII字符(32-126)、特殊字符ε和•符号`,
         }
         return
       }
@@ -358,16 +360,16 @@ const validateRegex = async () => {
     }
 
     // 检查空操作符
-    if (pattern.includes('||') || pattern.includes('**')) {
+    if (pattern.includes('||') || pattern.includes('**') || pattern.includes('••')) {
       throw new Error('不允许连续的操作符')
     }
 
     // 检查开头结尾的操作符
-    if (/^[|*]/.test(pattern)) {
+    if (/^[|*•]/.test(pattern)) {
       throw new Error('正则表达式不能以操作符开头')
     }
-    if (/[|]$/.test(pattern)) {
-      throw new Error('正则表达式不能以 | 结尾')
+    if (/[|•]$/.test(pattern)) {
+      throw new Error('正则表达式不能以操作符结尾')
     }
 
     // 重要：更新store中的正则表达式为处理后的版本（去空格）

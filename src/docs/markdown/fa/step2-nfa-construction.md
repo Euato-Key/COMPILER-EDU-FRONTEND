@@ -1,185 +1,407 @@
 # 第二步：NFA构造
 
-## 页面功能特色
+欢迎来到有限自动机学习的第二步！在这一步中，您将学习如何将正则表达式转换为非确定有限自动机（NFA），并使用交互式画图工具进行可视化构造。
 
-在NFA构造步骤中，我们的平台提供了独特的可视化学习体验：
+## 📝 页面功能概述
 
-- **实时NFA可视化**：输入正则表达式后，系统会立即生成对应的NFA状态图，让您直观地看到正则表达式如何转换为有限自动机
-- **交互式状态图**：可以点击状态节点查看详细信息，拖动节点调整布局
-- **逐步构造过程**：展示从正则表达式到NFA的完整构造过程，帮助理解算法原理
-- **错误提示机制**：当输入有误时，系统会给出详细的错误提示和修正建议
+### 主要功能
+- **交互式NFA绘制**：使用专业的画图组件构造NFA
+- **实时可视化**：直观展示正则表达式到NFA的转换过程
+- **标准答案对比**：查看系统生成的正确NFA进行自我验证
+- **自动保存**：画布数据自动保存，避免丢失
 
-相比其他编译原理学习平台，我们的NFA构造工具更加直观和交互式，让抽象的理论概念变得具体可见。
+### 学习目标
+- 掌握NFA构造的基本原理
+- 学会使用画图工具绘制自动机
+- 理解正则表达式与NFA的对应关系
+- 培养自我验证和纠错能力
 
-## 输入限制
+## 🎨 界面布局与操作指南
 
-在NFA构造步骤中，您需要输入一个有效的正则表达式，系统支持以下操作符：
+### 页面结构
 
-- **基本字符**：字母、数字、特殊字符
-- **连接操作**：直接连接（如 `ab`）
-- **选择操作**：`|` 符号（如 `a|b`）
-- **重复操作**：
-  - `*`：零次或多次重复
-  - `+`：一次或多次重复
-  - `?`：零次或一次重复
-- **分组操作**：`()` 括号进行分组
-- **转义字符**：`\` 用于转义特殊字符
+<div style="border: 2px solid #8b5cf6; border-radius: 8px; padding: 1rem; background: #faf5ff; margin: 1rem 0;">
+  <h4 style="color: #7c3aed; margin: 0 0 0.5rem 0;">页面布局说明</h4>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div>
+      <strong>上方：用户绘制区域</strong>
+      <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem;">
+        <li>交互式画布（700px高度）</li>
+        <li>FA_vueflow画图组件</li>
+        <li>绘制提示信息</li>
+      </ul>
+    </div>
+    <div>
+      <strong>下方：标准答案区域</strong>
+      <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem;">
+        <li>答案显示/隐藏控制</li>
+        <li>SVG格式的标准NFA图</li>
+        <li>构造分析说明</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
-**输入示例**：
-- `a|b` - 匹配字符a或b
-- `(ab)*` - 匹配零个或多个ab序列
-- `a+b*` - 匹配一个或多个a，后跟零个或多个b
+### 头部信息栏
 
-## 知识背景
+<div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; background: #f9fafb; margin: 1rem 0;">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="width: 3rem; height: 3rem; background: #f3e8ff; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 1.5rem;">🌿</span>
+      </div>
+      <div>
+        <h2 style="margin: 0; font-size: 1.5rem; font-weight: bold; color: #111827;">构造 NFA</h2>
+        <p style="margin: 0.25rem 0 0 0; color: #6b7280;">第二步：将正则表达式转换为非确定有限自动机</p>
+      </div>
+    </div>
+    <div style="background: #2563eb; color: white; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">
+      正则表达式: <code style="font-family: monospace; font-weight: bold;">(a|b)*abb</code>
+    </div>
+  </div>
+</div>
 
-### NFA的形式定义
+### 绘制提示区域
 
-非确定有限自动机（NFA）是一个五元组 M = (Q, Σ, δ, q₀, F)：
+<div style="border: 2px solid #3b82f6; border-radius: 8px; padding: 1rem; background: #eff6ff; margin: 1rem 0;">
+  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+    <span style="font-size: 1.25rem; color: #2563eb;">💡</span>
+    <div>
+      <h4 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #1e40af;">绘制提示</h4>
+      <ul style="margin: 0; color: #1e40af; font-size: 0.875rem; line-height: 1.5;">
+        <li>• 使用NFA构造法构造NFA</li>
+        <li>• 为每个基本符号创建状态和转换</li>
+        <li>• 处理连接、选择和闭包操作</li>
+        <li>• 确保有明确的初始状态和接受状态</li>
+        <li>• 完成绘制后可点击右下方"查看答案"按钮，显示正确答案后，请自行检验NFA构造的正确性</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
-- **Q**：有限状态集合
-- **Σ**：输入字母表
-- **δ**：状态转移函数，δ: Q × (Σ ∪ {ε}) → 2^Q
-- **q₀**：初始状态
-- **F**：接受状态集合
+### 答案控制区域
 
-### 从正则表达式构造NFA的算法
+<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; margin: 1rem 0;">
+  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+    <h3 style="margin: 0; font-weight: 600; color: #111827;">标准答案</h3>
+    <button style="background: #059669; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+      <span style="font-size: 1rem;">👁️</span>
+      查看答案
+    </button>
+  </div>
+  <div style="height: 20rem; padding: 1rem; display: flex; align-items: center; justify-content: center; background: #f9fafb; border-radius: 0.375rem;">
+    <div style="text-align: center; color: #6b7280;">
+      <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">🔒</span>
+      <p style="margin: 0; font-size: 1.125rem; font-weight: 500;">答案已隐藏</p>
+      <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem;">完成你的绘制后点击"查看答案"按钮</p>
+    </div>
+  </div>
+</div>
 
-我们使用Thompson构造法，将正则表达式递归地转换为NFA：
+## 🔍 自我验证流程
 
-```mermaid
-graph TD
-    A[正则表达式] --> B[词法分析]
-    B --> C[语法树]
-    C --> D[递归构造NFA]
-    D --> E[合并NFA]
-    E --> F[最终NFA]
-    
-    subgraph "Thompson构造法"
-        G[基本字符] --> H[创建两个状态]
-        I[选择操作] --> J[创建分支结构]
-        K[重复操作] --> L[创建循环结构]
-        M[连接操作] --> N[顺序连接状态]
-    end
-```
+### 验证步骤
 
-### 构造规则
+1. **完成绘制**：使用画图工具完成NFA构造
+2. **查看答案**：点击"查看答案"按钮显示标准NFA
+3. **对比检查**：仔细对比自己绘制的NFA与标准答案
+4. **发现问题**：识别构造中的错误和不足
+5. **修正改进**：根据标准答案修正自己的构造
+6. **再次验证**：重复检查直到构造正确
 
-1. **基本字符 a**：
-   ```
-   q₀ --a--> q₁
-   ```
+### 验证要点
 
-2. **选择操作 a|b**：
-   ```
-   q₀ --ε--> q₁ --a--> q₂
-   q₀ --ε--> q₃ --b--> q₄
-   q₂ --ε--> q₅
-   q₄ --ε--> q₅
-   ```
+**状态检查**：
+- 状态数量是否正确
+- 初始状态是否唯一且正确
+- 接受状态是否完整
 
-3. **重复操作 a***：
-   ```
-   q₀ --ε--> q₁ --a--> q₂ --ε--> q₃
-   q₂ --ε--> q₁
-   q₀ --ε--> q₃
-   ```
+**转换检查**：
+- 转换符号是否正确
+- 转换方向是否准确
+- ε转换是否合理
 
-## 例题演示
+**结构检查**：
+- 整体结构是否符合NFA特征
+- 是否覆盖了所有输入情况
+- 是否存在冗余或缺失 
 
-让我们以正则表达式 `(a|b)*ab` 为例，演示NFA的构造过程：
+## 🎨 画图组件使用指南
 
-### 步骤1：分析正则表达式结构
-- 外层：`(a|b)*` 表示零个或多个a或b
-- 内层：`ab` 表示字符a后跟字符b
+### 工具栏功能
 
-### 步骤2：构造各部分NFA
+<div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; background: #f9fafb; margin: 1rem 0;">
+  <h4 style="margin: 0 0 0.5rem 0; color: #374151;">工具栏按钮说明</h4>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+      <span style="font-size: 1.2em;">➕</span>
+      <span>添加节点</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+      <span style="font-size: 1.2em;">▶️</span>
+      <span>设置初态</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+      <span style="font-size: 1.2em;">⭕</span>
+      <span>设置终态</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+      <span style="font-size: 1.2em;">🔄</span>
+      <span>重置画布</span>
+    </div>
+  </div>
+</div>
 
-**构造 (a|b) 的NFA**：
+**功能详解**：
+
+- **添加节点**：点击按钮在画布上添加新的状态节点，系统会自动分配编号
+- **设置初态**：选中一个节点后点击，将其设为初始状态（NFA可以有多个初态）
+- **设置终态**：选中一个或多个节点后点击，将其设为接受状态
+- **重置画布**：清空所有节点和边，重新开始绘制
+
+### 画布操作
+
+#### 1. 创建状态节点
+
+**方法一：工具栏按钮**
+- 点击"添加节点"按钮
+- 系统自动在随机位置创建新节点
+- 节点编号自动分配（从0开始，跳过已使用的编号）
+
+**方法二：双击画布**
+- 双击画布空白处
+- 在双击位置创建新节点
+- 同样自动分配编号
+
+#### 2. 连接状态
+
+**创建转换边**：
+- 拖拽节点上的连接点（小圆点）
+- 拖拽到目标节点释放
+- 自动创建有向边
+
+**编辑转换符号**：
+- 点击边上的标签
+- 输入转换符号（如：a、b、ε等）
+- 支持多个符号（用逗号分隔，如：a,b）
+
+#### 3. 状态管理
+
+**选择节点**：
+- 单击选中单个节点
+- 按住Ctrl键多选节点
+- 选中后节点会高亮显示
+
+**移动节点**：
+- 直接拖拽节点改变位置
+- 边会自动跟随调整
+
+**删除操作**：
+- 选中节点或边
+- 按Delete键删除
+- 删除节点时会同时删除相关边
+
+### 画布控制
+
+<div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; background: #f9fafb; margin: 1rem 0;">
+  <h4 style="margin: 0 0 0.5rem 0; color: #374151;">画布控制按钮</h4>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
+      <span style="font-size: 1.2em;">➕</span>
+      <span style="font-size: 0.875rem;">放大</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
+      <span style="font-size: 1.2em;">➖</span>
+      <span style="font-size: 0.875rem;">缩小</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
+      <span style="font-size: 1.2em;">🔍</span>
+      <span style="font-size: 0.875rem;">适应视图</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
+      <span style="font-size: 1.2em;">🔒</span>
+      <span style="font-size: 0.875rem;">锁定画布</span>
+    </div>
+  </div>
+</div>
+
+**功能说明**：
+- **放大/缩小**：调整画布缩放比例，方便查看细节
+- **适应视图**：自动调整视图以显示所有元素
+- **锁定画布**：防止意外修改，锁定后无法添加/删除节点
+
+### 状态标记说明
+
+**初始状态**：
+- 显示为绿色边框的圆形
+- NFA可以有多个初始状态
+- 使用工具栏"设置初态"按钮设置
+
+**接受状态**：
+- 显示为双圆环（外圆+内圆）
+- 可以有多个接受状态
+- 使用工具栏"设置终态"按钮设置
+
+**普通状态**：
+- 显示为单圆环
+- 既不是初始状态也不是接受状态
+
+### 操作提示
+
+<div style="border: 2px solid #f59e0b; border-radius: 8px; padding: 1rem; background: #fffbeb; margin: 1rem 0;">
+  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+    <span style="font-size: 1.2em;">💡</span>
+    <span style="font-weight: 500; color: #92400e;">操作提示</span>
+  </div>
+  <ul style="margin: 0; color: #92400e; font-size: 0.875rem; line-height: 1.5;">
+    <li>• 双击提示：画布上会显示"💡 双击画布添加节点"的提示</li>
+    <li>• 自动保存：所有操作都会自动保存，刷新页面不会丢失</li>
+    <li>• 编号管理：系统自动管理状态编号，避免重复</li>
+    <li>• 数据恢复：页面加载时会自动恢复之前的绘制内容</li>
+  </ul>
+</div>
+
+## 📚 构造规则
+
+### 方法概述
+
+从正则表达式R构造等价NFA M的方法分为两个主要步骤：
+
+1. **表示扩展转换图**：将正则表达式R表示为如图2-10所示的扩展转换图
+2. **应用转换规则**：对扩展转换图应用图2-11中的三个转换规则，构造NFA M
+
+### 扩展转换图 (图2-10)
+
+首先，将正则表达式R表示为扩展转换图：
+
 ```dot
 digraph G {
     rankdir=LR;
     node [shape=circle];
-    
-    q0 [shape=point];
-    q1 [shape=circle];
-    q2 [shape=circle];
-    q3 [shape=circle];
-    q4 [shape=circle];
-    q5 [shape=circle];
-    q6 [shape=doublecircle];
-    
-    q0 -> q1 [label="ε"];
-    q1 -> q2 [label="a"];
-    q1 -> q3 [label="ε"];
-    q3 -> q4 [label="b"];
-    q2 -> q5 [label="ε"];
-    q4 -> q5 [label="ε"];
-    q5 -> q6 [label="ε"];
+    X [label="X"];
+    Y [label="Y"];
+    X -> Y [label="R"];
 }
 ```
 
-**构造 (a|b)* 的NFA**：
+这个图表示从初始状态X到终止状态Y有一条标记为R的边。
+
+### 转换规则 (图2-11)
+
+#### 规则①：选择/并运算 (r1|r2)
+
+**转换前：**
 ```dot
 digraph G {
     rankdir=LR;
     node [shape=circle];
-    
-    q0 [shape=point];
-    q1 [shape=circle];
-    q2 [shape=circle];
-    q3 [shape=circle];
-    q4 [shape=circle];
-    q5 [shape=circle];
-    q6 [shape=circle];
-    q7 [shape=doublecircle];
-    
-    q0 -> q1 [label="ε"];
-    q1 -> q2 [label="a"];
-    q1 -> q3 [label="ε"];
-    q3 -> q4 [label="b"];
-    q2 -> q5 [label="ε"];
-    q4 -> q5 [label="ε"];
-    q5 -> q6 [label="ε"];
-    q6 -> q1 [label="ε"];
-    q0 -> q7 [label="ε"];
-    q6 -> q7 [label="ε"];
+    si [label="si"];
+    sj [label="sj"];
+    si -> sj [label="r1|r2"];
 }
 ```
 
-**构造 ab 的NFA**：
+**转换后：**
 ```dot
 digraph G {
     rankdir=LR;
     node [shape=circle];
-    
-    q0 [shape=point];
-    q1 [shape=circle];
-    q2 [shape=circle];
-    q3 [shape=doublecircle];
-    
-    q0 -> q1 [label="a"];
-    q1 -> q2 [label="b"];
-    q2 -> q3 [label="ε"];
+    si [label="si"];
+    sj [label="sj"];
+    si -> sj [label="r1"];
+    si -> sj [label="r2"];
 }
 ```
 
-### 步骤3：合并得到最终NFA
+**说明：** 将选择运算分解为两条并行边。
 
-最终的NFA将包含多个状态，能够识别所有以ab结尾的字符串。
+#### 规则②：连接运算 (r1r2)
 
-## 学习建议
+**转换前：**
+```dot
+digraph G {
+    rankdir=LR;
+    node [shape=circle];
+    si [label="si"];
+    sj [label="sj"];
+    si -> sj [label="r1r2"];
+}
+```
 
-1. **理解ε转移**：NFA中的ε转移允许自动机在不消耗输入字符的情况下改变状态，这是NFA与DFA的重要区别
+**转换后：**
+```dot
+digraph G {
+    rankdir=LR;
+    node [shape=circle];
+    si [label="si"];
+    sk [label="sk"];
+    sj [label="sj"];
+    si -> sk [label="r1"];
+    sk -> sj [label="r2"];
+}
+```
 
-2. **掌握Thompson构造法**：这是将正则表达式转换为NFA的标准算法，理解其递归性质
+**说明：** 引入中间状态sk，将连接运算分解为两个顺序转换。
 
-3. **注意状态数量**：Thompson构造法产生的NFA状态数量可能与正则表达式长度成正比
+#### 规则③：闭包运算 (r1*)
 
-4. **验证构造结果**：使用简单的测试字符串验证构造的NFA是否正确
+**转换前：**
+```dot
+digraph G {
+    rankdir=LR;
+    node [shape=circle];
+    si [label="si"];
+    sj [label="sj"];
+    si -> sj [label="r1*"];
+}
+```
 
-5. **观察状态转移**：在可视化界面中，仔细观察状态之间的转移关系，理解NFA的非确定性
+**转换后：**
+```dot
+digraph G {
+    rankdir=LR;
+    node [shape=circle];
+    si [label="si"];
+    sk [label="sk"];
+    sj [label="sj"];
+    si -> sk [label="ε"];
+    sk -> sk [label="r1"];
+    sk -> sj [label="ε"];
+}
+```
 
-## 下一步
+**说明：** 引入中间状态sk，使用ε转换和自环实现闭包运算。
+
+## 📖 构造过程
+
+### 一般构造过程
+
+对于给定的正则表达式R：
+
+1. **初始表示**：首先按图2-10的形式表示，其中X为初始状态，Y为终止状态
+2. **迭代应用规则**：然后迭代地应用图2-11中的三个转换规则
+3. **添加新节点**：在此过程中不断添加新节点，分解边上的复杂标记
+4. **终止条件**：直到图中每条有向边都标记为字母表Σ中的单个符号或ε为止
+5. **构造完成**：此时NFA M的构造完成
+
+### 构造步骤详解
+
+#### 步骤1：分析正则表达式结构
+- 识别选择运算 (|)
+- 识别连接运算 (·)
+- 识别闭包运算 (*)
+
+#### 步骤2：自顶向下分解
+- 从最外层的操作符开始
+- 逐步分解到基本字符
+- 记录每个子表达式的状态
+
+#### 步骤3：自底向上构造
+- 从基本字符开始构造NFA
+- 根据操作符组合子NFA
+- 逐步构建完整的NFA
+
+## 📚 下一步
 
 完成NFA构造后，您将进入**第三步：子集构造法**，学习如何将NFA转换为等价的DFA。这是编译原理中的核心算法之一，将帮助您理解：
 
