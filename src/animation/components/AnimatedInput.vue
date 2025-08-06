@@ -9,11 +9,11 @@
           :ref="(el) => setCharRef(el, index)"
           class="input-char"
           :class="{
-            'char-current': index === currentPointer,
+            'char-current': showCurrentPointer && index === currentPointer,
             'char-consumed': index < currentPointer,
-            'char-pending': index > currentPointer,
+            'char-pending': index >= currentPointer,
             'char-matching': index === currentPointer && isCurrentMatching,
-            'char-error': hasError && index === currentPointer,
+            'char-error': hasErrorState && index === currentPointer,
           }"
           :style="{
             transform: getCharTransform(index),
@@ -37,6 +37,7 @@ const props = defineProps<{
   pointer: number
   isMatching?: boolean
   hasError?: boolean
+  showPointer?: boolean // 新增：控制是否显示指针高亮
 }>()
 
 const emit = defineEmits<{
@@ -46,25 +47,28 @@ const emit = defineEmits<{
 // 响应式数据
 const inputWrapper = ref<HTMLElement>()
 const charRefs = ref<(HTMLElement | null)[]>([])
-const currentPointer = ref(0)
+const currentPointer = ref(-1) // 初始化为 -1，表示没有指针
 const isCurrentMatching = ref(false)
-const hasError = ref(false)
+const hasErrorState = ref(false) // 重命名避免冲突
 const animationTimeline = ref<gsap.core.Timeline | null>(null)
+const showCurrentPointer = ref(false) // 控制是否显示指针高亮
 
 // 计算属性
 const visibleInput = computed(() => props.input || [])
 
 // 工具函数
-const setCharRef = (el: any, index: number) => {
-  if (el && el.$el) {
-    charRefs.value[index] = el.$el as HTMLElement
-  } else if (el) {
-    charRefs.value[index] = el as HTMLElement
+const setCharRef = (el: unknown, index: number) => {
+  const element = el as HTMLElement | { $el: HTMLElement } | null
+  if (element && typeof element === 'object' && '$el' in element) {
+    charRefs.value[index] = element.$el as HTMLElement
+  } else if (element && 'nodeType' in (element as Node)) {
+    charRefs.value[index] = element as HTMLElement
   }
 }
 
 const getCharTransform = (index: number) => {
-  if (index === currentPointer.value) {
+  // 只有在需要显示指针且当前位置匹配时才缩放
+  if (showCurrentPointer.value && index === currentPointer.value) {
     return 'scale(1.2)'
   } else if (index < currentPointer.value) {
     return 'scale(0.9)'
@@ -89,7 +93,7 @@ const animatePointerMove = async (newPointer: number, oldPointer: number) => {
   animationTimeline.value = tl
 
   // 如果有旧的当前字符，先恢复
-  if (oldPointer >= 0 && oldPointer < charRefs.value.length) {
+  if (showCurrentPointer.value && oldPointer >= 0 && oldPointer < charRefs.value.length) {
     const oldChar = charRefs.value[oldPointer]
     if (oldChar) {
       tl.to(oldChar, {
@@ -107,8 +111,8 @@ const animatePointerMove = async (newPointer: number, oldPointer: number) => {
     currentPointer.value = newPointer
   })
 
-  // 如果有新的当前字符，高亮显示
-  if (newPointer >= 0 && newPointer < charRefs.value.length) {
+  // 如果需要显示指针且有新的当前字符，高亮显示
+  if (showCurrentPointer.value && newPointer >= 0 && newPointer < charRefs.value.length) {
     const newChar = charRefs.value[newPointer]
     if (newChar) {
       tl.to(
@@ -129,6 +133,56 @@ const animatePointerMove = async (newPointer: number, oldPointer: number) => {
   tl.call(() => {
     emit('animationComplete')
   })
+}
+
+// 新增：控制指针显示的方法
+const showPointerHighlight = async () => {
+  showCurrentPointer.value = true
+
+  if (currentPointer.value >= 0 && currentPointer.value < charRefs.value.length) {
+    const currentChar = charRefs.value[currentPointer.value]
+    if (currentChar) {
+      await new Promise<void>((resolve) => {
+        gsap.to(currentChar, {
+          scale: 1.2,
+          opacity: 1,
+          color: '#f59e0b',
+          backgroundColor: '#fef3c7',
+          duration: 0.3,
+          ease: 'back.out(1.7)',
+          onComplete: () => resolve(),
+        })
+      })
+    }
+  }
+
+  emit('animationComplete')
+}
+
+const hidePointerHighlight = async () => {
+  if (
+    showCurrentPointer.value &&
+    currentPointer.value >= 0 &&
+    currentPointer.value < charRefs.value.length
+  ) {
+    const currentChar = charRefs.value[currentPointer.value]
+    if (currentChar) {
+      await new Promise<void>((resolve) => {
+        gsap.to(currentChar, {
+          scale: 1,
+          opacity: 1,
+          color: '#374151',
+          backgroundColor: 'transparent',
+          duration: 0.2,
+          ease: 'power2.out',
+          onComplete: () => resolve(),
+        })
+      })
+    }
+  }
+
+  showCurrentPointer.value = false
+  emit('animationComplete')
 }
 
 const animateMatching = async () => {
@@ -166,7 +220,7 @@ const animateError = async () => {
   const currentChar = charRefs.value[currentPointer.value]
   if (!currentChar) return
 
-  hasError.value = true
+  hasErrorState.value = true
 
   // 错误抖动动画
   await new Promise<void>((resolve) => {
@@ -180,7 +234,7 @@ const animateError = async () => {
       yoyo: true,
       onComplete: () => {
         gsap.set(currentChar, { x: 0 })
-        hasError.value = false
+        hasErrorState.value = false
         resolve()
       },
     })
@@ -192,7 +246,9 @@ const animateError = async () => {
 const initializeInput = () => {
   currentPointer.value = props.pointer
   isCurrentMatching.value = !!props.isMatching
-  hasError.value = !!props.hasError
+  hasErrorState.value = !!props.hasError
+  // 默认不显示指针高亮，除非明确指定
+  showCurrentPointer.value = props.showPointer ?? false
 }
 
 // 监听器（必须在函数定义之后）
@@ -201,6 +257,17 @@ watch(
   (newPointer, oldPointer) => {
     if (newPointer !== oldPointer) {
       animatePointerMove(newPointer, oldPointer || 0)
+    }
+  },
+)
+
+watch(
+  () => props.showPointer,
+  (newShowPointer) => {
+    if (newShowPointer) {
+      showPointerHighlight()
+    } else {
+      hidePointerHighlight()
     }
   },
 )
@@ -239,15 +306,23 @@ watch(
 onMounted(() => {
   // 初始化字符引用数组
   charRefs.value = Array.from({ length: visibleInput.value.length }, () => null)
-  
+
   nextTick(() => {
     initializeInput()
-    
+
     // 设置性能优化
     if (inputWrapper.value) {
       inputWrapper.value.style.willChange = 'transform'
     }
   })
+})
+
+// 导出方法供父组件调用
+defineExpose({
+  showPointerHighlight,
+  hidePointerHighlight,
+  animateMatching,
+  animateError,
 })
 </script>
 
@@ -303,10 +378,11 @@ onMounted(() => {
 }
 
 .input-char.char-current {
-  background-color: #fef3c7;
-  color: #f59e0b;
-  border: 1px solid #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  background-color: #fed7aa !important;
+  color: #ea580c !important;
+  border: 2px solid #ea580c !important;
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.4) !important;
+  transform: scale(1.1) !important;
 }
 
 .input-char.char-consumed {
@@ -321,10 +397,11 @@ onMounted(() => {
 }
 
 .input-char.char-matching {
-  background-color: #dcfce7 !important;
-  color: #16a34a !important;
-  border: 1px solid #16a34a;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+  background-color: #bbf7d0 !important;
+  color: #15803d !important;
+  border: 2px solid #15803d !important;
+  box-shadow: 0 0 15px rgba(21, 128, 61, 0.4) !important;
+  transform: scale(1.15) !important;
 }
 
 .input-char.char-error {
