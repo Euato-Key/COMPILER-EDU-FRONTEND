@@ -269,7 +269,7 @@
                   </div>
 
                   <div
-                    v-else-if="Object.keys(answerConversionTable).length > 0"
+                    v-else-if="Object.keys(answerConversionTable).length > 0 && conversionTableColumns.length > 0"
                     class="overflow-x-auto"
                   >
                     <TransitionTable
@@ -494,7 +494,7 @@
                   </div>
 
                   <div
-                    v-else-if="Object.keys(answerTransitionMatrix).length > 0"
+                    v-else-if="Object.keys(answerTransitionMatrix).length > 0 && matrixStateColumns.length > 0"
                     class="overflow-x-auto"
                   >
                     <TransitionTable
@@ -1338,7 +1338,7 @@ const renderNFASvg = async () => {
 }
 
 // 从FA数据中提取字母表符号
-const extractAlphabetFromFAData = (data: any) => {
+const extractAlphabetFromFAData = (data: Record<string, any>) => {
   const symbols = new Set<string>()
 
   // 从转换表中提取符号
@@ -1366,7 +1366,7 @@ const extractAlphabetFromFAData = (data: any) => {
 }
 
 // 新的数据处理函数 - 转换表数据处理（列布局）
-const processTableDataToColumns = (table: any, symbols: string[]): ConversionTableData => {
+const processTableDataToColumns = (table: Record<string, any[]>, symbols: string[]): ConversionTableData => {
   const result: ConversionTableData = {}
 
   if (!table) return result
@@ -1422,7 +1422,7 @@ const processTableDataToColumns = (table: any, symbols: string[]): ConversionTab
 }
 
 // 新的数据处理函数 - 矩阵数据处理（行布局）
-const processMatrixDataToRows = (tableToNum: any, symbols: string[]): TransitionMatrixData => {
+const processMatrixDataToRows = (tableToNum: Record<string, any[]>, symbols: string[]): TransitionMatrixData => {
   const result: TransitionMatrixData = {}
 
   if (!tableToNum) return result
@@ -1468,7 +1468,7 @@ const processMatrixDataToRows = (tableToNum: any, symbols: string[]): Transition
 }
 
 // 生成答案数据（更新为新数据结构）
-const generateAnswerData = (data: any) => {
+const generateAnswerData = (data: Record<string, any>) => {
   console.log('原始数据:', data)
 
   // 使用与extractAlphabetFromFAData相同的逻辑提取符号
@@ -1516,9 +1516,9 @@ const generateAnswerData = (data: any) => {
     const nonSKeys = allStates.filter((x) => x !== 'S').sort()
     matrixStateColumns.value = [...sKeys, ...nonSKeys]
     console.log('矩阵状态列:', matrixStateColumns.value)
-
-    // 强制触发响应式更新
-    matrixStateColumns.value = [...matrixStateColumns.value]
+  } else {
+    // 如果没有 table_to_num 数据，设置为空数组
+    matrixStateColumns.value = []
   }
 
   // 更新DFA状态（从转换表的I列获取）
@@ -1600,6 +1600,10 @@ onMounted(() => {
       renderNFASvg()
 
       console.log('FA数据初始化完成')
+      console.log('转换表列:', conversionTableColumns.value)
+      console.log('矩阵状态列:', matrixStateColumns.value)
+      console.log('答案转换表:', answerConversionTable.value)
+      console.log('答案矩阵:', answerTransitionMatrix.value)
     }
 
     // 5. 尝试恢复03页面的用户数据
