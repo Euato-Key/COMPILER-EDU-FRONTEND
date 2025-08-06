@@ -347,9 +347,17 @@ const grammarInfo = computed(() => {
 // 答案数据 - 从store获取
 const answerData = computed(() => {
   if (slr1Store.dfaStates && slr1Store.dfaStates.length > 0) {
+    // 计算转移关系数量：统计所有状态中next_ids的键值对数量
+    let transitionCount = 0
+    slr1Store.dfaStates.forEach((state: any) => {
+      if (state.next_ids && typeof state.next_ids === 'object') {
+        transitionCount += Object.keys(state.next_ids).length
+      }
+    })
+
     return {
       itemSets: slr1Store.dfaStates,
-      transitions: [], // 可以从dfaStates中提取转移关系
+      transitions: Array(transitionCount).fill(null), // 创建一个长度为转移数量的数组
     }
   }
   return null
