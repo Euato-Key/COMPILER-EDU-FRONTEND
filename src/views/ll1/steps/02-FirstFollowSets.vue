@@ -901,7 +901,7 @@ const checkFirstSets = async () => {
 First集是LL1分析表构建的基础，接下来可以继续计算Follow集。`,
         'First集计算完成',
         5000,
-        'center'
+        'top-center'
       )
     } else {
       const errorCount = totalCount - correctCount
@@ -961,7 +961,7 @@ const checkFollowSets = async () => {
 First集和Follow集都已计算完成，可以进入下一步构建LL1分析表。`,
         'Follow集计算完成',
         5000,
-        'center'
+        'top-center'
       )
     } else {
       const errorCount = totalCount - correctCount
