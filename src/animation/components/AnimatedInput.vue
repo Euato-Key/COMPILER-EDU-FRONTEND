@@ -378,10 +378,11 @@ defineExpose({
 }
 
 .input-char.char-current {
-  background-color: #fef3c7;
-  color: #f59e0b;
-  border: 1px solid #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  background-color: #fed7aa !important;
+  color: #ea580c !important;
+  border: 2px solid #ea580c !important;
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.4) !important;
+  transform: scale(1.1) !important;
 }
 
 .input-char.char-consumed {
@@ -396,10 +397,11 @@ defineExpose({
 }
 
 .input-char.char-matching {
-  background-color: #dcfce7 !important;
-  color: #16a34a !important;
-  border: 1px solid #16a34a;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+  background-color: #bbf7d0 !important;
+  color: #15803d !important;
+  border: 2px solid #15803d !important;
+  box-shadow: 0 0 15px rgba(21, 128, 61, 0.4) !important;
+  transform: scale(1.15) !important;
 }
 
 .input-char.char-error {
