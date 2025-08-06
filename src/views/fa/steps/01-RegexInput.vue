@@ -17,8 +17,9 @@
     <div class="step-content">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- 左侧：输入区域 -->
-        <div class="input-section">
-          <div class="bg-gray-50 rounded-lg p-6">
+        <div class="input-section flex flex-col h-full">
+          <!-- 正则表达式输入 -->
+          <div class="bg-gray-50 rounded-lg p-6 flex-1">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">正则表达式输入</h3>
 
             <!-- 输入框 -->
@@ -110,11 +111,30 @@
               </div>
             </div>
           </div>
+
+          <!-- 当前输入预览 -->
+          <div
+            v-if="faStore.inputRegex"
+            class="mt-4 bg-white border border-gray-200 rounded-lg p-6 flex-1"
+          >
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">当前输入</h3>
+            <div class="font-mono text-lg bg-gray-100 p-3 rounded border">
+              {{ faStore.inputRegex }}
+            </div>
+            <div v-if="parsedInfo" class="mt-4 text-sm text-gray-600">
+              <p><strong>解析信息：</strong></p>
+              <ul class="list-disc list-inside space-y-1 mt-2">
+                <li>字符数：{{ parsedInfo.charCount }}</li>
+                <li>操作符数：{{ parsedInfo.operatorCount }}</li>
+                <li>最大嵌套深度：{{ parsedInfo.nestingDepth }}</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <!-- 右侧：说明和预览 -->
+        <!-- 右侧：说明 -->
         <div class="info-section">
-          <div class="bg-blue-50 rounded-lg p-6">
+          <div class="bg-blue-50 rounded-lg p-6 h-full">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">输入规则说明</h3>
 
             <!-- 运算符规定 -->
@@ -187,25 +207,6 @@
                   <span class="text-gray-700">二进制数以 101 结尾</span>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- 当前输入预览 -->
-          <div
-            v-if="faStore.inputRegex"
-            class="mt-6 bg-white border border-gray-200 rounded-lg p-6"
-          >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">当前输入</h3>
-            <div class="font-mono text-lg bg-gray-100 p-3 rounded border">
-              {{ faStore.inputRegex }}
-            </div>
-            <div v-if="parsedInfo" class="mt-4 text-sm text-gray-600">
-              <p><strong>解析信息：</strong></p>
-              <ul class="list-disc list-inside space-y-1 mt-2">
-                <li>字符数：{{ parsedInfo.charCount }}</li>
-                <li>操作符数：{{ parsedInfo.operatorCount }}</li>
-                <li>最大嵌套深度：{{ parsedInfo.nestingDepth }}</li>
-              </ul>
             </div>
           </div>
         </div>
@@ -415,6 +416,9 @@ const proceedToNext = () => {
 
   console.log('Step 1 completed with data:', stepData)
 
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
   // 直接进入下一步，数据已经保存在 Pinia store 中
   emit('complete', stepData)
   emit('next-step')
@@ -485,5 +489,18 @@ code {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 确保左右两侧高度一致 */
+.step-content .grid {
+  align-items: stretch;
+}
+
+.input-section {
+  min-height: 0;
+}
+
+.info-section {
+  min-height: 0;
 }
 </style>

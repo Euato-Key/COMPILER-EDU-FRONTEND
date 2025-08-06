@@ -13,10 +13,10 @@
     </div>
 
     <div class="step-content">
-      <!-- 说明区域和原文法并排显示 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- 左侧：增广文法构造规则 -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <!-- 说明区域和原文法并排显示 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- 左侧：增广文法构造规则 -->
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm">
           <div class="flex items-start">
             <Icon icon="lucide:info" class="w-5 h-5 text-blue-600 mt-0.5 mr-3" />
             <div>
@@ -26,12 +26,17 @@
                 </div>
                 <h3 class="text-xl font-bold text-blue-900">增广文法构造规则</h3>
               </div>
-              <ul class="space-y-1 text-sm text-blue-800">
+              <ul class="space-y-1.5 text-base text-blue-900">
                 <li>• 为原文法添加新的开始符号{{ startSymbol }}'</li>
-                <li>• 添加产生式：{{ startSymbol }}' -> {{ startSymbol }}</li>
-                <li>• 保持原有产生式不变</li>
-                <li>• 增广文法用于LR分析器的构造</li>
+                <li>• 添加产生式：{{ startSymbol }}'->{{ startSymbol }}</li>
+                <li>• 将含有多个候选式的产生式分解为多个单独的产生式</li>
+                <li>• 例如：A->α|β 分解为 A->α 和 A->β</li>
               </ul>
+
+              <div class="mt-4 p-3 bg-blue-100/50 rounded-lg border border-blue-200/50">
+                <p class="text-sm text-blue-800 font-semibold mb-1">💡 增广文法的重要性：</p>
+                <p class="text-sm text-blue-700">增广文法确保LR分析器有一个唯一的接受状态，简化了分析表的构造过程。</p>
+              </div>
             </div>
           </div>
         </div>
@@ -39,11 +44,11 @@
         <!-- 右侧：原文法显示 -->
         <div
           v-if="originalGrammar.length > 0"
-          class="bg-white border border-gray-200 rounded-lg p-6"
+          class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
         >
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Icon icon="lucide:list" class="w-5 h-5 text-blue-600" />
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center shadow-sm">
+              <Icon icon="lucide:list" class="w-5 h-5 text-white" />
             </div>
             <h3 class="text-xl font-bold text-blue-900">原文法</h3>
           </div>
@@ -51,9 +56,9 @@
                   <div
               v-for="(production, index) in originalGrammar"
                     :key="index"
-              class="font-mono text-sm bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800"
+              class="font-mono text-base bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    {{ production }}
+                    <span class="text-blue-600 font-semibold">{{ index + 1 }}.</span> {{ production }}
                   </div>
                 </div>
               </div>
@@ -67,6 +72,39 @@
                   </div>
 
       <div v-else class="space-y-6">
+        <!-- 步骤说明 -->
+        <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <Icon icon="lucide:list-ordered" class="w-4 h-4 text-white" />
+            </div>
+            <h4 class="text-lg font-semibold text-blue-900">构造步骤</h4>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-base">
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+              <div>
+                <p class="font-semibold text-blue-800">添加增广产生式</p>
+                <p class="text-blue-700 text-sm">引入新的开始符号{{ startSymbol }}'</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+              <div>
+                <p class="font-semibold text-blue-800">分解多候选式</p>
+                <p class="text-blue-700 text-sm">将A->α|β分解为A->α和A->β</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+              <div>
+                <p class="font-semibold text-blue-800">验证完整性</p>
+                <p class="text-blue-700 text-sm">确保所有产生式都正确</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 增广文法输入区域 -->
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
           <div class="flex items-center gap-3 mb-6">
@@ -75,7 +113,7 @@
               </div>
               <div>
               <h3 class="text-2xl font-bold text-blue-900">增广文法产生式</h3>
-              <p class="text-blue-600 text-sm">请填写增广后的文法产生式（包含新增的增广产生式）</p>
+              <p class="text-blue-600 text-sm">请填写增广后的文法产生式（每个产生式右侧只有一个候选式）</p>
             </div>
           </div>
 
@@ -97,9 +135,9 @@
                   <input
                     v-model="formula.text"
                     type="text"
-                    :placeholder="`请输入产生式 ${index + 1}，例如：S' -> S`"
+                    :placeholder="`请输入产生式 ${index + 1}，例如：S'->S`"
                     :class="[
-                      'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-sm',
+                      'w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 font-mono text-base',
                       'focus:ring-4 focus:ring-blue-100 focus:border-blue-400',
                       getInputClass(formula.status),
                     ]"
@@ -132,15 +170,15 @@
                   </div>
 
           <!-- 提示信息 -->
-          <div class="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div class="flex items-start gap-3">
-              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p class="font-semibold text-purple-900 mb-2">填写提示：</p>
-                <ul class="space-y-1 text-sm text-purple-800">
-                  <li>• 首先添加增广产生式：<code class="bg-purple-100 px-1 rounded">{{ startSymbol }}' -> {{ startSymbol }}</code></li>
-                  <li>• 然后按顺序添加所有原有产生式</li>
-                  <li>• 保持原有产生式的格式不变</li>
+                <p class="font-semibold text-blue-900 mb-2">填写提示：</p>
+                <ul class="space-y-1.5 text-base text-blue-800">
+                  <li>• 首先添加增广产生式：<code class="bg-blue-100 px-1.5 rounded font-semibold">{{ startSymbol }}'->{{ startSymbol }}</code></li>
+                  <li>• 然后将多候选式产生式分解为单个候选式</li>
+                  <li>• 例如：<code class="bg-blue-100 px-1.5 rounded font-semibold">S->aB|bA</code> 分解为 <code class="bg-blue-100 px-1.5 rounded font-semibold">S->aB</code> 和 <code class="bg-blue-100 px-1.5 rounded font-semibold">S->bA</code></li>
                 </ul>
               </div>
             </div>
@@ -387,6 +425,8 @@ const showAnswer = () => {
 // 下一步
 const nextStep = () => {
   if (isStepComplete.value) {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
 }
@@ -394,10 +434,10 @@ const nextStep = () => {
 // 初始化
 const initializeFormulas = () => {
   if (augmentedFormulas.value.length === 0) {
-    // 添加第一个空的产生式
+    // 添加第一个空的产生式 - 移除空格以匹配后端格式
     augmentedFormulas.value.push({
       id: `formula_${formulaCounter.value++}`,
-      text: startSymbol.value ? `${startSymbol.value}' -> ${startSymbol.value}` : '',
+      text: startSymbol.value ? `${startSymbol.value}'->${startSymbol.value}` : '',
       status: 'normal',
       readonly: false,
     })

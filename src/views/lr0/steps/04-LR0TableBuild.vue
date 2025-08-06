@@ -19,23 +19,33 @@
           <Icon icon="lucide:info" class="w-5 h-5 text-indigo-600 mt-0.5 mr-3" />
           <div>
             <h3 class="text-lg font-semibold text-indigo-900 mb-2">LR0分析表构造规则</h3>
-            <ul class="space-y-1 text-sm text-indigo-800">
-              <li>• <strong>ACTION表：</strong>根据项目集中的项目填写移进和规约动作</li>
-              <li>• <strong>GOTO表：</strong>根据DFA的转移关系填写状态转移</li>
-              <li>
-                • <strong>移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）
+            <ul class="space-y-2 text-base text-indigo-900">
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">ACTION表：</strong>根据项目集中的项目填写移进和规约动作</span>
               </li>
-              <li>
-                • <strong>规约动作：</strong>A → α·，则对所有终结符a，ACTION[i,a] =
-                rk（第k个产生式）
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">GOTO表：</strong>根据DFA的转移关系填写状态转移</span>
               </li>
-              <li>• <strong>接受动作：</strong>S' → S·，则ACTION[i,#] = acc</li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">规约动作：</strong>A → α·，则对所有终结符a，ACTION[i,a] = rk（第k个产生式）</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">•</span>
+                <span><strong class="text-indigo-800 bg-indigo-100 px-2 py-1 rounded">接受动作：</strong>S' → S·，则ACTION[i,#] = acc</span>
+              </li>
             </ul>
           </div>
         </div>
       </div>
 
-      <!-- DFA图显示区域 -->
+      <!-- DFA图和产生式编号显示区域 -->
       <div v-if="hasDFAData" class="bg-white border border-gray-200 rounded-lg mb-6">
         <div class="border-b border-gray-200 p-4">
           <h3 class="font-semibold text-gray-900 flex items-center gap-2">
@@ -45,13 +55,50 @@
           <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
         </div>
         <div class="p-4">
-          <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
-            <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
-              <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 左侧：DFA图 -->
+            <div class="lg:col-span-1">
+              <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
+                <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
+                  <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
+                </div>
+                <div v-else class="text-center text-gray-500">
+                  <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500" />
+                  <p class="text-sm">正在渲染DFA图...</p>
+                </div>
+              </div>
             </div>
-            <div v-else class="text-center text-gray-500">
-              <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500" />
-              <p class="text-sm">正在渲染DFA图...</p>
+
+            <!-- 右侧：产生式编号 -->
+            <div class="lg:col-span-1">
+              <div class="h-80 bg-purple-50 rounded-lg p-4 border border-purple-200 flex flex-col">
+                <div class="flex items-center gap-2 mb-4 flex-shrink-0">
+                  <Icon icon="lucide:list" class="w-5 h-5 text-purple-600" />
+                  <h4 class="font-medium text-purple-900">产生式编号</h4>
+                </div>
+
+                <!-- 产生式列表区域 - 可滚动 -->
+                <div class="flex-1 overflow-y-auto mb-4">
+                  <div class="grid grid-cols-2 gap-2">
+                    <div
+                      v-for="(production, index) in numberedProductions"
+                      :key="production"
+                      :data-production="index + 1"
+                      class="bg-white border border-purple-200 rounded p-2 shadow-sm"
+                    >
+                      <div class="text-sm font-mono text-purple-800 font-semibold">
+                        <span class="font-bold text-purple-900">r{{ index + 1 }}:</span> {{ production }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 底部说明文字 - 固定位置 -->
+                <div class="text-sm text-purple-700 font-medium flex-shrink-0 border-t border-purple-200 pt-3">
+                  <p>• 用于ACTION表中的规约动作</p>
+                  <p>• r1, r2, r3... 对应产生式编号</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -128,6 +175,15 @@ const dfaRendered = ref(false)
 // 计算属性
 const hasDFAData = computed(() => lr0Store.analysisResult !== null && lr0Store.dotString !== '')
 const lr0DotString = computed(() => lr0Store.dotString)
+
+// 带编号的产生式（去除S'->S）
+const numberedProductions = computed(() => {
+  if (!lr0Store.analysisResult?.formulas_list) return []
+  return lr0Store.analysisResult.formulas_list.filter((production) => {
+    // 过滤掉S'->S的产生式
+    return !production.includes("'") && !production.includes('S->S')
+  })
+})
 
 // 渲染DFA图
 const renderDFA = async () => {
@@ -244,6 +300,8 @@ const handleStepComplete = (isComplete: boolean) => {
 
 const nextStep = () => {
   if (isStepComplete.value) {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
 }
@@ -295,5 +353,25 @@ const nextStep = () => {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+/* 产生式盒子响应式样式 */
+@media (max-width: 1024px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 确保产生式文字不会溢出 */
+.text-sm {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 产生式卡片样式优化 */
+.bg-white.border.border-purple-200.rounded.p-2 {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
 }
 </style>

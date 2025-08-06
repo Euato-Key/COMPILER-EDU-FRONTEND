@@ -1,5 +1,5 @@
 <template>
-  <div class="string-analysis-step">
+  <div class="string-analysis-step" :style="animationSpeedStyle">
     <div class="step-header">
       <div class="flex items-center gap-4">
         <div class="step-icon">
@@ -309,15 +309,17 @@
                 <button
                   @click="analyzeString"
                   :disabled="!inputString.trim() || analyzing"
-                  class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                  class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                 >
-                  <Icon v-if="analyzing" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
+                  <Icon v-if="analyzing" icon="lucide:loader-2" class="w-5 h-5 animate-spin" />
+                  <Icon v-else icon="lucide:play" class="w-5 h-5" />
                   {{ analyzing ? '分析中...' : '开始分析' }}
                 </button>
                 <button
                   @click="resetAnalysis"
-                  class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold"
+                  class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-400 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
                 >
+                  <Icon icon="lucide:rotate-ccw" class="w-5 h-5" />
                   重置
                 </button>
               </div>
@@ -346,7 +348,7 @@
                   v-for="example in exampleStrings"
                   :key="example"
                   @click="inputString = example"
-                  class="px-4 py-2 text-sm bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-200 border border-gray-200 hover:border-gray-300 font-mono"
+                  class="px-4 py-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 transform hover:scale-105 hover:shadow-md border-2 border-blue-200 hover:border-blue-300 font-mono font-bold shadow-sm"
                 >
                   {{ example }}
                 </button>
@@ -358,10 +360,10 @@
         <!-- LL1分析表和答题区域 -->
         <div
           v-if="originalData?.table && inputString && inputAnalysisResult"
-          class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+          class="grid grid-cols-1 lg:grid-cols-5 gap-8"
         >
           <!-- 左侧：LL1分析表 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-3 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:table" class="w-5 h-5 mr-2 text-blue-600" />
               LL1 分析表
@@ -378,7 +380,10 @@
                     <th
                       v-for="terminal in VtAll"
                       :key="terminal"
-                      class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700"
+                      class="border border-gray-300 px-3 py-2 text-center text-xs font-medium text-gray-700 transition-colors"
+                      :class="{
+                        'bg-orange-200 font-bold': hintActive && hintCol === terminal
+                      }"
                     >
                       {{ terminal }}
                     </th>
@@ -387,7 +392,10 @@
                 <tbody class="bg-white">
                   <tr v-for="nonTerminal in originalData.Vn" :key="nonTerminal">
                     <td
-                      class="border border-gray-300 px-3 py-2 font-mono font-semibold text-blue-700"
+                      class="border border-gray-300 px-3 py-2 font-mono font-semibold text-blue-700 transition-colors"
+                      :class="{
+                        'bg-orange-200': hintActive && hintRow === nonTerminal
+                      }"
                     >
                       {{ nonTerminal }}
                     </td>
@@ -399,8 +407,9 @@
                       :class="{
                         'cursor-pointer hover:bg-blue-50': !isAnalysisComplete,
                         'cursor-not-allowed opacity-50': isAnalysisComplete,
-                        'bg-yellow-100 ring-2 ring-yellow-400':
+                        'bg-red-300 font-bold':
                           hintActive && hintRow === nonTerminal && hintCol === terminal,
+                        'bg-orange-100': hintActive && (hintRow === nonTerminal || hintCol === terminal) && !(hintRow === nonTerminal && hintCol === terminal),
                       }"
                       @dblclick="onLL1CellDblClick(nonTerminal, terminal)"
                     >
@@ -491,7 +500,7 @@
           </div>
 
           <!-- 右侧：答题区域 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="mb-4">
               <div
                 class="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3 flex items-start gap-2 text-yellow-800 text-sm"
@@ -525,36 +534,73 @@
 
             <h3 class="text-lg font-semibold text-gray-900 mb-4">输入串分析表（答题区）</h3>
 
+            <!-- 动画速度控制 -->
+            <div class="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 shadow-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
+                </div>
+                <span class="text-sm font-semibold text-green-700">动画速度</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="decreaseAnimationSpeed"
+                  :disabled="animationSpeed <= 0.25"
+                  class="w-8 h-8 rounded-lg border-2 border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:minus" class="w-4 h-4 text-green-600" />
+                </button>
+                <div class="bg-white px-3 py-1.5 rounded-lg border-2 border-green-300 shadow-sm">
+                  <span class="text-base font-bold text-green-700 min-w-[2.5rem] text-center">
+                    {{ (animationSpeed * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <button
+                  @click="increaseAnimationSpeed"
+                  :disabled="animationSpeed >= 2.0"
+                  class="w-8 h-8 rounded-lg border-2 border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:plus" class="w-4 h-4 text-green-600" />
+                </button>
+                <button
+                  @click="resetAnimationSpeed"
+                  class="px-3 py-1.5 text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-sm"
+                >
+                  重置
+                </button>
+              </div>
+            </div>
+
             <!-- 操作按钮 -->
-            <div class="flex flex-wrap gap-2 mb-4">
+            <div class="flex flex-wrap gap-1 mb-4">
               <button
                 @click="onMatch"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 匹配
               </button>
               <button
                 @click="onUndo"
                 :disabled="userSteps.length <= 1"
-                class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none"
               >
                 回退
               </button>
               <button
                 @click="onShowAnswer"
-                class="px-4 py-2 border border-blue-300 text-blue-700 bg-white rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 {{ showAnswer ? '隐藏答案' : '查看答案' }}
               </button>
               <button
                 @click="onResetUserSteps"
-                class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 重做
               </button>
               <button
                 @click="onHint"
-                class="px-4 py-2 border border-yellow-400 text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium"
+                class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 提示
               </button>
@@ -736,7 +782,7 @@
               <tr v-for="(step, index) in inputAnalysisResult.info_step" :key="index">
                 <td class="border border-gray-300 px-3 py-2 text-center">{{ step }}</td>
                 <td class="border border-gray-300 px-3 py-2 font-mono text-center">
-                  {{ inputAnalysisResult.info_state_stack?.[index] || '' }}
+                  {{ inputAnalysisResult.info_stack?.[index] || '' }}
                 </td>
                 <td class="border border-gray-300 px-3 py-2 font-mono text-center">
                   {{ inputAnalysisResult.info_str?.[index] || '' }}
@@ -760,21 +806,34 @@
       <div class="flex justify-between items-center">
         <button
           @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
         >
-          <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
+          <Icon icon="lucide:chevron-left" class="w-5 h-5" />
           上一步
         </button>
-        <div class="text-sm text-gray-500">步骤 4 / 4</div>
+        <div class="text-sm text-gray-500 font-medium">步骤 4 / 4</div>
         <button
           @click="complete"
-          class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
         >
           完成
-          <Icon icon="lucide:check" class="w-4 h-4 inline ml-2" />
+          <Icon icon="lucide:check" class="w-5 h-5" />
         </button>
       </div>
     </div>
+
+    <!-- 动画提示弹窗 -->
+    <AnimationHintModal
+      :visible="hintModalVisible"
+      :type="hintModalConfig.type"
+      :title="hintModalConfig.title"
+      :message="hintModalConfig.message"
+      :details="hintModalConfig.details"
+      :action="hintModalConfig.action"
+      :duration="hintModalConfig.duration"
+      :position="hintModalConfig.position"
+      @close="closeHintModal"
+    />
 
     <!-- 消息提示 -->
     <transition name="fade">
@@ -818,6 +877,7 @@ import { useLL1Store } from '@/stores/ll1'
 import { useCommonStore } from '@/stores/common'
 import { Icon } from '@iconify/vue'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
+import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
 // 组件事件
 const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: any] }>()
@@ -835,7 +895,11 @@ const analyzing = computed(() => loading.value)
 const isStepComplete = computed(() => inputAnalysisResult.value !== null)
 
 // 示例字符串 (不包含结束符，系统会自动添加#)
-const exampleStrings = ['a', 'ab', 'aab', 'b']
+// 根据LL1示例文法设定：
+// 基础文法1: S->AB, A->a|ε, B->b -> 生成: ab
+// 基础文法2: E->TG, G->+TG|ε, T->FH, H->*FH|ε, F->(E)|i -> 生成: i, i+i, i*i, (i)
+// 基础文法3: S->AB, A->aA|ε, B->bB|c -> 生成: c, bc, abc, aabc
+const exampleStrings = ['ab', 'i', 'i+i', 'i*i', 'c', 'bc', 'abc']
 
 // 答题相关状态
 const userSteps = ref<{ stack: string; input: string }[]>([])
@@ -847,6 +911,21 @@ const hintType = ref<'ll1' | 'match' | ''>('')
 const message = ref<string | null>(null)
 const messageType = ref<'success' | 'error'>('success')
 let messageTimer: number | null = null
+
+// 动画提示弹窗状态
+const hintModalVisible = ref(false)
+const hintModalConfig = ref({
+  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: '',
+  message: '',
+  details: '',
+  action: '',
+  duration: 3000,
+  position: 'top-right' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+})
+
+// 动画速度控制
+const animationSpeed = ref(1.0) // 1.0 = 100%, 0.25 = 25%, 2.0 = 200%
 
 // 飞行动画状态
 const flyingSymbols = ref<
@@ -864,11 +943,34 @@ const VtAll = computed(() => {
   return [...vt, '#'] // 添加结束符
 })
 
+// 动画速度CSS变量
+const animationSpeedStyle = computed(() => ({
+  '--animation-speed': animationSpeed.value
+}))
+
 // 检查分析是否完成
 const isAnalysisComplete = computed(() => {
   if (userSteps.value.length === 0) return false
   const last = userSteps.value[userSteps.value.length - 1]
   return last.stack === '#' && last.input === '#'
+})
+
+// 监听分析完成状态
+watch(isAnalysisComplete, (newValue) => {
+  if (newValue) {
+    // 延迟显示完成弹窗，避免与其他弹窗冲突
+    setTimeout(() => {
+      showHintModal(
+        'success',
+        'LL1分析完成！',
+        '恭喜！您已成功完成LL1语法分析！',
+        '所有步骤都已正确执行，输入串被成功分析。您可以查看标准答案对比分析过程，或继续学习其他内容。',
+        '分析过程完成',
+        5000,
+        'center'
+      )
+    }, 500)
+  }
 })
 
 // 监听分析结果变化，自动初始化用户步骤
@@ -953,9 +1055,18 @@ const onLL1CellDblClick = (row: string, col: string) => {
   const stackArr = last.stack.split('')
   const top = stackArr[stackArr.length - 1]
   if (top !== row) {
-    showMessage('请先处理栈顶符号: ' + top, 'error')
+    showHintModal(
+      'error',
+      '操作错误',
+      `当前栈顶符号是 "${top}"，但您选择了 "${row}" 行。`,
+      '请先处理栈顶符号，或使用提示功能获取正确的操作指导。',
+      '请检查栈顶符号',
+      3000,
+      'center'
+    )
     return
   }
+
   // 推导产生式
   stackArr.pop()
   if (prod !== 'ε') {
@@ -965,6 +1076,17 @@ const onLL1CellDblClick = (row: string, col: string) => {
   }
   const newStack = stackArr.join('')
   userSteps.value.push({ stack: newStack, input: last.input })
+
+  // 显示推导成功提示
+  showHintModal(
+    'success',
+    '推导成功',
+    `成功使用产生式 "${row}->${prod}" 进行推导。`,
+    `栈顶符号 "${row}" 被替换为 "${prod}"，分析继续进行。`,
+    '推导操作完成',
+    2500,
+    'center'
+  )
 
   // 检查是否完成分析（虽然这里通常不会完成，但为了完整性）
   if (newStack === '#' && last.input === '#') {
@@ -994,12 +1116,31 @@ const onMatch = () => {
     const newInput = inputArr.join('')
     userSteps.value.push({ stack: newStack, input: newInput })
 
+    // 显示匹配成功提示
+    showHintModal(
+      'success',
+      '匹配成功',
+      `成功匹配栈顶符号 "${top}" 与输入串首字符 "${cur}"。`,
+      '栈顶符号被弹出，输入串首字符被消耗，分析继续进行。',
+          '匹配操作完成',
+    2500,
+    'center'
+    )
+
     // 检查是否完成分析
     if (newStack === '#' && newInput === '#') {
       showMessage('分析完成！', 'success')
     }
   } else {
-    showMessage('栈顶符号与输入串首字符不匹配！', 'error')
+    showHintModal(
+      'error',
+      '匹配失败',
+      `栈顶符号 "${top}" 与输入串首字符 "${cur}" 不匹配。`,
+      '请检查当前状态，或使用提示功能获取正确的操作指导。',
+      '请检查符号匹配',
+      3000,
+      'top-center'
+    )
   }
 }
 
@@ -1007,6 +1148,25 @@ const onMatch = () => {
 const onUndo = () => {
   if (userSteps.value.length > 1) {
     userSteps.value.pop()
+    showHintModal(
+      'info',
+      '操作回退',
+      '已回退到上一步操作。',
+      '您可以重新执行正确的操作。',
+      '回退操作完成',
+      2000,
+      'top-center'
+    )
+  } else {
+    showHintModal(
+      'warning',
+      '无法回退',
+      '当前已是第一步，无法继续回退。',
+      '请继续进行分析操作。',
+      '无法回退',
+      2000,
+      'top-center'
+    )
   }
 }
 
@@ -1023,6 +1183,15 @@ const onResetUserSteps = () => {
   hintCol.value = ''
   hintType.value = ''
   flyingSymbols.value = []
+  showHintModal(
+    'info',
+    '重新开始',
+    '已重置分析步骤，重新开始分析。',
+    '您可以重新执行LL1分析过程。',
+    '重置操作完成',
+    2000,
+    'top-center'
+  )
 }
 
 // 提示按钮
@@ -1046,6 +1215,17 @@ const onHint = async () => {
     hintActive.value = true
     hintType.value = 'match'
 
+    // 显示匹配提示弹窗
+    showHintModal(
+      'hint',
+      '匹配操作提示',
+      `当前栈顶符号 "${top}" 与输入串首字符 "${cur}" 相同，可以进行匹配操作。`,
+      '匹配操作会将栈顶符号弹出，同时消耗输入串的首字符，这是LL1分析中的基本操作之一。',
+      '点击"匹配"按钮执行操作',
+      4000,
+      'bottom-left'
+    )
+
     // 执行匹配飞行动画
     await executeMatchFlyingAnimation(top, cur)
 
@@ -1053,7 +1233,7 @@ const onHint = async () => {
       onMatch()
       hintActive.value = false
       hintType.value = ''
-    }, 800)
+    }, 1200 / animationSpeed.value)
     return
   }
 
@@ -1065,6 +1245,17 @@ const onHint = async () => {
     hintCol.value = cur
     hintType.value = 'll1'
 
+    // 显示LL1推导提示弹窗
+    showHintModal(
+      'hint',
+      'LL1推导提示',
+      `当前栈顶符号 "${top}" 是非终结符，输入串首字符是 "${cur}"。`,
+      `根据LL1分析表，应该使用产生式 "${top}->${prod}" 进行推导。双击表格中对应的单元格执行推导操作。`,
+      '双击表格单元格执行推导',
+      4000,
+      'bottom-left'
+    )
+
     // 执行LL1推导飞行动画
     await executeLL1FlyingAnimation(top, cur, prod)
 
@@ -1074,10 +1265,18 @@ const onHint = async () => {
       hintRow.value = ''
       hintCol.value = ''
       hintType.value = ''
-    }, 800)
+    }, 1200 / animationSpeed.value)
     return
   }
-  showMessage('提示已完成', 'success')
+  showHintModal(
+    'warning',
+    '无法找到操作',
+    `当前栈顶符号 "${top}" 与输入串首字符 "${cur}" 无法匹配，且LL1分析表中没有对应的产生式。`,
+    '请检查您的分析步骤是否正确，或者查看标准答案了解正确的分析过程。',
+    '请检查分析步骤',
+    4000,
+    'top-center'
+  )
 }
 
 // 执行匹配飞行动画
@@ -1120,7 +1319,7 @@ const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
   }
 
   // 等待飞行动画完成
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+  await new Promise((resolve) => setTimeout(resolve, 1500 / animationSpeed.value))
 
   // 清除飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1135,7 +1334,7 @@ const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
     y: inputRect.top + inputRect.height / 2,
   })
 
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100 / animationSpeed.value))
 
   // 飞出到屏幕外
   const flyingSymbolData2 = flyingSymbols.value.find(
@@ -1146,7 +1345,7 @@ const executeMatchFlyingAnimation = async (symbol: string, target: string) => {
     flyingSymbolData2.y = -100 // 飞出到屏幕上方
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000 / animationSpeed.value))
 
   // 清除第二个飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
@@ -1184,7 +1383,7 @@ const executeLL1FlyingAnimation = async (
   })
 
   // 等待一小段时间让元素出现
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100 / animationSpeed.value))
 
   // 更新位置到栈顶
   const flyingSymbolData = flyingSymbols.value.find(
@@ -1196,13 +1395,59 @@ const executeLL1FlyingAnimation = async (
   }
 
   // 等待飞行动画完成
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+  await new Promise((resolve) => setTimeout(resolve, 1500 / animationSpeed.value))
 
   // 清除飞行动画状态
   flyingSymbols.value = flyingSymbols.value.filter(
     (fs) => !(fs.symbol === production && fs.target === 'stack'),
   )
 }
+
+// 显示动画提示弹窗
+const showHintModal = (
+  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: string,
+  message: string,
+  details?: string,
+  action?: string,
+  duration = 3000,
+  position = 'top-right' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+) => {
+  hintModalConfig.value = {
+    type,
+    title,
+    message,
+    details: details || '',
+    action: action || '',
+    duration,
+    position
+  }
+  hintModalVisible.value = true
+}
+
+// 关闭动画提示弹窗
+const closeHintModal = () => {
+  hintModalVisible.value = false
+}
+
+// 动画速度控制函数
+const increaseAnimationSpeed = () => {
+  if (animationSpeed.value < 2.0) {
+    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
+  }
+}
+
+const decreaseAnimationSpeed = () => {
+  if (animationSpeed.value > 0.25) {
+    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
+  }
+}
+
+const resetAnimationSpeed = () => {
+  animationSpeed.value = 1.0
+}
+
+
 
 // 显示消息
 const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
@@ -1224,6 +1469,9 @@ const complete = () => {
     messages: inputAnalysisResult.value?.info_msg || [],
     userSteps: userSteps.value,
   }
+
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 
   emit('complete', data)
 }
@@ -1279,6 +1527,11 @@ const complete = () => {
   transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 动态动画速度控制 */
+.fixed[style*="transition"] {
+  transition-duration: calc(1.5s / var(--animation-speed, 1));
+}
+
 /* 高亮动画效果 */
 @keyframes highlight-pulse {
   0%,
@@ -1293,5 +1546,43 @@ const complete = () => {
 
 .ring-yellow-400 {
   animation: highlight-pulse 1s ease-in-out infinite;
+}
+
+/* 十字高亮效果 */
+.bg-yellow-100 {
+  background-color: #fef3c7 !important;
+  position: relative;
+}
+
+.bg-yellow-50 {
+  background-color: #fffbeb !important;
+  position: relative;
+}
+
+.ring-yellow-400 {
+  box-shadow: 0 0 0 2px #fbbf24 !important;
+  position: relative;
+  z-index: 10;
+}
+
+/* 增强十字高亮效果 */
+.bg-yellow-100::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(251, 191, 36, 0.1) 50%, transparent 70%);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 </style>

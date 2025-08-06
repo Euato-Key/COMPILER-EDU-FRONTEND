@@ -14,176 +14,239 @@
 
     <div class="step-content">
       <!-- 说明区域 -->
-      <div class="bg-pink-50 border border-pink-200 rounded-lg p-6 mb-6">
+      <div class="bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border border-pink-200 rounded-xl p-6 mb-6 shadow-sm">
         <div class="flex items-start">
-          <Icon icon="lucide:info" class="w-5 h-5 text-pink-600 mt-0.5 mr-3" />
-          <div>
-            <h3 class="text-lg font-semibold text-pink-900 mb-2">SLR1文法输入格式</h3>
-            <ul class="space-y-1 text-sm text-pink-800">
-              <li>• 每行一个产生式，格式：A → αβγ</li>
-              <li>• 左侧为非终结符，右侧为产生式体</li>
-              <li>• 使用 -> 表示产生</li>
-              <li>• 使用 | 表示或者关系</li>
-              <li>• 使用 ε 表示空串</li>
-            </ul>
+          <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center mr-4 shadow-md">
+            <Icon icon="lucide:info" class="w-5 h-5 text-white" />
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <h3 class="text-xl font-bold text-pink-900">SLR1文法输入格式</h3>
+              <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full">标准格式</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 class="font-semibold text-pink-800 mb-2 flex items-center">
+                  <Icon icon="lucide:check-circle" class="w-4 h-4 mr-2 text-pink-600" />
+                  基本规则
+                </h4>
+                <ul class="space-y-1.5 text-base text-pink-800">
+                  <li>• 每行一个产生式，格式：<code class="bg-pink-100 px-1.5 rounded font-semibold">A -> αβγ</code></li>
+                  <li>• 左侧为非终结符，右侧为产生式体</li>
+                  <li>• 使用 <code class="bg-pink-100 px-1.5 rounded font-semibold">-></code> 表示产生</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-pink-800 mb-2 flex items-center">
+                  <Icon icon="lucide:settings" class="w-4 h-4 mr-2 text-pink-600" />
+                  特殊符号
+                </h4>
+                <ul class="space-y-1.5 text-base text-pink-800">
+                  <li>• 使用 <code class="bg-pink-100 px-1.5 rounded font-semibold">|</code> 表示或者关系</li>
+                  <li>• 使用 <code class="bg-pink-100 px-1.5 rounded font-semibold">ε</code> 表示空串</li>
+                  <li>• 支持多候选式：<code class="bg-pink-100 px-1.5 rounded font-semibold">A -> α | β | γ</code></li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- 文法输入区域 -->
       <div class="space-y-6">
-        <div>
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
-              <Icon icon="lucide:edit-3" class="w-5 h-5 text-pink-600" />
+        <!-- 文法输入区域 -->
+        <div class="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-200 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center shadow-md">
+              <Icon icon="lucide:edit-3" class="w-6 h-6 text-white" />
             </div>
-            <label class="text-xl font-bold text-pink-900"> 输入SLR1文法产生式 </label>
-          </div>
-          <textarea
-            v-model="grammarInput"
-            placeholder="请输入文法产生式，例如：&#10;S -> E&#10;E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | i"
-            class="w-full h-40 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 resize-none font-mono text-sm"
-            @input="onInputChange"
-          ></textarea>
-        </div>
-
-        <!-- 示例文法 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">算术表达式</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
-              <pre class="text-xs font-mono text-gray-700 flex-1">
-S -> E
-E -> E + T | T
-T -> T * F | F
-F -> ( E ) | i</pre
-              >
-              <button
-                @click="loadExample(1)"
-                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
-              >
-                使用此示例
-              </button>
+            <div>
+              <h3 class="text-xl font-bold text-pink-900">输入SLR1文法产生式</h3>
+              <p class="text-pink-600 text-sm">请输入符合SLR1文法规范的产生式</p>
             </div>
           </div>
 
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">简单文法</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
-              <pre class="text-xs font-mono text-gray-700 flex-1">
-S -> A a | b
-A -> c</pre
-              >
-              <button
-                @click="loadExample(2)"
-                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
-              >
-                使用此示例
-              </button>
-            </div>
+          <div class="bg-white rounded-lg p-4 border border-pink-100 shadow-inner">
+            <textarea
+              v-model="grammarInput"
+              placeholder="请输入文法产生式，例如：&#10;S -> E&#10;E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | i"
+              class="w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-pink-100 focus:border-pink-400 resize-none font-mono text-base transition-all duration-200 bg-gradient-to-r from-gray-50 to-white"
+              @input="onInputChange"
+            ></textarea>
           </div>
 
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">赋值语句</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
-              <pre class="text-xs font-mono text-gray-700 flex-1">
-S -> A
-A -> i = E | E
-E -> E + i | i | ( A )</pre
-              >
-              <button
-                @click="loadExample(3)"
-                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
-              >
-                使用此示例
-              </button>
-            </div>
+          <!-- 分析按钮 -->
+          <div class="flex justify-center mt-4">
+            <button
+              @click="analyzeGrammar"
+              :disabled="!grammarInput.trim() || isAnalyzing"
+              class="px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl hover:from-pink-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+            >
+              <Icon
+                :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
+                :class="['w-5 h-5 inline mr-2', isAnalyzing ? 'animate-spin' : '']"
+              />
+              <span class="font-semibold">{{ isAnalyzing ? '分析中...' : '分析文法' }}</span>
+            </button>
           </div>
-
-          <div>
-            <h4 class="font-medium text-gray-900 mb-2">列表文法</h4>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 h-32 flex flex-col">
-              <pre class="text-xs font-mono text-gray-700 flex-1">
-S -> L
-L -> a
-L -> L , a</pre
-              >
-              <button
-                @click="loadExample(4)"
-                class="text-xs px-2 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors self-start"
-              >
-                使用此示例
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 分析按钮 -->
-        <div class="flex justify-center">
-          <button
-            @click="analyzeGrammar"
-            :disabled="!grammarInput.trim() || isAnalyzing"
-            class="px-8 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            <Icon
-              :icon="isAnalyzing ? 'lucide:loader-2' : 'lucide:play'"
-              :class="['w-4 h-4 inline mr-2', isAnalyzing ? 'animate-spin' : '']"
-            />
-            {{ isAnalyzing ? '分析中...' : '分析文法' }}
-          </button>
         </div>
 
         <!-- 分析结果 -->
-        <div v-if="analysisResult" class="mt-6">
-          <div
-            :class="[
-              'p-4 rounded-lg border',
-              analysisResult.success
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800',
-            ]"
-          >
-            <div class="flex items-start gap-2">
-              <Icon
-                :icon="analysisResult.success ? 'lucide:check-circle' : 'lucide:alert-circle'"
-                class="w-5 h-5 mt-0.5 flex-shrink-0"
-              />
-              <div class="flex-1">
-                <p class="font-medium">
-                  {{ analysisResult.success ? '文法分析成功' : '文法分析失败' }}
-                </p>
-                <p class="text-sm mt-1">{{ analysisResult.message }}</p>
-
-                <!-- 成功时显示文法信息 -->
-                <div v-if="analysisResult.success && analysisResult.data" class="mt-4 space-y-3">
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span class="font-medium">开始符号：</span>{{ analysisResult.data.S }}
-                    </div>
-                    <div>
-                      <span class="font-medium">非终结符：</span
-                      >{{ analysisResult.data.Vn?.join(', ') }}
-                    </div>
-                    <div>
-                      <span class="font-medium">终结符：</span
-                      >{{ analysisResult.data.Vt?.join(', ') }}
-                    </div>
+        <transition name="slide-fade" mode="out-in">
+          <div v-if="analysisResult" class="mt-6">
+            <div
+              :class="[
+                'p-6 rounded-xl border-2 transition-all duration-200 shadow-sm',
+                analysisResult.success
+                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-green-800'
+                  : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200 text-red-800',
+              ]"
+            >
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                  <Icon
+                    :icon="analysisResult.success ? 'lucide:check-circle' : 'lucide:alert-circle'"
+                    class="w-6 h-6 text-white"
+                  />
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <h3 class="text-xl font-bold">
+                      {{ analysisResult.success ? '文法分析成功' : '文法分析失败' }}
+                    </h3>
+                    <span
+                      :class="[
+                        'px-3 py-1 text-xs font-medium rounded-full',
+                        analysisResult.success
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      ]"
+                    >
+                      {{ analysisResult.success ? 'SLR1文法' : '分析失败' }}
+                    </span>
                   </div>
+                  <p class="text-sm mb-4">{{ analysisResult.message }}</p>
 
-                  <div>
-                    <span class="font-medium">产生式：</span>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                      <div
-                        v-for="(prod, index) in analysisResult.data.formulas_list"
-                        :key="index"
-                        class="text-xs bg-white px-2 py-1 rounded border font-mono"
-                      >
-                        {{ prod }}
+                  <!-- 成功时显示文法信息 -->
+                  <div v-if="analysisResult.success && analysisResult.data" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                        <div class="font-medium text-green-700 mb-1">开始符号</div>
+                        <div class="text-lg font-mono text-green-800">{{ analysisResult.data.S }}</div>
+                      </div>
+                      <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                        <div class="font-medium text-green-700 mb-1">非终结符</div>
+                        <div class="text-sm font-mono text-green-800">{{ analysisResult.data.Vn?.join(', ') }}</div>
+                      </div>
+                      <div class="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                        <div class="font-medium text-green-700 mb-1">终结符</div>
+                        <div class="text-sm font-mono text-green-800">{{ analysisResult.data.Vt?.join(', ') }}</div>
+                      </div>
+                    </div>
+
+                    <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-green-200/50">
+                      <div class="font-medium text-green-700 mb-3">原始文法</div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                        <div
+                          v-for="(prod, index) in slr1Store.productions"
+                          :key="index"
+                          class="text-base bg-white px-3 py-2 rounded-lg border border-green-200 font-mono text-green-800 shadow-sm font-semibold"
+                        >
+                          {{ prod }}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </transition>
+
+        <!-- 示例文法 -->
+        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <Icon icon="lucide:book-open" class="w-4 h-4 text-white" />
+            </div>
+            <h3 class="text-lg font-bold text-purple-900">示例文法</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                <h4 class="font-semibold text-gray-900">算术表达式</h4>
+              </div>
+              <div class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-sm font-mono text-pink-800 font-semibold">
+S -> E
+E -> E + T | T
+T -> T * F | F
+F -> ( E ) | i</pre>
+              </div>
+              <button
+                @click="loadExample(1)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                <h4 class="font-semibold text-gray-900">简单文法</h4>
+              </div>
+              <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-sm font-mono text-purple-800 font-semibold">
+S -> A a | b
+A -> c</pre>
+              </div>
+              <button
+                @click="loadExample(2)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                <h4 class="font-semibold text-gray-900">赋值语句</h4>
+              </div>
+              <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-sm font-mono text-indigo-800 font-semibold">
+S -> A
+A -> i = E | E
+E -> E + i | i | ( A )</pre>
+              </div>
+              <button
+                @click="loadExample(3)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+                <h4 class="font-semibold text-gray-900">列表文法</h4>
+              </div>
+              <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-sm font-mono text-blue-800 font-semibold">
+S -> L
+L -> a
+L -> L , a</pre>
+              </div>
+              <button
+                @click="loadExample(4)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg hover:from-blue-600 hover:to-cyan-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
             </div>
           </div>
         </div>
@@ -316,6 +379,8 @@ const analyzeGrammar = async () => {
 
 const nextStep = () => {
   if (isStepComplete.value) {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="home-page min-h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
-    <header class="theme-header-bg backdrop-blur-sm border-b theme-header-border">
+    <header class="fixed top-0 left-0 right-0 z-50 theme-header-bg backdrop-blur-sm border-b theme-header-border">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
@@ -15,19 +15,13 @@
             >
               首页
             </router-link>
-            <router-link
-              to="/dev"
-              class="px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              开发调试
-            </router-link>
           </div>
         </div>
       </div>
     </header>
 
     <!-- 主要内容 -->
-    <main class="max-w-7xl mx-auto px-4 py-16">
+    <main class="max-w-7xl mx-auto px-4 py-16 mt-20">
       <!-- 欢迎区域 -->
       <div class="text-center mb-16">
         <h2 class="text-4xl font-bold text-gray-900 mb-4">
@@ -159,33 +153,47 @@
         </div>
       </div>
 
-      <!-- 开发者工具 -->
-      <div class="theme-step-bg rounded-xl p-8">
-        <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">开发者工具</h3>
-        <div class="flex justify-center gap-4">
-          <router-link
-            to="/dev/canvas"
-            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors"
-          >
-            <Icon icon="lucide:palette" class="w-5 h-5 inline mr-2" />
-            画布测试
-          </router-link>
-          <router-link
-            to="/dev"
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Icon icon="lucide:code" class="w-5 h-5 inline mr-2" />
-            开发中心
-          </router-link>
-        </div>
-      </div>
+
     </main>
+
+    <!-- AI聊天组件 -->
+    <AIChatWidget
+      page-type="home"
+      :context="chatContext"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+// 定义组件名称
+defineOptions({
+  name: 'HomePage'
+})
+
 import { Icon } from '@iconify/vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
+import { AIChatWidget } from '@/components/ai'
+import { useHomeChatStore } from '@/stores/homeChat'
+import type { ChatContext } from '@/components/ai/types'
+import { ref, onMounted } from 'vue'
+
+// 使用主页AI聊天store
+const homeChatStore = useHomeChatStore()
+
+// 聊天上下文
+const chatContext = ref<ChatContext>({
+  currentPage: 'home',
+  userInput: {},
+  backendData: {},
+  userAnswers: {},
+  pageContext: '编译原理可视化工具主页'
+})
+
+// 组件挂载时的初始化
+onMounted(() => {
+  // 初始化聊天上下文
+  homeChatStore.updateContext(chatContext.value)
+})
 </script>
 
 <style scoped>

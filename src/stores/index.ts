@@ -5,3 +5,11 @@ export { useLL1Store } from './ll1'
 export { useLR0Store } from './lr0'
 export { useSLR1Store } from './slr1'
 export { useFAStore } from './fa'
+
+// 导出AI聊天store
+export { useFAChatStore } from './faChat'
+export { useLL1ChatStore } from './ll1Chat'
+export { useLR0ChatStore } from './lr0Chat'
+export { useSLR1ChatStore } from './slr1Chat'
+export { useHomeChatStore } from './homeChat'
+

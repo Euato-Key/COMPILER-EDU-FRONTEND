@@ -188,10 +188,7 @@ const hasNFAData = computed(() => faStore.hasResult())
 
 // 是否构造完成（用户查看答案后就可以进行下一步）
 const isConstructionComplete = computed(() => {
-  return (
-    showAnswer.value ||
-    (newFACanvasRef.value?.getNodes && newFACanvasRef.value.getNodes().length > 0)
-  )
+  return showAnswer.value
 })
 
 // 自动保存功能
@@ -284,6 +281,9 @@ const proceedToNext = () => {
       timestamp: new Date().toISOString(),
     },
   }
+
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 
   emit('complete', stepData)
   emit('next-step')

@@ -6,8 +6,43 @@
           <Icon icon="lucide:git-merge" class="w-6 h-6 text-purple-600" />
         </div>
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">画DFA</h2>
+          <h2 class="text-2xl font-bold text-gray-900">构造DFA</h2>
           <p class="text-gray-600 mt-1">第三步：构造LR0项目集规范族DFA</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作说明 -->
+    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 mx-6 mt-4 shadow-sm">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+          <Icon icon="lucide:mouse-pointer-click" class="w-5 h-5 text-white" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-purple-800 mb-3">操作指南</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base text-purple-800">
+            <div class="space-y-2">
+              <h4 class="font-semibold text-purple-900 flex items-center gap-2">
+                <Icon icon="lucide:circle-dot" class="w-4 h-4" />
+                项目集管理
+              </h4>
+              <ul class="space-y-1.5 ml-6">
+                <li>• 点击项目集节点可编辑LR项目内容</li>
+                <li>• 拖拽节点调整位置</li>
+              </ul>
+            </div>
+            <div class="space-y-2">
+              <h4 class="font-semibold text-purple-900 flex items-center gap-2">
+                <Icon icon="lucide:arrow-right-left" class="w-4 h-4" />
+                转移关系
+              </h4>
+              <ul class="space-y-1.5 ml-6">
+                <li>• 拖拽节点连接创建转移边</li>
+                <li>• 点击边可编辑转移符号</li>
+                <li>• 右键删除不需要的连接</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -17,61 +52,64 @@
       <div class="space-y-6">
         <!-- 文法参考区域 -->
         <div class="grammar-reference">
-          <div class="bg-white border border-gray-200 rounded-lg">
-            <div class="border-b border-gray-200 p-4">
-              <h3 class="font-semibold text-gray-900 flex items-center gap-2">
-                <Icon icon="lucide:file-text" class="w-5 h-5 text-purple-600" />
-                增广文法参考（来自第二步）
-              </h3>
-              <p class="text-sm text-gray-600 mt-1">根据这些产生式构造LR0项目集</p>
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm">
+            <div class="border-b border-blue-200 p-5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:file-text" class="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 class="font-semibold text-blue-800 text-lg">增广文法参考</h3>
+                  <p class="text-sm text-blue-600 mt-1">来自第二步的增广文法，用于构造LR0项目集</p>
+                </div>
+              </div>
             </div>
             <div class="p-6">
-              <div v-if="grammarInfo" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span class="font-medium text-gray-700">开始符号：</span>
-                    <span class="text-purple-600 font-mono">{{ grammarInfo.startSymbol }}</span>
-                  </div>
-                  <div>
-                    <span class="font-medium text-gray-700">产生式数量：</span>
-                    <span class="text-purple-600">{{ grammarInfo.productions?.length || 0 }}</span>
-                  </div>
-                </div>
-
+              <div v-if="grammarInfo" class="space-y-5">
                 <!-- 编号产生式 -->
-                <div v-if="grammarInfo.productions?.length" class="mt-4">
-                  <h4 class="font-medium text-gray-800 mb-3">编号产生式</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div v-if="grammarInfo.productions?.length" class="mt-5">
+                  <div class="flex items-center gap-2 mb-4">
+                    <Icon icon="lucide:list-ordered" class="w-5 h-5 text-blue-600" />
+                    <h4 class="font-semibold text-blue-800">编号产生式</h4>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div
                       v-for="(production, index) in grammarInfo.productions"
                       :key="index"
-                      class="flex items-center space-x-2 p-2 rounded"
+                      class="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 hover:shadow-md"
                       :class="
                         index === 0
-                          ? 'bg-yellow-50 border border-yellow-200'
-                          : 'bg-gray-50 border border-gray-200'
+                          ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 shadow-sm'
+                          : 'bg-white border-blue-200 hover:border-blue-300'
                       "
                     >
                       <span
-                        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                        class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-sm"
                         :class="
                           index === 0
-                            ? 'bg-yellow-200 text-yellow-800'
-                            : 'bg-gray-200 text-gray-700'
+                            ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white'
+                            : 'bg-gradient-to-br from-blue-400 to-indigo-500 text-white'
                         "
                       >
                         {{ index }}
                       </span>
-                      <span class="font-mono text-sm">{{ production }}</span>
-                      <span v-if="index === 0" class="text-xs text-yellow-600">(增广)</span>
+                      <span class="font-mono text-base flex-1 font-semibold">{{ production }}</span>
+                      <span
+                        v-if="index === 0"
+                        class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium"
+                      >
+                        增广
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div v-else class="text-center py-8 text-gray-500">
-                <Icon icon="lucide:arrow-left" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>暂无文法数据</p>
-                <p class="text-sm mt-1">请先完成前面的步骤</p>
+              <div v-else class="text-center py-12 text-gray-500">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Icon icon="lucide:arrow-left" class="w-8 h-8 text-gray-400" />
+                </div>
+                <p class="text-lg font-medium text-gray-600">暂无文法数据</p>
+                <p class="text-sm mt-2 text-gray-500">请先完成前面的步骤</p>
               </div>
             </div>
           </div>
@@ -79,27 +117,56 @@
 
         <!-- 用户画图区域 -->
         <div class="user-draw-area">
-          <div class="bg-white border border-gray-200 rounded-lg">
+          <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+            <div class="border-b border-green-200 p-5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:pencil" class="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 class="font-semibold text-green-800 text-lg">DFA构造画布</h3>
+                  <p class="text-sm text-green-600 mt-1">在下方画布中构造LR0项目集规范族DFA</p>
+                </div>
+              </div>
+            </div>
             <!-- 用户画布 -->
-            <div class="h-[700px] p-4">
+            <div class="h-[700px] p-6">
               <!-- <LRCanvas ref="canvasRef" /> -->
               <LR0DrawDFA :check_DFA="lr0Store.dfaStates"></LR0DrawDFA>
             </div>
           </div>
 
           <!-- 构造提示 -->
-          <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-start gap-3">
-              <Icon icon="lucide:lightbulb" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 class="font-medium text-blue-800">构造提示</h4>
-                <ul class="text-sm text-blue-700 mt-2 space-y-1">
-                  <li>• 从增广文法的初始项目 [S' -> .S] 开始构造 I₀</li>
-                  <li>• 使用 CLOSURE 函数求闭包，添加所有相关项目</li>
-                  <li>• 使用 GOTO 函数计算状态转移</li>
-                  <li>• 继续构造直到没有新的项目集产生</li>
-                  <li>• 确保所有项目集和转移关系都正确标记</li>
-                </ul>
+          <div class="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Icon icon="lucide:lightbulb" class="w-5 h-5 text-white" />
+              </div>
+              <div class="flex-1">
+                <h4 class="font-semibold text-amber-800 text-lg mb-3">构造提示</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base text-amber-800">
+                  <div class="space-y-2">
+                    <h5 class="font-semibold text-amber-900 flex items-center gap-2">
+                      <Icon icon="lucide:circle-dot" class="w-4 h-4" />
+                      初始构造
+                    </h5>
+                    <ul class="space-y-1.5 ml-6">
+                      <li>• 从增广文法的初始项目 [S' -> .S] 开始构造 I₀</li>
+                      <li>• 使用 CLOSURE 函数求闭包，添加所有相关项目</li>
+                    </ul>
+                  </div>
+                  <div class="space-y-2">
+                    <h5 class="font-semibold text-amber-900 flex items-center gap-2">
+                      <Icon icon="lucide:arrow-right-left" class="w-4 h-4" />
+                      状态转移
+                    </h5>
+                    <ul class="space-y-1.5 ml-6">
+                      <li>• 使用 GOTO 函数计算状态转移</li>
+                      <li>• 继续构造直到没有新的项目集产生</li>
+                      <li>• 确保所有项目集和转移关系都正确标记</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -107,18 +174,26 @@
 
         <!-- 答案区域 -->
         <div class="answer-area">
-          <div class="bg-white border border-gray-200 rounded-lg">
+          <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl shadow-sm">
             <!-- 答案区域头部 -->
-            <div class="border-b border-gray-200 p-4">
+            <div class="border-b border-purple-200 p-5">
               <div class="flex items-center justify-between">
-                <h3 class="font-semibold text-gray-900">标准答案</h3>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <Icon icon="lucide:check-square" class="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-purple-800 text-lg">标准答案</h3>
+                    <p class="text-sm text-purple-600 mt-1">查看正确的LR0项目集规范族DFA</p>
+                  </div>
+                </div>
                 <button
                   @click="toggleAnswer"
                   :class="[
-                    'px-4 py-2 rounded-lg transition-colors',
+                    'px-6 py-3 rounded-lg transition-all duration-200 font-medium shadow-sm',
                     showAnswerFlag
-                      ? 'bg-gray-600 text-white hover:bg-gray-700'
-                      : 'bg-green-600 text-white hover:bg-green-700',
+                      ? 'bg-gradient-to-br from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 hover:shadow-md'
+                      : 'bg-gradient-to-br from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 hover:shadow-md',
                   ]"
                 >
                   <Icon
@@ -131,21 +206,23 @@
             </div>
 
             <!-- 答案内容 -->
-            <div class="h-120 p-4">
+            <div class="h-120 p-6">
               <div v-if="!showAnswerFlag" class="h-full flex items-center justify-center">
-                <div class="text-center text-gray-500">
-                  <Icon icon="lucide:lock" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                  <p class="text-lg font-medium">答案已隐藏</p>
-                  <p class="text-sm mt-1">完成你的构造后点击"查看答案"按钮</p>
+                <div class="text-center text-purple-500">
+                  <div class="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Icon icon="lucide:lock" class="w-10 h-10 text-purple-400" />
+                  </div>
+                  <p class="text-xl font-semibold text-purple-700">答案已隐藏</p>
+                  <p class="text-sm mt-2 text-purple-600">完成你的构造后点击"查看答案"按钮</p>
                 </div>
               </div>
 
               <div v-else class="h-full">
                 <!-- 答案DFA -->
                 <div class="h-full">
-                  <div 
-                    ref="answerCanvasContainer" 
-                    class="h-full w-full flex items-center justify-center bg-gray-50 rounded"
+                  <div
+                    ref="answerCanvasContainer"
+                    class="h-full w-full flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-lg border border-purple-200/50"
                   >
                   </div>
                 </div>
@@ -155,20 +232,35 @@
             <!-- 答案分析 -->
             <div
               v-if="showAnswerFlag && hasDFAData"
-              class="border-t border-gray-200 bg-green-50 p-4"
+              class="border-t border-purple-200 bg-gradient-to-br from-green-50 to-emerald-50 p-5"
             >
-              <div class="flex items-start gap-3">
-                <Icon
-                  icon="lucide:check-circle"
-                  class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
-                />
-                <div>
-                  <h4 class="font-medium text-green-800">LR0项目集规范族构造分析</h4>
-                  <div class="text-sm text-green-700 mt-2 space-y-1">
-                    <p>• 项目集数量: {{ answerData?.itemSets?.length || 0 }}</p>
-                    <p>• 转移关系数量: {{ answerData?.transitions?.length || 0 }}</p>
-                    <p>• GOTO函数构造完成</p>
-                    <p>• 可进行下一步LR0分析表构建</p>
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Icon icon="lucide:check-circle" class="w-5 h-5 text-white" />
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-green-800 text-lg mb-3">LR0项目集规范族构造分析</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-base text-green-800">
+                    <div class="space-y-2">
+                      <div class="flex items-center gap-2">
+                        <Icon icon="lucide:hash" class="w-4 h-4" />
+                        <span>项目集数量: <span class="font-mono font-bold text-lg">{{ answerData?.itemSets?.length || 0 }}</span></span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <Icon icon="lucide:arrow-right-left" class="w-4 h-4" />
+                        <span>转移关系数量: <span class="font-mono font-bold text-lg">{{ answerData?.transitions?.length || 0 }}</span></span>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex items-center gap-2">
+                        <Icon icon="lucide:check" class="w-4 h-4" />
+                        <span>GOTO函数构造完成</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <Icon icon="lucide:arrow-right" class="w-4 h-4" />
+                        <span>可进行下一步LR0分析表构建</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -193,7 +285,13 @@
 
         <button
           @click="proceedToNext"
-          class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          :disabled="!isConstructionComplete"
+          :class="[
+            'px-6 py-2 rounded-lg transition-colors',
+            isConstructionComplete
+              ? 'bg-purple-600 text-white hover:bg-purple-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+          ]"
         >
           下一步
           <Icon icon="lucide:chevron-right" class="w-4 h-4 inline ml-2" />
@@ -252,9 +350,17 @@ const grammarInfo = computed(() => {
 // 答案数据 - 从store获取
 const answerData = computed(() => {
   if (lr0Store.dfaStates && lr0Store.dfaStates.length > 0) {
+    // 计算转移关系数量：统计所有状态中next_ids的键值对数量
+    let transitionCount = 0
+    lr0Store.dfaStates.forEach((state: any) => {
+      if (state.next_ids && typeof state.next_ids === 'object') {
+        transitionCount += Object.keys(state.next_ids).length
+      }
+    })
+
     return {
       itemSets: lr0Store.dfaStates,
-      transitions: [], // 可以从dfaStates中提取转移关系
+      transitions: Array(transitionCount).fill(null), // 创建一个长度为转移数量的数组
     }
   }
   return null
@@ -303,9 +409,9 @@ const toggleAnswer = async () => {
   }
 }
 
-// 是否构造完成 - 简化逻辑，允许用户直接进入下一步
+// 是否构造完成 - 必须查看答案后才能进入下一步
 const isConstructionComplete = computed(() => {
-  return lr0Store.analysisResult !== null
+  return showAnswerFlag.value
 })
 
 // 进入下一步
@@ -316,6 +422,9 @@ const proceedToNext = () => {
     const edges = canvasRef.value?.getEdges() || []
 
     console.log('Step 3 user data:', { nodes, edges })
+
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
 
     // 触发下一步事件
     emit('next-step')
@@ -372,3 +481,4 @@ const proceedToNext = () => {
   width: auto;
 }
 </style>
+

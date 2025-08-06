@@ -13,24 +13,69 @@
     </div>
 
     <div class="step-content">
-      <!-- 说明区域 -->
-      <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-6 mb-6">
-        <div class="flex items-start">
-          <Icon icon="lucide:info" class="w-5 h-5 text-cyan-600 mt-0.5 mr-3" />
-          <div>
-            <h3 class="text-lg font-semibold text-cyan-900 mb-2">SLR1分析表构造规则</h3>
-            <ul class="space-y-1 text-sm text-cyan-800">
-              <li>• <strong>ACTION表：</strong>根据项目集中的项目和FOLLOW集填写移进和规约动作</li>
-              <li>• <strong>GOTO表：</strong>根据DFA的转移关系填写状态转移</li>
-              <li>
-                • <strong>移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）
-              </li>
-              <li>
-                • <strong>规约动作：</strong>A → α·且a∈FOLLOW(A)，则ACTION[i,a] = rk（第k个产生式）
-              </li>
-              <li>• <strong>接受动作：</strong>S' → S·，则ACTION[i,#] = acc</li>
-              <li>• <strong>SLR1特点：</strong>使用FOLLOW集解决LR0的规约/规约冲突</li>
-            </ul>
+      <!-- 说明区域和产生式编号 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 左侧：SLR1分析表构造规则 -->
+        <div class="lg:col-span-1">
+          <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-6 h-full">
+            <div class="flex items-start">
+              <Icon icon="lucide:info" class="w-5 h-5 text-cyan-600 mt-0.5 mr-3" />
+              <div>
+                <h3 class="text-lg font-semibold text-cyan-900 mb-2">SLR1分析表构造规则</h3>
+                <ul class="space-y-2 text-base text-cyan-900">
+                  <li class="flex items-start gap-2">
+                    <span class="text-cyan-600 font-bold">•</span>
+                    <span><strong class="text-cyan-800 bg-cyan-100 px-2 py-1 rounded">ACTION表：</strong>根据项目集中的项目和FOLLOW集填写移进和规约动作</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-cyan-600 font-bold">•</span>
+                    <span><strong class="text-cyan-800 bg-cyan-100 px-2 py-1 rounded">GOTO表：</strong>根据DFA的转移关系填写状态转移</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-cyan-600 font-bold">•</span>
+                    <span><strong class="text-cyan-800 bg-cyan-100 px-2 py-1 rounded">移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-cyan-600 font-bold">•</span>
+                    <span><strong class="text-cyan-800 bg-cyan-100 px-2 py-1 rounded">规约动作：</strong>A → α·且a∈FOLLOW(A)，则ACTION[i,a] = rk（第k个产生式）</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-cyan-600 font-bold">•</span>
+                    <span><strong class="text-cyan-800 bg-cyan-100 px-2 py-1 rounded">接受动作：</strong>S' → S·，则ACTION[i,#] = acc</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-cyan-600 font-bold">•</span>
+                    <span><strong class="text-cyan-800 bg-cyan-100 px-2 py-1 rounded">SLR1特点：</strong>使用FOLLOW集解决LR0的规约/规约冲突</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：产生式编号 -->
+        <div class="lg:col-span-1">
+          <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 h-full">
+            <div class="flex items-center gap-2 mb-4">
+              <Icon icon="lucide:list" class="w-5 h-5 text-purple-600" />
+              <h4 class="font-medium text-purple-900">产生式编号</h4>
+            </div>
+            <div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+              <div
+                v-for="(production, index) in numberedProductions"
+                :key="production"
+                :data-production="index + 1"
+                class="bg-white border border-purple-200 rounded p-3 shadow-sm"
+              >
+                <div class="text-base font-mono text-purple-800 font-semibold">
+                  <span class="font-bold text-purple-900 text-lg">r{{ index + 1 }}:</span> {{ production }}
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 text-sm text-purple-700 font-medium">
+              <p>• 用于ACTION表中的规约动作</p>
+              <p>• r1, r2, r3... 对应产生式编号</p>
+            </div>
           </div>
         </div>
       </div>
@@ -76,10 +121,10 @@
               class="group relative bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-3 hover:shadow-md transition-all duration-200 hover:scale-105"
             >
               <div class="flex items-center gap-2 flex-1 min-w-0">
-                <div class="text-xs font-medium text-cyan-700 bg-cyan-100 px-2 py-1 rounded-full whitespace-nowrap">
+                <div class="text-sm font-semibold text-cyan-800 bg-cyan-100 px-2 py-1 rounded-full whitespace-nowrap">
                   FOLLOW({{ symbol }})
                 </div>
-                <div class="text-sm font-mono text-gray-800 bg-white/60 rounded px-2 py-1 border border-cyan-100 flex-1 truncate">
+                <div class="text-base font-mono text-gray-900 bg-white/60 rounded px-2 py-1 border border-cyan-100 flex-1 truncate font-semibold">
                   {{ followSet.join(', ') || '∅' }}
                 </div>
               </div>
@@ -179,6 +224,15 @@ const analysisData = computed(() => slr1Store.analysisResult)
 // 计算属性
 const hasDFAData = computed(() => slr1Store.analysisResult !== null && slr1Store.dotString !== '')
 const slr1DotString = computed(() => slr1Store.dotString)
+
+// 带编号的产生式（去除S'->S）
+const numberedProductions = computed(() => {
+  if (!slr1Store.analysisResult?.formulas_list) return []
+  return slr1Store.analysisResult.formulas_list.filter((production) => {
+    // 过滤掉S'->S的产生式
+    return !production.includes("'") && !production.includes('S->S')
+  })
+})
 
 // 渲染DFA图
 const renderDFA = async () => {
@@ -327,6 +381,8 @@ const handleStepComplete = (isComplete: boolean) => {
 // 下一步
 const nextStep = () => {
   if (isStepComplete.value) {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
 }

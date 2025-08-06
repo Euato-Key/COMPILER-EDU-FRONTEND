@@ -1,5 +1,5 @@
 <template>
-  <div class="first-follow-step">
+  <div class="first-follow-step" :style="animationSpeedStyle">
     <div class="px-8 py-8 pb-4 border-b border-gray-200">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -38,19 +38,19 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div class="flex items-center gap-2 p-2 rounded-md bg-gray-50 border border-gray-200">
                 <div class="w-3 h-3 bg-gray-300 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-gray-600">已知信息</span>
+                <span class="text-sm font-medium text-gray-700">已知信息</span>
               </div>
               <div class="flex items-center gap-2 p-2 rounded-md bg-amber-50 border border-amber-200">
                 <div class="w-3 h-3 bg-gradient-to-r from-amber-300 to-orange-300 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-amber-700">待填写</span>
+                <span class="text-sm font-medium text-amber-800">待填写</span>
               </div>
               <div class="flex items-center gap-2 p-2 rounded-md bg-green-50 border border-green-200">
                 <div class="w-3 h-3 bg-green-400 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-green-700">校验正确</span>
+                <span class="text-sm font-medium text-green-800">校验正确</span>
               </div>
               <div class="flex items-center gap-2 p-2 rounded-md bg-red-50 border border-red-200">
                 <div class="w-3 h-3 bg-red-400 rounded-sm shadow-sm"></div>
-                <span class="text-xs font-medium text-red-700">校验错误</span>
+                <span class="text-sm font-medium text-red-800">校验错误</span>
               </div>
             </div>
           </div>
@@ -61,8 +61,8 @@
               <Icon icon="lucide:edit-3" class="w-4 h-4 mr-2 text-blue-500" />
               填写规则
             </h4>
-            <div class="space-y-2 text-sm text-gray-600">
-              <p class="text-gray-700 font-medium">根据非终结符、终结符和产生式等已知信息，填写First集和Follow集合。</p>
+            <div class="space-y-2 text-base text-gray-700">
+              <p class="text-gray-800 font-semibold">根据非终结符、终结符和产生式等已知信息，填写First集和Follow集合。</p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div class="flex items-center gap-2">
                   <Icon icon="lucide:check" class="w-3 h-3 text-green-500 flex-shrink-0" />
@@ -114,13 +114,13 @@
             </div>
           </div>
 
-          <!-- 终结符 -->
+          <!-- 终结符和其他符号 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:hash" class="w-4 h-4 mr-2 text-green-600" />
               终结符 Vt
             </h3>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 mb-4">
               <!-- 拖拽：终结符卡片 -->
               <span
                 v-for="symbol in originalData.Vt"
@@ -139,10 +139,7 @@
                 {{ symbol }}
               </span>
             </div>
-          </div>
 
-          <!-- 其他符号 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:circle" class="w-4 h-4 mr-2 text-pink-600" />
               其他符号
@@ -182,29 +179,30 @@
           </div>
 
           <!-- 产生式 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
               <Icon icon="lucide:list" class="w-4 h-4 mr-2 text-blue-600" />
               产生式
             </h3>
-            <div class="space-y-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 auto-rows-min">
               <div
                 v-for="(productions, nonTerminal) in originalData.formulas_dict"
                 :key="'prod-' + nonTerminal"
+                class="contents"
               >
                 <div
                   v-for="(production, index) in productions"
                   :key="'prod-' + nonTerminal + '-' + index"
                   :class="[
-                    'text-sm p-1 rounded transition-all',
+                    'text-base p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md',
                     productionHighlightState[`${nonTerminal}->${production}`]
-                      ? 'bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 shadow-sm'
-                      : ''
+                      ? 'bg-gradient-to-r from-yellow-100 via-orange-50 to-yellow-50 border-2 border-yellow-300 shadow-md'
+                      : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 hover:border-blue-300 hover:from-blue-100 hover:via-indigo-100 hover:to-purple-100'
                   ]"
               >
-                <span class="font-mono text-blue-600">{{ nonTerminal }}</span>
-                  <span class="text-gray-500 mx-1">-></span>
-                  <span class="font-mono text-gray-700">{{ production }}</span>
+                <span class="font-mono text-blue-700 font-bold text-lg">{{ nonTerminal }}</span>
+                  <span class="text-gray-400 mx-2 font-semibold">→</span>
+                  <span class="font-mono text-gray-800 text-base">{{ production }}</span>
                 </div>
               </div>
             </div>
@@ -223,7 +221,7 @@
               <div class="flex gap-2">
                 <button
                   @click="clearFirstSets"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                 >
                   <Icon icon="lucide:refresh-cw" class="w-3 h-3 mr-1" />
                   清空重填
@@ -231,7 +229,7 @@
                 <button
                   @click="checkFirstSets"
                   :disabled="loading.first"
-                  class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-xs"
+                  class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-sm"
                 >
                   <Icon v-if="loading.first" icon="lucide:loader-2" class="w-3 h-3 animate-spin mr-1" />
                   <Icon v-else icon="lucide:check-circle" class="w-3 h-3 mr-1" />
@@ -239,11 +237,48 @@
                 </button>
                 <button
                   @click="showFirstAnswer = !showFirstAnswer"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                 >
                   <Icon v-if="showFirstAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
                   <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
                   {{ showFirstAnswer ? '隐藏答案' : '显示答案' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 动画速度控制 -->
+            <div class="flex items-center justify-between mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 shadow-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
+                </div>
+                <span class="text-sm font-semibold text-blue-900">动画速度</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="decreaseAnimationSpeed"
+                  :disabled="animationSpeed <= 0.25"
+                  class="w-6 h-6 rounded-md border border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:minus" class="w-3 h-3 text-blue-600" />
+                </button>
+                <div class="bg-white px-2 py-1 rounded-md border border-blue-300 shadow-sm">
+                  <span class="text-sm font-bold text-blue-900 min-w-[2rem] text-center">
+                    {{ (animationSpeed * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <button
+                  @click="increaseAnimationSpeed"
+                  :disabled="animationSpeed >= 2.0"
+                  class="w-6 h-6 rounded-md border border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:plus" class="w-3 h-3 text-blue-600" />
+                </button>
+                <button
+                  @click="resetAnimationSpeed"
+                  class="px-2 py-1 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-md hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-sm"
+                >
+                  重置
                 </button>
               </div>
             </div>
@@ -257,8 +292,8 @@
                     :key="'first-vn-' + symbol"
                     class="flex items-center gap-2"
               >
-                    <span class="w-16 text-xs font-medium text-gray-600">
-                  first(<span class="font-mono text-blue-600">{{ symbol }}</span>) =
+                    <span class="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
+                  first(<span class="font-mono text-blue-700">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
                   <input
@@ -266,31 +301,33 @@
                     type="text"
                     placeholder="输入First集，用空格分隔"
                     :class="[
-                          'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
+                          'w-full px-3 py-2 text-sm border-2 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white text-gray-800',
                       getInputClass('first', symbol)
                     ]"
                     @focus="clearValidation('first', symbol)"
-                        :data-input="symbol"
+                    @dragover.prevent
+                    @drop="onDrop($event, 'first', symbol)"
+                    :data-input="symbol"
                   />
                   <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
                     <Icon
                       v-if="firstValidation[symbol] === 'correct'"
                       icon="lucide:check"
-                          class="w-3.5 h-3.5 text-green-500"
+                          class="w-4 h-4 text-green-600"
                     />
                     <Icon
                       v-else-if="firstValidation[symbol] === 'incorrect'"
                       icon="lucide:x"
-                          class="w-3.5 h-3.5 text-red-500"
+                          class="w-4 h-4 text-red-600"
                     />
                       </div>
                     </div>
                     <button
                       @click="executeHintAnimation(symbol)"
                       :disabled="hintState.isActive || firstValidation[symbol] === 'correct'"
-                      class="inline-flex items-center px-1.5 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
-                      <Icon icon="lucide:lightbulb" class="w-2.5 h-2.5 mr-0.5" />
+                      <Icon icon="lucide:lightbulb" class="w-3 h-3 mr-1" />
                       提示
                     </button>
                   </div>
@@ -302,7 +339,7 @@
 
             <!-- First集答案提示 -->
             <div v-if="showFirstAnswer" class="mt-3 p-3 bg-green-50 rounded-lg">
-              <h4 class="text-xs font-medium text-green-800 mb-2">正确答案：</h4>
+              <h4 class="text-sm font-medium text-green-900 mb-2">正确答案：</h4>
               <div class="space-y-1.5">
                 <!-- 非终结符答案 -->
                 <div>
@@ -310,10 +347,10 @@
                 <div
                   v-for="symbol in originalData.Vn"
                       :key="'answer-first-vn-' + symbol"
-                      class="text-xs"
+                      class="text-sm"
                 >
-                  <span class="font-mono text-green-600">{{ symbol }}:</span>
-                  <span class="ml-2 text-green-700">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
+                  <span class="font-mono text-green-700 font-semibold">{{ symbol }}:</span>
+                  <span class="ml-2 text-green-800 font-medium">{{ correctFirstSets[symbol]?.join(' ') || 'ε' }}</span>
                     </div>
                   </div>
                 </div>
@@ -334,7 +371,7 @@
               <div class="flex gap-2">
                 <button
                   @click="clearFollowSets"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200"
                 >
                   <Icon icon="lucide:refresh-cw" class="w-3 h-3 mr-1" />
                   清空重填
@@ -342,7 +379,7 @@
                 <button
                   @click="checkFollowSets"
                   :disabled="loading.follow || !firstStepCompleted"
-                  class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 transition-colors text-xs"
+                  class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 transition-colors text-sm"
                 >
                   <Icon v-if="loading.follow" icon="lucide:loader-2" class="w-3 h-3 animate-spin mr-1" />
                   <Icon v-else icon="lucide:check-circle" class="w-3 h-3 mr-1" />
@@ -351,11 +388,48 @@
                 <button
                   @click="showFollowAnswer = !showFollowAnswer"
                   :disabled="!firstStepCompleted"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-1 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <Icon v-if="showFollowAnswer" icon="lucide:eye-off" class="w-3 h-3 mr-1" />
                   <Icon v-else icon="lucide:eye" class="w-3 h-3 mr-1" />
                   {{ showFollowAnswer ? '隐藏答案' : '显示答案' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 动画速度控制 -->
+            <div class="flex items-center justify-between mb-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 shadow-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:zap" class="w-3 h-3 text-white" />
+                </div>
+                <span class="text-sm font-semibold text-green-900">动画速度</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="decreaseAnimationSpeed"
+                  :disabled="animationSpeed <= 0.25"
+                  class="w-6 h-6 rounded-md border border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:minus" class="w-3 h-3 text-green-600" />
+                </button>
+                <div class="bg-white px-2 py-1 rounded-md border border-green-300 shadow-sm">
+                  <span class="text-sm font-bold text-green-900 min-w-[2rem] text-center">
+                    {{ (animationSpeed * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <button
+                  @click="increaseAnimationSpeed"
+                  :disabled="animationSpeed >= 2.0"
+                  class="w-6 h-6 rounded-md border border-green-300 bg-white hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                >
+                  <Icon icon="lucide:plus" class="w-3 h-3 text-green-600" />
+                </button>
+                <button
+                  @click="resetAnimationSpeed"
+                  class="px-2 py-1 text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-md hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-sm"
+                >
+                  重置
                 </button>
               </div>
             </div>
@@ -366,8 +440,8 @@
                 :key="'follow-' + symbol"
                 class="flex items-center gap-2"
               >
-                <span class="w-16 text-xs font-medium text-gray-600">
-                  follow(<span class="font-mono text-green-600">{{ symbol }}</span>) =
+                <span class="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
+                  follow(<span class="font-mono text-green-700">{{ symbol }}</span>) =
                 </span>
                 <div class="flex-1 relative">
                   <input
@@ -376,32 +450,34 @@
                     placeholder="输入Follow集，用空格分隔"
                     :disabled="!firstStepCompleted"
                     :class="[
-                      'w-full px-2.5 py-1.5 text-xs border-2 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white',
+                      'w-full px-3 py-2 text-sm border-2 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all duration-200 font-mono bg-gradient-to-r from-gray-50 to-white text-gray-800',
                       getInputClass('follow', symbol),
                       !firstStepCompleted && 'bg-gray-100 cursor-not-allowed'
                     ]"
                     :data-input="`follow-${symbol}`"
                     @focus="clearValidation('follow', symbol)"
+                    @dragover.prevent
+                    @drop="onDrop($event, 'follow', symbol)"
                   />
                   <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
                     <Icon
                       v-if="followValidation[symbol] === 'correct'"
                       icon="lucide:check"
-                      class="w-3.5 h-3.5 text-green-500"
+                      class="w-4 h-4 text-green-600"
                     />
                     <Icon
                       v-else-if="followValidation[symbol] === 'incorrect'"
                       icon="lucide:x"
-                      class="w-3.5 h-3.5 text-red-500"
+                      class="w-4 h-4 text-red-600"
                     />
                   </div>
                 </div>
                 <button
                   @click="executeFollowHintAnimation(symbol)"
                   :disabled="hintState.isActive || !firstStepCompleted || followValidation[symbol] === 'correct'"
-                  class="inline-flex items-center px-1.5 py-1 text-xs font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  class="inline-flex items-center px-2 py-1.5 text-sm font-medium text-orange-600 bg-white border border-orange-200 rounded-md shadow-sm hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
-                  <Icon icon="lucide:lightbulb" class="w-2.5 h-2.5 mr-0.5" />
+                  <Icon icon="lucide:lightbulb" class="w-3 h-3 mr-1" />
                   提示
                 </button>
               </div>
@@ -409,15 +485,15 @@
 
             <!-- Follow集答案提示 -->
             <div v-if="showFollowAnswer" class="mt-3 p-3 bg-green-50 rounded-lg">
-              <h4 class="text-xs font-medium text-green-800 mb-2">正确答案：</h4>
+              <h4 class="text-sm font-medium text-green-900 mb-2">正确答案：</h4>
               <div class="space-y-0.5">
                 <div
                   v-for="symbol in originalData.Vn"
                   :key="'answer-follow-' + symbol"
-                  class="text-xs"
+                  class="text-sm"
                 >
-                  <span class="font-mono text-green-600">{{ symbol }}:</span>
-                  <span class="ml-2 text-green-700">{{ correctFollowSets[symbol]?.join(' ') || '$' }}</span>
+                  <span class="font-mono text-green-700 font-semibold">{{ symbol }}:</span>
+                  <span class="ml-2 text-green-800 font-medium">{{ correctFollowSets[symbol]?.join(' ') || '$' }}</span>
                 </div>
               </div>
             </div>
@@ -432,13 +508,13 @@
             </div>
             <h4 class="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">计算提示</h4>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base">
             <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-200/50">
               <h5 class="font-semibold text-blue-800 mb-3 flex items-center">
                 <Icon icon="lucide:arrow-right" class="w-4 h-4 mr-2 text-blue-600" />
                 First集计算规则
               </h5>
-              <ul class="space-y-2 text-gray-700">
+              <ul class="space-y-2 text-gray-800 font-medium">
                 <li class="flex items-start">
                   <span class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span :class="[
@@ -478,7 +554,7 @@
                 <Icon icon="lucide:arrow-left" class="w-4 h-4 mr-2 text-purple-600" />
                 Follow集计算规则
               </h5>
-              <ul class="space-y-2 text-gray-700">
+              <ul class="space-y-2 text-gray-800 font-medium">
                 <li class="flex items-start">
                   <span class="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   <span :class="[
@@ -514,7 +590,7 @@
             <Icon icon="lucide:check-circle" class="w-6 h-6 text-green-500 mr-3" />
             <div>
               <p class="text-lg font-medium text-green-800">恭喜！First集和Follow集验证成功</p>
-              <p class="text-sm text-green-600 mt-1">可以进入下一步构建LL1分析表</p>
+                              <p class="text-base text-green-700 mt-1 font-medium">可以进入下一步构建LL1分析表</p>
             </div>
           </div>
         </div>
@@ -530,9 +606,9 @@
           <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
           上一步
         </button>
-        <div class="text-sm text-gray-500">步骤 2 / 4</div>
+        <div class="text-base text-gray-600 font-medium">步骤 2 / 4</div>
         <button
-          @click="$emit('next-step')"
+          @click="handleNextStep"
           :disabled="!allCompleted"
           :class="[
             'px-6 py-2 rounded-lg transition-colors flex items-center gap-2',
@@ -590,6 +666,19 @@
         </div>
       </div>
     </transition>
+
+    <!-- 动画提示弹窗 -->
+    <AnimationHintModal
+      :visible="hintModalVisible"
+      :type="hintModalConfig.type"
+      :title="hintModalConfig.title"
+      :message="hintModalConfig.message"
+      :details="hintModalConfig.details"
+      :action="hintModalConfig.action"
+      :duration="hintModalConfig.duration"
+      :position="hintModalConfig.position"
+      @close="closeHintModal"
+    />
   </div>
 </template>
 
@@ -597,8 +686,9 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useLL1Store } from '@/stores/ll1'
+import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
-defineEmits<{
+const emit = defineEmits<{
   'next-step': []
   'prev-step': []
 }>()
@@ -639,6 +729,26 @@ const hintState = ref({
   flyingSymbols: [] as { symbol: string; target: string; x: number; y: number }[]
 })
 
+// 动画提示弹窗状态
+const hintModalVisible = ref(false)
+const hintModalConfig = ref({
+  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: '',
+  message: '',
+  details: '',
+  action: '',
+  duration: 3000,
+  position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+})
+
+// 动画速度控制
+const animationSpeed = ref(1.0) // 1.0 = 100%, 0.25 = 25%, 2.0 = 200%
+
+// 动画速度CSS变量
+const animationSpeedStyle = computed(() => ({
+  '--animation-speed': animationSpeed.value
+}))
+
 // 高亮状态
 const symbolHighlightState = ref<Record<string, boolean>>({})
 const productionHighlightState = ref<Record<string, boolean>>({})
@@ -662,14 +772,58 @@ watch(firstStepCompleted, (completed: boolean) => {
 })
 
 const allCompleted = computed(() => {
-  const firstCompleted = originalData.value?.Vn.every(symbol => firstValidation.value[symbol] === 'correct') || false
-  const followCompleted = originalData.value?.Vn.every(symbol => followValidation.value[symbol] === 'correct') || false
-  return firstCompleted && followCompleted
+  // 必须同时查看两个答案
+  const hasViewedBothAnswers = showFirstAnswer.value && showFollowAnswer.value
+  return hasViewedBothAnswers
 })
 
 // 复制提示
 const copyTip = ref('')
 let copyTipTimer: number | null = null
+
+// 显示动画提示弹窗
+const showHintModal = (
+  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
+  title: string,
+  message: string,
+  details?: string,
+  action?: string,
+  duration = 3000,
+  position = 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+) => {
+  hintModalConfig.value = {
+    type,
+    title,
+    message,
+    details: details || '',
+    action: action || '',
+    duration,
+    position
+  }
+  hintModalVisible.value = true
+}
+
+// 关闭动画提示弹窗
+const closeHintModal = () => {
+  hintModalVisible.value = false
+}
+
+// 动画速度控制函数
+const increaseAnimationSpeed = () => {
+  if (animationSpeed.value < 2.0) {
+    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
+  }
+}
+
+const decreaseAnimationSpeed = () => {
+  if (animationSpeed.value > 0.25) {
+    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
+  }
+}
+
+const resetAnimationSpeed = () => {
+  animationSpeed.value = 1.0
+}
 
 // 工具函数
 const areCharacterSetsEqual = (str1: string, str2: string): boolean => {
@@ -719,16 +873,54 @@ const checkFirstSets = async () => {
   firstAttempts.value++ // 尝试次数加1
 
   try {
+    let correctCount = 0
+    let totalCount = 0
+
     for (const symbol of originalData.value.Vn) {
       const userInput = userFirstSets.value[symbol] || ''
       const correctSet = correctFirstSets.value[symbol] || []
       const correctSetStr = correctSet.join(' ')
+      totalCount++
 
       if (areCharacterSetsEqual(userInput, correctSetStr)) {
         firstValidation.value[symbol] = 'correct'
+        correctCount++
       } else {
         firstValidation.value[symbol] = 'incorrect'
       }
+    }
+
+    // 显示校验结果弹窗
+    if (correctCount === totalCount) {
+      showHintModal(
+        'success',
+        'First集校验成功',
+        '恭喜！所有First集都填写正确。',
+        `您已成功计算了所有非终结符的First集，共${totalCount}个符号全部正确。
+
+First集是LL1分析表构建的基础，接下来可以继续计算Follow集。`,
+        'First集计算完成',
+        5000,
+        'top-center'
+      )
+    } else {
+      const errorCount = totalCount - correctCount
+      showHintModal(
+        'error',
+        'First集校验失败',
+        `还有${errorCount}个First集填写错误，请检查并修正。`,
+        `正确填写：${correctCount}/${totalCount}
+错误填写：${errorCount}
+
+请仔细检查错误项，确保：
+1. 符号大小写正确
+2. 多个符号用空格分隔
+3. 空串用ε表示
+4. 按照First集计算规则填写`,
+        '请修正错误',
+        5000,
+        'top-center'
+      )
     }
   } finally {
     loading.value.first = false
@@ -741,16 +933,54 @@ const checkFollowSets = async () => {
   loading.value.follow = true
 
   try {
+    let correctCount = 0
+    let totalCount = 0
+
     for (const symbol of originalData.value.Vn) {
       const userInput = userFollowSets.value[symbol] || ''
       const correctSet = correctFollowSets.value[symbol] || []
       const correctSetStr = correctSet.join(' ')
+      totalCount++
 
       if (areCharacterSetsEqual(userInput, correctSetStr)) {
         followValidation.value[symbol] = 'correct'
+        correctCount++
       } else {
         followValidation.value[symbol] = 'incorrect'
       }
+    }
+
+    // 显示校验结果弹窗
+    if (correctCount === totalCount) {
+      showHintModal(
+        'success',
+        'Follow集校验成功',
+        '恭喜！所有Follow集都填写正确。',
+        `您已成功计算了所有非终结符的Follow集，共${totalCount}个符号全部正确。
+
+First集和Follow集都已计算完成，可以进入下一步构建LL1分析表。`,
+        'Follow集计算完成',
+        5000,
+        'top-center'
+      )
+    } else {
+      const errorCount = totalCount - correctCount
+      showHintModal(
+        'error',
+        'Follow集校验失败',
+        `还有${errorCount}个Follow集填写错误，请检查并修正。`,
+        `正确填写：${correctCount}/${totalCount}
+错误填写：${errorCount}
+
+请仔细检查错误项，确保：
+1. 符号大小写正确
+2. 多个符号用空格分隔
+3. 输入结束符用#表示
+4. 按照Follow集计算规则填写`,
+        '请修正错误',
+        5000,
+        'top-center'
+      )
     }
   } finally {
     loading.value.follow = false
@@ -766,6 +996,16 @@ const clearFirstSets = () => {
     })
     showFirstAnswer.value = false
     firstAttempts.value = 0 // 重置尝试次数
+
+    showHintModal(
+      'info',
+      'First集已清空',
+      '所有First集输入已重置。',
+      '您可以重新开始填写First集，或使用提示功能了解计算过程。',
+      '状态重置完成',
+      3000,
+      'top-center'
+    )
   }
 }
 
@@ -776,6 +1016,16 @@ const clearFollowSets = () => {
       followValidation.value[symbol] = ''
     })
     showFollowAnswer.value = false
+
+    showHintModal(
+      'info',
+      'Follow集已清空',
+      '所有Follow集输入已重置。',
+      '您可以重新开始填写Follow集，或使用提示功能了解计算过程。',
+      '状态重置完成',
+      3000,
+      'top-center'
+    )
   }
 }
 
@@ -783,6 +1033,28 @@ const clearFollowSets = () => {
 function onDragStart(symbol: string, event: DragEvent) {
   // 将符号内容写入拖拽数据
   event.dataTransfer?.setData('text/plain', symbol)
+}
+
+// 拖拽放置事件处理函数
+function onDrop(event: DragEvent, type: 'first' | 'follow', symbol: string) {
+  event.preventDefault()
+
+  const draggedSymbol = event.dataTransfer?.getData('text/plain')
+  if (!draggedSymbol) return
+
+  // 根据类型选择对应的数据对象
+  const dataObject = type === 'first' ? userFirstSets : userFollowSets
+  const currentValue = dataObject.value[symbol] || ''
+
+  // 检查符号是否已经存在
+  const currentSymbols = currentValue.split(' ').filter(s => s.trim())
+  if (currentSymbols.includes(draggedSymbol)) {
+    return // 符号已存在，不重复添加
+  }
+
+  // 添加新符号，自动添加空格分隔
+  const newValue = currentValue ? `${currentValue} ${draggedSymbol}` : draggedSymbol
+  dataObject.value[symbol] = newValue
 }
 
 // 双击符号卡片复制到剪贴板并弹出提示
@@ -1161,13 +1433,89 @@ const executeHintAnimation = async (symbol: string) => {
   const hint = calculateFirstSetHint(symbol)
   if (!hint) return
 
+  // 显示提示弹窗
+  const stepType = 'First集计算'
+
+  // 获取该符号的所有产生式
+  const productions = originalData.value.formulas_dict[symbol] || []
+  const productionList = productions.map(prod => `${symbol}->${prod}`).join(', ')
+
+  const details = `正在计算 ${symbol} 的First集：
+
+产生式数量：${hint.steps.length}
+相关产生式：${productionList}
+计算规则：根据产生式右部的符号类型，应用相应的First集计算规则
+
+将逐步显示每个产生式的计算过程，帮助您理解First集的计算方法。`
+
+  showHintModal(
+    'hint',
+    `${stepType}提示`,
+    `开始计算 ${symbol} 的First集`,
+    details,
+    '观察高亮区域，理解计算过程',
+    4000,
+    'bottom-left'
+  )
+
   // 1. 高亮当前符号
   symbolHighlightState.value[symbol] = true
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
 
   // 2. 逐步执行每个步骤，一次只显示一个符号
   for (let i = 0; i < hint.steps.length; i++) {
     const step = hint.steps[i]
+
+    // 显示步骤详情弹窗
+    let stepDetails = `步骤 ${i + 1}/${hint.steps.length}：
+${step.description}
+
+相关产生式：${step.productions.join(', ')}
+应用规则：${step.rules.join(', ')}
+最终符号：${step.finalSymbols.join(', ')}`
+
+    // 添加具体的依据值
+    if (step.type === 'terminal') {
+      const terminal = step.finalSymbols[0]
+      stepDetails += `
+
+具体依据：
+• 终结符 ${terminal}：First(${terminal}) = {${terminal}}
+• 根据规则：终结符X的First集就是{X}本身`
+    } else if (step.type === 'epsilon') {
+      stepDetails += `
+
+具体依据：
+• 产生式 ${symbol}→ε：空串ε ∈ First(${symbol})
+• 根据规则：产生式右部为ε时，ε ∈ First(左部符号)`
+    } else if (step.type === 'production') {
+      const production = step.productions[0]
+      const [, rightPart] = production.split('->')
+      const firstChar = rightPart[0]
+
+      // 获取First集的具体值
+      const firstSetOfFirstChar = calculateFirstSetForSymbol(firstChar)
+      const nonEpsilonSymbols = firstSetOfFirstChar.filter(s => s !== 'ε')
+
+      stepDetails += `
+
+具体依据：
+• 产生式：${production}
+• 右部第一个符号：${firstChar}
+• First(${firstChar}) = {${firstSetOfFirstChar.join(', ')}}
+• 非ε符号：{${nonEpsilonSymbols.join(', ')}}
+• 根据规则：First(Y₁)中非ε符号 ∈ First(X)`
+    }
+
+    showHintModal(
+      'hint',
+      '计算步骤',
+      step.description,
+      stepDetails,
+      '观察高亮和飞行动画',
+      3000,
+      'bottom-left'
+    )
 
     // 高亮相关产生式
     step.productions.forEach(prod => {
@@ -1184,7 +1532,7 @@ const executeHintAnimation = async (symbol: string) => {
       symbolHighlightState.value[sym] = true
     })
 
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise(resolve => setTimeout(resolve, 1500 / animationSpeed.value))
 
     // 执行飞行动画 - 只对终结符和空串执行
     if (step.type === 'terminal' || step.type === 'epsilon') {
@@ -1194,7 +1542,7 @@ const executeHintAnimation = async (symbol: string) => {
       for (const finalSymbol of step.finalSymbols) {
         await executeFlyingAnimation(symbol, finalSymbol)
         // 等待一小段时间再执行下一个符号
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 500 / animationSpeed.value))
       }
     }
 
@@ -1212,8 +1560,26 @@ const executeHintAnimation = async (symbol: string) => {
     })
 
     // 等待更长时间，让用户看清每个符号
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 800 / animationSpeed.value))
   }
+
+  // 显示完成提示
+  showHintModal(
+    'success',
+    'First集计算完成',
+    `${symbol} 的First集计算完成！`,
+    `已通过${hint.steps.length}个步骤计算出 ${symbol} 的First集。
+
+计算过程包括：
+- 分析所有相关产生式
+- 应用First集计算规则
+- 确定最终符号集合
+
+现在您可以将计算结果填入输入框。`,
+    '计算过程完成',
+    4000,
+    'center'
+  )
 
   // 清除所有高亮
   Object.keys(symbolHighlightState.value).forEach(key => {
@@ -1268,7 +1634,7 @@ const executeFlyingAnimation = async (targetSymbol: string, flyingSymbol: string
   }
 
   // 等待飞行动画完成
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  await new Promise(resolve => setTimeout(resolve, 2000 / animationSpeed.value))
 
   // 动画完成后自动填写（避免重复）
   const currentValue = userFirstSets.value[targetSymbol] || ''
@@ -1389,9 +1755,113 @@ const executeFollowHintAnimation = async (symbol: string) => {
   hintState.value.isActive = true
   console.log(`执行 ${symbol} 的Follow集提示动画:`, hintData)
 
+  // 显示提示弹窗
+  const stepType = 'Follow集计算'
+
+  // 获取相关的产生式信息
+  const relatedProductions: string[] = []
+  if (originalData.value) {
+    for (const [leftSymbol, rightParts] of Object.entries(originalData.value.formulas_dict)) {
+      for (const rightPart of rightParts) {
+        if (rightPart.includes(symbol)) {
+          relatedProductions.push(`${leftSymbol}->${rightPart}`)
+        }
+      }
+    }
+  }
+  const productionList = relatedProductions.join(', ')
+
+  const details = `正在计算 ${symbol} 的Follow集：
+
+推导步骤数量：${hintData.steps.length}
+相关产生式：${productionList}
+计算规则：根据产生式中符号的位置，应用相应的Follow集计算规则
+
+将逐步显示每个推导步骤，帮助您理解Follow集的计算方法。`
+
+  showHintModal(
+    'hint',
+    `${stepType}提示`,
+    `开始计算 ${symbol} 的Follow集`,
+    details,
+    '观察高亮区域，理解计算过程',
+    4000,
+    'bottom-left'
+  )
+
   // 逐个执行每个步骤
-  for (const step of hintData.steps) {
+  for (let i = 0; i < hintData.steps.length; i++) {
+    const step = hintData.steps[i]
     console.log(`执行步骤: ${step.description}`)
+
+    // 显示步骤详情弹窗
+    let stepDetails = `步骤 ${i + 1}/${hintData.steps.length}：
+${step.description}
+
+相关产生式：${step.productions.join(', ')}
+应用规则：${step.rules.join(', ')}
+最终符号：${step.finalSymbols.join(', ')}`
+
+    // 添加具体的依据值
+    if (step.type === 'start') {
+      stepDetails += `
+
+具体依据：
+• 开始符号：${symbol}
+• 根据规则：开始符号S的Follow集包含输入结束符#
+• Follow(${symbol}) = {#}`
+    } else if (step.type === 'production') {
+      const production = step.productions[0]
+      const [, rightPart] = production.split('->')
+
+      // 找到目标符号在产生式中的位置
+      let targetIndex = -1
+      for (let i = 0; i < rightPart.length; i++) {
+        if (rightPart[i] === symbol) {
+          targetIndex = i
+          break
+        }
+      }
+
+      if (targetIndex !== -1 && targetIndex < rightPart.length - 1) {
+        const beta = rightPart.substring(targetIndex + 1)
+        const firstSetOfBeta = calculateStringFirstSet(beta)
+        const nonEpsilonSymbols = firstSetOfBeta.filter(s => s !== 'ε')
+
+        stepDetails += `
+
+具体依据：
+• 产生式：${production}
+• 目标符号 ${symbol} 位置：${targetIndex + 1}
+• β = ${beta}（${symbol} 后面的部分）
+• First(${beta}) = {${firstSetOfBeta.join(', ')}}
+• 非ε符号：{${nonEpsilonSymbols.join(', ')}}
+• 根据规则：First(β)中非ε符号 ∈ Follow(${symbol})`
+      }
+    } else if (step.type === 'inclusion') {
+      const production = step.productions[0]
+      const [leftSymbol] = production.split('->')
+      const followSetOfLeft = originalData.value?.follow[leftSymbol] || []
+
+      stepDetails += `
+
+具体依据：
+• 产生式：${production}
+• 左部符号：${leftSymbol}
+• Follow(${leftSymbol}) = {${followSetOfLeft.join(', ')}}
+• 根据规则：Follow(A) ⊆ Follow(B)
+• 因此：Follow(${leftSymbol}) ⊆ Follow(${symbol})`
+    }
+
+    showHintModal(
+      'hint',
+      '推导步骤',
+      step.description,
+      stepDetails,
+      '观察高亮和飞行动画',
+      3000,
+      'bottom-left'
+    )
 
     // 高亮相关元素
     step.productions.forEach(prod => {
@@ -1412,13 +1882,13 @@ const executeFollowHintAnimation = async (symbol: string) => {
     }
 
     // 等待高亮显示
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
 
     // 执行飞行动画
     for (const finalSymbol of step.finalSymbols) {
       await executeFollowFlyingAnimation(symbol, finalSymbol)
       // 等待一小段时间再执行下一个符号
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 500 / animationSpeed.value))
     }
 
     // 清除高亮
@@ -1438,8 +1908,26 @@ const executeFollowHintAnimation = async (symbol: string) => {
     }
 
     // 等待更长时间，让用户看清每个步骤
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 800 / animationSpeed.value))
   }
+
+  // 显示完成提示
+  showHintModal(
+    'success',
+    'Follow集计算完成',
+    `${symbol} 的Follow集计算完成！`,
+    `已通过${hintData.steps.length}个步骤计算出 ${symbol} 的Follow集。
+
+计算过程包括：
+- 分析所有相关产生式
+- 应用Follow集计算规则
+- 确定最终符号集合
+
+现在您可以将计算结果填入输入框。`,
+    '计算过程完成',
+    4000,
+    'center'
+  )
 
   // 清除所有高亮
   Object.keys(symbolHighlightState.value).forEach(key => {
@@ -1496,7 +1984,7 @@ const executeFollowFlyingAnimation = async (targetSymbol: string, flyingSymbol: 
   }
 
   // 等待飞行动画完成
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  await new Promise(resolve => setTimeout(resolve, 2000 / animationSpeed.value))
 
   // 动画完成后自动填写（避免重复）
   const currentValue = userFollowSets.value[targetSymbol] || ''
@@ -1510,6 +1998,13 @@ const executeFollowFlyingAnimation = async (targetSymbol: string, flyingSymbol: 
   hintState.value.flyingSymbols = hintState.value.flyingSymbols.filter(
     fs => !(fs.symbol === flyingSymbol && fs.target === `follow-${targetSymbol}`)
   )
+}
+
+// 处理下一步
+const handleNextStep = () => {
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  emit('next-step')
 }
 
 // 初始化
@@ -1533,6 +2028,11 @@ onMounted(() => {
   pointer-events: none;
   transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translate(-50%, -50%);
+}
+
+/* 动态动画速度控制 */
+.flying-symbol {
+  transition-duration: calc(2s / var(--animation-speed, 1));
 }
 
 /* 高亮动画 */
