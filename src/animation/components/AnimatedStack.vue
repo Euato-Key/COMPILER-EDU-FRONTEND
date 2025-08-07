@@ -1,7 +1,23 @@
 <template>
-  <div class="animated-stack-container" :style="{ height: `${containerHeight}px` }">
-    <div class="font-semibold mb-3 text-gray-700">{{ title }}</div>
-    <div class="stack-wrapper" ref="stackWrapper">
+  <div
+    :class="cn(
+      stackContainerVariants({
+        size: size || 'md',
+        theme: theme || 'default'
+      }),
+      'animated-stack-container'
+    )"
+    :style="{ height: `${containerHeight}px` }"
+  >
+    <!-- 栈标题 -->
+    <div class="font-semibold mb-3 text-gray-700 text-sm">{{ title }}</div>
+
+    <!-- 栈容器外壳 -->
+    <div class="stack-shell" ref="stackWrapper">
+      <!-- 栈底座 -->
+      <div class="stack-base"></div>
+
+      <!-- 栈内容区域 -->
       <transition-group
         name="stack-animation"
         tag="div"
@@ -15,16 +31,14 @@
           v-for="(item, index) in visibleStack"
           :key="item.id"
           :data-index="index"
-          class="stack-item"
-          :class="[
-            item.state,
-            {
-              'stack-top': index === 0,
-              'stack-entering': item.state === 'entering',
-              'stack-leaving': item.state === 'leaving',
-              'stack-highlighting': item.state === 'highlighting',
-            },
-          ]"
+          :class="cn(
+            stackItemVariants({
+              state: item.state,
+              isTop: index === 0 && props.highlightTop,
+              size: size || 'md'
+            }),
+            'stack-item'
+          )"
           :style="{
             zIndex: visibleStack.length - index,
             position: 'absolute',
@@ -32,39 +46,113 @@
             left: '50%',
             transform: 'translateX(-50%)',
           }"
-          :title="`Item ${index}: ${item.value}, bottom: ${(visibleStack.length - 1 - index) * (stackItemHeight + stackItemGap)}px`"
+          :title="`Item ${index}: ${item.value}`"
         >
           {{ item.value }}
-          <!-- 调试信息 -->
-          <span v-if="false" class="debug-info">{{ index }}:{{ item.value }}</span>
         </div>
       </transition-group>
+
+      <!-- 栈侧边引导线 -->
+      <div class="stack-guides">
+        <div class="stack-guide-left"></div>
+        <div class="stack-guide-right"></div>
+      </div>
     </div>
-    <div class="text-xs text-gray-400 mt-2">栈顶 ↑</div>
+
+    <!-- 栈顶指示器 -->
+    <div class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+      <span>栈顶</span>
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+      </svg>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
+import { cva } from 'class-variance-authority'
+import { clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+// 工具函数：合并类名
+const cn = (...inputs: (string | undefined | null | boolean)[]) => twMerge(clsx(inputs))
+
+// 栈元素样式变体
+const stackItemVariants = cva(
+  "flex items-center justify-content border font-mono transition-all will-change-transform select-none",
+  {
+    variants: {
+      state: {
+        normal: "bg-gray-50 border-gray-300",
+        entering: "bg-blue-50 border-blue-400 shadow-blue-200 shadow-md",
+        leaving: "bg-red-50 border-red-400 shadow-red-200 shadow-md",
+        highlighting: "bg-yellow-50 border-yellow-400 shadow-yellow-200 shadow-md",
+      },
+      isTop: {
+        true: "border-gray-400 shadow-sm ring-1 ring-blue-100",
+        false: "border-gray-300"
+      },
+      size: {
+        sm: "w-9 h-6 text-xs rounded-sm",
+        md: "w-12 h-7 text-sm rounded-md",
+        lg: "w-14 h-8 text-base rounded-md"
+      }
+    },
+    defaultVariants: {
+      state: "normal",
+      isTop: false,
+      size: "md"
+    }
+  }
+)
+
+// 栈容器样式变体
+const stackContainerVariants = cva(
+  "relative flex flex-col items-center bg-white rounded-lg shadow-sm border transition-all duration-300",
+  {
+    variants: {
+      theme: {
+        default: "border-gray-200 bg-white",
+        primary: "border-blue-200 bg-blue-50/20",
+        success: "border-green-200 bg-green-50/20"
+      },
+      size: {
+        sm: "min-w-20 max-w-28 p-3",
+        md: "min-w-24 max-w-32 p-4",
+        lg: "min-w-28 max-w-36 p-5"
+      }
+    },
+    defaultVariants: {
+      theme: "default",
+      size: "md"
+    }
+  }
+)
 
 interface StackItem {
   id: string
   value: string
   state: 'normal' | 'entering' | 'leaving' | 'highlighting'
+  isStable?: boolean // 新增：标记是否为稳定元素
 }
 
+/*
 interface StackAnimation {
   type: 'push' | 'pop' | 'multiple-push' | 'multiple-pop'
   items: string | string[]
   delay?: number
 }
+*/
 
 const props = defineProps<{
   title: string
   stack: string[]
   highlightTop?: boolean
   highlightColor?: string
+  size?: 'sm' | 'md' | 'lg'
+  theme?: 'default' | 'primary' | 'success'
 }>()
 
 const emit = defineEmits<{
@@ -74,8 +162,7 @@ const emit = defineEmits<{
 // 响应式数据
 const stackWrapper = ref<HTMLElement>()
 const visibleStack = ref<StackItem[]>([])
-const animationQueue = ref<StackAnimation[]>([])
-const isAnimating = ref(false)
+const previousStack = ref<string[]>([]) // 新增：追踪上一次的栈状态
 
 // 常量配置
 const stackItemHeight = 28.8 // 1.8rem 实际像素值
@@ -92,20 +179,49 @@ const containerHeight = computed(() => {
   return baseHeight + stackHeight
 })
 
-// 生成唯一ID
+// 生成稳定的元素ID
 let itemIdCounter = 0
-const generateItemId = (value: string, index: number) => {
-  return `stack-item-${itemIdCounter++}-${value}-${index}`
+const generateStableId = (value: string, position: number) => {
+  return `${value}-${position}`
 }
 
 // 栈项状态管理
-const createStackItem = (value: string, state: 'normal' | 'entering' = 'normal'): StackItem => ({
-  id: generateItemId(value, visibleStack.value.length),
+const createStackItem = (value: string, state: 'normal' | 'entering' = 'normal', isStable = false): StackItem => ({
+  id: isStable ? generateStableId(value, visibleStack.value.length) : `temp-${itemIdCounter++}`,
   value,
   state,
+  isStable,
 })
 
-// 初始化栈
+// 智能栈差异检测
+const analyzeStackDifference = (oldStack: string[], newStack: string[]): {
+  toRemove: string[]
+  toAdd: string[]
+  unchanged: string[]
+} => {
+  const oldSet = new Set(oldStack)
+  const newSet = new Set(newStack)
+
+  // 找到需要移除的元素（在旧栈中但不在新栈中）
+  const toRemove = oldStack.filter(item => !newSet.has(item))
+
+  // 找到需要添加的元素（在新栈中但不在旧栈中）
+  const toAdd = newStack.filter(item => !oldSet.has(item))
+
+  // 找到不变的元素
+  const unchanged = newStack.filter(item => oldSet.has(item))
+
+  return { toRemove, toAdd, unchanged }
+}
+
+// 检查栈是否真的发生了变化
+const isStackReallyChanged = (oldStack: string[], newStack: string[]): boolean => {
+  if (oldStack.length !== newStack.length) return true
+  return !oldStack.every((item, index) => item === newStack[index])
+}
+
+// 注释掉未使用的旧代码
+/*
 const initializeStack = (stack: string[]) => {
   console.log('AnimatedStack: initializeStack called with:', stack)
   visibleStack.value = stack.map((value) => createStackItem(value))
@@ -126,69 +242,84 @@ const initializeStack = (stack: string[]) => {
 // 动画队列管理（简化版本）
 const queueAnimation = (animation: StackAnimation) => {
   // 暂时禁用复杂的动画队列
-  // animationQueue.value.push(animation)
-  // if (!isAnimating.value) {
-  //   processAnimationQueue()
-  // }
 }
 
 // 分析栈变化（简化版本，暂时不使用）
 const analyzeStackChanges = (oldStack: string[], newStack: string[]) => {
   // 暂时禁用复杂的差异分析
-  /*
-  const oldLength = oldStack.length
-  const newLength = newStack.length
+}
+*/
 
-  if (newLength > oldLength) {
-    // 入栈操作
-    const newItems = newStack.slice(oldLength)
-    if (newItems.length === 1) {
-      queueAnimation({ type: 'push', items: newItems[0] })
-    } else {
-      queueAnimation({ type: 'multiple-push', items: newItems })
-    }
-  } else if (newLength < oldLength) {
-    // 出栈操作
-    const removedCount = oldLength - newLength
-    if (removedCount === 1) {
-      queueAnimation({ type: 'pop', items: '' })
-    } else {
-      queueAnimation({ type: 'multiple-pop', items: Array(removedCount).fill('') })
+// 执行智能栈更新
+const executeIntelligentStackUpdate = async (
+  newStack: string[],
+  diff: { toRemove: string[], toAdd: string[], unchanged: string[] }
+) => {
+  console.log('AnimatedStack: Executing intelligent update')
+
+  // 如果是初始化，直接设置栈状态
+  if (visibleStack.value.length === 0) {
+    visibleStack.value = newStack.map(value => createStackItem(value, 'normal', true))
+    console.log('AnimatedStack: Initial stack set:', visibleStack.value)
+    return
+  }
+
+  // 第一阶段：标记要移除的元素
+  for (const item of visibleStack.value) {
+    if (diff.toRemove.includes(item.value)) {
+      item.state = 'leaving'
     }
   }
-  */
+
+  // 第二阶段：添加新元素
+  for (const newValue of diff.toAdd) {
+    const newItem = createStackItem(newValue, 'entering')
+    // 找到正确的插入位置
+    const targetIndex = newStack.indexOf(newValue)
+    visibleStack.value.splice(targetIndex, 0, newItem)
+  }
+
+  // 第三阶段：等待动画完成后清理离开的元素
+  await nextTick()
+  setTimeout(() => {
+    visibleStack.value = visibleStack.value.filter(item => item.state !== 'leaving')
+
+    // 更新所有元素状态为正常
+    visibleStack.value.forEach(item => {
+      if (item.state === 'entering') {
+        item.state = 'normal'
+        item.isStable = true
+      }
+    })
+
+    emit('animationComplete')
+  }, 500) // 给动画足够的时间完成
 }
 
-// 监听栈数据变化
+// 智能栈更新系统
 watch(
   () => props.stack,
-  (newStack, oldStack) => {
+  (newStack, oldStack = []) => {
     console.log('AnimatedStack: Stack changed from', oldStack, 'to', newStack)
 
-    // 简化逻辑：直接更新显示，不做复杂的差异分析
-    if (!oldStack || oldStack.length === 0) {
-      // 初始化栈
-      initializeStack(newStack)
-    } else {
-      // 直接更新栈显示，添加简单的过渡效果
-      updateStackDirectly(newStack)
+    // 检查是否真的发生了变化
+    if (!isStackReallyChanged(oldStack, newStack)) {
+      console.log('AnimatedStack: No real change detected, skipping animation')
+      return
     }
+
+    // 分析栈的差异
+    const diff = analyzeStackDifference(oldStack, newStack)
+    console.log('AnimatedStack: Stack difference analysis:', diff)
+
+    // 执行智能更新
+    executeIntelligentStackUpdate(newStack, diff)
+
+    // 更新上一次栈状态
+    previousStack.value = [...newStack]
   },
-  { immediate: true },
+  { immediate: true }
 )
-
-// 直接更新栈显示
-const updateStackDirectly = (newStack: string[]) => {
-  console.log('AnimatedStack: updateStackDirectly called with:', newStack)
-  // 直接替换整个栈，让Vue的transition-group处理动画
-  visibleStack.value = newStack.map((value, index) => createStackItem(value))
-  console.log('AnimatedStack: visibleStack after update:', visibleStack.value)
-
-  // 触发简单的完成回调
-  nextTick(() => {
-    emit('animationComplete')
-  })
-}
 
 // 注释掉复杂的动画队列处理，使用简化版本
 /*
@@ -222,6 +353,8 @@ const executeAnimation = async (animation: StackAnimation): Promise<void> => {
 }
 */
 
+// 保留这些动画函数以备将来使用
+/*
 // 入栈动画
 const animatePush = async (value: string): Promise<void> => {
   return new Promise((resolve) => {
@@ -323,7 +456,10 @@ const animatePop = async (): Promise<void> => {
     }
   })
 }
+*/
 
+// 注释掉未使用的多元素动画方法
+/*
 // 多元素入栈动画
 const animateMultiplePush = async (values: string[]): Promise<void> => {
   for (let i = 0; i < values.length; i++) {
@@ -343,6 +479,7 @@ const animateMultiplePop = async (count: number): Promise<void> => {
     }
   }
 }
+*/
 
 // Vue 过渡钩子
 const beforeEnter = (el: Element) => {
@@ -398,73 +535,87 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 基础容器样式 - 使用CVA变体系统 */
 .animated-stack-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  min-width: 100px;
-  max-width: 140px;
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: height;
 }
 
-.stack-wrapper {
+/* 栈外壳容器 */
+.stack-shell {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* 改为从底部开始 */
+  justify-content: flex-end;
   min-height: 100px;
   max-height: 300px;
-  position: relative;
   width: 100%;
+  padding: 8px;
+
+  /* 栈外壳边框 */
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, #f9fafb 0%, #f3f4f6 100%);
+
+  /* 内阴影营造深度感 */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
+/* 栈底座 */
+.stack-base {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 16px);
+  height: 4px;
+  background: linear-gradient(to right, #d1d5db, #9ca3af, #d1d5db);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 栈容器 */
 .stack-container {
   position: relative;
   display: flex;
-  flex-direction: column; /* 改为正常方向：栈顶在上，栈底在下 */
+  flex-direction: column;
   align-items: center;
-  /* 移除gap，使用transform定位 */
+  width: 100%;
+  z-index: 1;
 }
 
+/* 栈侧边引导线 */
+.stack-guides {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.stack-guide-left,
+.stack-guide-right {
+  position: absolute;
+  top: 8px;
+  bottom: 12px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent 0%, #d1d5db 20%, #d1d5db 80%, transparent 100%);
+  opacity: 0.6;
+}
+
+.stack-guide-left {
+  left: 12px;
+}
+
+.stack-guide-right {
+  right: 12px;
+}
+
+/* 栈元素基础样式由CVA变体系统处理，这里只处理特殊情况 */
 .stack-item {
-  width: 3rem;
-  height: 1.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e5e7eb;
-  font-size: 1rem;
-  font-family: ui-monospace, SFMono-Regular, monospace;
-  border-radius: 0.375rem;
-  background-color: #f9fafb;
-  will-change: transform, opacity, background-color;
-  user-select: none;
-}
-
-.stack-item.stack-top {
-  border-color: #9ca3af;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.stack-item.stack-entering {
-  background-color: #dbeafe;
-  border-color: #3b82f6;
-}
-
-.stack-item.stack-highlighting {
-  background-color: #fef3c7;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-}
-
-.stack-item.stack-leaving {
-  background-color: #fee2e2;
-  border-color: #ef4444;
+  /* 为GSAP动画提供基础定位点 */
+  transform-origin: center center;
 }
 
 /* Vue过渡动画类 */
@@ -492,18 +643,61 @@ onMounted(() => {
 
 /* 响应式调整 */
 @media (max-width: 1024px) {
-  .stack-item {
-    width: 2.5rem;
-    height: 1.6rem;
-    font-size: 0.9rem;
+  .stack-shell {
+    padding: 6px;
+    min-height: 80px;
+  }
+
+  .stack-base {
+    height: 3px;
+    bottom: 4px;
+  }
+
+  .stack-guide-left,
+  .stack-guide-right {
+    width: 1.5px;
+  }
+
+  .stack-guide-left {
+    left: 8px;
+  }
+
+  .stack-guide-right {
+    right: 8px;
   }
 }
 
 @media (max-width: 768px) {
-  .stack-item {
-    width: 2.2rem;
-    height: 1.5rem;
-    font-size: 0.85rem;
+  .stack-shell {
+    padding: 4px;
+    min-height: 70px;
+  }
+
+  .stack-base {
+    height: 2px;
+    bottom: 3px;
+  }
+
+  .stack-guide-left,
+  .stack-guide-right {
+    width: 1px;
+    top: 6px;
+    bottom: 8px;
+  }
+
+  .stack-guide-left {
+    left: 6px;
+  }
+
+  .stack-guide-right {
+    right: 6px;
+  }
+}
+
+/* 开发模式调试样式 */
+@media (max-width: 0px) { /* 永远不会匹配，用于条件编译 */
+  .debug-stack-item {
+    outline: 1px dashed red;
   }
 }
 </style>
