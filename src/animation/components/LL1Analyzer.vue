@@ -17,17 +17,23 @@
         :stack="currentStack"
         :highlight-top="true"
         highlight-color="#dbeafe"
+        animation-speed="normal"
+        :enable-physics="true"
+        size="md"
+        theme="primary"
         @animation-complete="onStackAnimationComplete"
+        @stack-change="onStackChange"
       />
 
       <!-- 输入串区域 -->
       <AnimatedInput
         title="输入串"
-        :input="currentInput"
-        :pointer="inputPointer"
+        :input="fullInputString"
+        :consumed-count="consumedCount"
         :show-pointer="shouldShowPointer"
         :is-matching="isCurrentlyMatching"
         :has-error="false"
+        :pointer-style="currentPointerStyle"
         @animation-complete="onInputAnimationComplete"
       />
     </div>
@@ -107,8 +113,19 @@ const getInitialStack = () => {
   return ['S', '#']
 }
 
+interface StackDiff {
+  toRemove: string[]
+  toAdd: string[]
+  unchanged: string[]
+}
+
 const onStackAnimationComplete = () => {
   console.log('Stack animation completed')
+}
+
+const onStackChange = (event: { oldStack: string[], newStack: string[], diff: StackDiff }) => {
+  console.log('Stack changed:', event)
+  // 可以在这里添加额外的栈变化处理逻辑
 }
 
 const onInputAnimationComplete = () => {
@@ -181,29 +198,36 @@ const currentStack = computed(() => {
   return state ? state.stack : ['#']
 })
 
-const currentInput = computed(() => {
-  const state = currentAnimationState.value
-  return state ? state.remainingInput : []
+// 新的输入串数据计算
+const fullInputString = computed(() => {
+  // 获取完整输入串（从初始状态）
+  return getInitialInput()
 })
 
-// 输入串指针位置 - LL1 中指针指向剩余输入串的第一个字符
-const inputPointer = computed(() => {
+const consumedCount = computed(() => {
   const state = currentAnimationState.value
   if (!state) return 0
 
-  // LL1 中，当执行匹配动作时，高亮剩余输入串的第0位
-  const instruction = animationStore.getInstructionAtStep(props.currentStep)
-  if (instruction?.action === 'matchSymbol') {
-    return 0 // 总是高亮第一个剩余字符
-  }
-
-  return 0
+  // 计算已消费字符数量
+  const fullInput = getInitialInput()
+  const totalLength = fullInput.length
+  const remainingLength = state.remainingInput.length
+  return totalLength - remainingLength
 })
 
-// 是否应该显示指针高亮（只有在matchSymbol动作时才显示）
-const shouldShowPointer = computed(() => {
+// 指针样式
+const currentPointerStyle = computed((): 'normal' | 'matching' | 'error' => {
   const instruction = animationStore.getInstructionAtStep(props.currentStep)
-  return instruction?.action === 'matchSymbol'
+  if (instruction?.action === 'matchSymbol') {
+    return 'matching'
+  }
+  return 'normal'
+})
+
+// 是否应该显示指针（默认始终显示）
+const shouldShowPointer = computed(() => {
+  // 始终显示指针，这样用户可以清楚看到当前分析位置
+  return true
 })
 
 // 是否正在匹配（matchSymbol动作时为true）
