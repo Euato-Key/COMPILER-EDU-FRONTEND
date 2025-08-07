@@ -381,11 +381,11 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <!-- 每行代表一个状态转换 -->
+                        <!-- 每行代表一个状态转换 - 动态生成行数匹配答案 -->
                         <tr
-                          v-for="(rowData, rowKey) in userTransitionMatrix"
-                          :key="String(rowKey)"
-                          :class="(parseInt(String(rowKey)) % 2 === 0) ? 'bg-white' : 'bg-purple-50'"
+                          v-for="rowIndex in matrixRowCount"
+                          :key="rowIndex - 1"
+                          :class="((rowIndex - 1) % 2 === 0) ? 'bg-white' : 'bg-purple-50'"
                         >
                           <td
                             v-for="state in matrixStateColumns"
@@ -393,18 +393,19 @@
                             class="border border-gray-300 px-3 py-2"
                           >
                             <input
-                              v-model="userTransitionMatrix[String(rowKey)][state]"
+                              :value="userTransitionMatrix[String(rowIndex - 1)]?.[state] || ''"
+                              @input="(event) => updateTransitionMatrix(rowIndex - 1, state, (event.target as HTMLInputElement).value)"
                               type="text"
                               :placeholder="state === 'S' ? '状态编号' : '目标状态编号'"
                               :class="
-                                getFieldClass(Number(rowKey), state, 'matrix') +
+                                getFieldClass(rowIndex - 1, state, 'matrix') +
                                 ' text-center'
                               "
                               @blur="
                                 () =>
                                   validateField(
-                                    userTransitionMatrix[String(rowKey)][state],
-                                    Number(rowKey),
+                                    userTransitionMatrix[String(rowIndex - 1)]?.[state] || '',
+                                    rowIndex - 1,
                                     state,
                                     'matrix',
                                   )
@@ -893,6 +894,11 @@ const isMatrixLocked = computed(() => {
   return !showTableAnswer.value && !showMatrixAnswer.value
 })
 
+// 矩阵行数 - 动态匹配答案的行数
+const matrixRowCount = computed(() => {
+  return Object.keys(answerTransitionMatrix.value).length || 0
+})
+
 // 新的表格操作函数
 const addTableRow = () => {
   conversionTableRowCount.value++
@@ -967,6 +973,15 @@ const clearUserMatrix = () => {
 
   // 保存数据
   saveStep3Data()
+}
+
+// 更新状态转换矩阵单元格值
+const updateTransitionMatrix = (rowIndex: number, state: string, value: string) => {
+  const rowKey = String(rowIndex)
+  if (!userTransitionMatrix.value[rowKey]) {
+    userTransitionMatrix.value[rowKey] = {}
+  }
+  userTransitionMatrix.value[rowKey][state] = value
 }
 
 // 初始化数据结构

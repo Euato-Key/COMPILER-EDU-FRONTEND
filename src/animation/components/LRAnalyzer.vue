@@ -33,8 +33,9 @@
       <AnimatedInput
         title="输入串"
         :input="currentInput"
-        :pointer="pointer"
-        :is-matching="currentMsg.type === 'shift'"
+        :pointer="inputPointer"
+        :show-pointer="shouldShowPointer"
+        :is-matching="isCurrentlyMatching"
         :has-error="false"
         @animation-complete="onInputAnimationComplete"
       />
@@ -152,9 +153,31 @@ const currentInput = computed(() => {
   return state ? state.remainingInput : []
 })
 
-const pointer = computed(() => {
+// 输入串指针位置 - 需要计算相对于剩余输入串的位置
+const inputPointer = computed(() => {
   const state = currentAnimationState.value
-  return state ? state.inputPointer : 0
+  if (!state) return 0
+
+  // 如果当前动作是matchSymbol，指针应该指向剩余输入串的第0位
+  const instruction = animationStore.getInstructionAtStep(props.currentStep)
+  if (instruction?.action === 'matchSymbol') {
+    return 0 // matchSymbol时总是高亮第一个剩余字符
+  }
+
+  // 其他情况下，不显示指针（返回-1或0都可以，因为showPointer会控制）
+  return 0
+})
+
+// 是否应该显示指针高亮（只有在matchSymbol动作时才显示）
+const shouldShowPointer = computed(() => {
+  const instruction = animationStore.getInstructionAtStep(props.currentStep)
+  return instruction?.action === 'matchSymbol'
+})
+
+// 是否正在匹配（matchSymbol动作时为true）
+const isCurrentlyMatching = computed(() => {
+  const instruction = animationStore.getInstructionAtStep(props.currentStep)
+  return instruction?.action === 'matchSymbol'
 })
 
 const currentMsg = computed(() => {

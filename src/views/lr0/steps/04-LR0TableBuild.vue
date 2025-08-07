@@ -55,9 +55,9 @@
           <p class="text-sm text-gray-600 mt-1">参考此DFA图填写分析表</p>
         </div>
         <div class="p-4">
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧：DFA图 -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-1">
               <div class="h-80 w-full bg-gray-50 rounded flex items-center justify-center">
                 <div v-if="dfaSvg" class="dfa-svg-container w-full h-full flex justify-center items-center overflow-auto p-4">
                   <div v-html="dfaSvg" class="flex justify-center w-full h-full"></div>
@@ -71,24 +71,30 @@
 
             <!-- 右侧：产生式编号 -->
             <div class="lg:col-span-1">
-              <div class="h-80 bg-purple-50 rounded-lg p-4 border border-purple-200">
-                <div class="flex items-center gap-2 mb-4">
+              <div class="h-80 bg-purple-50 rounded-lg p-4 border border-purple-200 flex flex-col">
+                <div class="flex items-center gap-2 mb-4 flex-shrink-0">
                   <Icon icon="lucide:list" class="w-5 h-5 text-purple-600" />
                   <h4 class="font-medium text-purple-900">产生式编号</h4>
                 </div>
-                <div class="space-y-2 max-h-72 overflow-y-auto">
-                  <div
-                    v-for="(production, index) in numberedProductions"
-                    :key="production"
-                    :data-production="index + 1"
-                    class="bg-white border border-purple-200 rounded p-3 shadow-sm"
-                  >
-                                    <div class="text-base font-mono text-purple-800 font-semibold">
-                  <span class="font-bold text-purple-900 text-lg">r{{ index + 1 }}:</span> {{ production }}
-                </div>
+
+                <!-- 产生式列表区域 - 可滚动 -->
+                <div class="flex-1 overflow-y-auto mb-4">
+                  <div class="grid grid-cols-2 gap-2">
+                    <div
+                      v-for="(production, index) in numberedProductions"
+                      :key="production"
+                      :data-production="index + 1"
+                      class="bg-white border border-purple-200 rounded p-2 shadow-sm"
+                    >
+                      <div class="text-sm font-mono text-purple-800 font-semibold">
+                        <span class="font-bold text-purple-900">r{{ index + 1 }}:</span> {{ production }}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="mt-4 text-sm text-purple-700 font-medium">
+
+                <!-- 底部说明文字 - 固定位置 -->
+                <div class="text-sm text-purple-700 font-medium flex-shrink-0 border-t border-purple-200 pt-3">
                   <p>• 用于ACTION表中的规约动作</p>
                   <p>• r1, r2, r3... 对应产生式编号</p>
                 </div>
@@ -347,5 +353,25 @@ const nextStep = () => {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+/* 产生式盒子响应式样式 */
+@media (max-width: 1024px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 确保产生式文字不会溢出 */
+.text-sm {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 产生式卡片样式优化 */
+.bg-white.border.border-purple-200.rounded.p-2 {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
 }
 </style>

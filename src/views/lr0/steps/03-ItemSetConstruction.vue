@@ -27,7 +27,6 @@
                 项目集管理
               </h4>
               <ul class="space-y-1.5 ml-6">
-                <li>• 双击画布空白处创建新项目集</li>
                 <li>• 点击项目集节点可编辑LR项目内容</li>
                 <li>• 拖拽节点调整位置</li>
               </ul>
@@ -351,9 +350,17 @@ const grammarInfo = computed(() => {
 // 答案数据 - 从store获取
 const answerData = computed(() => {
   if (lr0Store.dfaStates && lr0Store.dfaStates.length > 0) {
+    // 计算转移关系数量：统计所有状态中next_ids的键值对数量
+    let transitionCount = 0
+    lr0Store.dfaStates.forEach((state: any) => {
+      if (state.next_ids && typeof state.next_ids === 'object') {
+        transitionCount += Object.keys(state.next_ids).length
+      }
+    })
+
     return {
       itemSets: lr0Store.dfaStates,
-      transitions: [], // 可以从dfaStates中提取转移关系
+      transitions: Array(transitionCount).fill(null), // 创建一个长度为转移数量的数组
     }
   }
   return null
