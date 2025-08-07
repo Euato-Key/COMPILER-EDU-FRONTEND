@@ -81,7 +81,7 @@ const cn = (...inputs: (string | undefined | null | boolean)[]) => twMerge(clsx(
 
 // 栈元素样式变体
 const stackItemVariants = cva(
-  "flex items-center justify-content border font-mono transition-all will-change-transform select-none",
+  "flex items-center justify-center border font-mono transition-all will-change-transform select-none",
   {
     variants: {
       state: {
