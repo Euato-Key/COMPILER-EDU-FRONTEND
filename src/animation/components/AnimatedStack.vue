@@ -28,11 +28,11 @@
           :style="{
             zIndex: visibleStack.length - index,
             position: 'absolute',
-            top: `${index * (stackItemHeight + stackItemGap)}px`,
+            bottom: `${(visibleStack.length - 1 - index) * (stackItemHeight + stackItemGap)}px`,
             left: '50%',
             transform: 'translateX(-50%)',
           }"
-          :title="`Item ${index}: ${item.value}, top: ${index * (stackItemHeight + stackItemGap)}px`"
+          :title="`Item ${index}: ${item.value}, bottom: ${(visibleStack.length - 1 - index) * (stackItemHeight + stackItemGap)}px`"
         >
           {{ item.value }}
           <!-- 调试信息 -->
@@ -40,7 +40,7 @@
         </div>
       </transition-group>
     </div>
-    <div class="text-xs text-gray-400 mt-2">栈底 #</div>
+    <div class="text-xs text-gray-400 mt-2">栈顶 ↑</div>
   </div>
 </template>
 
@@ -236,18 +236,18 @@ const animatePush = async (value: string): Promise<void> => {
         gsap.fromTo(
           element,
           {
-            x: -60,
-            y: -20,
+            x: 0,
+            y: -60,
             scale: 0.8,
             opacity: 0,
-            rotationY: -15,
+            rotationX: -15,
           },
           {
             x: 0,
             y: 0,
             scale: 1,
             opacity: 1,
-            rotationY: 0,
+            rotationX: 0,
             duration: 0.4,
             ease: 'back.out(1.7)',
             onComplete: () => {
@@ -302,11 +302,11 @@ const animatePop = async (): Promise<void> => {
           // 第二阶段：元素飞出动画
           topItem.state = 'leaving'
           gsap.to(element, {
-            x: 60,
-            y: -30,
+            x: 0,
+            y: -60,
             scale: 0.6,
             opacity: 0,
-            rotationY: 15,
+            rotationX: 15,
             duration: 0.3,
             ease: 'power2.in',
             onComplete: () => {
@@ -350,7 +350,7 @@ const beforeEnter = (el: Element) => {
   gsap.set(element, {
     opacity: 0,
     scale: 0.8,
-    y: -15,
+    y: -30,
   })
 }
 
@@ -380,8 +380,8 @@ const leave = (el: Element, done: () => void) => {
   gsap.to(element, {
     opacity: 0,
     scale: 0.6,
-    x: 60,
-    y: -20,
+    x: 0,
+    y: -60,
     duration: 0.3,
     ease: 'power2.in',
     onComplete: done,
@@ -416,7 +416,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* 改为从顶部开始 */
+  justify-content: flex-end; /* 改为从底部开始 */
   min-height: 100px;
   max-height: 300px;
   position: relative;
@@ -478,12 +478,12 @@ onMounted(() => {
 
 .stack-animation-enter-from {
   opacity: 0;
-  transform: translateX(-60px) translateY(-20px) scale(0.8) rotateY(-15deg);
+  transform: translateY(-60px) scale(0.8) rotateX(-15deg);
 }
 
 .stack-animation-leave-to {
   opacity: 0;
-  transform: translateX(60px) translateY(-30px) scale(0.6) rotateY(15deg);
+  transform: translateY(-60px) scale(0.6) rotateX(15deg);
 }
 
 .stack-animation-move {
