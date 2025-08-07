@@ -12,6 +12,12 @@
     <!-- 栈标题 -->
     <div class="font-semibold mb-3 text-gray-700 text-sm">{{ title }}</div>
 
+    <!-- 栈顶指示器
+    <div class="text-xs text-gray-400 mb-2 flex items-center justify-center gap-1">
+      <span>栈顶</span>
+      <Icon icon="material-symbols:arrow-upward" class="text-sm" />
+    </div> -->
+
     <!-- 栈容器外壳 -->
     <div class="stack-shell" ref="stackWrapper">
       <!-- 栈底座 -->
@@ -59,13 +65,11 @@
       </div>
     </div>
 
-    <!-- 栈顶指示器 -->
-    <div class="text-xs text-gray-400 mt-2 flex items-center gap-1">
-      <span>栈顶</span>
-      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-      </svg>
-    </div>
+    <!-- 栈底指示器
+    <div class="text-xs text-gray-400 mt-2 flex items-center justify-center gap-1">
+      <span>栈底</span>
+      <Icon icon="material-symbols:arrow-downward" class="text-sm" />
+    </div> -->
   </div>
 </template>
 
@@ -75,6 +79,7 @@ import { gsap } from 'gsap'
 import { cva } from 'class-variance-authority'
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+// import { Icon } from '@iconify/vue'
 
 // 工具函数：合并类名
 const cn = (...inputs: (string | undefined | null | boolean)[]) => twMerge(clsx(inputs))
