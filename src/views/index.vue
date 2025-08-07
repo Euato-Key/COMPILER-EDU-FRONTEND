@@ -10,6 +10,12 @@
           <div class="flex items-center gap-2">
             <ThemeSelector />
             <router-link
+              to="/docs"
+              class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
+            >
+              官方文档
+            </router-link>
+            <router-link
               to="/"
               class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
             >

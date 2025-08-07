@@ -208,8 +208,14 @@ let renderTimeout: NodeJS.Timeout | null = null
 // 渲染图表的函数
 const renderDiagrams = async () => {
   try {
+    // 只渲染AI组件内部的图表，不渲染文档系统的图表
+    const aiContainer = document.querySelector('.ai-chat-widget') || document.querySelector('.ai-chat-window')
+
     // 渲染 mermaid 图表
-    const mermaidElements = document.querySelectorAll('.mermaid')
+    const mermaidElements = aiContainer
+      ? aiContainer.querySelectorAll('.mermaid')
+      : document.querySelectorAll('.ai-chat-widget .mermaid, .ai-chat-window .mermaid')
+
     for (const element of mermaidElements) {
       if (element instanceof HTMLElement) {
         await mermaid.run({
@@ -219,7 +225,10 @@ const renderDiagrams = async () => {
     }
 
     // 渲染 DOT 图表
-    const dotElements = document.querySelectorAll('.dot-graph')
+    const dotElements = aiContainer
+      ? aiContainer.querySelectorAll('.dot-graph')
+      : document.querySelectorAll('.ai-chat-widget .dot-graph, .ai-chat-window .dot-graph')
+
     for (const element of dotElements) {
       if (element instanceof HTMLElement) {
         const dotCode = element.textContent || ''
@@ -232,7 +241,7 @@ const renderDiagrams = async () => {
       }
     }
   } catch (error) {
-    console.warn('图表渲染错误:', error)
+    console.warn('AI组件图表渲染错误:', error)
   }
 }
 

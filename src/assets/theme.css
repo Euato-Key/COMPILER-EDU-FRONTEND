@@ -11,6 +11,12 @@
   --theme-header-border: #E5E7EB;
   --theme-step-bg: #F8FAFC;
   --theme-step-border: #E5E7EB;
+
+  /* 文档系统主题变量 */
+  --theme-sidebar-bg: #FFFFFF;
+  --theme-border: #E5E7EB;
+  --theme-text: #374151;
+  --theme-text-muted: #6B7280;
 }
 
 /* 确保整个页面都有背景色 */
@@ -70,4 +76,38 @@ html, body {
 /* 主题焦点样式 */
 .focus\:ring-theme-primary:focus {
   --tw-ring-color: var(--theme-primary);
+}
+
+/* 文档系统主题样式 */
+.theme-sidebar-bg {
+  background-color: var(--theme-sidebar-bg);
+}
+
+.theme-border {
+  border-color: var(--theme-border);
+}
+
+.theme-text {
+  color: var(--theme-text);
+}
+
+.theme-text-muted {
+  color: var(--theme-text-muted);
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --theme-sidebar-bg: #1F2937;
+    --theme-border: #374151;
+    --theme-text: #F9FAFB;
+    --theme-text-muted: #9CA3AF;
+  }
+}
+
+.dark {
+  --theme-sidebar-bg: #1F2937;
+  --theme-border: #374151;
+  --theme-text: #F9FAFB;
+  --theme-text-muted: #9CA3AF;
 }
