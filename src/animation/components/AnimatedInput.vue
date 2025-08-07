@@ -1,7 +1,8 @@
 <template>
   <div class="animated-input-container">
     <div class="font-semibold mb-3 text-gray-700">{{ title }}</div>
-    <div class="input-wrapper" ref="inputWrapper">
+    <div class="input-grid-container" ref="inputWrapper">
+      <!-- 字符行 -->
       <div class="input-display">
         <div
           v-for="(char, index) in visibleInput"
@@ -13,13 +14,16 @@
             }),
             'input-char'
           )"
+          :style="{ gridColumnStart: index + 1 }"
         >
           {{ char }}
         </div>
+      </div>
 
-        <!-- 指针元素 -->
+      <!-- 指针行 -->
+      <div class="pointer-row">
         <div
-          v-if="pointerVisible && currentCharIndex < visibleInput.length"
+          v-if="pointerVisible"
           ref="pointerRef"
           :class="cn(
             pointerVariants({
@@ -28,11 +32,18 @@
             }),
             'input-pointer'
           )"
-          :style="{ left: getPointerPosition() }"
+          :style="{ gridColumnStart: currentCharIndex + 1 }"
         >
           <Icon icon="material-symbols:arrow-upward" />
         </div>
       </div>
+
+      <!-- 调试信息 -->
+      <!-- <div v-if="true" class="text-xs text-gray-500 mt-2 col-span-full">
+        Debug: consumedCount={{ props.consumedCount }}, currentCharIndex={{ currentCharIndex }},
+        pointerVisible={{ pointerVisible }}, showPointer={{ props.showPointer }},
+        inputLength={{ visibleInput.length }}
+      </div> -->
     </div>
   </div>
 </template>
@@ -50,7 +61,7 @@ const cn = (...inputs: (string | undefined | null | boolean)[]) => twMerge(clsx(
 
 // 指针样式变体
 const pointerVariants = cva(
-  "absolute transition-all duration-300 z-10 pointer-events-none select-none",
+  "transition-all duration-300 z-10 pointer-events-none select-none",
   {
     variants: {
       style: {
@@ -112,7 +123,7 @@ const currentPointer = ref(0) // 当前指针位置（基于已消费数量）
 const isCurrentMatching = ref(false)
 const hasErrorState = ref(false)
 const animationTimeline = ref<gsap.core.Timeline | null>(null)
-const pointerVisible = ref(true) // 指针可见性
+const pointerVisible = computed(() => props.showPointer !== false) // 默认显示指针，除非明确设置为 false
 
 // 计算属性
 const visibleInput = computed(() => props.input || [])
@@ -152,26 +163,7 @@ const setCharRef = (el: unknown, index: number) => {
   }
 }
 
-// 计算指针位置
-const getPointerPosition = () => {
-  if (currentCharIndex.value >= charRefs.value.length) {
-    return '0px'
-  }
-
-  const targetChar = charRefs.value[currentCharIndex.value]
-  if (!targetChar || !inputWrapper.value) {
-    return '0px'
-  }
-
-  const containerRect = inputWrapper.value.getBoundingClientRect()
-  const charRect = targetChar.getBoundingClientRect()
-
-  // 计算相对于容器的位置，指针放在字符中央下方
-  const relativeLeft = charRect.left - containerRect.left + (charRect.width / 2)
-  return `${relativeLeft}px`
-}
-
-// 匹配动画时间线
+// 匹配动画时间线（适配Grid布局）
 const createMatchingTimeline = () => {
   const tl = gsap.timeline()
 
@@ -206,23 +198,6 @@ const createMatchingTimeline = () => {
     ease: 'power2.out'
   })
 
-  // 计算下一个字符位置并移动指针
-  const nextIndex = currentCharIndex.value + 1
-  if (nextIndex < charRefs.value.length) {
-    const nextCharRef = charRefs.value[nextIndex]
-    if (nextCharRef && inputWrapper.value) {
-      const containerRect = inputWrapper.value.getBoundingClientRect()
-      const nextCharRect = nextCharRef.getBoundingClientRect()
-      const nextPosition = nextCharRect.left - containerRect.left + (nextCharRect.width / 2)
-
-      tl.to(pointerRef.value, {
-        x: nextPosition,
-        duration: 0.3,
-        ease: 'power2.inOut'
-      }, '-=0.1')
-    }
-  }
-
   // 阶段4：状态稳定
   tl.to(pointerRef.value, {
     scale: 1,
@@ -234,36 +209,32 @@ const createMatchingTimeline = () => {
   return tl
 }
 
-// 指针移动动画
-const animatePointerMove = async (targetIndex: number) => {
+// 指针移动动画（Grid版本）
+const animatePointerMove = async () => {
   if (animationTimeline.value) {
     animationTimeline.value.kill()
   }
 
+  // Grid布局中指针移动通过CSS属性变化实现
+  // 这里主要处理过渡动画效果
   const tl = gsap.timeline()
   animationTimeline.value = tl
 
-  if (!pointerRef.value || targetIndex >= charRefs.value.length) {
+  if (!pointerRef.value) {
     emit('animationComplete')
     return
   }
 
-  const targetChar = charRefs.value[targetIndex]
-  if (!targetChar || !inputWrapper.value) {
-    emit('animationComplete')
-    return
-  }
-
-  // 计算目标位置
-  const containerRect = inputWrapper.value.getBoundingClientRect()
-  const targetRect = targetChar.getBoundingClientRect()
-  const targetPosition = targetRect.left - containerRect.left + (targetRect.width / 2)
-
-  // 移动指针到新位置
+  // 添加移动过渡效果
   tl.to(pointerRef.value, {
-    x: targetPosition,
-    duration: 0.3,
-    ease: 'power2.inOut',
+    scale: 1.1,
+    duration: 0.1,
+    ease: 'power2.out'
+  })
+  .to(pointerRef.value, {
+    scale: 1,
+    duration: 0.2,
+    ease: 'power2.out',
     onComplete: () => {
       emit('animationComplete')
     }
@@ -272,8 +243,6 @@ const animatePointerMove = async (targetIndex: number) => {
 
 // 显示指针高亮
 const showPointerHighlight = async () => {
-  pointerVisible.value = true
-
   if (currentCharIndex.value >= 0 && currentCharIndex.value < charRefs.value.length) {
     const currentChar = charRefs.value[currentCharIndex.value]
     if (currentChar) {
@@ -315,7 +284,6 @@ const hidePointerHighlight = async () => {
     }
   }
 
-  pointerVisible.value = false
   emit('animationComplete')
 }
 
@@ -376,7 +344,6 @@ const initializeInput = () => {
   currentPointer.value = props.consumedCount
   isCurrentMatching.value = !!props.isMatching
   hasErrorState.value = !!props.hasError
-  pointerVisible.value = props.showPointer ?? true
 }
 
 // 监听器
@@ -384,7 +351,7 @@ watch(
   () => props.consumedCount,
   (newConsumedCount, oldConsumedCount) => {
     if (newConsumedCount !== oldConsumedCount) {
-      animatePointerMove(newConsumedCount)
+      animatePointerMove()
     }
   },
 )
@@ -424,6 +391,7 @@ watch(
     if (newInput && newInput.length > 0) {
       nextTick(() => {
         initializeInput()
+        updateGridColumns()
       })
     }
   },
@@ -437,6 +405,7 @@ onMounted(() => {
 
   nextTick(() => {
     initializeInput()
+    updateGridColumns()
 
     // 设置性能优化
     if (inputWrapper.value) {
@@ -444,6 +413,13 @@ onMounted(() => {
     }
   })
 })
+
+// 更新Grid列数
+const updateGridColumns = () => {
+  if (inputWrapper.value && visibleInput.value.length > 0) {
+    inputWrapper.value.style.setProperty('--input-length', visibleInput.value.length.toString())
+  }
+}
 
 // 导出方法供父组件调用
 defineExpose({
@@ -467,32 +443,38 @@ defineExpose({
   max-width: 400px;
 }
 
-.input-wrapper {
-  flex: 1;
-  display: flex;
+.input-grid-container {
+  display: grid;
+  grid-template-rows: auto auto auto; /* 字符行、指针行、调试信息行 */
+  grid-template-columns: repeat(var(--input-length, 10), 1fr);
+  gap: 0.25rem 0;
   align-items: center;
-  justify-content: center;
+  justify-items: center;
   min-height: 80px;
   width: 100%;
   position: relative;
-}
-
-.input-display {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
   padding: 0.75rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
   font-family: ui-monospace, SFMono-Regular, monospace;
   font-size: 1.125rem;
-  min-height: 3rem;
-  overflow-x: auto;
-  position: relative;
+}
+
+.input-display {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  display: contents;
+}
+
+.pointer-row {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  display: contents;
 }
 
 .input-char {
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -508,9 +490,13 @@ defineExpose({
 }
 
 .input-pointer {
-  bottom: -1.5rem;
-  transform: translateX(-50%);
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation-duration: 0.3s;
+  z-index: 10;
 }
 
 /* 指针动画效果 */
@@ -584,9 +570,9 @@ defineExpose({
     font-size: 1rem;
   }
 
-  .input-pointer {
-    bottom: -1.25rem;
-    font-size: 0.875rem;
+  .input-grid-container {
+    font-size: 1rem;
+    gap: 0.2rem 0;
   }
 }
 
@@ -597,9 +583,9 @@ defineExpose({
     font-size: 0.9rem;
   }
 
-  .input-pointer {
-    bottom: -1rem;
-    font-size: 0.75rem;
+  .input-grid-container {
+    font-size: 0.9rem;
+    gap: 0.15rem 0;
   }
 }
 </style>

@@ -224,10 +224,10 @@ const currentPointerStyle = computed((): 'normal' | 'matching' | 'error' => {
   return 'normal'
 })
 
-// 是否应该显示指针高亮（只有在matchSymbol动作时才显示）
+// 是否应该显示指针（默认始终显示）
 const shouldShowPointer = computed(() => {
-  const instruction = animationStore.getInstructionAtStep(props.currentStep)
-  return instruction?.action === 'matchSymbol'
+  // 始终显示指针，这样用户可以清楚看到当前分析位置
+  return true
 })
 
 // 是否正在匹配（matchSymbol动作时为true）
