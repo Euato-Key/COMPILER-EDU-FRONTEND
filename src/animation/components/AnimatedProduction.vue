@@ -282,50 +282,50 @@ const animateActivation = () => {
 }
 
 // 创建粒子效果
-const createParticles = () => {
-  showParticles.value = true
-  particles.value = []
+// const createParticles = () => {
+//   showParticles.value = true
+//   particles.value = []
 
-  const particleCount = 8
-  const containerRect = productionWrapper.value?.getBoundingClientRect()
+//   const particleCount = 8
+//   const containerRect = productionWrapper.value?.getBoundingClientRect()
 
-  if (!containerRect) return
+//   if (!containerRect) return
 
-  for (let i = 0; i < particleCount; i++) {
-    const particle: Particle = {
-      id: `particle-${i}`,
-      x: containerRect.width / 2,
-      y: containerRect.height / 2,
-      color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'][i % 4],
-    }
-    particles.value.push(particle)
-  }
+//   for (let i = 0; i < particleCount; i++) {
+//     const particle: Particle = {
+//       id: `particle-${i}`,
+//       x: containerRect.width / 2,
+//       y: containerRect.height / 2,
+//       color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'][i % 4],
+//     }
+//     particles.value.push(particle)
+//   }
 
-  nextTick(() => {
-    particles.value.forEach((particle, index) => {
-      const element = particlesContainer.value?.querySelector(`[style*="${particle.x}px"]`)
-      if (element) {
-        const angle = (360 / particleCount) * index
-        const radius = 30
+//   nextTick(() => {
+//     particles.value.forEach((particle, index) => {
+//       const element = particlesContainer.value?.querySelector(`[style*="${particle.x}px"]`)
+//       if (element) {
+//         const angle = (360 / particleCount) * index
+//         const radius = 30
 
-        gsap.to(element, {
-          x: Math.cos((angle * Math.PI) / 180) * radius,
-          y: Math.sin((angle * Math.PI) / 180) * radius,
-          opacity: 0,
-          scale: 0,
-          duration: 1,
-          ease: 'power2.out',
-          onComplete: () => {
-            if (index === particleCount - 1) {
-              showParticles.value = false
-              particles.value = []
-            }
-          },
-        })
-      }
-    })
-  })
-}
+//         gsap.to(element, {
+//           x: Math.cos((angle * Math.PI) / 180) * radius,
+//           y: Math.sin((angle * Math.PI) / 180) * radius,
+//           opacity: 0,
+//           scale: 0,
+//           duration: 1,
+//           ease: 'power2.out',
+//           onComplete: () => {
+//             if (index === particleCount - 1) {
+//               showParticles.value = false
+//               particles.value = []
+//             }
+//           },
+//         })
+//       }
+//     })
+//   })
+// }
 
 // 监听产生式变化 - 必须在函数定义之后
 watch(
