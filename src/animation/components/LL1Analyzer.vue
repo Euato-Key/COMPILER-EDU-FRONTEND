@@ -28,11 +28,12 @@
       <!-- 输入串区域 -->
       <AnimatedInput
         title="输入串"
-        :input="currentInput"
-        :pointer="inputPointer"
+        :input="fullInputString"
+        :consumed-count="consumedCount"
         :show-pointer="shouldShowPointer"
         :is-matching="isCurrentlyMatching"
         :has-error="false"
+        :pointer-style="currentPointerStyle"
         @animation-complete="onInputAnimationComplete"
       />
     </div>
@@ -197,23 +198,30 @@ const currentStack = computed(() => {
   return state ? state.stack : ['#']
 })
 
-const currentInput = computed(() => {
-  const state = currentAnimationState.value
-  return state ? state.remainingInput : []
+// 新的输入串数据计算
+const fullInputString = computed(() => {
+  // 获取完整输入串（从初始状态）
+  return getInitialInput()
 })
 
-// 输入串指针位置 - LL1 中指针指向剩余输入串的第一个字符
-const inputPointer = computed(() => {
+const consumedCount = computed(() => {
   const state = currentAnimationState.value
   if (!state) return 0
 
-  // LL1 中，当执行匹配动作时，高亮剩余输入串的第0位
+  // 计算已消费字符数量
+  const fullInput = getInitialInput()
+  const totalLength = fullInput.length
+  const remainingLength = state.remainingInput.length
+  return totalLength - remainingLength
+})
+
+// 指针样式
+const currentPointerStyle = computed((): 'normal' | 'matching' | 'error' => {
   const instruction = animationStore.getInstructionAtStep(props.currentStep)
   if (instruction?.action === 'matchSymbol') {
-    return 0 // 总是高亮第一个剩余字符
+    return 'matching'
   }
-
-  return 0
+  return 'normal'
 })
 
 // 是否应该显示指针高亮（只有在matchSymbol动作时才显示）

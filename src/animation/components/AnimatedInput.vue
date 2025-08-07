@@ -7,20 +7,30 @@
           v-for="(char, index) in visibleInput"
           :key="`char-${index}`"
           :ref="(el) => setCharRef(el, index)"
-          class="input-char"
-          :class="{
-            'char-current': showCurrentPointer && index === currentPointer,
-            'char-consumed': index < currentPointer,
-            'char-pending': index >= currentPointer,
-            'char-matching': index === currentPointer && isCurrentMatching,
-            'char-error': hasErrorState && index === currentPointer,
-          }"
-          :style="{
-            transform: getCharTransform(index),
-            opacity: getCharOpacity(index),
-          }"
+          :class="cn(
+            charVariants({
+              state: charStates[index]
+            }),
+            'input-char'
+          )"
         >
           {{ char }}
+        </div>
+
+        <!-- 指针元素 -->
+        <div
+          v-if="pointerVisible && currentCharIndex < visibleInput.length"
+          ref="pointerRef"
+          :class="cn(
+            pointerVariants({
+              style: currentPointerStyle,
+              size: 'md'
+            }),
+            'input-pointer'
+          )"
+          :style="{ left: getPointerPosition() }"
+        >
+          <Icon icon="material-symbols:arrow-upward" />
         </div>
       </div>
     </div>
@@ -30,14 +40,64 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
+import { cva } from 'class-variance-authority'
+import { clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+import { Icon } from '@iconify/vue'
+
+// 工具函数：合并类名
+const cn = (...inputs: (string | undefined | null | boolean)[]) => twMerge(clsx(inputs))
+
+// 指针样式变体
+const pointerVariants = cva(
+  "absolute transition-all duration-300 z-10 pointer-events-none select-none",
+  {
+    variants: {
+      style: {
+        normal: "text-blue-500",
+        matching: "text-green-500 animate-pulse",
+        error: "text-red-500 animate-bounce"
+      },
+      size: {
+        sm: "text-sm",
+        md: "text-base",
+        lg: "text-lg"
+      }
+    },
+    defaultVariants: {
+      style: "normal",
+      size: "md"
+    }
+  }
+)
+
+// 字符样式变体
+const charVariants = cva(
+  "flex items-center justify-center min-w-6 h-8 padding-1 border-radius-1 font-weight-600 transition-all duration-200 will-change-transform user-select-none cursor-default",
+  {
+    variants: {
+      state: {
+        consumed: "bg-gray-100 text-gray-400 opacity-60 scale-90",
+        current: "bg-orange-100 text-orange-600 border-2 border-orange-500 shadow-lg scale-110",
+        pending: "bg-transparent text-gray-700",
+        matching: "bg-green-100 text-green-700 border-2 border-green-500 shadow-lg scale-115",
+        error: "bg-red-100 text-red-600 border border-red-500 shadow-red-200"
+      }
+    },
+    defaultVariants: {
+      state: "pending"
+    }
+  }
+)
 
 const props = defineProps<{
   title: string
-  input: string[]
-  pointer: number
-  isMatching?: boolean
-  hasError?: boolean
-  showPointer?: boolean // 新增：控制是否显示指针高亮
+  input: string[]           // 完整输入串
+  consumedCount: number     // 已消费字符数量
+  isMatching?: boolean      // 是否正在执行匹配动作
+  hasError?: boolean        // 是否有错误状态
+  showPointer?: boolean     // 是否显示指针
+  pointerStyle?: 'normal' | 'matching' | 'error'  // 指针样式
 }>()
 
 const emit = defineEmits<{
@@ -46,15 +106,41 @@ const emit = defineEmits<{
 
 // 响应式数据
 const inputWrapper = ref<HTMLElement>()
+const pointerRef = ref<HTMLElement>()
 const charRefs = ref<(HTMLElement | null)[]>([])
-const currentPointer = ref(-1) // 初始化为 -1，表示没有指针
+const currentPointer = ref(0) // 当前指针位置（基于已消费数量）
 const isCurrentMatching = ref(false)
-const hasErrorState = ref(false) // 重命名避免冲突
+const hasErrorState = ref(false)
 const animationTimeline = ref<gsap.core.Timeline | null>(null)
-const showCurrentPointer = ref(false) // 控制是否显示指针高亮
+const pointerVisible = ref(true) // 指针可见性
 
 // 计算属性
 const visibleInput = computed(() => props.input || [])
+
+// 计算各字符的状态
+const charStates = computed(() => {
+  return visibleInput.value.map((_, index) => {
+    if (index < props.consumedCount) {
+      return 'consumed'
+    } else if (index === props.consumedCount) {
+      if (hasErrorState.value) return 'error'
+      if (isCurrentMatching.value) return 'matching'
+      return 'current'
+    } else {
+      return 'pending'
+    }
+  })
+})
+
+// 当前字符位置
+const currentCharIndex = computed(() => props.consumedCount)
+
+// 指针样式
+const currentPointerStyle = computed(() => {
+  if (hasErrorState.value) return 'error'
+  if (isCurrentMatching.value) return 'matching'
+  return props.pointerStyle || 'normal'
+})
 
 // 工具函数
 const setCharRef = (el: unknown, index: number) => {
@@ -66,25 +152,90 @@ const setCharRef = (el: unknown, index: number) => {
   }
 }
 
-const getCharTransform = (index: number) => {
-  // 只有在需要显示指针且当前位置匹配时才缩放
-  if (showCurrentPointer.value && index === currentPointer.value) {
-    return 'scale(1.2)'
-  } else if (index < currentPointer.value) {
-    return 'scale(0.9)'
+// 计算指针位置
+const getPointerPosition = () => {
+  if (currentCharIndex.value >= charRefs.value.length) {
+    return '0px'
   }
-  return 'scale(1)'
+
+  const targetChar = charRefs.value[currentCharIndex.value]
+  if (!targetChar || !inputWrapper.value) {
+    return '0px'
+  }
+
+  const containerRect = inputWrapper.value.getBoundingClientRect()
+  const charRect = targetChar.getBoundingClientRect()
+
+  // 计算相对于容器的位置，指针放在字符中央下方
+  const relativeLeft = charRect.left - containerRect.left + (charRect.width / 2)
+  return `${relativeLeft}px`
 }
 
-const getCharOpacity = (index: number) => {
-  if (index < currentPointer.value) {
-    return 0.5
+// 匹配动画时间线
+const createMatchingTimeline = () => {
+  const tl = gsap.timeline()
+
+  if (!pointerRef.value || currentCharIndex.value >= charRefs.value.length) {
+    return tl
   }
-  return 1
+
+  const currentCharRef = charRefs.value[currentCharIndex.value]
+  if (!currentCharRef) return tl
+
+  // 阶段1：指针激活
+  tl.to(pointerRef.value, {
+    scale: 1.2,
+    color: '#10b981',
+    duration: 0.1,
+    ease: 'power2.out'
+  })
+
+  // 阶段2：字符匹配反馈
+  tl.to(currentCharRef, {
+    backgroundColor: '#dcfce7',
+    scale: 1.1,
+    duration: 0.2,
+    ease: 'back.out(1.2)'
+  }, '-=0.05')
+
+  // 阶段3：状态转换
+  tl.to(currentCharRef, {
+    opacity: 0.5,
+    scale: 0.9,
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+
+  // 计算下一个字符位置并移动指针
+  const nextIndex = currentCharIndex.value + 1
+  if (nextIndex < charRefs.value.length) {
+    const nextCharRef = charRefs.value[nextIndex]
+    if (nextCharRef && inputWrapper.value) {
+      const containerRect = inputWrapper.value.getBoundingClientRect()
+      const nextCharRect = nextCharRef.getBoundingClientRect()
+      const nextPosition = nextCharRect.left - containerRect.left + (nextCharRect.width / 2)
+
+      tl.to(pointerRef.value, {
+        x: nextPosition,
+        duration: 0.3,
+        ease: 'power2.inOut'
+      }, '-=0.1')
+    }
+  }
+
+  // 阶段4：状态稳定
+  tl.to(pointerRef.value, {
+    scale: 1,
+    color: '#3b82f6',
+    duration: 0.1,
+    ease: 'power2.out'
+  })
+
+  return tl
 }
 
-// 动画函数（必须在watch之前定义）
-const animatePointerMove = async (newPointer: number, oldPointer: number) => {
+// 指针移动动画
+const animatePointerMove = async (targetIndex: number) => {
   if (animationTimeline.value) {
     animationTimeline.value.kill()
   }
@@ -92,61 +243,44 @@ const animatePointerMove = async (newPointer: number, oldPointer: number) => {
   const tl = gsap.timeline()
   animationTimeline.value = tl
 
-  // 如果有旧的当前字符，先恢复
-  if (showCurrentPointer.value && oldPointer >= 0 && oldPointer < charRefs.value.length) {
-    const oldChar = charRefs.value[oldPointer]
-    if (oldChar) {
-      tl.to(oldChar, {
-        scale: 0.9,
-        opacity: 0.5,
-        color: '#9ca3af',
-        duration: 0.2,
-        ease: 'power2.out',
-      })
-    }
-  }
-
-  // 更新指针位置
-  tl.call(() => {
-    currentPointer.value = newPointer
-  })
-
-  // 如果需要显示指针且有新的当前字符，高亮显示
-  if (showCurrentPointer.value && newPointer >= 0 && newPointer < charRefs.value.length) {
-    const newChar = charRefs.value[newPointer]
-    if (newChar) {
-      tl.to(
-        newChar,
-        {
-          scale: 1.2,
-          opacity: 1,
-          color: '#f59e0b',
-          backgroundColor: '#fef3c7',
-          duration: 0.3,
-          ease: 'back.out(1.7)',
-        },
-        '-=0.1',
-      )
-    }
-  }
-
-  tl.call(() => {
+  if (!pointerRef.value || targetIndex >= charRefs.value.length) {
     emit('animationComplete')
+    return
+  }
+
+  const targetChar = charRefs.value[targetIndex]
+  if (!targetChar || !inputWrapper.value) {
+    emit('animationComplete')
+    return
+  }
+
+  // 计算目标位置
+  const containerRect = inputWrapper.value.getBoundingClientRect()
+  const targetRect = targetChar.getBoundingClientRect()
+  const targetPosition = targetRect.left - containerRect.left + (targetRect.width / 2)
+
+  // 移动指针到新位置
+  tl.to(pointerRef.value, {
+    x: targetPosition,
+    duration: 0.3,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      emit('animationComplete')
+    }
   })
 }
 
-// 新增：控制指针显示的方法
+// 显示指针高亮
 const showPointerHighlight = async () => {
-  showCurrentPointer.value = true
+  pointerVisible.value = true
 
-  if (currentPointer.value >= 0 && currentPointer.value < charRefs.value.length) {
-    const currentChar = charRefs.value[currentPointer.value]
+  if (currentCharIndex.value >= 0 && currentCharIndex.value < charRefs.value.length) {
+    const currentChar = charRefs.value[currentCharIndex.value]
     if (currentChar) {
       await new Promise<void>((resolve) => {
         gsap.to(currentChar, {
           scale: 1.2,
           opacity: 1,
-          color: '#f59e0b',
           backgroundColor: '#fef3c7',
           duration: 0.3,
           ease: 'back.out(1.7)',
@@ -159,19 +293,19 @@ const showPointerHighlight = async () => {
   emit('animationComplete')
 }
 
+// 隐藏指针高亮
 const hidePointerHighlight = async () => {
   if (
-    showCurrentPointer.value &&
-    currentPointer.value >= 0 &&
-    currentPointer.value < charRefs.value.length
+    pointerVisible.value &&
+    currentCharIndex.value >= 0 &&
+    currentCharIndex.value < charRefs.value.length
   ) {
-    const currentChar = charRefs.value[currentPointer.value]
+    const currentChar = charRefs.value[currentCharIndex.value]
     if (currentChar) {
       await new Promise<void>((resolve) => {
         gsap.to(currentChar, {
           scale: 1,
           opacity: 1,
-          color: '#374151',
           backgroundColor: 'transparent',
           duration: 0.2,
           ease: 'power2.out',
@@ -181,43 +315,37 @@ const hidePointerHighlight = async () => {
     }
   }
 
-  showCurrentPointer.value = false
+  pointerVisible.value = false
   emit('animationComplete')
 }
 
+// 执行匹配动画
 const animateMatching = async () => {
-  if (currentPointer.value < 0 || currentPointer.value >= charRefs.value.length) return
+  if (currentCharIndex.value < 0 || currentCharIndex.value >= charRefs.value.length) return
 
-  const currentChar = charRefs.value[currentPointer.value]
+  const currentChar = charRefs.value[currentCharIndex.value]
   if (!currentChar) return
 
   isCurrentMatching.value = true
 
-  // 匹配成功动画
+  // 创建并执行匹配时间线
+  const tl = createMatchingTimeline()
+
   await new Promise<void>((resolve) => {
-    gsap.to(currentChar, {
-      backgroundColor: '#dcfce7',
-      color: '#16a34a',
-      scale: 1.3,
-      boxShadow: '0 0 10px rgba(34, 197, 94, 0.3)',
-      duration: 0.3,
-      ease: 'power2.out',
-      yoyo: true,
-      repeat: 1,
-      onComplete: () => {
-        isCurrentMatching.value = false
-        resolve()
-      },
+    tl.call(() => {
+      isCurrentMatching.value = false
+      resolve()
     })
   })
 
   emit('animationComplete')
 }
 
+// 错误动画
 const animateError = async () => {
-  if (currentPointer.value < 0 || currentPointer.value >= charRefs.value.length) return
+  if (currentCharIndex.value < 0 || currentCharIndex.value >= charRefs.value.length) return
 
-  const currentChar = charRefs.value[currentPointer.value]
+  const currentChar = charRefs.value[currentCharIndex.value]
   if (!currentChar) return
 
   hasErrorState.value = true
@@ -243,20 +371,20 @@ const animateError = async () => {
   emit('animationComplete')
 }
 
+// 初始化输入串
 const initializeInput = () => {
-  currentPointer.value = props.pointer
+  currentPointer.value = props.consumedCount
   isCurrentMatching.value = !!props.isMatching
   hasErrorState.value = !!props.hasError
-  // 默认不显示指针高亮，除非明确指定
-  showCurrentPointer.value = props.showPointer ?? false
+  pointerVisible.value = props.showPointer ?? true
 }
 
-// 监听器（必须在函数定义之后）
+// 监听器
 watch(
-  () => props.pointer,
-  (newPointer, oldPointer) => {
-    if (newPointer !== oldPointer) {
-      animatePointerMove(newPointer, oldPointer || 0)
+  () => props.consumedCount,
+  (newConsumedCount, oldConsumedCount) => {
+    if (newConsumedCount !== oldConsumedCount) {
+      animatePointerMove(newConsumedCount)
     }
   },
 )
@@ -344,15 +472,16 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60px;
+  min-height: 80px;
   width: 100%;
+  position: relative;
 }
 
 .input-display {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
@@ -360,6 +489,7 @@ defineExpose({
   font-size: 1.125rem;
   min-height: 3rem;
   overflow-x: auto;
+  position: relative;
 }
 
 .input-char {
@@ -377,7 +507,48 @@ defineExpose({
   cursor: default;
 }
 
-.input-char.char-current {
+.input-pointer {
+  bottom: -1.5rem;
+  transform: translateX(-50%);
+  animation-duration: 0.3s;
+}
+
+/* 指针动画效果 */
+@keyframes pointer-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+@keyframes pointer-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40%, 43% {
+    transform: translateX(-50%) translateY(-6px);
+  }
+  70% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+  90% {
+    transform: translateX(-50%) translateY(-1px);
+  }
+}
+
+/* 字符状态样式覆盖（CVA 无法处理的复杂样式） */
+.input-char[data-state="consumed"] {
+  background-color: #f3f4f6 !important;
+  color: #9ca3af !important;
+  opacity: 0.6 !important;
+  transform: scale(0.9) !important;
+}
+
+.input-char[data-state="current"] {
   background-color: #fed7aa !important;
   color: #ea580c !important;
   border: 2px solid #ea580c !important;
@@ -385,18 +556,12 @@ defineExpose({
   transform: scale(1.1) !important;
 }
 
-.input-char.char-consumed {
-  background-color: #f3f4f6;
-  color: #9ca3af;
-  opacity: 0.6;
+.input-char[data-state="pending"] {
+  background-color: transparent !important;
+  color: #374151 !important;
 }
 
-.input-char.char-pending {
-  background-color: transparent;
-  color: #374151;
-}
-
-.input-char.char-matching {
+.input-char[data-state="matching"] {
   background-color: #bbf7d0 !important;
   color: #15803d !important;
   border: 2px solid #15803d !important;
@@ -404,11 +569,11 @@ defineExpose({
   transform: scale(1.15) !important;
 }
 
-.input-char.char-error {
+.input-char[data-state="error"] {
   background-color: #fee2e2 !important;
   color: #dc2626 !important;
-  border: 1px solid #dc2626;
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+  border: 1px solid #dc2626 !important;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2) !important;
 }
 
 /* 响应式调整 */
@@ -418,6 +583,11 @@ defineExpose({
     height: 1.75rem;
     font-size: 1rem;
   }
+
+  .input-pointer {
+    bottom: -1.25rem;
+    font-size: 0.875rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -425,6 +595,11 @@ defineExpose({
     min-width: 1rem;
     height: 1.5rem;
     font-size: 0.9rem;
+  }
+
+  .input-pointer {
+    bottom: -1rem;
+    font-size: 0.75rem;
   }
 }
 </style>
