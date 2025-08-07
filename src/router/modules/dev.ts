@@ -36,15 +36,6 @@ const devRoutes: RouteRecordRaw[] = [
       title: '算法画布演示',
       description: '各种算法的画布组件演示'
     }
-  },
-  {
-    path: '/dev/animated-stack-test',
-    name: 'dev-animated-stack-test',
-    component: () => import('../../components/dev/AnimatedStackTest.vue'),
-    meta: {
-      title: 'AnimatedStack 测试',
-      description: '优化后的动画栈组件测试页面'
-    }
   }
 ]
 
