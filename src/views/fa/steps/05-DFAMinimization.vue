@@ -395,21 +395,23 @@
                     "
                   >
                     <!-- 答案矩阵表格 -->
-                                <TransitionTable
-              :data="{
-                headers: ['S', ...alphabetSymbols],
-                rows: Array.from({ length: originalStateCount }, (_, rowIndex) => [
-                  faStore.originalData?.table_to_num_min?.['S']?.[rowIndex] ?? rowIndex,
-                  ...alphabetSymbols.map(symbol => faStore.originalData?.table_to_num_min[symbol]?.[rowIndex] ?? '-')
-                ])
-              }"
-              :columns="[{ key: 'S', title: 'S', type: 'state' as const, editable: false }, ...alphabetSymbols.map(symbol => ({ key: symbol, title: symbol, type: 'transition' as const, editable: false }))]"
-              :editable="false"
-              :show-answer="true"
-              :final-state-config="{
-                isFinalState: (row, col, value) => minimizedAcceptingStates.has(String(value))
-              }"
-            />
+                    <TransitionTable
+                      :data="{
+                        headers: matrixStateColumns,
+                        rows: matrixData
+                      }"
+                      :columns="matrixStateColumns.map(state => ({
+                        key: state,
+                        title: state,
+                        type: state === 'S' ? 'state' as const : 'transition' as const,
+                        editable: false
+                      }))"
+                      :editable="false"
+                      :show-answer="true"
+                      :final-state-config="{
+                        isFinalState: (row, col, value) => minimizedAcceptingStates.has(String(value))
+                      }"
+                    />
                   </div>
                   <div v-else class="text-center py-8 text-gray-500">
                     <Icon icon="lucide:eye-off" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
@@ -565,6 +567,10 @@ const tableView = {
   cellHeight: 40,
   gap: 10,
 }
+
+// 矩阵状态列和数据
+const matrixStateColumns = ref<string[]>([])
+const matrixData = ref<string[][]>([])
 
 // 最小化DFA的接受状态集合
 const minimizedAcceptingStates = ref<Set<string>>(new Set())
@@ -730,6 +736,9 @@ onMounted(() => {
 
       // 构建最小化DFA的接受状态集合
       buildMinimizedAcceptingStatesSet(faResult)
+
+      // 构建最小化状态转换矩阵数据
+      buildMinimizedTransitionMatrix()
 
       // 尝试恢复05页面的用户数据
       const savedStep5Data = faStore.loadStep5Data()
@@ -1370,6 +1379,48 @@ const formatFieldKey = (fieldKey: string, fieldType: 'matrix') => {
 const saveStep5Data = () => {
   faStore.saveStep5Data(localPSets.value, minimizedMatrix.value)
   console.log('05页面数据已保存')
+}
+
+// 构建最小化状态转换矩阵数据
+const buildMinimizedTransitionMatrix = () => {
+  if (!faStore.hasResult() || !faStore.originalData?.table_to_num_min) return
+
+  console.log('Building minimized transition matrix from backend data:', faStore.originalData.table_to_num_min)
+
+  const tableToNumMin = faStore.originalData.table_to_num_min
+
+  // 获取所有状态标题，按照与步骤4相同的逻辑排序
+  const allStates = Object.keys(tableToNumMin)
+  const sKeys = allStates.filter((x) => x === 'S')
+  const nonSKeys = allStates.filter((x) => x !== 'S').sort()
+  const stateKeys = [...sKeys, ...nonSKeys]
+
+  console.log('Matrix state keys:', stateKeys)
+
+  // 设置矩阵列标题
+  matrixStateColumns.value = stateKeys
+
+  // 获取矩阵行数（以S状态的数组长度为准）
+  const matrixRowCount = tableToNumMin['S'] ? tableToNumMin['S'].length : 0
+  console.log('矩阵行数（状态数量）:', matrixRowCount)
+
+  // 构建矩阵数据
+  matrixData.value = []
+  for (let rowIndex = 0; rowIndex < matrixRowCount; rowIndex++) {
+    const row: string[] = []
+
+    stateKeys.forEach((state) => {
+      const stateArray = tableToNumMin[state] || []
+      const cellValue = stateArray[rowIndex]
+      row.push(cellValue !== undefined ? String(cellValue) : '-')
+    })
+
+    matrixData.value.push(row)
+    console.log(`行 ${rowIndex}:`, row)
+  }
+
+  console.log('Built minimized matrix:', matrixData.value)
+  console.log('Matrix state columns:', matrixStateColumns.value)
 }
 
 // 构建最小化DFA的接受状态集合
