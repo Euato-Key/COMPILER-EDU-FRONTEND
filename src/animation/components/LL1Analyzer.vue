@@ -17,7 +17,12 @@
         :stack="currentStack"
         :highlight-top="true"
         highlight-color="#dbeafe"
+        animation-speed="normal"
+        :enable-physics="true"
+        size="md"
+        theme="primary"
         @animation-complete="onStackAnimationComplete"
+        @stack-change="onStackChange"
       />
 
       <!-- 输入串区域 -->
@@ -107,8 +112,19 @@ const getInitialStack = () => {
   return ['S', '#']
 }
 
+interface StackDiff {
+  toRemove: string[]
+  toAdd: string[]
+  unchanged: string[]
+}
+
 const onStackAnimationComplete = () => {
   console.log('Stack animation completed')
+}
+
+const onStackChange = (event: { oldStack: string[], newStack: string[], diff: StackDiff }) => {
+  console.log('Stack changed:', event)
+  // 可以在这里添加额外的栈变化处理逻辑
 }
 
 const onInputAnimationComplete = () => {

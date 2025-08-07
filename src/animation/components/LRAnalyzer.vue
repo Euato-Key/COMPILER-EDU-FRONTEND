@@ -17,7 +17,12 @@
         :stack="currentStateStack"
         :highlight-top="true"
         highlight-color="#dbeafe"
+        animation-speed="normal"
+        :enable-physics="true"
+        size="md"
+        theme="primary"
         @animation-complete="onStateStackAnimationComplete"
+        @stack-change="onStateStackChange"
       />
 
       <!-- 符号栈 -->
@@ -26,7 +31,12 @@
         :stack="currentSymbolStack"
         :highlight-top="true"
         highlight-color="#dcfce7"
+        animation-speed="normal"
+        :enable-physics="true"
+        size="md"
+        theme="success"
         @animation-complete="onSymbolStackAnimationComplete"
+        @stack-change="onSymbolStackChange"
       />
 
       <!-- 输入串区域 -->
@@ -67,6 +77,12 @@ const props = defineProps<{
   isPlaying: boolean
 }>()
 
+interface StackDiff {
+  toRemove: string[]
+  toAdd: string[]
+  unchanged: string[]
+}
+
 // 获取对应的动画Store
 const animationStore = AnimationStoreFactory.getStore(props.algorithm)
 
@@ -74,8 +90,18 @@ const onStateStackAnimationComplete = () => {
   console.log('State stack animation completed')
 }
 
+const onStateStackChange = (event: { oldStack: string[], newStack: string[], diff: StackDiff }) => {
+  console.log('State stack changed:', event)
+  // 可以在这里添加额外的状态栈变化处理逻辑
+}
+
 const onSymbolStackAnimationComplete = () => {
   console.log('Symbol stack animation completed')
+}
+
+const onSymbolStackChange = (event: { oldStack: string[], newStack: string[], diff: StackDiff }) => {
+  console.log('Symbol stack changed:', event)
+  // 可以在这里添加额外的符号栈变化处理逻辑
 }
 
 const onInputAnimationComplete = () => {
