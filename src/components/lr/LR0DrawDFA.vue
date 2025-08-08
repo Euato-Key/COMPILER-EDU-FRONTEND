@@ -349,7 +349,7 @@ const showAnswer = () => {
   setViewport({ x: 0, y: 0, zoom: 1 })
 
   const ItemId_Map_nodeId: any = {}
-  for(const i=0;i<answerItems.value.length;i++){
+  for(let i=0;i<answerItems.value.length;i++){
     const item = answerItems.value[i]
     const item_pros:any[] = []
     const node_id = "node"+Date.now()+i
@@ -375,7 +375,7 @@ const showAnswer = () => {
     })
   }
 
-  for(const i=0;i<answerItems.value.length;i++){
+  for(let i=0;i<answerItems.value.length;i++){
     const item = answerItems.value[i]
 
     const source = ItemId_Map_nodeId[item.id]

@@ -53,7 +53,22 @@
                     }}</span>
                     最小化
                   </p>
-                  <span class="text-xs text-blue-600 font-medium">(每一行输入一个化简后的状态子集)</span>
+                  <span class="text-xs text-blue-600 font-medium">(每一行输入一个化简后的状态子集，多个状态用空格隔开，如：1 2 3)</span>
+
+                  <!-- 输入格式提示 -->
+                  <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start gap-2">
+                      <Icon icon="lucide:info" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div class="text-sm text-blue-700">
+                        <p class="font-medium mb-1">输入格式说明：</p>
+                        <ul class="space-y-1 text-xs">
+                          <li>• 单个状态：直接输入数字，如 "0"</li>
+                          <li>• 多个状态：用空格隔开，如 "1 2 3"</li>
+                          <li>• 每行代表一个化简后的状态子集</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
 
                   <!-- P集合输入 -->
                   <div class="space-y-3 mt-4">
@@ -225,13 +240,12 @@
                       <table class="w-full border-collapse border border-gray-300">
                         <thead>
                           <tr class="bg-purple-50">
-                            <th class="border border-gray-300 px-3 py-2 font-semibold">S</th>
                             <th
-                              v-for="symbol in alphabetSymbols"
-                              :key="symbol"
+                              v-for="state in matrixStateColumns"
+                              :key="state"
                               class="border border-gray-300 px-3 py-2 font-semibold"
                             >
-                              {{ symbol }}
+                              {{ state }}
                             </th>
                           </tr>
                         </thead>
@@ -241,21 +255,16 @@
                             :key="rowIndex"
                             :class="rowIndex % 2 === 0 ? 'bg-white' : 'bg-purple-50'"
                           >
-                            <td class="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
-                              {{
-                                faStore.originalData?.table_to_num_min?.['S']?.[rowIndex] ||
-                                rowIndex
-                              }}
-                            </td>
                             <td
-                              v-for="(symbol, colIndex) in alphabetSymbols"
-                              :key="symbol"
+                              v-for="(state, colIndex) in matrixStateColumns"
+                              :key="state"
                               class="border border-gray-300 px-3 py-2 text-center"
+                              :class="state === 'S' ? 'font-medium bg-gray-50' : ''"
                             >
                               <input
                                 v-if="getMatrixCell(rowIndex, colIndex)?.category !== 'onlyRead'"
                                 :value="getMatrixCell(rowIndex, colIndex)?.value || ''"
-                                @input="(event) => updateMatrixCell(rowIndex, colIndex, event.target.value)"
+                                @input="(event) => updateMatrixCell(rowIndex, colIndex, (event.target as HTMLInputElement).value)"
                                 :class="getMatrixFieldClass(getMatrixCell(rowIndex, colIndex))"
                                 :disabled="step7Open"
                                 @focus="handleMatrixCellFocus(getMatrixCell(rowIndex, colIndex))"
@@ -263,7 +272,7 @@
                                 placeholder="-"
                               />
                               <span v-else class="text-gray-600">{{
-                                getMatrixCell(rowIndex, colIndex)?.value
+                                getMatrixCell(rowIndex, colIndex)?.value || (state === 'S' ? (faStore.originalData?.table_to_num_min?.['S']?.[rowIndex] || rowIndex) : '')
                               }}</span>
                             </td>
                           </tr>
@@ -349,7 +358,7 @@
                           <h4 class="font-medium text-red-800 mb-2">状态转换矩阵填写错误</h4>
                           <ul class="text-sm text-red-700 space-y-1">
                             <li v-for="(errors, fieldKey) in matrixValidationErrors" :key="fieldKey">
-                              <strong>{{ formatFieldKey(fieldKey, 'matrix') }}：</strong>
+                              <strong>{{ formatFieldKey(fieldKey) }}：</strong>
                               <span v-for="(error, index) in errors" :key="index">
                                 {{ error }}{{ index < errors.length - 1 ? '，' : '' }}
                               </span>
@@ -562,11 +571,6 @@ let localPSetsCnt = 1
 
 // 矩阵相关
 const minimizedMatrix = ref<MatrixCell[]>([])
-const tableView = {
-  cellWidth: 80,
-  cellHeight: 40,
-  gap: 10,
-}
 
 // 矩阵状态列和数据
 const matrixStateColumns = ref<string[]>([])
@@ -608,13 +612,7 @@ const isComplete = computed(() => {
   return showSetsAnswer.value && showMatrixAnswerStep5.value
 })
 
-const reductionPercentage = computed(() => {
-  if (originalStateCount.value === 0) return 0
-  return (
-    ((originalStateCount.value - localPSets.value.length) / originalStateCount.value) *
-    100
-  ).toFixed(1)
-})
+
 
 // 锁定逻辑：只有查看了A区域答案才能操作B区域
 const isMatrixLocked = computed(() => {
@@ -746,15 +744,39 @@ onMounted(() => {
         console.log('恢复05页面数据:', savedStep5Data)
         localPSets.value = savedStep5Data.userPSets || []
 
-        // 确保矩阵数据有正确的结构
+        // 检查保存的矩阵数据是否有正确的结构
         if (savedStep5Data.userMinimizedMatrix && savedStep5Data.userMinimizedMatrix.length > 0) {
-        minimizedMatrix.value = savedStep5Data.userMinimizedMatrix
+          // 检查保存的数据是否包含所有必要的列
+          const savedMatrix = savedStep5Data.userMinimizedMatrix
+          const expectedColumns = matrixStateColumns.value.length
+          const expectedRows = originalStateCount.value
+          const expectedCells = expectedColumns * expectedRows
+
+          console.log('检查保存的矩阵数据:', {
+            savedCells: savedMatrix.length,
+            expectedCells: expectedCells,
+            expectedColumns: expectedColumns,
+            expectedRows: expectedRows,
+            matrixStateColumns: matrixStateColumns.value
+          })
+
+          if (savedMatrix.length === expectedCells) {
+            // 数据结构正确，使用保存的数据
+            minimizedMatrix.value = savedMatrix
+            console.log('使用保存的矩阵数据')
+          } else {
+            // 数据结构不正确，重新初始化
+            console.log('保存的矩阵数据结构不正确，重新初始化')
+            initMinimizedMatrix()
+          }
         } else {
           // 如果没有保存的矩阵数据，初始化矩阵
+          console.log('没有保存的矩阵数据，初始化矩阵')
           initMinimizedMatrix()
         }
       } else {
         // 如果没有保存的数据，初始化矩阵
+        console.log('没有保存的数据，初始化矩阵')
         initMinimizedMatrix()
       }
     }
@@ -881,24 +903,36 @@ const areStateSetsEqual = (str1: string, str2: string): boolean => {
   const states1 = new Set(str1.split(/\s+/).filter(s => s.trim()))
   const states2 = new Set(str2.split(/\s+/).filter(s => s.trim()))
 
-  // 检查两个集合是否完全相同
-  if (states1.size !== states2.size) return false
+  console.log(`areStateSetsEqual - comparing "${str1}" with "${str2}"`)
+  console.log(`areStateSetsEqual - states1:`, Array.from(states1))
+  console.log(`areStateSetsEqual - states2:`, Array.from(states2))
 
-  for (const state of states1) {
-    if (!states2.has(state)) return false
+  // 检查两个集合是否完全相同
+  if (states1.size !== states2.size) {
+    console.log(`areStateSetsEqual - size mismatch: ${states1.size} vs ${states2.size}`)
+    return false
   }
 
+  for (const state of states1) {
+    if (!states2.has(state)) {
+      console.log(`areStateSetsEqual - state "${state}" not found in states2`)
+      return false
+    }
+  }
+
+  console.log(`areStateSetsEqual - sets are equal`)
   return true
 }
 
 // 检查是否有重复的状态子集
 const hasDuplicateStateSets = (): boolean => {
-  const allInputs = localPSets.value.map(item => item.text.trim())
+  const allInputs = localPSets.value.map(item => item.text.trim()).filter(input => input !== '')
 
   console.log('hasDuplicateStateSets - allInputs:', allInputs)
 
   for (let i = 0; i < allInputs.length; i++) {
     for (let j = i + 1; j < allInputs.length; j++) {
+      console.log(`Comparing "${allInputs[i]}" with "${allInputs[j]}"`)
       if (areStateSetsEqual(allInputs[i], allInputs[j])) {
         console.log(`hasDuplicateStateSets - found duplicate: "${allInputs[i]}" and "${allInputs[j]}"`)
         return true
@@ -920,10 +954,23 @@ const validatePSetsAgainstAnswers = (answerList: string[], inputList: PSetItem[]
     item.errorMessage = undefined
   })
 
-  // 检查是否有重复的状态子集（包括空集）
+  // 检查是否有重复的状态子集（不包括空集）
   if (hasDuplicateStateSets()) {
+    // 只标记重复的输入为错误
+    const allInputs = inputList.map(item => item.text.trim())
+    const duplicateInputs = new Set<string>()
+
+    for (let i = 0; i < allInputs.length; i++) {
+      for (let j = i + 1; j < allInputs.length; j++) {
+        if (allInputs[i] && allInputs[j] && areStateSetsEqual(allInputs[i], allInputs[j])) {
+          duplicateInputs.add(allInputs[i])
+          duplicateInputs.add(allInputs[j])
+        }
+      }
+    }
+
     inputList.forEach(item => {
-      if (item.text.trim()) {
+      if (duplicateInputs.has(item.text.trim())) {
         item.check = ValidationState.ERROR
         item.errorMessage = '存在重复的状态子集'
       }
@@ -975,12 +1022,26 @@ const validatePSets = () => {
 
   // 检查是否有重复的状态子集
   if (hasDuplicateStateSets()) {
+    // 找到具体的重复项
+    const allInputs = localPSets.value.map(item => item.text.trim()).filter(input => input !== '')
+    const duplicateInputs = new Set<string>()
+
+    for (let i = 0; i < allInputs.length; i++) {
+      for (let j = i + 1; j < allInputs.length; j++) {
+        if (areStateSetsEqual(allInputs[i], allInputs[j])) {
+          duplicateInputs.add(allInputs[i])
+          duplicateInputs.add(allInputs[j])
+        }
+      }
+    }
+
+    const duplicateList = Array.from(duplicateInputs).join('、')
     pSetValidationResult.value = {
       show: true,
       success: false,
-      message: '存在重复的状态子集，请检查输入。'
+      message: `存在重复的状态子集：${duplicateList}，请检查输入。`
     }
-    console.log('P集合验证失败 - 重复状态子集')
+    console.log('P集合验证失败 - 重复状态子集:', duplicateList)
     return
   }
 
@@ -1024,11 +1085,10 @@ const initMinimizedMatrix = () => {
   }
 
   const tableToNumMin = faStore.originalData.table_to_num_min
-  const symbols = alphabetSymbols.value // 已排除S列
   const rowCount = originalStateCount.value
 
   console.log('initMinimizedMatrix - rowCount:', rowCount)
-  console.log('initMinimizedMatrix - symbols:', symbols)
+  console.log('initMinimizedMatrix - matrixStateColumns:', matrixStateColumns.value)
   console.log('initMinimizedMatrix - tableToNumMin:', tableToNumMin)
 
   if (rowCount === 0) {
@@ -1036,22 +1096,25 @@ const initMinimizedMatrix = () => {
     return
   }
 
-  if (symbols.length === 0) {
-    console.log('initMinimizedMatrix: symbols为空，无法初始化矩阵')
+  if (matrixStateColumns.value.length === 0) {
+    console.log('initMinimizedMatrix: matrixStateColumns为空，无法初始化矩阵')
     return
   }
 
   minimizedMatrix.value = []
 
-  // 创建矩阵单元格（不包含S列）
+  // 创建矩阵单元格（包含所有列：S, a, b, c, d等）
   for (let row = 0; row < rowCount; row++) {
-    for (let col = 0; col < symbols.length; col++) {
-      const symbol = symbols[col]
-      const cellId = `${row} ${symbol}`
+    for (let col = 0; col < matrixStateColumns.value.length; col++) {
+      const stateName = matrixStateColumns.value[col]
+      const cellId = `${row} ${stateName}`
+
+      // 确定单元格类别：S列是只读的，其他列可以填写
+      const category = stateName === 'S' ? 'onlyRead' : 'blank'
 
       minimizedMatrix.value.push({
         id: cellId,
-        category: 'blank', // 所有输入符号列都可以填写
+        category: category,
         check: ValidationState.EMPTY,
         value: '',
         rowIndex: row,
@@ -1062,6 +1125,13 @@ const initMinimizedMatrix = () => {
   }
 
   console.log('initMinimizedMatrix - 创建的矩阵单元格数量:', minimizedMatrix.value.length)
+  console.log('initMinimizedMatrix - 矩阵单元格详情:', minimizedMatrix.value.map(cell => ({
+    id: cell.id,
+    rowIndex: cell.rowIndex,
+    colIndex: cell.colIndex,
+    category: cell.category,
+    stateName: matrixStateColumns.value[cell.colIndex]
+  })))
 
   // 清除矩阵错误状态
   matrixValidationErrors.value = {}
@@ -1105,17 +1175,7 @@ const updateMatrixCell = (rowIndex: number, colIndex: number, value: string) => 
   validateMatrixField(cell)
 }
 
-// 矩阵单元格输入处理
-const handleMatrixCellInput = (cell: MatrixCell | undefined) => {
-  if (!cell || step7Open.value) return
 
-  const inputValue = cell.value.trim()
-  // 留空和填写"-"都视为有效输入
-  cell.check = (inputValue || inputValue === '') ? ValidationState.NORMAL : ValidationState.EMPTY
-
-  // 使用新的验证逻辑
-  validateMatrixField(cell)
-}
 
 
 
@@ -1126,11 +1186,10 @@ const getMatrixCell = (row: number, col: number): MatrixCell | undefined => {
 
 // 重置矩阵
 const resetMatrix = () => {
-  // 重置所有矩阵单元格
-  minimizedMatrix.value.forEach(cell => {
-    cell.value = ''
-    cell.check = ValidationState.EMPTY
-  })
+  console.log('重置矩阵，重新初始化矩阵结构')
+
+  // 重新初始化矩阵，确保包含所有列
+  initMinimizedMatrix()
 
   // 清除错误状态
   matrixValidationErrors.value = {}
@@ -1152,11 +1211,17 @@ const resetMatrix = () => {
 const validateMatrix = () => {
   if (step7Open.value || !faStore.originalData?.table_to_num_min) return
 
-  console.log('开始校验矩阵，当前矩阵数据:', minimizedMatrix.value.map(cell => ({ row: cell.rowIndex, col: cell.colIndex, value: cell.value })))
+  console.log('开始校验矩阵，当前矩阵数据:', minimizedMatrix.value.map(cell => ({ row: cell.rowIndex, col: cell.colIndex, value: cell.value, category: cell.category })))
+  console.log('矩阵状态列:', matrixStateColumns.value)
+  console.log('矩阵单元格总数:', minimizedMatrix.value.length)
 
   // 检验所有矩阵单元格
   minimizedMatrix.value.forEach((cell) => {
-    if (cell.category === 'onlyRead') return
+    console.log(`校验单元格: 行${cell.rowIndex}, 列${cell.colIndex}, 类别${cell.category}, 值${cell.value}`)
+    if (cell.category === 'onlyRead') {
+      console.log(`跳过只读单元格: 行${cell.rowIndex}, 列${cell.colIndex}`)
+      return
+    }
 
     validateMatrixField(cell)
   })
@@ -1187,14 +1252,6 @@ const proceedToNext = () => {
     // 保存当前数据
     saveStep5Data()
 
-    const stepData = {
-      localPSets: localPSets.value,
-      minimizedMatrix: minimizedMatrix.value,
-      step6Open: step6Open.value,
-      step7Open: step7Open.value,
-      timestamp: new Date().toISOString(),
-    }
-
     // 滚动到页面顶部
     window.scrollTo({ top: 0, behavior: 'smooth' })
 
@@ -1203,70 +1260,7 @@ const proceedToNext = () => {
   }
 }
 
-// 验证功能
-const validatePSetField = (pItem: PSetItem) => {
-  const fieldKey = `pset-${pItem.id}`
-  const errors: string[] = []
 
-  const fieldValue = pItem.text.trim()
-
-  console.log('Validating PSet field:', { fieldKey, fieldValue })
-
-  // 1. 检查是否为空
-  if (!fieldValue) {
-    errors.push('状态子集不能为空')
-  }
-
-  // 2. 检查是否有重复输入
-  const currentIndex = localPSets.value.findIndex(item => item.id === pItem.id)
-  const otherInputs = localPSets.value
-    .filter((item, index) => index !== currentIndex && item.text.trim())
-    .map(item => item.text.trim())
-
-  const isDuplicate = otherInputs.some(otherInput =>
-    areCharacterSetsEqual(fieldValue, otherInput)
-  )
-
-  if (isDuplicate) {
-    errors.push('答案重复')
-  }
-
-  // 3. 检查答案正确性
-  if (fieldValue && !isDuplicate && faStore.originalData?.P) {
-    const answerList = faStore.originalData.P.map((pSet: any) => {
-      if (Array.isArray(pSet)) {
-        return pSet.join(' ')
-      } else if (typeof pSet === 'string') {
-        // 如果是字符串，尝试添加空格分隔
-        return pSet.split('').join(' ')
-      }
-      return String(pSet)
-    })
-    const answerItem = answerList.find((answer: string) => areCharacterSetsEqual(answer, fieldValue))
-
-    if (!answerItem) {
-      errors.push('答案不正确')
-    }
-  }
-
-  if (errors.length > 0) {
-    console.log('Setting errors for PSet field:', fieldKey, errors)
-    pSetValidationErrors.value[fieldKey] = errors
-    pSetFieldValidation.value[fieldKey] = 'invalid'
-    showPSetErrors.value = true
-  } else {
-    console.log('Clearing errors for PSet field:', fieldKey)
-    delete pSetValidationErrors.value[fieldKey]
-    pSetFieldValidation.value[fieldKey] = 'valid'
-
-    // 检查是否还有其他错误，如果没有则隐藏错误面板
-    if (Object.keys(pSetValidationErrors.value).length === 0) {
-      showPSetErrors.value = false
-    }
-  }
-
-  console.log('PSet validation complete for field:', fieldKey, 'Errors count:', errors.length)
-}
 
 const validateMatrixField = (cell: MatrixCell | undefined) => {
   if (!cell) return
@@ -1284,8 +1278,15 @@ const validateMatrixField = (cell: MatrixCell | undefined) => {
   // 2. 检查答案正确性
   if (faStore.originalData?.table_to_num_min) {
     const tableToNumMin = faStore.originalData.table_to_num_min
-    const symbol = alphabetSymbols.value[cell.colIndex]
-    const rawAnswer = tableToNumMin[symbol]?.[cell.rowIndex]
+
+    // 根据列索引获取对应的状态名（S, a, b, c, d等）
+    const stateName = matrixStateColumns.value[cell.colIndex]
+    if (!stateName) {
+      console.log('无法找到对应的状态名:', cell.colIndex, matrixStateColumns.value)
+      return
+    }
+
+    const rawAnswer = tableToNumMin[stateName]?.[cell.rowIndex]
 
     // 处理标准答案：null、undefined、空字符串都视为'-'
     const correctAnswer = rawAnswer === null || rawAnswer === undefined || rawAnswer === '' ? '-' : String(rawAnswer)
@@ -1294,15 +1295,15 @@ const validateMatrixField = (cell: MatrixCell | undefined) => {
     const normalizedFieldValue = fieldValue === '' ? '-' : fieldValue
 
     console.log('校验详情:', {
-      symbol,
+      stateName,
       rowIndex: cell.rowIndex,
       colIndex: cell.colIndex,
       fieldValue,
       normalizedFieldValue,
       rawAnswer,
       correctAnswer,
-      tableToNumMin: tableToNumMin[symbol],
-      alphabetSymbols: alphabetSymbols.value
+      tableToNumMin: tableToNumMin[stateName],
+      matrixStateColumns: matrixStateColumns.value
     })
 
     if (normalizedFieldValue !== correctAnswer) {
@@ -1363,14 +1364,14 @@ const getMatrixFieldClass = (cell: MatrixCell | undefined) => {
 }
 
 // 格式化错误信息的辅助函数
-const formatFieldKey = (fieldKey: string, fieldType: 'matrix') => {
+const formatFieldKey = (fieldKey: string) => {
   const parts = fieldKey.split('-')
   if (parts.length >= 2) {
     // 矩阵：显示行列位置（不需要+1，因为rowIndex已经是正确的索引）
     const rowIndex = parseInt(parts[1])
     const colIndex = parseInt(parts[2])
-    const symbol = alphabetSymbols.value[colIndex] || ''
-      return `第${rowIndex}行${symbol}列`
+    const stateName = matrixStateColumns.value[colIndex] || ''
+    return `第${rowIndex}行${stateName}列`
   }
   return fieldKey
 }
