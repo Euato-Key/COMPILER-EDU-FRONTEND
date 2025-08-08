@@ -143,6 +143,63 @@
         </div>
       </div>
 
+      <!-- 学习体验 -->
+      <div class="mt-16 bg-gradient-to-r from-pink-600 to-orange-600 rounded-xl shadow-lg p-8 text-white">
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icon icon="lucide:sparkles" class="w-10 h-10 text-white" />
+          </div>
+          <h3 class="text-3xl font-bold mb-4">多样性的可视化学习体验</h3>
+          <p class="text-xl opacity-90 mb-6">
+            个性化学习体验围绕用户输入与操作轨迹展开，同时融入直观的可视化动画演示
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:user-check" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">个性化学习</h4>
+              <p class="text-sm opacity-90">基于用户输入的正则式、文法等信息，提供完全个性化的练习内容</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:activity" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">操作轨迹记录</h4>
+              <p class="text-sm opacity-90">平台会记录用户操作过程，实现学习轨迹的完整追踪</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:eye" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">动态可视化</h4>
+              <p class="text-sm opacity-90">LL1、LR0、SLR1等模块中，字符串分析等过程都有动态可视化动画演示</p>
+            </div>
+          </div>
+          <div class="bg-white/10 rounded-lg p-6 backdrop-blur-sm mb-6">
+            <div class="flex items-center justify-center gap-4 mb-4">
+              <Icon icon="lucide:bot" class="w-8 h-8 text-white" />
+              <h4 class="text-xl font-semibold">AI教学助手</h4>
+            </div>
+            <p class="text-sm opacity-90 mb-4">
+              融进了含有可视化引擎的AI教学助手，基于用户的答题轨迹与平台的知识库精准答疑，提供定制化反馈
+            </p>
+            <div class="flex justify-center gap-4 text-xs">
+              <span class="bg-white/20 px-3 py-1 rounded-full">用户输入为起点</span>
+              <span class="bg-white/20 px-3 py-1 rounded-full">操作轨迹为依据</span>
+              <span class="bg-white/20 px-3 py-1 rounded-full">千人千面</span>
+            </div>
+          </div>
+          <router-link
+            to="/learning-experience"
+            class="inline-flex items-center px-6 py-3 bg-white text-pink-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+          >
+            <Icon icon="lucide:arrow-right" class="w-5 h-5 mr-2" />
+            了解更多
+          </router-link>
+        </div>
+      </div>
+
       <!-- 使用说明 -->
       <div class="mt-16 bg-white rounded-xl shadow-lg p-8">
         <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">使用说明</h3>

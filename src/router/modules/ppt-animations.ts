@@ -45,6 +45,15 @@ const pptAnimationRoutes: RouteRecordRaw[] = [
       title: '语法分析动画',
       description: 'LL1和LR分析算法动画演示'
     }
+  },
+  {
+    path: '/learning-experience',
+    name: 'learning-experience',
+    component: () => import('../../views/ppt-animations/pages/learning-experience.vue'),
+    meta: {
+      title: '多样性的可视化学习体验',
+      description: '个性化学习体验与AI教学助手'
+    }
   }
 ]
 
