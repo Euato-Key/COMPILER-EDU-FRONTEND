@@ -10,7 +10,7 @@
       </div>
 
       <!-- 幻灯片内容 -->
-      <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/2)}%)` }">
+      <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/5)}%)` }">
 
         <!-- 第1页：核心特性 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -145,13 +145,269 @@
             </div>
           </div>
         </div>
+
+        <!-- 第3页：步骤拆解细致入微 -->
+        <div class="slide slide-3" :class="{ 'active': currentSlide === 2 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">步骤拆解细致入微</h1>
+              <p class="subtitle">每个模块都被拆解为符合逻辑递进关系的详细步骤，帮助学生逐步攻克复杂问题</p>
+            </div>
+
+            <div class="step-breakdown-section">
+              <div class="module-card">
+                <div class="module-header">
+                  <div class="module-icon">
+                    <Icon icon="lucide:git-branch" class="icon" />
+                  </div>
+                  <h3>有限自动机（FA）模块</h3>
+                </div>
+                <div class="step-flow">
+                  <div class="step-item">
+                    <div class="step-header">
+                      <div class="step-icon">
+                        <Icon icon="lucide:file-text" class="icon" />
+                      </div>
+                      <h4>正则式输入</h4>
+                    </div>
+                    <div class="step-content">
+                      <p>用户输入正则表达式，系统进行语法验证</p>
+                    </div>
+                  </div>
+                  <div class="step-arrow">
+                    <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                  </div>
+                  <div class="step-item">
+                    <div class="step-header">
+                      <div class="step-icon">
+                        <Icon icon="lucide:git-branch" class="icon" />
+                      </div>
+                      <h4>NFA 绘制</h4>
+                    </div>
+                    <div class="step-content">
+                      <p>动态构建NFA状态图，可视化展示转换过程</p>
+                    </div>
+                  </div>
+                  <div class="step-arrow">
+                    <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                  </div>
+                  <div class="step-item">
+                    <div class="step-header">
+                      <div class="step-icon">
+                        <Icon icon="lucide:network" class="icon" />
+                      </div>
+                      <h4>子集法转换</h4>
+                    </div>
+                    <div class="step-content">
+                      <p>逐步展示子集构造算法，生成DFA状态</p>
+                    </div>
+                  </div>
+                  <div class="step-arrow">
+                    <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                  </div>
+                  <div class="step-item">
+                    <div class="step-header">
+                      <div class="step-icon">
+                        <Icon icon="lucide:target" class="icon" />
+                      </div>
+                      <h4>DFA 构建与最小化</h4>
+                    </div>
+                    <div class="step-content">
+                      <p>完成DFA构建并进行状态最小化优化</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第4页：LL1分析模块步骤拆解 -->
+        <div class="slide slide-4" :class="{ 'active': currentSlide === 3 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">LL1分析模块步骤拆解</h1>
+              <p class="subtitle">从文法输入到字符串分析，LL1分析模块的每个步骤都清晰且紧密衔接</p>
+            </div>
+
+            <div class="ll1-analysis-section">
+              <div class="ll1-flow-container">
+                <div class="ll1-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:file-text" class="icon" />
+                    </div>
+                    <h4>文法输入</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>输入上下文无关文法，系统验证文法格式</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="ll1-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:calculator" class="icon" />
+                    </div>
+                    <h4>First/Follow 集计算</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>自动计算First集和Follow集，展示计算过程</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="ll1-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:table" class="icon" />
+                    </div>
+                    <h4>分析表构建</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>根据First/Follow集构建LL1分析表</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="ll1-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:play-circle" class="icon" />
+                    </div>
+                    <h4>字符串分析</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>使用分析表进行字符串的语法分析</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第5页：LR0/SLR1分析模块步骤拆解 -->
+        <div class="slide slide-5" :class="{ 'active': currentSlide === 4 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">LR0/SLR1分析模块步骤拆解</h1>
+              <p class="subtitle">从文法输入到字符串分析，LR0/SLR1分析模块的每个步骤都清晰且紧密衔接</p>
+            </div>
+
+            <div class="lr-analysis-section">
+              <div class="lr-flow-container">
+                <div class="lr-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:file-text" class="icon" />
+                    </div>
+                    <h4>文法输入</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>输入上下文无关文法，系统验证文法格式</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="lr-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:layers" class="icon" />
+                    </div>
+                    <h4>项目集构造</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>构造LR(0)项目集族，展示状态转换过程</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="lr-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:table" class="icon" />
+                    </div>
+                    <h4>分析表构建</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>构建LR0或SLR1分析表，包含ACTION和GOTO表</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="lr-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:play-circle" class="icon" />
+                    </div>
+                    <h4>字符串分析</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>使用分析表进行字符串的语法分析</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 顶部导航控制 -->
       <div class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 2"
+            v-for="i in 5"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -163,7 +419,7 @@
           <button @click="previousSlide" class="control-btn" :disabled="currentSlide === 0 || isTransitioning">
             <Icon icon="lucide:chevron-left" class="control-icon" />
           </button>
-          <button @click="nextSlide" class="control-btn" :disabled="currentSlide === 1 || isTransitioning">
+          <button @click="nextSlide" class="control-btn" :disabled="currentSlide === 4 || isTransitioning">
             <Icon icon="lucide:chevron-right" class="control-icon" />
           </button>
         </div>
@@ -225,7 +481,7 @@ const getParticleStyle = () => {
 
 // 幻灯片控制
 const nextSlide = () => {
-  if (currentSlide.value < 1 && !isTransitioning.value) {
+  if (currentSlide.value < 4 && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value++
     console.log('Next slide:', currentSlide.value)
@@ -247,7 +503,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 1 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 4 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     console.log('Go to slide:', currentSlide.value)
@@ -262,7 +518,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 1) {
+    if (currentSlide.value < 4) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -404,7 +660,7 @@ onUnmounted(() => {
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 200%;
+  width: 500%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -412,8 +668,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 2);
-  min-width: calc(100% / 2);
+  width: calc(100% / 5);
+  min-width: calc(100% / 5);
   height: 100%;
   display: flex;
   align-items: center;
@@ -448,27 +704,75 @@ onUnmounted(() => {
 }
 
 .slide-1.active .feature-card:nth-child(1) {
-  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards, featureCardFloat 3s ease-in-out 4.5s infinite;
+  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards, featureCardFloat 3s ease-in-out 6s infinite;
 }
 
 .slide-1.active .feature-card:nth-child(2) {
-  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2.5s forwards, featureCardFloat 3s ease-in-out 5s infinite;
+  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5s forwards, featureCardFloat 3s ease-in-out 9s infinite;
 }
 
 .slide-1.active .feature-card:nth-child(3) {
-  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3s forwards, featureCardFloat 3s ease-in-out 5.5s infinite;
+  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 8s forwards, featureCardFloat 3s ease-in-out 12s infinite;
 }
 
 .slide-1.active .feature-icon:nth-child(1) {
-  animation: featureIconSpin 1.5s ease-out 3.5s forwards, featureIconGlow 2s ease-in-out 5s infinite;
+  animation: featureIconSpin 1.5s ease-out 4.5s forwards, featureIconGlow 2s ease-in-out 6s infinite;
 }
 
 .slide-1.active .feature-icon:nth-child(2) {
-  animation: featureIconSpin 1.5s ease-out 4s forwards, featureIconGlow 2s ease-in-out 5.5s infinite;
+  animation: featureIconSpin 1.5s ease-out 7.5s forwards, featureIconGlow 2s ease-in-out 9s infinite;
 }
 
 .slide-1.active .feature-icon:nth-child(3) {
-  animation: featureIconSpin 1.5s ease-out 4.5s forwards, featureIconGlow 2s ease-in-out 6s infinite;
+  animation: featureIconSpin 1.5s ease-out 10.5s forwards, featureIconGlow 2s ease-in-out 12s infinite;
+}
+
+.slide-1.active .feature-card:nth-child(1) h3 {
+  animation: textSlideIn 1s ease-out 4s forwards, textGlow 2s ease-in-out 6s infinite;
+}
+
+.slide-1.active .feature-card:nth-child(2) h3 {
+  animation: textSlideIn 1s ease-out 7s forwards, textGlow 2s ease-in-out 9s infinite;
+}
+
+.slide-1.active .feature-card:nth-child(3) h3 {
+  animation: textSlideIn 1s ease-out 10s forwards, textGlow 2s ease-in-out 12s infinite;
+}
+
+.slide-1.active .feature-card:nth-child(1) p {
+  animation: textFadeIn 1.5s ease-out 4.2s forwards;
+}
+
+.slide-1.active .feature-card:nth-child(2) p {
+  animation: textFadeIn 1.5s ease-out 7.2s forwards;
+}
+
+.slide-1.active .feature-card:nth-child(3) p {
+  animation: textFadeIn 1.5s ease-out 10.2s forwards;
+}
+
+.slide-1.active .example-item:nth-child(1) {
+  animation: exampleItemSlide 1s ease-out 5s forwards, exampleItemPulse 2s ease-in-out 7s infinite;
+}
+
+.slide-1.active .example-item:nth-child(2) {
+  animation: exampleItemSlide 1s ease-out 5.3s forwards, exampleItemPulse 2s ease-in-out 7.3s infinite;
+}
+
+.slide-1.active .example-item:nth-child(3) {
+  animation: exampleItemSlide 1s ease-out 8s forwards, exampleItemPulse 2s ease-in-out 10s infinite;
+}
+
+.slide-1.active .example-item:nth-child(4) {
+  animation: exampleItemSlide 1s ease-out 8.3s forwards, exampleItemPulse 2s ease-in-out 10.3s infinite;
+}
+
+.slide-1.active .example-item:nth-child(5) {
+  animation: exampleItemSlide 1s ease-out 11s forwards, exampleItemPulse 2s ease-in-out 13s infinite;
+}
+
+.slide-1.active .example-item:nth-child(6) {
+  animation: exampleItemSlide 1s ease-out 11.3s forwards, exampleItemPulse 2s ease-in-out 13.3s infinite;
 }
 
 .header-section {
@@ -547,18 +851,16 @@ onUnmounted(() => {
   font-weight: bold;
   margin-bottom: 1rem;
   color: white;
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 .feature-card p {
   color: #cbd5e1;
   line-height: 1.6;
   margin-bottom: 1.5rem;
-}
-
-.feature-examples {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .example-item {
@@ -570,6 +872,14 @@ onUnmounted(() => {
   padding: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 0.5rem;
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.feature-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
 .example-label {
@@ -1174,6 +1484,1035 @@ onUnmounted(() => {
   }
 }
 
+/* 文字动画关键帧 */
+@keyframes textSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes textFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(102, 126, 234, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes exampleItemSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes exampleItemPulse {
+  0%, 100% {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+  }
+}
+
+/* 第3页和第4页动画关键帧 */
+@keyframes moduleCardSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateX(45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px) scale(1.05) rotateX(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes stepItemSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(-20px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes stepItemFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(240, 147, 251, 0.3);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(245, 87, 108, 0.3);
+  }
+  75% {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(240, 147, 251, 0.4);
+  }
+}
+
+@keyframes stepArrowFlow {
+  0%, 100% {
+    transform: scale(1) translateX(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3) translateX(5px);
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.8));
+  }
+}
+
+@keyframes stepIconSpin {
+  0% {
+    transform: scale(0) rotate(180deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(90deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes stepIconGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6), 0 0 20px rgba(240, 147, 251, 0.4);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes analysisModuleSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateY(45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px) scale(1.05) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes analysisStepSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(-10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes analysisStepGlow {
+  0%, 100% {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    background: rgba(79, 172, 254, 0.1);
+    transform: scale(1.03);
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+  }
+}
+
+
+
+@keyframes decorationPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
+@keyframes decorationFlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scaleX(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleX(1.2);
+  }
+}
+
+@keyframes ll1StepCardSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateX(45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px) scale(1.05) rotateX(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes ll1StepCardFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(79, 172, 254, 0.3);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  }
+  75% {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(79, 172, 254, 0.4);
+  }
+}
+
+@keyframes flowArrowAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(180deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2) rotate(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes flowArrowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(79, 172, 254, 0.8));
+  }
+}
+
+@keyframes lrStepCardSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateY(45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px) scale(1.05) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes lrStepCardFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(255, 107, 107, 0.3);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(255, 159, 67, 0.3);
+  }
+  75% {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(255, 107, 107, 0.4);
+  }
+}
+
+@keyframes lrFlowArrowAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(180deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2) rotate(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes lrFlowArrowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(255, 107, 107, 0.8));
+  }
+}
+
+/* 第3页：步骤拆解细致入微 */
+.slide-3.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-3.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-3.active .module-card {
+  animation: moduleCardSlide 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-3.active .step-item:nth-child(1) {
+  animation: stepItemSlide 1.5s ease-out 3s forwards, stepItemFloat 3s ease-in-out 5s infinite;
+}
+
+.slide-3.active .step-item:nth-child(3) {
+  animation: stepItemSlide 1.5s ease-out 3.5s forwards, stepItemFloat 3s ease-in-out 5.5s infinite;
+}
+
+.slide-3.active .step-item:nth-child(5) {
+  animation: stepItemSlide 1.5s ease-out 4s forwards, stepItemFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-3.active .step-item:nth-child(7) {
+  animation: stepItemSlide 1.5s ease-out 4.5s forwards, stepItemFloat 3s ease-in-out 6.5s infinite;
+}
+
+.slide-3.active .step-icon:nth-child(1) {
+  animation: stepIconSpin 1s ease-out 3.5s forwards, stepIconGlow 2s ease-in-out 5.5s infinite;
+}
+
+.slide-3.active .step-icon:nth-child(3) {
+  animation: stepIconSpin 1s ease-out 4s forwards, stepIconGlow 2s ease-in-out 6s infinite;
+}
+
+.slide-3.active .step-icon:nth-child(5) {
+  animation: stepIconSpin 1s ease-out 4.5s forwards, stepIconGlow 2s ease-in-out 6.5s infinite;
+}
+
+.slide-3.active .step-icon:nth-child(7) {
+  animation: stepIconSpin 1s ease-out 5s forwards, stepIconGlow 2s ease-in-out 7s infinite;
+}
+
+.slide-3.active .step-arrow:nth-child(2) {
+  animation: stepArrowFlow 2s ease-in-out 3.2s infinite;
+}
+
+.slide-3.active .step-arrow:nth-child(4) {
+  animation: stepArrowFlow 2s ease-in-out 3.7s infinite;
+}
+
+.slide-3.active .step-arrow:nth-child(6) {
+  animation: stepArrowFlow 2s ease-in-out 4.2s infinite;
+}
+
+/* 第4页：LL1分析模块步骤拆解 */
+.slide-4.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-4.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-4.active .ll1-step-card:nth-child(1) {
+  animation: ll1StepCardSlide 1.5s ease-out 2s forwards, ll1StepCardFloat 3s ease-in-out 4s infinite;
+}
+
+.slide-4.active .ll1-step-card:nth-child(3) {
+  animation: ll1StepCardSlide 1.5s ease-out 2.5s forwards, ll1StepCardFloat 3s ease-in-out 4.5s infinite;
+}
+
+.slide-4.active .ll1-step-card:nth-child(5) {
+  animation: ll1StepCardSlide 1.5s ease-out 3s forwards, ll1StepCardFloat 3s ease-in-out 5s infinite;
+}
+
+.slide-4.active .ll1-step-card:nth-child(7) {
+  animation: ll1StepCardSlide 1.5s ease-out 3.5s forwards, ll1StepCardFloat 3s ease-in-out 5.5s infinite;
+}
+
+.slide-4.active .flow-arrow:nth-child(2) {
+  animation: flowArrowAppear 1s ease-out 2.2s forwards, flowArrowPulse 2s ease-in-out 3.2s infinite;
+}
+
+.slide-4.active .flow-arrow:nth-child(4) {
+  animation: flowArrowAppear 1s ease-out 2.7s forwards, flowArrowPulse 2s ease-in-out 3.7s infinite;
+}
+
+.slide-4.active .flow-arrow:nth-child(6) {
+  animation: flowArrowAppear 1s ease-out 3.2s forwards, flowArrowPulse 2s ease-in-out 4.2s infinite;
+}
+
+/* 第5页：LR0/SLR1分析模块步骤拆解 */
+.slide-5.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-5.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-5.active .lr-step-card:nth-child(1) {
+  animation: lrStepCardSlide 1.5s ease-out 2s forwards, lrStepCardFloat 3s ease-in-out 4s infinite;
+}
+
+.slide-5.active .lr-step-card:nth-child(3) {
+  animation: lrStepCardSlide 1.5s ease-out 2.5s forwards, lrStepCardFloat 3s ease-in-out 4.5s infinite;
+}
+
+.slide-5.active .lr-step-card:nth-child(5) {
+  animation: lrStepCardSlide 1.5s ease-out 3s forwards, lrStepCardFloat 3s ease-in-out 5s infinite;
+}
+
+.slide-5.active .lr-step-card:nth-child(7) {
+  animation: lrStepCardSlide 1.5s ease-out 3.5s forwards, lrStepCardFloat 3s ease-in-out 5.5s infinite;
+}
+
+.slide-5.active .lr-flow-container .flow-arrow:nth-child(2) {
+  animation: lrFlowArrowAppear 1s ease-out 2.2s forwards, lrFlowArrowPulse 2s ease-in-out 3.2s infinite;
+}
+
+.slide-5.active .lr-flow-container .flow-arrow:nth-child(4) {
+  animation: lrFlowArrowAppear 1s ease-out 2.7s forwards, lrFlowArrowPulse 2s ease-in-out 3.7s infinite;
+}
+
+.slide-5.active .lr-flow-container .flow-arrow:nth-child(6) {
+  animation: lrFlowArrowAppear 1s ease-out 3.2s forwards, lrFlowArrowPulse 2s ease-in-out 4.2s infinite;
+}
+
+/* 第3页样式 */
+.step-breakdown-section {
+  margin-top: 2rem;
+}
+
+.module-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.module-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.module-icon .icon {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.module-header h3 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.step-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  flex: 1;
+  min-width: 0;
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-item .step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.step-item .step-icon {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+  flex-shrink: 0;
+}
+
+.step-item .step-icon .icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
+.step-item .step-header h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.step-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.step-item:hover::before {
+  opacity: 1;
+}
+
+.step-number {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+  position: relative;
+}
+
+.step-number::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.3;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.step-content h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.8rem;
+  line-height: 1.3;
+}
+
+.step-content p {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.step-arrow {
+  opacity: 0;
+  transform: scale(0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  flex-shrink: 0;
+}
+
+.arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #667eea;
+  filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.5));
+}
+
+/* 第4页样式 */
+.ll1-analysis-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.ll1-flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.ll1-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.ll1-step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.ll1-step-card:hover::before {
+  opacity: 1;
+}
+
+.ll1-step-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(79, 172, 254, 0.2);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.step-icon {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #4facfe 0%, #667eea 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+  flex-shrink: 0;
+}
+
+.step-icon .icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
+.step-content {
+  text-align: center;
+  flex: 1;
+}
+
+.step-header h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.step-content p {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.step-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.decoration-dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #4facfe, #667eea);
+  border-radius: 50%;
+  animation: decorationPulse 2s ease-in-out infinite;
+}
+
+.decoration-line {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.5), transparent);
+  animation: decorationFlow 3s ease-in-out infinite;
+}
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(79, 172, 254, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(79, 172, 254, 0.3);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.flow-arrow .arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #4facfe;
+  filter: drop-shadow(0 0 8px rgba(79, 172, 254, 0.5));
+}
+
+/* 第5页样式 */
+.lr-analysis-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.lr-flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.lr-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.lr-step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 159, 67, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.lr-step-card:hover::before {
+  opacity: 1;
+}
+
+.lr-step-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(255, 107, 107, 0.2);
+}
+
+.lr-step-card .step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.lr-step-card .step-icon {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff9f43 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  flex-shrink: 0;
+}
+
+.lr-step-card .step-icon .icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
+.lr-step-card .step-header h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.lr-step-card .step-content {
+  text-align: center;
+  flex: 1;
+}
+
+.lr-step-card .step-content p {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.lr-step-card .step-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lr-step-card .decoration-dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #ff6b6b, #ff9f43);
+  border-radius: 50%;
+  animation: decorationPulse 2s ease-in-out infinite;
+}
+
+.lr-step-card .decoration-line {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.5), transparent);
+  animation: decorationFlow 3s ease-in-out infinite;
+}
+
+.lr-flow-container .flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.lr-flow-container .flow-arrow .arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #ff6b6b;
+  filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5));
+}
+
+.analysis-module {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.analysis-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.analysis-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.8rem;
+  padding: 1rem;
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.analysis-step .step-number {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 1rem;
+}
+
+.analysis-step .step-content h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.3rem;
+}
+
+.analysis-step .step-content p {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .main-title {
@@ -1192,7 +2531,61 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
   }
 
+  .step-flow {
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 100%;
+  }
 
+  .step-item {
+    min-width: 250px;
+    width: 100%;
+  }
+
+  .step-item .step-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .step-arrow {
+    transform: rotate(90deg);
+  }
+
+  .ll1-analysis-section,
+  .lr-analysis-section {
+    padding: 0 1rem;
+  }
+
+  .ll1-flow-container {
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 100%;
+  }
+
+  .ll1-step-card {
+    min-width: 280px;
+    width: 100%;
+  }
+
+  .flow-arrow {
+    transform: rotate(90deg);
+  }
+
+  .lr-flow-container {
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 100%;
+  }
+
+  .lr-step-card {
+    min-width: 280px;
+    width: 100%;
+  }
+
+  .lr-step-card .step-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 }
 </style>
 
