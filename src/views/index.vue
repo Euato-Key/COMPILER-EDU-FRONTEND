@@ -10,6 +10,13 @@
           <div class="flex items-center gap-2">
             <ThemeSelector />
             <router-link
+              to="/ppt-animations"
+              class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors flex items-center gap-1 ppt-animation-link"
+            >
+              <Icon icon="lucide:presentation" class="w-4 h-4" />
+              PPT动画
+            </router-link>
+            <router-link
               to="/docs"
               class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
             >
@@ -123,12 +130,14 @@
             <Icon icon="lucide:arrow-right" class="w-4 h-4 ml-2" />
           </router-link>
         </div>
+
+
       </div>
 
       <!-- 特性展示 -->
       <div class="bg-white rounded-xl shadow-lg p-8 mb-16">
         <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">平台特性</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div class="text-center">
             <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Icon icon="lucide:eye" class="w-8 h-8 text-blue-600" />
@@ -154,6 +163,15 @@
             <h4 class="font-semibold text-gray-900 mb-2">实时反馈</h4>
             <p class="text-gray-600 text-sm">
               实时验证输入，提供即时反馈和错误提示
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon icon="lucide:bot" class="w-8 h-8 text-orange-600" />
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-2">AI教学助手</h4>
+            <p class="text-gray-600 text-sm">
+              智能AI助手提供个性化学习指导，解答疑问和提供学习建议
             </p>
           </div>
         </div>
@@ -245,5 +263,40 @@ onMounted(() => {
 .slr1-icon {
   background: rgb(237 233 254);
   color: rgb(147 51 234);
+}
+
+/* PPT动画链接特殊样式 */
+.ppt-animation-link {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.ppt-animation-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  opacity: 1 !important;
+}
+
+.ppt-animation-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.ppt-animation-link:hover::before {
+  opacity: 1;
 }
 </style>
