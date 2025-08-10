@@ -16,7 +16,7 @@
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
           <div class="slide-content">
             <div class="header-section">
-              <h1 class="main-title">多样性的可视化学习体验</h1>
+              <h1 class="main-title">个性化学习体验</h1>
               <p class="subtitle">个性化学习体验围绕用户输入与操作轨迹展开，同时融入直观的可视化动画演示</p>
             </div>
 
@@ -88,7 +88,7 @@
         <div class="slide slide-2" :class="{ 'active': currentSlide === 1 }">
           <div class="slide-content">
             <div class="header-section">
-              <h1 class="main-title">多样性的可视化学习体验</h1>
+              <h1 class="main-title">个性化学习体验</h1>
               <p class="subtitle">个性化学习体验围绕用户输入与操作轨迹展开，同时融入直观的可视化动画演示</p>
             </div>
 
@@ -416,10 +416,10 @@
           ></button>
         </div>
         <div class="control-buttons">
-          <button @click="previousSlide" class="control-btn" :disabled="currentSlide === 0 || isTransitioning">
+          <button @click="previousSlide" class="control-btn" :disabled="isTransitioning">
             <Icon icon="lucide:chevron-left" class="control-icon" />
           </button>
-          <button @click="nextSlide" class="control-btn" :disabled="currentSlide === 4 || isTransitioning">
+          <button @click="nextSlide" class="control-btn" :disabled="isTransitioning">
             <Icon icon="lucide:chevron-right" class="control-icon" />
           </button>
         </div>
@@ -481,9 +481,13 @@ const getParticleStyle = () => {
 
 // 幻灯片控制
 const nextSlide = () => {
-  if (currentSlide.value < 4 && !isTransitioning.value) {
+  if (!isTransitioning.value) {
     isTransitioning.value = true
-    currentSlide.value++
+    if (currentSlide.value < 4) {
+      currentSlide.value++
+    } else {
+      currentSlide.value = 0 // 回到首页
+    }
     console.log('Next slide:', currentSlide.value)
     setTimeout(() => {
       isTransitioning.value = false
@@ -492,9 +496,13 @@ const nextSlide = () => {
 }
 
 const previousSlide = () => {
-  if (currentSlide.value > 0 && !isTransitioning.value) {
+  if (!isTransitioning.value) {
     isTransitioning.value = true
-    currentSlide.value--
+    if (currentSlide.value > 0) {
+      currentSlide.value--
+    } else {
+      currentSlide.value = 4 // 从首页回到最后一页
+    }
     console.log('Previous slide:', currentSlide.value)
     setTimeout(() => {
       isTransitioning.value = false
@@ -521,7 +529,7 @@ const startAutoPlay = () => {
     if (currentSlide.value < 4) {
       currentSlide.value++
     } else {
-      currentSlide.value = 0
+      currentSlide.value = 0 // 回到首页
     }
   }, 5000)
 }

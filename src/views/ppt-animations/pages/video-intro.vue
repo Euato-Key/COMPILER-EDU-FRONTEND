@@ -354,10 +354,10 @@
            ></button>
          </div>
         <div class="control-buttons">
-          <button @click="previousSlide" class="control-btn" :disabled="currentSlide === 0 || isTransitioning">
+          <button @click="previousSlide" class="control-btn" :disabled="isTransitioning">
             <Icon icon="lucide:chevron-left" class="control-icon" />
           </button>
-                     <button @click="nextSlide" class="control-btn" :disabled="currentSlide === 8 || isTransitioning">
+                     <button @click="nextSlide" class="control-btn" :disabled="isTransitioning">
             <Icon icon="lucide:chevron-right" class="control-icon" />
           </button>
         </div>
@@ -417,9 +417,13 @@ const getParticleStyle = () => {
 
 // 幻灯片控制
 const nextSlide = () => {
-  if (currentSlide.value < 8 && !isTransitioning.value) {
+  if (!isTransitioning.value) {
     isTransitioning.value = true
-    currentSlide.value++
+    if (currentSlide.value < 8) {
+      currentSlide.value++
+    } else {
+      currentSlide.value = 0 // 回到首页
+    }
     console.log('Next slide:', currentSlide.value)
     setTimeout(() => {
       isTransitioning.value = false
@@ -428,9 +432,13 @@ const nextSlide = () => {
 }
 
 const previousSlide = () => {
-  if (currentSlide.value > 0 && !isTransitioning.value) {
+  if (!isTransitioning.value) {
     isTransitioning.value = true
-    currentSlide.value--
+    if (currentSlide.value > 0) {
+      currentSlide.value--
+    } else {
+      currentSlide.value = 8 // 从首页回到最后一页
+    }
     console.log('Previous slide:', currentSlide.value)
     setTimeout(() => {
       isTransitioning.value = false
@@ -457,7 +465,7 @@ const startAutoPlay = () => {
     if (currentSlide.value < 8) {
       currentSlide.value++
     } else {
-      currentSlide.value = 0
+      currentSlide.value = 0 // 回到首页
     }
   }, 5000) // 每5秒切换一页
 }
