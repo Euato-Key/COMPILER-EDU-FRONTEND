@@ -260,7 +260,7 @@
                 <div class="flow-steps">
                   <div class="flow-step">
                     <div class="step-icon">
-                      <Icon icon="lucide:input" class="icon" />
+                      <Icon icon="lucide:keyboard" class="icon" />
                     </div>
                     <div class="step-content">
                       <h4>输入实例</h4>
@@ -1352,45 +1352,89 @@ onUnmounted(() => {
   animation: buttonAppear 1s ease-out 1s forwards;
 }
 
-/* 第8页：核心需求与学习流程 */
+/* 第8页：核心需求与学习流程 - 炫酷渐显动画 */
 .slide-8.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
+  animation: slide8TitleAppear 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
 }
 
 .slide-8.active .concept-content {
-  animation: conceptSlideIn 1s ease-out 0.5s forwards;
+  animation: slide8ContentReveal 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
 }
 
 .slide-8.active .concept-section {
-  animation: fadeInUp 1s ease-out 0.8s forwards;
+  animation: slide8SectionFloat 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.2s forwards;
 }
 
-.slide-8.active .concept-highlight {
-  animation: fadeInUp 1s ease-out 1.1s forwards;
+.slide-8.active .concept-title {
+  animation: slide8TextGlow 6s ease-in-out 2s infinite;
+}
+
+.slide-8.active .concept-description {
+  animation: slide8TextReveal 1s ease-out 1.8s forwards;
 }
 
 .slide-8.active .learning-flow {
-  animation: fadeInUp 1s ease-out 1.8s forwards;
+  animation: slide8FlowContainer 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.4s forwards;
+}
+
+.slide-8.active .flow-title {
+  animation: slide8FlowTitle 1s ease-out 2.8s forwards;
 }
 
 .slide-8.active .flow-step:nth-child(1) {
-  animation: stepSlideIn 1s ease-out 2.1s forwards;
+  animation: slide8StepCard1 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3s forwards;
 }
 
 .slide-8.active .flow-step:nth-child(3) {
-  animation: stepSlideIn 1s ease-out 2.4s forwards;
+  animation: slide8StepCard2 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3.3s forwards;
 }
 
 .slide-8.active .flow-step:nth-child(5) {
-  animation: stepSlideIn 1s ease-out 2.7s forwards;
+  animation: slide8StepCard3 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3.6s forwards;
+}
+
+.slide-8.active .flow-step:nth-child(1) .step-icon {
+  animation: slide8IconPulse1 1s ease-out 3.8s forwards, slide8IconGlow 5s ease-in-out 4.5s infinite;
+}
+
+.slide-8.active .flow-step:nth-child(3) .step-icon {
+  animation: slide8IconPulse2 1s ease-out 4.1s forwards, slide8IconGlow 5s ease-in-out 4.8s infinite;
+}
+
+.slide-8.active .flow-step:nth-child(5) .step-icon {
+  animation: slide8IconPulse3 1s ease-out 4.4s forwards, slide8IconGlow 5s ease-in-out 5.1s infinite;
+}
+
+.slide-8.active .flow-step:nth-child(1) .step-content h4 {
+  animation: slide8TextSlide1 0.8s ease-out 4s forwards;
+}
+
+.slide-8.active .flow-step:nth-child(3) .step-content h4 {
+  animation: slide8TextSlide2 0.8s ease-out 4.3s forwards;
+}
+
+.slide-8.active .flow-step:nth-child(5) .step-content h4 {
+  animation: slide8TextSlide3 0.8s ease-out 4.6s forwards;
+}
+
+.slide-8.active .flow-step:nth-child(1) .step-content p {
+  animation: slide8TextFade1 0.8s ease-out 4.2s forwards;
+}
+
+.slide-8.active .flow-step:nth-child(3) .step-content p {
+  animation: slide8TextFade2 0.8s ease-out 4.5s forwards;
+}
+
+.slide-8.active .flow-step:nth-child(5) .step-content p {
+  animation: slide8TextFade3 0.8s ease-out 4.8s forwards;
 }
 
 .slide-8.active .flow-arrow:nth-child(2) {
-  animation: arrowFlow 2s ease-in-out 2.2s infinite;
+  animation: slide8ArrowFlow1 4s ease-in-out 3.2s infinite;
 }
 
 .slide-8.active .flow-arrow:nth-child(4) {
-  animation: arrowFlow 2s ease-in-out 2.5s infinite;
+  animation: slide8ArrowFlow2 4s ease-in-out 3.5s infinite;
 }
 
 /* 第9页：学习流程 */
@@ -1422,33 +1466,69 @@ onUnmounted(() => {
   animation: arrowFlow 2s ease-in-out 1.3s infinite;
 }
 
-/* 第9页：主观大题 */
+/* 第9页：主观大题 - 增强动画效果 */
 .slide-9.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
+  animation: titleSlideIn 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.3s forwards;
 }
 
 .slide-9.active .subjective-intro {
-  animation: fadeInUp 1s ease-out 0.5s forwards;
+  animation: subjectiveIntroSlide 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.8s forwards;
+}
+
+.slide-9.active .subjective-intro h3 {
+  animation: textGlowPulse 5s ease-in-out 2s infinite;
 }
 
 .slide-9.active .subjective-grid {
-  animation: fadeInUp 1s ease-out 1s forwards;
-}
-
-.slide-9.active .subjective-conclusion {
-  animation: fadeInUp 1s ease-out 1.5s forwards;
+  animation: gridAppear 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.5s forwards;
 }
 
 .slide-9.active .subjective-item:nth-child(1) {
-  animation: itemFlyIn 1s ease-out 1.2s forwards;
+  animation: subjectiveItemFlyIn 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
 }
 
 .slide-9.active .subjective-item:nth-child(2) {
-  animation: itemFlyIn 1s ease-out 1.4s forwards;
+  animation: subjectiveItemFlyIn 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2.3s forwards;
 }
 
 .slide-9.active .subjective-item:nth-child(3) {
-  animation: itemFlyIn 1s ease-out 1.6s forwards;
+  animation: subjectiveItemFlyIn 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2.6s forwards;
+}
+
+.slide-9.active .subjective-item:nth-child(1) .subjective-icon {
+  animation: iconBounceRotate 1s ease-out 3.2s forwards, iconGlowPulse 4s ease-in-out 4s infinite;
+}
+
+.slide-9.active .subjective-item:nth-child(2) .subjective-icon {
+  animation: iconBounceRotate 1s ease-out 3.5s forwards, iconGlowPulse 4s ease-in-out 4.2s infinite;
+}
+
+.slide-9.active .subjective-item:nth-child(3) .subjective-icon {
+  animation: iconBounceRotate 1s ease-out 3.8s forwards, iconGlowPulse 4s ease-in-out 4.4s infinite;
+}
+
+.slide-9.active .subjective-item:nth-child(1) h4 {
+  animation: textSlideInUp 0.8s ease-out 3.4s forwards;
+}
+
+.slide-9.active .subjective-item:nth-child(2) h4 {
+  animation: textSlideInUp 0.8s ease-out 3.7s forwards;
+}
+
+.slide-9.active .subjective-item:nth-child(3) h4 {
+  animation: textSlideInUp 0.8s ease-out 4s forwards;
+}
+
+.slide-9.active .subjective-item:nth-child(1) p {
+  animation: textFadeIn 0.8s ease-out 3.6s forwards;
+}
+
+.slide-9.active .subjective-item:nth-child(2) p {
+  animation: textFadeIn 0.8s ease-out 3.9s forwards;
+}
+
+.slide-9.active .subjective-item:nth-child(3) p {
+  animation: textFadeIn 0.8s ease-out 4.2s forwards;
 }
 
 .slide-10 .slide-content > div:nth-child(3) > div {
@@ -1477,6 +1557,19 @@ onUnmounted(() => {
   max-width: 800px;
   opacity: 0;
   transform: translateY(30px);
+  position: relative;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.subjective-intro:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
 }
 
 .subjective-intro h3 {
@@ -1506,15 +1599,44 @@ onUnmounted(() => {
   border-radius: 0.8rem;
   padding: 1.5rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   opacity: 0;
   transform: translateY(50px) scale(0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.subjective-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.subjective-item:hover::before {
+  left: 100%;
 }
 
 .subjective-item:hover {
-  transform: translateY(-8px);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-12px) scale(1.05) rotateY(5deg);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(102, 126, 234, 0.2),
+    0 0 40px rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.subjective-item:hover .subjective-icon {
+  animation: iconSpin 1s ease-in-out infinite;
+}
+
+.subjective-item:hover h4 {
+  animation: textGlow 2s ease-in-out infinite;
 }
 
 .subjective-icon {
@@ -1526,6 +1648,25 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   margin: 0 auto 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.subjective-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.subjective-item:hover .subjective-icon::before {
+  transform: translateX(100%);
 }
 
 .subjective-icon .icon {
@@ -2191,15 +2332,43 @@ onUnmounted(() => {
   border-radius: 1rem;
   padding: 1.5rem;
   min-width: 200px;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   cursor: pointer;
+  overflow: hidden;
+}
+
+.flow-step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(240, 147, 251, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.flow-step:hover::before {
+  left: 100%;
 }
 
 .flow-step:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-8px) scale(1.02) rotateY(3deg);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(240, 147, 251, 0.2),
+    0 0 30px rgba(240, 147, 251, 0.1);
+  border-color: rgba(240, 147, 251, 0.4);
+}
+
+.flow-step:hover .step-icon {
+  animation: slide8IconHover 1s ease-in-out infinite;
+}
+
+.flow-step:hover .step-content h4 {
+  animation: slide8TextHover 2s ease-in-out infinite;
 }
 
 .flow-step::after {
@@ -2226,6 +2395,25 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.flow-step:hover .step-icon::before {
+  transform: translateX(100%);
 }
 
 .step-icon .icon {
@@ -2784,6 +2972,458 @@ onUnmounted(() => {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* 第9页专用动画关键帧 */
+@keyframes subjectiveIntroSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8) rotateX(15deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(25px) scale(0.9) rotateX(7deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes textGlowPulse {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+    color: #667eea;
+  }
+  50% {
+    text-shadow: 0 0 25px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.3);
+    color: #8b5cf6;
+  }
+}
+
+@keyframes gridAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.7) rotateY(15deg);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(25px) scale(0.85) rotateY(7deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes subjectiveItemFlyIn {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) translateX(-50px) scale(0.3) rotateZ(-15deg);
+  }
+  30% {
+    opacity: 0.3;
+    transform: translateY(70px) translateX(-30px) scale(0.5) rotateZ(-10deg);
+  }
+  60% {
+    opacity: 0.7;
+    transform: translateY(30px) translateX(-10px) scale(0.8) rotateZ(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes iconBounceRotate {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3) rotate(-90deg);
+    opacity: 0.8;
+  }
+  75% {
+    transform: scale(0.9) rotate(-45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes iconGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.2);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes textSlideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(10px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes iconSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(90deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1);
+  }
+  75% {
+    transform: rotate(270deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* 第8页专用动画关键帧 */
+@keyframes slide8TitleAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.8) rotateX(-15deg);
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-25px) scale(0.9) rotateX(-7deg);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0px);
+  }
+}
+
+@keyframes slide8ContentReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9) rotateY(10deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(15px) scale(0.95) rotateY(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes slide8SectionFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.85);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(20px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide8TextGlow {
+  0%, 100% {
+    text-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+    color: white;
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.6), 0 0 30px rgba(102, 126, 234, 0.3);
+    color: #f1f5f9;
+  }
+}
+
+@keyframes slide8TextReveal {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slide8FlowContainer {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8) rotateZ(-5deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(25px) scale(0.9) rotateZ(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes slide8FlowTitle {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide8StepCard1 {
+  0% {
+    opacity: 0;
+    transform: translateX(-80px) translateY(30px) scale(0.6) rotateY(-20deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(-40px) translateY(15px) scale(0.8) rotateY(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes slide8StepCard2 {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.6) rotateX(20deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(30px) scale(0.8) rotateX(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes slide8StepCard3 {
+  0% {
+    opacity: 0;
+    transform: translateX(80px) translateY(30px) scale(0.6) rotateY(20deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(40px) translateY(15px) scale(0.8) rotateY(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes slide8IconPulse1 {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-90deg);
+    opacity: 0.7;
+  }
+  75% {
+    transform: scale(0.9) rotate(-45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes slide8IconPulse2 {
+  0% {
+    transform: scale(0) rotate(180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(90deg);
+    opacity: 0.7;
+  }
+  75% {
+    transform: scale(0.9) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes slide8IconPulse3 {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-90deg);
+    opacity: 0.7;
+  }
+  75% {
+    transform: scale(0.9) rotate(-45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes slide8IconGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(240, 147, 251, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(240, 147, 251, 0.6), 0 0 30px rgba(240, 147, 251, 0.2);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes slide8TextSlide1 {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide8TextSlide2 {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide8TextSlide3 {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide8TextFade1 {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide8TextFade2 {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide8TextFade3 {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide8ArrowFlow1 {
+  0%, 100% {
+    transform: scale(1) translateX(0);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 3px rgba(102, 126, 234, 0.2));
+  }
+  50% {
+    transform: scale(1.2) translateX(5px);
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+  }
+}
+
+@keyframes slide8ArrowFlow2 {
+  0%, 100% {
+    transform: scale(1) translateX(0);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 3px rgba(102, 126, 234, 0.2));
+  }
+  50% {
+    transform: scale(1.2) translateX(5px);
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+  }
+}
+
+@keyframes slide8IconHover {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+}
+
+@keyframes slide8TextHover {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(240, 147, 251, 0.2);
+    color: white;
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(240, 147, 251, 0.4), 0 0 20px rgba(240, 147, 251, 0.2);
+    color: #fdf2f8;
   }
 }
 
