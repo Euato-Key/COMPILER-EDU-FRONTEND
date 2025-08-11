@@ -63,7 +63,7 @@
         </div>
 
         <!-- 学校信息 -->
-        <div class="school-section">
+        <div class="school-section" :class="{ 'active': true }">
           <div class="school-content">
             <div class="school-logo">
               <img src="/广州大学-logo.svg" alt="广州大学" class="logo-image" />
@@ -118,6 +118,34 @@ const getParticleStyle = () => {
   }
 }
 
+// 鼠标移动交互
+const handleMouseMove = (event: MouseEvent) => {
+  const particles = document.querySelectorAll('.particle') as NodeListOf<HTMLElement>
+  const mouseX = event.clientX
+  const mouseY = event.clientY
+
+  particles.forEach((particle) => {
+    const rect = particle.getBoundingClientRect()
+    const particleX = rect.left + rect.width / 2
+    const particleY = rect.top + rect.height / 2
+
+    const distance = Math.sqrt(
+      Math.pow(mouseX - particleX, 2) + Math.pow(mouseY - particleY, 2)
+    )
+
+    if (distance < 100) {
+      const angle = Math.atan2(mouseY - particleY, mouseX - particleX)
+      const force = (100 - distance) / 100
+      const moveX = Math.cos(angle) * force * 20
+      const moveY = Math.sin(angle) * force * 20
+
+      particle.style.transform = `translate(${moveX}px, ${moveY}px) scale(${1 + force * 0.3})`
+    } else {
+      particle.style.transform = 'translate(0, 0) scale(1)'
+    }
+  })
+}
+
 // 全屏控制
 const toggleFullscreen = () => {
   if (!document.fullscreenElement) {
@@ -139,10 +167,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('mousemove', handleMouseMove)
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('mousemove', handleMouseMove)
 })
 </script>
 
@@ -188,12 +218,14 @@ onUnmounted(() => {
   height: var(--size);
   background: var(--color);
   border-radius: 50%;
-  animation: particleFloat var(--duration) ease-in-out infinite;
+  animation: particleFloat var(--duration) ease-in-out infinite, particlePulse 4s ease-in-out infinite;
   animation-delay: var(--delay);
   left: var(--x);
   top: var(--y);
   opacity: 0.8;
   box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+  transition: transform 0.3s ease-out;
+  cursor: pointer;
 }
 
 @keyframes particleFloat {
@@ -219,6 +251,15 @@ onUnmounted(() => {
   }
 }
 
+@keyframes particlePulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* 幻灯片内容 */
 .slide-content {
   position: relative;
@@ -238,8 +279,8 @@ onUnmounted(() => {
 /* 感谢标题 */
 .thank-you-title {
   opacity: 0;
-  transform: translateY(-50px);
-  animation: titleAppear 2s ease-out 0.5s forwards;
+  transform: translateX(-100vw) scale(0.3);
+  animation: titleSlideIn 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
   margin-bottom: 1rem;
 }
 
@@ -251,7 +292,7 @@ onUnmounted(() => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: titleGlow 3s ease-in-out infinite;
+  animation: titleGlow 3s ease-in-out infinite, titleBreath 4s ease-in-out infinite;
 }
 
 .subtitle {
@@ -260,14 +301,26 @@ onUnmounted(() => {
   opacity: 0.8;
 }
 
-@keyframes titleAppear {
-  from {
+@keyframes titleSlideIn {
+  0% {
     opacity: 0;
-    transform: translateY(-50px) scale(0.8);
+    transform: translateX(-100vw) scale(0.3);
   }
-  to {
+  20% {
+    opacity: 0.2;
+    transform: translateX(-80vw) scale(0.4);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(-40vw) scale(0.7);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translateX(-10vw) scale(0.95);
+  }
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
   }
 }
 
@@ -277,6 +330,15 @@ onUnmounted(() => {
   }
   50% {
     text-shadow: 0 0 40px rgba(102, 126, 234, 0.6);
+  }
+}
+
+@keyframes titleBreath {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
   }
 }
 
@@ -319,10 +381,10 @@ onUnmounted(() => {
   transform: scale(0.8);
 }
 
-.member-item:nth-child(1) { animation: memberAppear 1s ease-out 2s forwards; }
-.member-item:nth-child(2) { animation: memberAppear 1s ease-out 2.3s forwards; }
-.member-item:nth-child(3) { animation: memberAppear 1s ease-out 2.6s forwards; }
-.member-item:nth-child(4) { animation: memberAppear 1s ease-out 2.9s forwards; }
+.member-item:nth-child(1) { animation: member1WaveIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.2s forwards; }
+.member-item:nth-child(2) { animation: member2SpiralIn 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.8s forwards; }
+.member-item:nth-child(3) { animation: member3ZoomIn 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 5.4s forwards; }
+.member-item:nth-child(4) { animation: member4ShakeIn 1.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6s forwards; }
 
 .member-item:hover {
   transform: translateY(-10px) scale(1.05);
@@ -331,20 +393,61 @@ onUnmounted(() => {
   border-color: rgba(102, 126, 234, 0.5);
 }
 
+/* 成员卡片持续动画 */
+.member-item {
+  animation: memberFloat 6s ease-in-out infinite;
+}
+
+.member-item:nth-child(1) { animation-delay: 0s; }
+.member-item:nth-child(2) { animation-delay: 1.5s; }
+.member-item:nth-child(3) { animation-delay: 3s; }
+.member-item:nth-child(4) { animation-delay: 4.5s; }
+
 .member-avatar {
   width: 70px;
   height: 70px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
   transition: all 0.3s ease;
 }
 
-.member-item:hover .member-avatar {
-  animation: avatarPulse 2s ease-in-out infinite;
+/* 不同成员的图标背景颜色 */
+.member-item:nth-child(1) .member-avatar {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+.member-item:nth-child(2) .member-avatar {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+}
+
+.member-item:nth-child(3) .member-avatar {
+  background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 100%);
+  box-shadow: 0 0 20px rgba(168, 230, 207, 0.5);
+}
+
+.member-item:nth-child(4) .member-avatar {
+  background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+  box-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+}
+
+.member-item:nth-child(1):hover .member-avatar {
+  animation: avatarPulseRed 2s ease-in-out infinite;
+}
+
+.member-item:nth-child(2):hover .member-avatar {
+  animation: avatarPulseTeal 2s ease-in-out infinite;
+}
+
+.member-item:nth-child(3):hover .member-avatar {
+  animation: avatarPulseGreen 2s ease-in-out infinite;
+}
+
+.member-item:nth-child(4):hover .member-avatar {
+  animation: avatarPulseYellow 2s ease-in-out infinite;
 }
 
 .avatar-icon {
@@ -362,14 +465,26 @@ onUnmounted(() => {
 
 
 
-@keyframes teamAdvisorAppear {
-  from {
+@keyframes teamAdvisorZoomIn {
+  0% {
     opacity: 0;
-    transform: translateY(30px) scale(0.9);
+    transform: scale(0.1) rotate(180deg);
   }
-  to {
+  30% {
+    opacity: 0.3;
+    transform: scale(0.3) rotate(120deg);
+  }
+  60% {
+    opacity: 0.7;
+    transform: scale(0.7) rotate(60deg);
+  }
+  85% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1) rotate(0deg);
   }
 }
 
@@ -384,24 +499,171 @@ onUnmounted(() => {
   }
 }
 
-@keyframes memberAppear {
-  from {
+@keyframes member1WaveIn {
+  0% {
     opacity: 0;
-    transform: scale(0.8) rotateY(-15deg);
+    transform: translateX(-150px) scale(0.2) rotateZ(-45deg);
   }
-  to {
+  20% {
+    opacity: 0.3;
+    transform: translateX(-100px) scale(0.4) rotateZ(-30deg);
+  }
+  40% {
+    opacity: 0.6;
+    transform: translateX(-50px) scale(0.6) rotateZ(-15deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(20px) scale(1.1) rotateZ(5deg);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translateX(-5px) scale(0.95) rotateZ(-2deg);
+  }
+  100% {
     opacity: 1;
-    transform: scale(1) rotateY(0deg);
+    transform: translateX(0) scale(1) rotateZ(0deg);
   }
 }
 
-@keyframes avatarPulse {
+@keyframes member2SpiralIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.1) rotate(720deg) translateY(-100px);
+  }
+  25% {
+    opacity: 0.2;
+    transform: scale(0.3) rotate(540deg) translateY(-60px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.6) rotate(360deg) translateY(-20px);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(0.9) rotate(180deg) translateY(10px);
+  }
+  90% {
+    opacity: 0.9;
+    transform: scale(1.05) rotate(45deg) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg) translateY(0);
+  }
+}
+
+@keyframes member3ZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.05) translateY(50px);
+  }
+  30% {
+    opacity: 0.4;
+    transform: scale(0.2) translateY(30px);
+  }
+  60% {
+    opacity: 0.7;
+    transform: scale(0.6) translateY(10px);
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1.2) translateY(-5px);
+  }
+  90% {
+    opacity: 1;
+    transform: scale(0.95) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes member4ShakeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.3) rotateZ(15deg);
+  }
+  15% {
+    opacity: 0.3;
+    transform: translateX(80px) scale(0.4) rotateZ(-10deg);
+  }
+  30% {
+    opacity: 0.5;
+    transform: translateX(60px) scale(0.5) rotateZ(8deg);
+  }
+  45% {
+    opacity: 0.7;
+    transform: translateX(40px) scale(0.7) rotateZ(-5deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(20px) scale(0.9) rotateZ(3deg);
+  }
+  75% {
+    opacity: 0.9;
+    transform: translateX(-5px) scale(1.05) rotateZ(-2deg);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(3px) scale(0.98) rotateZ(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes memberFloat {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes avatarPulseRed {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes avatarPulseTeal {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes avatarPulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 230, 207, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(168, 230, 207, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes avatarPulseYellow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 217, 61, 0.8);
     transform: scale(1.1);
   }
 }
@@ -414,8 +676,8 @@ onUnmounted(() => {
   justify-content: center;
   flex-wrap: wrap;
   opacity: 0;
-  transform: translateY(30px);
-  animation: teamAdvisorAppear 1.5s ease-out 1.5s forwards;
+  transform: scale(0.1) rotate(180deg);
+  animation: teamAdvisorZoomIn 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
 }
 
 /* 开发团队 */
@@ -430,9 +692,9 @@ onUnmounted(() => {
 
 /* 指导老师 */
 .advisor-section {
-  opacity: 1;
-  transform: none;
-  animation: none;
+  opacity: 0;
+  transform: scale(0.5) rotateY(-90deg);
+  animation: advisorSlideIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3.5s forwards;
   display: flex;
   flex-direction: column;
   min-height: 200px;
@@ -457,6 +719,11 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
   border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* 指导老师持续动画 */
+.advisor-info {
+  animation: advisorPulse 5s ease-in-out infinite;
 }
 
 .advisor-avatar {
@@ -488,14 +755,26 @@ onUnmounted(() => {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-@keyframes advisorAppear {
-  from {
+@keyframes advisorSlideIn {
+  0% {
     opacity: 0;
-    transform: translateY(30px) scale(0.9);
+    transform: scale(0.5) rotateY(-90deg);
   }
-  to {
+  30% {
+    opacity: 0.4;
+    transform: scale(0.7) rotateY(-60deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(0.9) rotateY(-30deg);
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1.05) rotateY(-10deg);
+  }
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1) rotateY(0deg);
   }
 }
 
@@ -510,11 +789,22 @@ onUnmounted(() => {
   }
 }
 
+@keyframes advisorPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+  }
+}
+
 /* 学校信息 */
 .school-section {
   opacity: 0;
-  transform: translateY(30px);
-  animation: schoolAppear 1.5s ease-out 3s forwards;
+  transform: translateX(100vw) scale(0.5);
+  animation: schoolSlideIn 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 7s forwards;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -550,6 +840,15 @@ onUnmounted(() => {
   animation: logoGlow 2s ease-in-out infinite;
 }
 
+/* 学校logo持续动画 */
+.school-logo {
+  animation: logoBreath 4s ease-in-out infinite;
+}
+
+.school-section.active .school-logo {
+  animation: logoDropIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 8.5s forwards;
+}
+
 .logo-image {
   width: 100%;
   height: 100%;
@@ -563,17 +862,53 @@ onUnmounted(() => {
   font-weight: bold;
   color: white;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-  animation: schoolNameGlow 3s ease-in-out infinite;
+  opacity: 0;
+  animation: schoolNameTypewriter 2s ease-out 9s forwards, schoolNameGlow 3s ease-in-out 10.5s infinite, schoolNameBounce 3s ease-in-out 11s infinite;
 }
 
-@keyframes schoolAppear {
-  from {
+@keyframes schoolSlideIn {
+  0% {
     opacity: 0;
-    transform: translateY(30px) scale(0.8);
+    transform: translateX(100vw) scale(0.5);
   }
-  to {
+  25% {
+    opacity: 0.3;
+    transform: translateX(80vw) scale(0.6);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(50vw) scale(0.7);
+  }
+  75% {
+    opacity: 0.8;
+    transform: translateX(20vw) scale(0.9);
+  }
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes logoDropIn {
+  0% {
+    transform: translateY(-200px) scale(0.1) rotateX(90deg);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(-100px) scale(0.3) rotateX(60deg);
+    opacity: 0.3;
+  }
+  60% {
+    transform: translateY(20px) scale(1.1) rotateX(20deg);
+    opacity: 0.7;
+  }
+  80% {
+    transform: translateY(-10px) scale(0.95) rotateX(5deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotateX(0deg);
+    opacity: 1;
   }
 }
 
@@ -588,6 +923,44 @@ onUnmounted(() => {
   }
 }
 
+@keyframes logoBreath {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes schoolNameTypewriter {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  20% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes schoolNameGlow {
   0%, 100% {
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
@@ -596,6 +969,15 @@ onUnmounted(() => {
   50% {
     text-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 35px rgba(255, 255, 255, 0.4);
     color: #f8fafc;
+  }
+}
+
+@keyframes schoolNameBounce {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
   }
 }
 
