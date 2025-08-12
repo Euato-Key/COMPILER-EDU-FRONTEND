@@ -804,7 +804,7 @@ onUnmounted(() => {
 .school-section {
   opacity: 0;
   transform: translateX(100vw) scale(0.5);
-  animation: schoolSlideIn 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 7s forwards;
+  animation: schoolSlideIn 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 5s forwards;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -846,7 +846,7 @@ onUnmounted(() => {
 }
 
 .school-section.active .school-logo {
-  animation: logoDropIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 8.5s forwards;
+  animation: logoDropIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.5s forwards;
 }
 
 .logo-image {
@@ -863,7 +863,7 @@ onUnmounted(() => {
   color: white;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
   opacity: 0;
-  animation: schoolNameTypewriter 2s ease-out 9s forwards, schoolNameGlow 3s ease-in-out 10.5s infinite, schoolNameBounce 3s ease-in-out 11s infinite;
+  animation: schoolNameTypewriter 2s ease-out 7s forwards, schoolNameGlow 3s ease-in-out 8.5s infinite, schoolNameBounce 3s ease-in-out 9s infinite;
 }
 
 @keyframes schoolSlideIn {
