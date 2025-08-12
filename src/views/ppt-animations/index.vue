@@ -200,6 +200,56 @@
         </div>
       </div>
 
+      <!-- 感谢页面 -->
+      <div class="mt-16 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl shadow-lg p-8 text-white">
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icon icon="lucide:heart" class="w-10 h-10 text-white" />
+          </div>
+          <h3 class="text-3xl font-bold mb-4">感谢页面</h3>
+          <p class="text-xl opacity-90 mb-6">
+            感谢各位评委、开发小组、指导老师和广州大学的支持与指导
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:users" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">评委老师</h4>
+              <p class="text-sm opacity-90">感谢您的宝贵时间和专业指导</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:code" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">开发小组</h4>
+              <p class="text-sm opacity-90">罗浩加、杨竣淇、陈梓涛、吴俊安</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:graduation-cap" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">指导老师</h4>
+              <p class="text-sm opacity-90">吴昱老师</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:building" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">广州大学</h4>
+              <p class="text-sm opacity-90">感谢学校提供的学习平台和资源</p>
+            </div>
+          </div>
+          <router-link
+            to="/ppt-animations/thank-you"
+            class="inline-flex items-center px-6 py-3 bg-white text-red-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+          >
+            <Icon icon="lucide:heart" class="w-5 h-5 mr-2" />
+            观看感谢动画
+          </router-link>
+        </div>
+      </div>
+
       <!-- 使用说明 -->
       <div class="mt-16 bg-white rounded-xl shadow-lg p-8">
         <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">使用说明</h3>
