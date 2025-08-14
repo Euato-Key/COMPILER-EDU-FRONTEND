@@ -5,10 +5,10 @@
       <!-- 背景颗粒动画 -->
       <div class="background-animation">
         <div class="particles">
-          <div 
-            v-for="i in 80" 
-            :key="i" 
-            class="particle" 
+          <div
+            v-for="i in 80"
+            :key="i"
+            class="particle"
             :class="`particle-${getParticleShape(i)}`"
             :style="getParticleStyle(i)"
             :data-animation="getParticleAnimationType(i)"
@@ -23,7 +23,7 @@
       </div>
 
       <!-- 幻灯片内容 -->
-              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/6)}%)` }">
+              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/8)}%)` }">
 
         <!-- 第1页：标题页 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -264,13 +264,147 @@
           </div>
         </div>
 
+        <!-- 第8页：个性化学习体验 -->
+        <div class="slide slide-8" :class="{ 'active': currentSlide === 6 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">个性化学习体验</h1>
+              <p class="subtitle">个性化学习体验围绕用户输入与操作轨迹展开，同时融入直观的可视化动画演示</p>
+            </div>
+
+            <div class="features-section">
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <Icon icon="lucide:user-check" class="icon" />
+                </div>
+                <h3>个性化学习</h3>
+                <p>基于用户输入的正则式、文法等信息，提供完全个性化的练习内容</p>
+                <div class="feature-examples">
+                  <div class="example-item">
+                    <span class="example-label">不同正则式</span>
+                    <span class="example-arrow">→</span>
+                    <span class="example-result">不同的NFA结构</span>
+                  </div>
+                  <div class="example-item">
+                    <span class="example-label">不同文法</span>
+                    <span class="example-arrow">→</span>
+                    <span class="example-result">不同的First集</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <Icon icon="lucide:activity" class="icon" />
+                </div>
+                <h3>操作轨迹记录</h3>
+                <p>平台会记录用户操作过程，实现学习轨迹的完整追踪</p>
+                <div class="feature-examples">
+                  <div class="example-item">
+                    <span class="example-label">绘制NFA</span>
+                    <span class="example-arrow">→</span>
+                    <span class="example-result">节点添加顺序</span>
+                  </div>
+                  <div class="example-item">
+                    <span class="example-label">计算分析表</span>
+                    <span class="example-arrow">→</span>
+                    <span class="example-result">填写修改记录</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <Icon icon="lucide:eye" class="icon" />
+                </div>
+                <h3>动态可视化</h3>
+                <p>LL1、LR0、SLR1等模块中，字符串分析等过程都有动态可视化动画演示</p>
+                <div class="feature-examples">
+                  <div class="example-item">
+                    <span class="example-label">每一步操作</span>
+                    <span class="example-arrow">→</span>
+                    <span class="example-result">清晰观察</span>
+                  </div>
+                  <div class="example-item">
+                    <span class="example-label">算法流程</span>
+                    <span class="example-arrow">→</span>
+                    <span class="example-result">直观理解</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第9页：AI助手和设计理念 -->
+        <div class="slide slide-9" :class="{ 'active': currentSlide === 7 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">AI助手与设计理念</h1>
+              <p class="subtitle">系统的个性化学习体验围绕用户输入与操作轨迹展开，同时融入直观的可视化动画演示</p>
+            </div>
+
+            <div class="ai-assistant-section">
+              <div class="ai-header">
+                <div class="ai-icon">
+                  <Icon icon="lucide:bot" class="icon" />
+                </div>
+                <h2>AI教学助手</h2>
+              </div>
+              <div class="ai-content">
+                <div class="ai-feature">
+                  <h3>可视化引擎</h3>
+                  <p>融进了含有可视化引擎的AI教学助手，基于用户的答题轨迹与平台的知识库精准答疑</p>
+                </div>
+                <div class="ai-feature">
+                  <h3>定制化反馈</h3>
+                  <p>提供定制化反馈，让练习和指导与学习轨迹绑定，实现"千人千面"的定制化学习</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="design-philosophy">
+              <h2>设计理念</h2>
+              <div class="philosophy-content">
+                <div class="philosophy-item">
+                  <div class="philosophy-icon">
+                    <Icon icon="lucide:target" class="icon" />
+                  </div>
+                  <div class="philosophy-text">
+                    <h3>用户输入为起点</h3>
+                    <p>每个用户的练习内容都基于其独特的输入信息</p>
+                  </div>
+                </div>
+                <div class="philosophy-item">
+                  <div class="philosophy-icon">
+                    <Icon icon="lucide:map" class="icon" />
+                  </div>
+                  <div class="philosophy-text">
+                    <h3>操作轨迹为依据</h3>
+                    <p>学习轨迹的完整记录为个性化指导提供依据</p>
+                  </div>
+                </div>
+                <div class="philosophy-item">
+                  <div class="philosophy-icon">
+                    <Icon icon="lucide:users" class="icon" />
+                  </div>
+                  <div class="philosophy-text">
+                    <h3>千人千面</h3>
+                    <p>确保每个用户的练习内容和辅导方案多样化</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 全屏时隐藏的控制按钮 -->
       <div v-if="!isFullscreen" class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 6"
+            v-for="i in 8"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -303,7 +437,7 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 defineOptions({
   name: 'VideoIntroNewPage'
@@ -327,7 +461,7 @@ const getParticleStyle = (index: number) => {
   const rotationSpeed = 0.3 + (seed % 1.5) // 加快旋转速度
   const pulseSpeed = 0.8 + (seed % 1.2) // 加快脉冲速度
   const movementRange = 50 + (seed % 80) // 增加运动范围
-  
+
   const colors = [
     'linear-gradient(45deg, #ff6b6b, #ee5a24)', // 鲜艳的红色
     'linear-gradient(45deg, #4834d4, #686de0)', // 深蓝色
@@ -347,7 +481,7 @@ const getParticleStyle = (index: number) => {
   ]
   const colorIndex = Math.floor(seed % colors.length)
   const randomColor = colors[colorIndex]
-  
+
   return {
     '--delay': `${delay}s`,
     '--duration': `${duration}s`,
@@ -381,7 +515,7 @@ const getParticleShape = (index: number) => {
 const nextSlide = () => {
   if (!isTransitioning.value) {
     isTransitioning.value = true
-    if (currentSlide.value < 5) {
+    if (currentSlide.value < 7) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -398,7 +532,7 @@ const previousSlide = () => {
     if (currentSlide.value > 0) {
       currentSlide.value--
     } else {
-      currentSlide.value = 5
+      currentSlide.value = 7
     }
     setTimeout(() => {
       isTransitioning.value = false
@@ -407,7 +541,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 5 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 7 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     setTimeout(() => {
@@ -419,7 +553,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 5) {
+    if (currentSlide.value < 7) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -503,7 +637,7 @@ onUnmounted(() => {
   position: relative;
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   border-radius: 20px;
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -544,12 +678,12 @@ onUnmounted(() => {
   left: var(--x);
   top: var(--y);
   opacity: 0.9;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(255, 255, 255, 0.6),
     0 0 40px rgba(255, 255, 255, 0.4),
     0 0 60px rgba(255, 255, 255, 0.2),
     inset 0 0 15px rgba(255, 255, 255, 0.3);
-  animation: 
+  animation:
     particleFloat var(--duration) ease-in-out infinite,
     particlePulse var(--pulse-speed) ease-in-out infinite,
     particleRotate var(--rotation-speed) linear infinite;
@@ -563,7 +697,7 @@ onUnmounted(() => {
 
 .particle:hover {
   transform: scale(2);
-  box-shadow: 
+  box-shadow:
     0 0 40px rgba(255, 255, 255, 0.9),
     0 0 80px rgba(255, 255, 255, 0.7),
     0 0 120px rgba(255, 255, 255, 0.5),
@@ -608,7 +742,7 @@ onUnmounted(() => {
 @keyframes particlePulse {
   0%, 100% {
     opacity: 0.9;
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(255, 255, 255, 0.6),
       0 0 40px rgba(255, 255, 255, 0.4),
       0 0 60px rgba(255, 255, 255, 0.2),
@@ -617,7 +751,7 @@ onUnmounted(() => {
   }
   50% {
     opacity: 1;
-    box-shadow: 
+    box-shadow:
       0 0 30px rgba(255, 255, 255, 0.8),
       0 0 60px rgba(255, 255, 255, 0.6),
       0 0 90px rgba(255, 255, 255, 0.4),
@@ -747,7 +881,7 @@ onUnmounted(() => {
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 600%;
+  width: 800%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -755,8 +889,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 6);
-  min-width: calc(100% / 6);
+  width: calc(100% / 8);
+  min-width: calc(100% / 8);
   height: 100%;
   display: flex;
   align-items: center;
@@ -2001,6 +2135,18 @@ onUnmounted(() => {
     gap: 1rem;
   }
 
+  .features-section {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-content {
+    grid-template-columns: 1fr;
+  }
+
+  .philosophy-content {
+    grid-template-columns: 1fr;
+  }
+
   .flow-steps {
     flex-direction: column;
     gap: 1rem;
@@ -2031,5 +2177,635 @@ onUnmounted(() => {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem 0;
+}
+
+/* 第8页：个性化学习体验 */
+.slide-8.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-8.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-8.active .feature-card:nth-child(1) {
+  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards, featureCardFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-8.active .feature-card:nth-child(2) {
+  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5s forwards, featureCardFloat 3s ease-in-out 9s infinite;
+}
+
+.slide-8.active .feature-card:nth-child(3) {
+  animation: featureCardSlideEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 8s forwards, featureCardFloat 3s ease-in-out 12s infinite;
+}
+
+.slide-8.active .feature-icon:nth-child(1) {
+  animation: featureIconSpin 1.5s ease-out 4.5s forwards, featureIconGlow 2s ease-in-out 6s infinite;
+}
+
+.slide-8.active .feature-icon:nth-child(2) {
+  animation: featureIconSpin 1.5s ease-out 7.5s forwards, featureIconGlow 2s ease-in-out 9s infinite;
+}
+
+.slide-8.active .feature-icon:nth-child(3) {
+  animation: featureIconSpin 1.5s ease-out 10.5s forwards, featureIconGlow 2s ease-in-out 12s infinite;
+}
+
+.slide-8.active .feature-card:nth-child(1) h3 {
+  animation: textSlideIn 1s ease-out 4s forwards, textGlow 2s ease-in-out 6s infinite;
+}
+
+.slide-8.active .feature-card:nth-child(2) h3 {
+  animation: textSlideIn 1s ease-out 7s forwards, textGlow 2s ease-in-out 9s infinite;
+}
+
+.slide-8.active .feature-card:nth-child(3) h3 {
+  animation: textSlideIn 1s ease-out 10s forwards, textGlow 2s ease-in-out 12s infinite;
+}
+
+.slide-8.active .feature-card:nth-child(1) p {
+  animation: textFadeIn 1.5s ease-out 4.2s forwards;
+}
+
+.slide-8.active .feature-card:nth-child(2) p {
+  animation: textFadeIn 1.5s ease-out 7.2s forwards;
+}
+
+.slide-8.active .feature-card:nth-child(3) p {
+  animation: textFadeIn 1.5s ease-out 10.2s forwards;
+}
+
+.slide-8.active .example-item:nth-child(1) {
+  animation: exampleItemSlide 1s ease-out 5s forwards, exampleItemPulse 2s ease-in-out 7s infinite;
+}
+
+.slide-8.active .example-item:nth-child(2) {
+  animation: exampleItemSlide 1s ease-out 5.3s forwards, exampleItemPulse 2s ease-in-out 7.3s infinite;
+}
+
+.slide-8.active .example-item:nth-child(3) {
+  animation: exampleItemSlide 1s ease-out 8s forwards, exampleItemPulse 2s ease-in-out 10s infinite;
+}
+
+.slide-8.active .example-item:nth-child(4) {
+  animation: exampleItemSlide 1s ease-out 8.3s forwards, exampleItemPulse 2s ease-in-out 10.3s infinite;
+}
+
+.slide-8.active .example-item:nth-child(5) {
+  animation: exampleItemSlide 1s ease-out 11s forwards, exampleItemPulse 2s ease-in-out 13s infinite;
+}
+
+.slide-8.active .example-item:nth-child(6) {
+  animation: exampleItemSlide 1s ease-out 11.3s forwards, exampleItemPulse 2s ease-in-out 13.3s infinite;
+}
+
+/* 第9页：AI助手和设计理念 */
+.slide-9.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-9.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-9.active .ai-assistant-section {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-9.active .ai-header {
+  animation: aiHeaderGlow 3s ease-in-out 3.5s infinite;
+}
+
+.slide-9.active .ai-icon {
+  animation: aiIconRotate 2s ease-out 2.5s forwards, aiIconPulse 2s ease-in-out 4.5s infinite;
+}
+
+.slide-9.active .design-philosophy {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards;
+}
+
+.slide-9.active .philosophy-item:nth-child(1) {
+  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5.5s forwards, philosophyItemFloat 3s ease-in-out 7.5s infinite;
+}
+
+.slide-9.active .philosophy-item:nth-child(2) {
+  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6s forwards, philosophyItemFloat 3s ease-in-out 8s infinite;
+}
+
+.slide-9.active .philosophy-item:nth-child(3) {
+  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.5s forwards, philosophyItemFloat 3s ease-in-out 8.5s infinite;
+}
+
+.slide-9.active .philosophy-icon:nth-child(1) {
+  animation: iconSpin 1.5s ease-out 6s forwards, iconGlow 2s ease-in-out 7.5s infinite;
+}
+
+.slide-9.active .philosophy-icon:nth-child(2) {
+  animation: iconSpin 1.5s ease-out 6.5s forwards, iconGlow 2s ease-in-out 8s infinite;
+}
+
+.slide-9.active .philosophy-icon:nth-child(3) {
+  animation: iconSpin 1.5s ease-out 7s forwards, iconGlow 2s ease-in-out 8.5s infinite;
+}
+
+/* 第8页和第9页的样式 */
+/* 第8页和第9页的标题样式，与前面页面保持一致 */
+.slide-8 .main-title,
+.slide-9 .main-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 3rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.features-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1.2rem;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+  transform: translateY(50px) scale(0.8);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+}
+
+.feature-card:hover {
+  transform: translateY(-15px) scale(1.03);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.feature-icon .icon {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.feature-card h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #1e293b;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.feature-card p {
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.feature-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.example-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.example-label {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.example-arrow {
+  color: #764ba2;
+  font-weight: bold;
+}
+
+.example-result {
+  color: #f093fb;
+  font-weight: 600;
+}
+
+/* AI助手部分 */
+.ai-assistant-section {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.ai-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-icon .icon {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.ai-header h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ai-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.ai-feature h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.ai-feature p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* 设计理念部分 */
+.design-philosophy {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.design-philosophy h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 3rem;
+}
+
+.philosophy-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.philosophy-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-50px);
+}
+
+.philosophy-item:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateX(10px) translateY(-5px);
+  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
+}
+
+.philosophy-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.philosophy-icon .icon {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.philosophy-text h3 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.philosophy-text p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* 第8页和第9页的动画关键帧 */
+@keyframes titleSlideInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.5) rotateX(90deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-20px) scale(1.1) rotateX(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes subtitleFadeInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes featureCardSlideEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.5) rotateX(45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px) scale(1.1) rotateX(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes featureCardFloat {
+  0%, 100% {
+    transform: translateY(0) rotateX(0deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-10px) rotateX(3deg);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    transform: translateY(-5px) rotateX(-2deg);
+    box-shadow: 0 15px 30px rgba(118, 75, 162, 0.3);
+  }
+  75% {
+    transform: translateY(-12px) rotateX(4deg);
+    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
+  }
+}
+
+@keyframes featureIconSpin {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3) rotate(-180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes featureIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
+    transform: scale(1.15);
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(102, 126, 234, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes exampleItemSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes exampleItemPulse {
+  0%, 100% {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+  }
+}
+
+@keyframes sectionSlideInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateY(45deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-30px) scale(1.05) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes aiHeaderGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6), 0 0 60px rgba(118, 75, 162, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes aiIconRotate {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3) rotate(-90deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes aiIconPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8), 0 0 50px rgba(118, 75, 162, 0.6);
+  }
+}
+
+@keyframes philosophyItemSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.5) rotateY(-45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-20px) scale(1.1) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes philosophyItemFloat {
+  0%, 100% {
+    transform: translateY(0) rotateY(0deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) rotateY(2deg);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+  }
+  50% {
+    transform: translateY(-5px) rotateY(-1deg);
+    box-shadow: 0 10px 25px rgba(118, 75, 162, 0.2);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(3deg);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  }
+}
+
+@keyframes iconSpin {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes iconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
+    transform: scale(1.1);
+  }
 }
 </style>
