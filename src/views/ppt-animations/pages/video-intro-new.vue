@@ -23,7 +23,7 @@
       </div>
 
       <!-- 幻灯片内容 -->
-      <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/7)}%)` }">
+              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/6)}%)` }">
 
         <!-- 第1页：标题页 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -264,33 +264,13 @@
           </div>
         </div>
 
-        <!-- 第8页：感谢页 -->
-        <div class="slide slide-8" :class="{ 'active': currentSlide === 6 }">
-          <div class="slide-content">
-            <div class="thank-you-section">
-              <h2 class="slide-title">感谢聆听</h2>
-              <div class="thank-you-content">
-                <div class="thank-you-icon">
-                  <Icon icon="lucide:heart" class="heart-icon" />
-                </div>
-                <p class="thank-you-text">感谢各位老师、同学的关注与支持</p>
-                <div class="team-info">
-                  <h3>项目团队</h3>
-                  <p>广州大学计算机科学与网络工程学院</p>
-                  <p>指导老师：吴昱老师</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <!-- 全屏时隐藏的控制按钮 -->
       <div v-if="!isFullscreen" class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 7"
+            v-for="i in 6"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -401,7 +381,7 @@ const getParticleShape = (index: number) => {
 const nextSlide = () => {
   if (!isTransitioning.value) {
     isTransitioning.value = true
-    if (currentSlide.value < 6) {
+    if (currentSlide.value < 5) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -418,7 +398,7 @@ const previousSlide = () => {
     if (currentSlide.value > 0) {
       currentSlide.value--
     } else {
-      currentSlide.value = 6
+      currentSlide.value = 5
     }
     setTimeout(() => {
       isTransitioning.value = false
@@ -427,7 +407,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 6 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 5 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     setTimeout(() => {
@@ -439,7 +419,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 6) {
+    if (currentSlide.value < 5) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -767,7 +747,7 @@ onUnmounted(() => {
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 700%;
+  width: 600%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -775,8 +755,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 7);
-  min-width: calc(100% / 7);
+  width: calc(100% / 6);
+  min-width: calc(100% / 6);
   height: 100%;
   display: flex;
   align-items: center;
@@ -1442,27 +1422,35 @@ onUnmounted(() => {
 
 /* 第7页：主观大题 */
 .slide-7.active .slide-title {
-  animation: titleSlideIn 0.8s ease-out 0.1s forwards;
+  animation: titleSlideIn 1s ease-out 0.2s forwards;
 }
 
 .slide-7.active .subjective-intro {
-  animation: introSlide 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+  animation: introSlideEnhanced 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+}
+
+.slide-7.active .subjective-intro h3 {
+  animation: textSlideIn 1s ease-out 0.8s forwards;
+}
+
+.slide-7.active .subjective-intro p {
+  animation: textSlideIn 1s ease-out 1.1s forwards;
 }
 
 .slide-7.active .subjective-grid {
-  animation: gridAppear 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
+  animation: gridAppearEnhanced 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s forwards;
 }
 
 .slide-7.active .subjective-item:nth-child(1) {
-  animation: itemSlideIn 0.8s ease-out 0.9s forwards;
+  animation: itemSlideInEnhanced 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.7s forwards;
 }
 
 .slide-7.active .subjective-item:nth-child(2) {
-  animation: itemSlideIn 0.8s ease-out 1.1s forwards;
+  animation: itemSlideInEnhanced 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2s forwards;
 }
 
 .slide-7.active .subjective-item:nth-child(3) {
-  animation: itemSlideIn 0.8s ease-out 1.3s forwards;
+  animation: itemSlideInEnhanced 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.3s forwards;
 }
 
 .subjective-section {
@@ -1497,12 +1485,16 @@ onUnmounted(() => {
   color: #3b82f6;
   font-size: 1.8rem;
   margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .subjective-intro p {
   color: #475569;
   font-size: 1.2rem;
   line-height: 1.6;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .subjective-grid {
@@ -1514,132 +1506,108 @@ onUnmounted(() => {
 }
 
 .subjective-item {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 0.8rem;
-  padding: 1.5rem;
+  border-radius: 1.2rem;
+  padding: 2rem;
   text-align: center;
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0;
-  transform: translateY(50px) scale(0.8);
+  transform: translateY(40px) scale(0.9);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.subjective-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.subjective-item:hover::before {
+  left: 100%;
 }
 
 .subjective-item:hover {
-  transform: translateY(-12px) scale(1.05);
+  transform: translateY(-15px) scale(1.05);
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 30px 60px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.subjective-item:hover .subjective-icon {
+  transform: scale(1.15) rotate(5deg);
+  box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
 }
 
 .subjective-icon {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1rem;
-  transition: all 0.3s ease;
+  margin: 0 auto 1.5rem;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.subjective-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.subjective-item:hover .subjective-icon::after {
+  transform: translateX(100%);
 }
 
 .subjective-icon .icon {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   color: white;
+  transition: all 0.3s ease;
 }
 
 .subjective-item h4 {
   color: #1e293b;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .subjective-item p {
   color: #64748b;
   font-size: 1rem;
+  transition: color 0.3s ease;
 }
 
-/* 第8页：感谢页 */
-.slide-8.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
+.subjective-item:hover h4 {
+  color: #3b82f6;
 }
 
-.slide-8.active .thank-you-content {
-  animation: thankYouAppear 1.5s ease-out 0.5s forwards;
+.subjective-item:hover p {
+  color: #475569;
 }
 
-.thank-you-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
 
-.thank-you-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.thank-you-icon {
-  animation: heartBeat 2s ease-in-out infinite;
-}
-
-.heart-icon {
-  width: 80px;
-  height: 80px;
-  color: #ef4444;
-}
-
-@keyframes heartBeat {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.thank-you-text {
-  font-size: 1.5rem;
-  color: #64748b;
-  text-align: center;
-  max-width: 600px;
-  line-height: 1.6;
-}
-
-.team-info {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.team-info h3 {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #1e293b;
-}
-
-.team-info p {
-  font-size: 1.2rem;
-  color: #64748b;
-  margin-bottom: 0.5rem;
-}
 
 /* 控制按钮 */
 .top-slide-controls {
@@ -1894,16 +1862,7 @@ onUnmounted(() => {
   }
 }
 
-@keyframes thankYouAppear {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 @keyframes stepSlideIn {
   from {
@@ -1965,6 +1924,47 @@ onUnmounted(() => {
   100% {
     opacity: 1;
     transform: scale(1) translateX(0);
+  }
+}
+
+@keyframes introSlideEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gridAppearEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes itemSlideInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-8px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
