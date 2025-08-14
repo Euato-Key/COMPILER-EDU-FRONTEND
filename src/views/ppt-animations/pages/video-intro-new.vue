@@ -23,7 +23,7 @@
       </div>
 
       <!-- 幻灯片内容 -->
-              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/13)}%)` }">
+              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/14)}%)` }">
 
         <!-- 第1页：标题页 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -270,7 +270,7 @@
             <div class="header-section">
               <h1 class="main-title">个性化学习体验</h1>
               <p class="subtitle">个性化学习体验围绕用户输入与操作轨迹展开，同时融入直观的可视化动画演示</p>
-            </div>
+                </div>
 
             <div class="features-section">
               <div class="feature-card">
@@ -284,7 +284,7 @@
                     <span class="example-label">不同正则式</span>
                     <span class="example-arrow">→</span>
                     <span class="example-result">不同的NFA结构</span>
-                  </div>
+              </div>
                   <div class="example-item">
                     <span class="example-label">不同文法</span>
                     <span class="example-arrow">→</span>
@@ -679,13 +679,72 @@
           </div>
         </div>
 
+        <!-- 第15页：感谢页面 -->
+        <div class="slide slide-15" :class="{ 'active': currentSlide === 13 }">
+          <div class="slide-content">
+            <!-- 感谢标题 -->
+            <div class="thank-you-title">
+              <h1 class="main-title">感谢各位评委的聆听</h1>
+              <p class="subtitle">Thank You for Your Attention</p>
+            </div>
+
+            <!-- 团队和指导老师信息 -->
+            <div class="team-advisor-section">
+              <!-- 指导老师 -->
+              <div class="advisor-section">
+                <h2 class="section-title">指导老师</h2>
+                <div class="advisor-info">
+                  <div class="advisor-avatar">
+                    <Icon icon="lucide:graduation-cap" class="advisor-icon" />
+                  </div>
+                  <div class="advisor-content">
+                    <span class="advisor-name">吴昱</span>
+                    <p class="advisor-thanks">感谢老师的悉心指导与支持，让我们在编译原理的学习道路上不断进步，收获满满的知识与成长</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 开发团队信息 -->
+              <div class="team-section">
+                <h2 class="section-title">开发小组</h2>
+                <div class="team-members">
+                  <div class="member-item">
+                    <div class="member-avatar">
+                      <Icon icon="lucide:file-text" class="avatar-icon" />
+                    </div>
+                    <span class="member-name">罗浩加</span>
+                  </div>
+                  <div class="member-item">
+                    <div class="member-avatar">
+                      <Icon icon="lucide:layers" class="avatar-icon" />
+                    </div>
+                    <span class="member-name">杨竣淇</span>
+                  </div>
+                  <div class="member-item">
+                    <div class="member-avatar">
+                      <Icon icon="lucide:video" class="avatar-icon" />
+                    </div>
+                    <span class="member-name">陈梓涛</span>
+                  </div>
+                  <div class="member-item">
+                    <div class="member-avatar">
+                      <Icon icon="lucide:search" class="avatar-icon" />
+                    </div>
+                    <span class="member-name">吴俊安</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 全屏时隐藏的控制按钮 -->
       <div v-if="!isFullscreen" class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 13"
+            v-for="i in 14"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -796,7 +855,7 @@ const getParticleShape = (index: number) => {
 const nextSlide = () => {
   if (!isTransitioning.value) {
     isTransitioning.value = true
-    if (currentSlide.value < 12) {
+    if (currentSlide.value < 13) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -813,7 +872,7 @@ const previousSlide = () => {
     if (currentSlide.value > 0) {
       currentSlide.value--
     } else {
-      currentSlide.value = 12
+      currentSlide.value = 13
     }
     setTimeout(() => {
       isTransitioning.value = false
@@ -822,7 +881,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 12 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 13 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     setTimeout(() => {
@@ -834,7 +893,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 12) {
+    if (currentSlide.value < 13) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -1162,7 +1221,7 @@ onUnmounted(() => {
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 1300%;
+  width: 1400%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1170,8 +1229,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 13);
-  min-width: calc(100% / 13);
+  width: calc(100% / 14);
+  min-width: calc(100% / 14);
   height: 100%;
   display: flex;
   align-items: center;
@@ -2478,18 +2537,100 @@ onUnmounted(() => {
     gap: 1rem;
   }
 
-  .university-logo {
+  /* 第15页响应式设计 */
+  .slide-15 .main-title {
+    font-size: 2.5rem;
+  }
+
+  .slide-15 .subtitle {
+    font-size: 1.2rem;
+  }
+
+  .slide-15 .slide-content {
+    gap: 2rem;
+    padding: 1rem;
+  }
+
+  .team-advisor-section {
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 100%;
+  }
+
+  .team-section {
+    max-width: 100%;
+  }
+
+  .advisor-section {
+    max-width: 100%;
+  }
+
+  .team-members {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .member-item {
+    padding: 1rem;
+    min-height: 100px;
+  }
+
+  .member-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .avatar-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .member-name {
+    font-size: 1rem;
+  }
+
+  .advisor-info {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    min-height: 200px;
+  }
+
+  .advisor-avatar {
+    width: 90px;
+    height: 90px;
+  }
+
+  .advisor-icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .advisor-content {
+    gap: 1rem;
+  }
+
+  .advisor-name {
+    font-size: 1.8rem;
+  }
+
+  .advisor-thanks {
+    font-size: 1rem;
+    max-width: 220px;
+  }
+
+.university-logo {
     top: 10px;
     right: 10px;
     padding: 0;
-  }
+}
 
-  .logo-svg {
+.logo-svg {
     width: 36px;
     height: 36px;
-  }
+}
 
-  .logo-text {
+.logo-text {
     height: 28px;
   }
 }
@@ -2643,7 +2784,8 @@ onUnmounted(() => {
 .slide-11 .main-title,
 .slide-12 .main-title,
 .slide-13 .main-title,
-.slide-14 .main-title {
+.slide-14 .main-title,
+.slide-15 .main-title {
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
@@ -3344,6 +3486,300 @@ onUnmounted(() => {
   line-height: 1.5;
 }
 
+/* 第15页：感谢页面 */
+.slide-15 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%);
+}
+
+.slide-15 .slide-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 2rem;
+}
+
+/* 感谢标题 */
+.thank-you-title {
+  opacity: 0;
+  transform: translateX(-100vw) scale(0.3);
+  animation: thankYouTitleSlideIn 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.slide-15.active .thank-you-title {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.slide-15 .main-title {
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: thankYouTitleGlow 3s ease-in-out infinite, thankYouTitleBreath 4s ease-in-out infinite;
+  line-height: 1.2;
+  opacity: 1;
+}
+
+.slide-15 .subtitle {
+  font-size: 1.5rem;
+  color: #64748b;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.slide-15.active .main-title {
+  opacity: 1;
+}
+
+.slide-15.active .subtitle {
+  opacity: 0.8;
+}
+
+/* 团队和指导老师容器 */
+.team-advisor-section {
+  display: flex;
+  gap: 4rem;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  transform: scale(0.1) rotate(180deg);
+  animation: teamAdvisorZoomIn 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* 开发团队 */
+.team-section {
+  opacity: 1;
+  transform: none;
+  animation: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 350px;
+  flex: 1;
+  max-width: 600px;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.team-members {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  justify-content: center;
+  flex: 1;
+  align-items: stretch;
+  margin-top: 1rem;
+  height: 100%;
+  min-height: 300px;
+}
+
+.member-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1.2rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: scale(0.8);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  min-height: 120px;
+  height: 100%;
+  justify-content: center;
+}
+
+.member-item:nth-child(1) { animation: member1WaveIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.2s forwards; }
+.member-item:nth-child(2) { animation: member2SpiralIn 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.8s forwards; }
+.member-item:nth-child(3) { animation: member3ZoomIn 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 5.4s forwards; }
+.member-item:nth-child(4) { animation: member4ShakeIn 1.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6s forwards; }
+
+.member-item:hover {
+  transform: translateY(-10px) scale(1.05);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* 成员卡片持续动画 */
+.member-item {
+  animation: memberFloat 6s ease-in-out infinite;
+}
+
+.member-item:nth-child(1) { animation-delay: 0s; }
+.member-item:nth-child(2) { animation-delay: 1.5s; }
+.member-item:nth-child(3) { animation-delay: 3s; }
+.member-item:nth-child(4) { animation-delay: 4.5s; }
+
+.member-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* 不同成员的图标背景颜色 */
+.member-item:nth-child(1) .member-avatar {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+.member-item:nth-child(2) .member-avatar {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+}
+
+.member-item:nth-child(3) .member-avatar {
+  background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 100%);
+  box-shadow: 0 0 20px rgba(168, 230, 207, 0.5);
+}
+
+.member-item:nth-child(4) .member-avatar {
+  background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+  box-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+}
+
+.member-item:nth-child(1):hover .member-avatar {
+  animation: avatarPulseRed 2s ease-in-out infinite;
+}
+
+.member-item:nth-child(2):hover .member-avatar {
+  animation: avatarPulseTeal 2s ease-in-out infinite;
+}
+
+.member-item:nth-child(3):hover .member-avatar {
+  animation: avatarPulseGreen 2s ease-in-out infinite;
+}
+
+.member-item:nth-child(4):hover .member-avatar {
+  animation: avatarPulseYellow 2s ease-in-out infinite;
+}
+
+.avatar-icon {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.member-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1e293b;
+  text-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+}
+
+/* 指导老师 */
+.advisor-section {
+  opacity: 0;
+  transform: scale(0.5) rotateY(-90deg);
+  animation: advisorSlideIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3.5s forwards;
+  display: flex;
+  flex-direction: column;
+  min-height: 350px;
+  flex: 1;
+  max-width: 400px;
+}
+
+.advisor-info {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+  flex: 1;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  margin-top: 1rem;
+  height: 100%;
+  min-height: 300px;
+}
+
+.advisor-info:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* 指导老师持续动画 */
+.advisor-info {
+  animation: advisorPulse 5s ease-in-out infinite;
+}
+
+.advisor-avatar {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.advisor-info:hover .advisor-avatar {
+  animation: advisorAvatarPulse 2s ease-in-out infinite;
+}
+
+.advisor-icon {
+  width: 50px;
+  height: 50px;
+  color: white;
+}
+
+.advisor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.advisor-name {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #1e293b;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.advisor-thanks {
+  font-size: 1.2rem;
+  color: #64748b;
+  line-height: 1.5;
+  max-width: 280px;
+  margin: 0;
+  text-align: center;
+}
+
 .fa-flow-container {
   display: flex;
   align-items: center;
@@ -3646,7 +4082,7 @@ onUnmounted(() => {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   50% {
-    background: rgba(102, 126, 234, 0.1);
+  background: rgba(102, 126, 234, 0.1);
     transform: scale(1.05);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
   }
@@ -4261,7 +4697,7 @@ onUnmounted(() => {
   }
   50% {
     box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
-    transform: scale(1.1);
+  transform: scale(1.1);
   }
 }
 
@@ -4627,6 +5063,285 @@ onUnmounted(() => {
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* 第15页动画关键帧 */
+@keyframes thankYouTitleSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-100vw) scale(0.3);
+  }
+  20% {
+    opacity: 0.2;
+    transform: translateX(-80vw) scale(0.4);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(-40vw) scale(0.7);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translateX(-10vw) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes thankYouTitleGlow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 40px rgba(102, 126, 234, 0.6);
+  }
+}
+
+@keyframes thankYouTitleBreath {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes teamAdvisorZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.1) rotate(180deg);
+  }
+  30% {
+    opacity: 0.3;
+    transform: scale(0.3) rotate(120deg);
+  }
+  60% {
+    opacity: 0.7;
+    transform: scale(0.7) rotate(60deg);
+  }
+  85% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes member1WaveIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-150px) scale(0.2) rotateZ(-45deg);
+  }
+  20% {
+    opacity: 0.3;
+    transform: translateX(-100px) scale(0.4) rotateZ(-30deg);
+  }
+  40% {
+    opacity: 0.6;
+    transform: translateX(-50px) scale(0.6) rotateZ(-15deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(20px) scale(1.1) rotateZ(5deg);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translateX(-5px) scale(0.95) rotateZ(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes member2SpiralIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.1) rotate(720deg) translateY(-100px);
+  }
+  25% {
+    opacity: 0.2;
+    transform: scale(0.3) rotate(540deg) translateY(-60px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.6) rotate(360deg) translateY(-20px);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(0.9) rotate(180deg) translateY(10px);
+  }
+  90% {
+    opacity: 0.9;
+    transform: scale(1.05) rotate(45deg) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg) translateY(0);
+  }
+}
+
+@keyframes member3ZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.05) translateY(50px);
+  }
+  30% {
+    opacity: 0.4;
+    transform: scale(0.2) translateY(30px);
+  }
+  60% {
+    opacity: 0.7;
+    transform: scale(0.6) translateY(10px);
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1.2) translateY(-5px);
+  }
+  90% {
+    opacity: 1;
+    transform: scale(0.95) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes member4ShakeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.3) rotateZ(15deg);
+  }
+  15% {
+    opacity: 0.3;
+    transform: translateX(80px) scale(0.4) rotateZ(-10deg);
+  }
+  30% {
+    opacity: 0.5;
+    transform: translateX(60px) scale(0.5) rotateZ(8deg);
+  }
+  45% {
+    opacity: 0.7;
+    transform: translateX(40px) scale(0.7) rotateZ(-5deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(20px) scale(0.9) rotateZ(3deg);
+  }
+  75% {
+    opacity: 0.9;
+    transform: translateX(-5px) scale(1.05) rotateZ(-2deg);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(3px) scale(0.98) rotateZ(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes memberFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes avatarPulseRed {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes avatarPulseTeal {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes avatarPulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 230, 207, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(168, 230, 207, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes avatarPulseYellow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 217, 61, 0.8);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes advisorSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotateY(-90deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: scale(0.7) rotateY(-60deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(0.9) rotateY(-30deg);
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1.05) rotateY(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes advisorAvatarPulse {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.9);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes advisorPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
   }
 }
 </style>
