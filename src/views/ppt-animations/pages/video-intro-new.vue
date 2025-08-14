@@ -5,18 +5,25 @@
       <!-- 背景颗粒动画 -->
       <div class="background-animation">
         <div class="particles">
-          <div v-for="i in 35" :key="i" class="particle" :style="getParticleStyle()"></div>
+          <div 
+            v-for="i in 80" 
+            :key="i" 
+            class="particle" 
+            :class="`particle-${getParticleShape(i)}`"
+            :style="getParticleStyle(i)"
+            :data-animation="getParticleAnimationType(i)"
+          ></div>
         </div>
       </div>
 
       <!-- 广州大学Logo - 右上角固定 -->
       <div class="university-logo">
-        <img src="/广州大学-logo.svg" alt="广州大学Logo" class="logo-svg" />
+        <img src="/image.png" alt="广州大学Logo" class="logo-svg" />
         <img src="/广州大学文字.png" alt="广州大学" class="logo-text" />
       </div>
 
       <!-- 幻灯片内容 -->
-      <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/9)}%)` }">
+      <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/7)}%)` }">
 
         <!-- 第1页：标题页 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -164,67 +171,8 @@
           </div>
         </div>
 
-        <!-- 第5页：解决方案 -->
+        <!-- 第5页：聚焦综合大题与主观操作-->
         <div class="slide slide-5" :class="{ 'active': currentSlide === 4 }">
-          <div class="slide-content">
-            <div class="solution-section">
-              <h2 class="slide-title">我们的解决方案</h2>
-              <div class="solution-features">
-                <div class="feature-item">
-                  <div class="feature-icon">
-                    <Icon icon="lucide:eye" class="icon" />
-                  </div>
-                  <h3>算法步骤可视化</h3>
-                  <p>动态展示编译过程</p>
-                </div>
-                <div class="feature-item">
-                  <div class="feature-icon">
-                    <Icon icon="lucide:mouse-pointer-click" class="icon" />
-                  </div>
-                  <h3>交互式学习</h3>
-                  <p>实时操作和反馈</p>
-                </div>
-                <div class="feature-item">
-                  <div class="feature-icon">
-                    <Icon icon="lucide:bot" class="icon" />
-                  </div>
-                  <h3>AI智能助手</h3>
-                  <p>个性化学习指导</p>
-                </div>
-                <div class="feature-item">
-                  <div class="feature-icon">
-                    <Icon icon="lucide:zap" class="icon" />
-                  </div>
-                  <h3>实时反馈</h3>
-                  <p>即时验证学习效果</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 第6页：开始体验 -->
-        <div class="slide slide-6" :class="{ 'active': currentSlide === 5 }">
-          <div class="slide-content">
-            <div class="cta-section">
-              <h2 class="slide-title">开始您的编译原理之旅</h2>
-              <div class="cta-content">
-                <div class="cta-icon">
-                  <Icon icon="lucide:rocket" class="rocket-icon" />
-                </div>
-                <p class="cta-text">探索编译原理的奥秘，让学习变得简单有趣</p>
-                <router-link to="/" class="cta-button">
-                  <Icon icon="lucide:play" class="button-icon" />
-                  立即开始体验
-                  <Icon icon="lucide:arrow-right" class="button-icon" />
-                </router-link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 第7页：核心需求与学习流程 -->
-        <div class="slide slide-7" :class="{ 'active': currentSlide === 6 }">
           <div class="slide-content">
             <div class="concept-section">
               <h2 class="slide-title">聚焦综合大题与主观操作</h2>
@@ -278,8 +226,8 @@
           </div>
         </div>
 
-        <!-- 第8页：主观大题 -->
-        <div class="slide slide-8" :class="{ 'active': currentSlide === 7 }">
+        <!-- 第7页：主观大题 -->
+        <div class="slide slide-7" :class="{ 'active': currentSlide === 5 }">
           <div class="slide-content">
             <div class="subjective-section">
               <h2 class="slide-title">聚焦综合大题与主观操作</h2>
@@ -316,8 +264,8 @@
           </div>
         </div>
 
-        <!-- 第9页：感谢页 -->
-        <div class="slide slide-9" :class="{ 'active': currentSlide === 8 }">
+        <!-- 第8页：感谢页 -->
+        <div class="slide slide-8" :class="{ 'active': currentSlide === 6 }">
           <div class="slide-content">
             <div class="thank-you-section">
               <h2 class="slide-title">感谢聆听</h2>
@@ -342,7 +290,7 @@
       <div v-if="!isFullscreen" class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 9"
+            v-for="i in 7"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -375,7 +323,7 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 
 defineOptions({
   name: 'VideoIntroNewPage'
@@ -388,35 +336,72 @@ const autoPlayEnabled = ref(false)
 let autoPlayTimer: number | null = null
 
 // 粒子样式生成
-const getParticleStyle = () => {
-  const delay = Math.random() * 10
-  const duration = 15 + Math.random() * 10
-  const x = Math.random() * 100
-  const y = Math.random() * 100
-  const size = 6 + Math.random() * 8
+const getParticleStyle = (index: number) => {
+  // 使用索引确保每个粒子的样式一致
+  const seed = index * 137.5 // 黄金角度
+  const delay = (seed % 8) // 减少延迟，让动画更快开始
+  const duration = 8 + (seed % 12) // 减少持续时间，让动画更快
+  const x = (seed * 1.618) % 100
+  const y = (seed * 0.618) % 100
+  const size = 6 + (seed % 16) // 增加粒子大小
+  const rotationSpeed = 0.3 + (seed % 1.5) // 加快旋转速度
+  const pulseSpeed = 0.8 + (seed % 1.2) // 加快脉冲速度
+  const movementRange = 50 + (seed % 80) // 增加运动范围
+  
   const colors = [
-    'linear-gradient(45deg, #667eea, #764ba2)',
-    'linear-gradient(45deg, #f093fb, #f5576c)',
-    'linear-gradient(45deg, #4facfe, #00f2fe)',
-    'linear-gradient(45deg, #43e97b, #38f9d7)',
-    'linear-gradient(45deg, #fa709a, #fee140)'
+    'linear-gradient(45deg, #ff6b6b, #ee5a24)', // 鲜艳的红色
+    'linear-gradient(45deg, #4834d4, #686de0)', // 深蓝色
+    'linear-gradient(45deg, #00d2d3, #54a0ff)', // 青色到蓝色
+    'linear-gradient(45deg, #ff9ff3, #f368e0)', // 粉色
+    'linear-gradient(45deg, #feca57, #ff9ff3)', // 黄色到粉色
+    'linear-gradient(45deg, #48dbfb, #0abde3)', // 亮蓝色
+    'linear-gradient(45deg, #1dd1a1, #10ac84)', // 绿色
+    'linear-gradient(45deg, #ff9f43, #ee5a24)', // 橙色
+    'linear-gradient(45deg, #a55eea, #8854d0)', // 紫色
+    'linear-gradient(45deg, #fd79a8, #e84393)', // 玫瑰色
+    'linear-gradient(45deg, #00b894, #00cec9)', // 青绿色
+    'linear-gradient(45deg, #fdcb6e, #e17055)', // 金黄色
+    'linear-gradient(45deg, #6c5ce7, #a29bfe)', // 靛蓝色
+    'linear-gradient(45deg, #fd79a8, #fdcb6e)', // 粉色到黄色
+    'linear-gradient(45deg, #00cec9, #74b9ff)'  // 青色到蓝色
   ]
-  const randomColor = colors[Math.floor(Math.random() * colors.length)]
+  const colorIndex = Math.floor(seed % colors.length)
+  const randomColor = colors[colorIndex]
+  
   return {
     '--delay': `${delay}s`,
     '--duration': `${duration}s`,
     '--x': `${x}%`,
     '--y': `${y}%`,
     '--color': randomColor,
-    '--size': `${size}px`
+    '--size': `${size}px`,
+    '--rotation-speed': `${rotationSpeed}s`,
+    '--pulse-speed': `${pulseSpeed}s`,
+    '--movement-range': `${movementRange}px`
   }
+}
+
+// 获取粒子动画类型
+const getParticleAnimationType = (index: number) => {
+  const animationTypes = ['float', 'spiral', 'wave', 'bounce', 'orbit']
+  const seed = index * 137.5
+  const typeIndex = Math.floor(seed % animationTypes.length)
+  return animationTypes[typeIndex]
+}
+
+// 获取粒子形状
+const getParticleShape = (index: number) => {
+  const shapes = ['circle', 'square', 'triangle', 'star']
+  const seed = index * 137.5
+  const shapeIndex = Math.floor(seed % shapes.length)
+  return shapes[shapeIndex]
 }
 
 // 幻灯片控制
 const nextSlide = () => {
   if (!isTransitioning.value) {
     isTransitioning.value = true
-    if (currentSlide.value < 8) {
+    if (currentSlide.value < 6) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -433,7 +418,7 @@ const previousSlide = () => {
     if (currentSlide.value > 0) {
       currentSlide.value--
     } else {
-      currentSlide.value = 8
+      currentSlide.value = 6
     }
     setTimeout(() => {
       isTransitioning.value = false
@@ -442,7 +427,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 8 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 6 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     setTimeout(() => {
@@ -454,7 +439,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 8) {
+    if (currentSlide.value < 6) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -558,12 +543,16 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   z-index: 1;
-  opacity: 0.3;
+  opacity: 0.6;
+  overflow: hidden;
 }
 
 .particles {
   position: absolute;
   inset: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
 }
 
 .particle {
@@ -572,30 +561,181 @@ onUnmounted(() => {
   height: var(--size);
   background: var(--color);
   border-radius: 50%;
-  animation: particleFloat var(--duration) ease-in-out infinite;
-  animation-delay: var(--delay);
   left: var(--x);
   top: var(--y);
-  opacity: 0.6;
-  box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+  opacity: 0.9;
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.6),
+    0 0 40px rgba(255, 255, 255, 0.4),
+    0 0 60px rgba(255, 255, 255, 0.2),
+    inset 0 0 15px rgba(255, 255, 255, 0.3);
+  animation: 
+    particleFloat var(--duration) ease-in-out infinite,
+    particlePulse var(--pulse-speed) ease-in-out infinite,
+    particleRotate var(--rotation-speed) linear infinite;
+  animation-delay: var(--delay);
+  filter: blur(0.2px);
+  backdrop-filter: blur(0.5px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1;
 }
 
+.particle:hover {
+  transform: scale(2);
+  box-shadow: 
+    0 0 40px rgba(255, 255, 255, 0.9),
+    0 0 80px rgba(255, 255, 255, 0.7),
+    0 0 120px rgba(255, 255, 255, 0.5),
+    inset 0 0 25px rgba(255, 255, 255, 0.6);
+  z-index: 10;
+  opacity: 1;
+}
+
+/* 不同形状的粒子 */
+.particle-square {
+  border-radius: 4px;
+  transform: rotate(45deg);
+}
+
+.particle-triangle {
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.particle-star {
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* 基础浮动动画 */
 @keyframes particleFloat {
   0%, 100% {
-    transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
-    opacity: 0.6;
+    transform: translateY(0px) translateX(0px) scale(1);
   }
   25% {
-    transform: translateY(-20px) translateX(10px) scale(1.2) rotate(90deg);
-    opacity: 0.8;
+    transform: translateY(calc(-1 * var(--movement-range))) translateX(calc(var(--movement-range) * 0.3)) scale(1.1);
   }
   50% {
-    transform: translateY(-40px) translateX(-5px) scale(0.8) rotate(180deg);
-    opacity: 0.4;
+    transform: translateY(calc(-1 * var(--movement-range) * 1.5)) translateX(calc(-1 * var(--movement-range) * 0.2)) scale(0.9);
   }
   75% {
-    transform: translateY(-20px) translateX(15px) scale(1.1) rotate(270deg);
-    opacity: 0.7;
+    transform: translateY(calc(-1 * var(--movement-range) * 0.8)) translateX(calc(var(--movement-range) * 0.4)) scale(1.05);
+  }
+}
+
+/* 脉冲动画 */
+@keyframes particlePulse {
+  0%, 100% {
+    opacity: 0.9;
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.6),
+      0 0 40px rgba(255, 255, 255, 0.4),
+      0 0 60px rgba(255, 255, 255, 0.2),
+      inset 0 0 15px rgba(255, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 
+      0 0 30px rgba(255, 255, 255, 0.8),
+      0 0 60px rgba(255, 255, 255, 0.6),
+      0 0 90px rgba(255, 255, 255, 0.4),
+      inset 0 0 20px rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+  }
+}
+
+/* 旋转动画 */
+@keyframes particleRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 螺旋动画 */
+.particle[data-animation="spiral"] {
+  animation: particleSpiral var(--duration) ease-in-out infinite !important;
+}
+
+@keyframes particleSpiral {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-50px) translateX(30px) scale(1.3) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-80px) translateX(-20px) scale(0.7) rotate(180deg);
+  }
+  75% {
+    transform: translateY(-40px) translateX(40px) scale(1.2) rotate(270deg);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px) scale(1) rotate(360deg);
+  }
+}
+
+/* 波浪动画 */
+.particle[data-animation="wave"] {
+  animation: particleWave var(--duration) ease-in-out infinite !important;
+}
+
+@keyframes particleWave {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) scale(1);
+  }
+  33% {
+    transform: translateY(-60px) translateX(35px) scale(1.4);
+  }
+  66% {
+    transform: translateY(-30px) translateX(-25px) scale(0.6);
+  }
+}
+
+/* 弹跳动画 */
+.particle[data-animation="bounce"] {
+  animation: particleBounce var(--duration) cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite !important;
+}
+
+@keyframes particleBounce {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  25% {
+    transform: translateY(-70px) scale(1.3);
+  }
+  50% {
+    transform: translateY(-100px) scale(0.7);
+  }
+  75% {
+    transform: translateY(-40px) scale(1.2);
+  }
+}
+
+/* 轨道动画 */
+.particle[data-animation="orbit"] {
+  animation: particleOrbit var(--duration) linear infinite !important;
+}
+
+@keyframes particleOrbit {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-35px) translateX(35px) scale(1.2) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-70px) translateX(0px) scale(0.8) rotate(180deg);
+  }
+  75% {
+    transform: translateY(-35px) translateX(-35px) scale(1.1) rotate(270deg);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px) scale(1) rotate(360deg);
   }
 }
 
@@ -608,28 +748,26 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 8px 12px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .logo-svg {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
 }
 
 .logo-text {
-  height: 24px;
+  height: 36px;
   width: auto;
 }
 
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 900%;
+  width: 700%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -637,8 +775,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 9);
-  min-width: calc(100% / 9);
+  width: calc(100% / 7);
+  min-width: calc(100% / 7);
   height: 100%;
   display: flex;
   align-items: center;
@@ -788,6 +926,11 @@ onUnmounted(() => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 第2页：核心基石 */
@@ -817,47 +960,68 @@ onUnmounted(() => {
 .main-text {
   font-size: 1.3rem;
   color: #475569;
-  line-height: 1.6;
+  line-height: 1.8;
   margin-bottom: 2rem;
-  text-align: left;
+  text-align: center;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 .concept-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 2.5rem;
+  margin-top: 3rem;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .concept-item {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 1rem;
-  padding: 2rem;
+  border-radius: 1.2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0;
   transform: translateY(50px) scale(0.8);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
 }
 
 .concept-item:hover {
-  transform: translateY(-10px) scale(1.02);
+  transform: translateY(-15px) scale(1.03);
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.concept-item:hover .concept-icon {
+  transform: scale(1.1);
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
 }
 
 .concept-icon {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
 }
 
 .concept-icon .icon {
@@ -880,12 +1044,18 @@ onUnmounted(() => {
 
 /* 第3页：抽象概念挑战 */
 .slide-3.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
+  animation: titleSlideIn 1.2s ease-out 0.5s forwards;
 }
 
-.slide-3.active .concept-flow-item:nth-child(1) { animation: flowItemSlide 1s ease-out 0.5s forwards; }
-.slide-3.active .concept-flow-item:nth-child(3) { animation: flowItemSlide 1s ease-out 0.9s forwards; }
-.slide-3.active .concept-flow-item:nth-child(5) { animation: flowItemSlide 1s ease-out 1.3s forwards; }
+.slide-3.active .main-text {
+  animation: textSlideIn 1.2s ease-out 0.8s forwards;
+}
+
+.slide-3.active .concept-flow-item:nth-child(1) { animation: flowItemSlide 1.2s ease-out 1s forwards; }
+.slide-3.active .flow-arrow:nth-child(2) { animation: arrowFadeIn 0.8s ease-out 1.2s forwards; }
+.slide-3.active .concept-flow-item:nth-child(3) { animation: flowItemSlide 1.2s ease-out 1.5s forwards; }
+.slide-3.active .flow-arrow:nth-child(4) { animation: arrowFadeIn 0.8s ease-out 1.7s forwards; }
+.slide-3.active .concept-flow-item:nth-child(5) { animation: flowItemSlide 1.2s ease-out 2s forwards; }
 
 .concepts-flow {
   display: flex;
@@ -939,13 +1109,26 @@ onUnmounted(() => {
 }
 
 .flow-arrow {
-  animation: arrowPulse 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8) translateX(-20px);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .arrow-icon {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   color: #3b82f6;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.2));
+}
+
+.flow-arrow:hover .arrow-icon {
+  transform: scale(1.2) translateX(5px);
+  color: #8b5cf6;
+  filter: drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3));
 }
 
 @keyframes flowItemSlide {
@@ -1056,181 +1239,123 @@ onUnmounted(() => {
   font-size: 1rem;
 }
 
-/* 第5页：解决方案 */
+/* 第5页：核心需求与学习流程 */
 .slide-5.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
+  animation: titleSlideIn 1s ease-out 0.2s forwards;
 }
 
-.slide-5.active .feature-item:nth-child(1) { animation: featureZoomIn 1s ease-out 0.5s forwards; }
-.slide-5.active .feature-item:nth-child(2) { animation: featureZoomIn 1s ease-out 1.5s forwards; }
-.slide-5.active .feature-item:nth-child(3) { animation: featureZoomIn 1s ease-out 2.5s forwards; }
-.slide-5.active .feature-item:nth-child(4) { animation: featureZoomIn 1s ease-out 3.5s forwards; }
-
-.solution-features {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-top: 2rem;
+.slide-5.active .concept-content {
+  animation: contentReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s forwards;
 }
 
-.feature-item {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 1rem;
-  padding: 2rem;
-  text-align: center;
+.slide-5.active .concept-title {
+  animation: textSlideIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
+}
+
+.slide-5.active .concept-description {
+  animation: textSlideIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.9s forwards;
+}
+
+.slide-5.active .flow-title {
+  animation: titleSlideIn 1s ease-out 1.3s forwards;
+}
+
+.slide-5.active .flow-step:nth-child(1) {
+  animation: stepSlideInEnhanced 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.6s forwards;
+}
+
+.slide-5.active .flow-step:nth-child(3) {
+  animation: stepSlideInEnhanced 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.9s forwards;
+}
+
+.slide-5.active .flow-step:nth-child(5) {
+  animation: stepSlideInEnhanced 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.2s forwards;
+}
+
+.slide-5.active .flow-arrow:nth-child(2) {
+  animation: arrowSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.8s forwards;
+}
+
+.slide-5.active .flow-arrow:nth-child(4) {
+  animation: arrowSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.1s forwards;
+}
+
+/* 卡片动画类 */
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1.2rem;
+  padding: 1.8rem;
+  min-width: 220px;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   opacity: 0;
-  transform: scale(0.5);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(30px) scale(0.95);
 }
 
-.feature-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+.flow-step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.flow-step:hover::before {
+  left: 100%;
+}
+
+.flow-step:hover {
+  transform: translateY(-12px) scale(1.03);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.flow-step:hover .step-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+}
+
+.step-icon {
+  width: 65px;
+  height: 65px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1rem;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.feature-icon .icon {
-  width: 40px;
-  height: 40px;
-  color: white;
+.step-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
 }
 
-.feature-item h3 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  color: #1e293b;
-}
-
-.feature-item p {
-  color: #64748b;
-  font-size: 1rem;
-}
-
-@keyframes featureZoomIn {
-  from {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* 第6页：开始体验 */
-.slide-6.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
-}
-
-.slide-6.active .cta-icon {
-  animation: rocketFloat 3s ease-in-out 0.5s infinite;
-}
-
-.slide-6.active .cta-text {
-  animation: textFadeIn 1s ease-out 0.7s forwards;
-}
-
-.slide-6.active .cta-button {
-  animation: buttonAppear 1s ease-out 1s forwards;
-}
-
-.cta-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
-
-.cta-icon {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.cta-text {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.cta-button {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.rocket-icon {
-  width: 100px;
-  height: 100px;
-  color: #3b82f6;
-}
-
-@keyframes rocketFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.cta-text {
-  font-size: 1.5rem;
-  color: #64748b;
-  max-width: 600px;
-  line-height: 1.6;
-}
-
-.cta-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: white;
-  text-decoration: none;
-  border-radius: 2rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  animation: buttonPulse 2s ease-in-out infinite;
-}
-
-.cta-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
-}
-
-.button-icon {
-  width: 24px;
-  height: 24px;
-}
-
-@keyframes buttonPulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
-  }
-}
-
-/* 第7页：核心需求与学习流程 */
-.slide-7.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
-}
-
-.slide-7.active .concept-content {
-  animation: contentReveal 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
-}
-
-.slide-7.active .learning-flow {
-  animation: flowContainer 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.4s forwards;
+.flow-step:hover .step-icon::after {
+  transform: translateX(100%);
 }
 
 .concept-content {
@@ -1248,6 +1373,8 @@ onUnmounted(() => {
   color: #1e293b;
   margin-bottom: 1.5rem;
   line-height: 1.4;
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 .concept-description {
@@ -1256,6 +1383,8 @@ onUnmounted(() => {
   line-height: 1.6;
   max-width: 800px;
   margin: 0 auto;
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 .learning-flow {
@@ -1263,8 +1392,6 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 2rem;
-  opacity: 0;
-  transform: translateY(50px);
 }
 
 .flow-title {
@@ -1273,6 +1400,8 @@ onUnmounted(() => {
   text-align: center;
   color: #1e293b;
   margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 .flow-steps {
@@ -1283,42 +1412,6 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
-.flow-step {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  min-width: 200px;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  position: relative;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.flow-step:hover {
-  transform: translateY(-8px) scale(1.02);
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.step-icon {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
 .step-icon .icon {
   width: 30px;
   height: 30px;
@@ -1326,28 +1419,50 @@ onUnmounted(() => {
 }
 
 .step-content h4 {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
   color: #1e293b;
+  transition: color 0.3s ease;
 }
 
 .step-content p {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #64748b;
+  transition: color 0.3s ease;
 }
 
-/* 第8页：主观大题 */
-.slide-8.active .slide-title {
-  animation: titleSlideIn 1s ease-out 0.3s forwards;
+.flow-step:hover .step-content h4 {
+  color: #3b82f6;
 }
 
-.slide-8.active .subjective-intro {
-  animation: introSlide 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.8s forwards;
+.flow-step:hover .step-content p {
+  color: #475569;
 }
 
-.slide-8.active .subjective-grid {
-  animation: gridAppear 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.5s forwards;
+/* 第7页：主观大题 */
+.slide-7.active .slide-title {
+  animation: titleSlideIn 0.8s ease-out 0.1s forwards;
+}
+
+.slide-7.active .subjective-intro {
+  animation: introSlide 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+}
+
+.slide-7.active .subjective-grid {
+  animation: gridAppear 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
+}
+
+.slide-7.active .subjective-item:nth-child(1) {
+  animation: itemSlideIn 0.8s ease-out 0.9s forwards;
+}
+
+.slide-7.active .subjective-item:nth-child(2) {
+  animation: itemSlideIn 0.8s ease-out 1.1s forwards;
+}
+
+.slide-7.active .subjective-item:nth-child(3) {
+  animation: itemSlideIn 0.8s ease-out 1.3s forwards;
 }
 
 .subjective-section {
@@ -1451,12 +1566,12 @@ onUnmounted(() => {
   font-size: 1rem;
 }
 
-/* 第9页：感谢页 */
-.slide-9.active .slide-title {
+/* 第8页：感谢页 */
+.slide-8.active .slide-title {
   animation: titleSlideIn 1s ease-out 0.3s forwards;
 }
 
-.slide-9.active .thank-you-content {
+.slide-8.active .thank-you-content {
   animation: thankYouAppear 1.5s ease-out 0.5s forwards;
 }
 
@@ -1738,60 +1853,44 @@ onUnmounted(() => {
 @keyframes contentReveal {
   0% {
     opacity: 0;
-    transform: translateY(30px) scale(0.9) rotateY(10deg);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translateY(15px) scale(0.95) rotateY(5deg);
+    transform: translateY(20px) scale(0.95);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotateY(0deg);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes flowContainer {
   0% {
     opacity: 0;
-    transform: translateY(50px) scale(0.8) rotateZ(-5deg);
-  }
-  50% {
-    opacity: 0.7;
-    transform: translateY(25px) scale(0.9) rotateZ(-2deg);
+    transform: translateY(30px) scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotateZ(0deg);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes introSlide {
   0% {
     opacity: 0;
-    transform: translateY(50px) scale(0.8) rotateX(15deg);
-  }
-  50% {
-    opacity: 0.7;
-    transform: translateY(25px) scale(0.9) rotateX(7deg);
+    transform: translateY(30px) scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotateX(0deg);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes gridAppear {
   0% {
     opacity: 0;
-    transform: translateY(50px) scale(0.7) rotateY(15deg);
-  }
-  50% {
-    opacity: 0.5;
-    transform: translateY(25px) scale(0.85) rotateY(7deg);
+    transform: translateY(30px) scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotateY(0deg);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1803,6 +1902,69 @@ onUnmounted(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes stepSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes arrowFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes itemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stepSlideInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes arrowSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateX(-30px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1) translateX(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateX(0);
   }
 }
 
@@ -1847,16 +2009,27 @@ onUnmounted(() => {
   .university-logo {
     top: 10px;
     right: 10px;
-    padding: 6px 8px;
+    padding: 0;
   }
 
   .logo-svg {
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
   }
 
   .logo-text {
-    height: 18px;
+    height: 28px;
   }
+}
+
+.concept-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 0;
 }
 </style>
