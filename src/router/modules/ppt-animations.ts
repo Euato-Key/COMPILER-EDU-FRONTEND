@@ -54,6 +54,24 @@ const pptAnimationRoutes: RouteRecordRaw[] = [
       title: '多样性的可视化学习体验',
       description: '个性化学习体验与AI教学助手'
     }
+  },
+  {
+    path: '/ppt-animations/thank-you',
+    name: 'thank-you',
+    component: () => import('../../views/ppt-animations/pages/thank-you.vue'),
+    meta: {
+      title: '感谢动画',
+      description: '感谢页面动画演示'
+    }
+  },
+  {
+    path: '/ppt-animations/video-intro-new',
+    name: 'video-intro-new',
+    component: () => import('../../views/ppt-animations/pages/video-intro-new.vue'),
+    meta: {
+      title: 'PPT动画演示 - 新版',
+      description: '适合毕业论文答辩的PPT动画演示'
+    }
   }
 ]
 

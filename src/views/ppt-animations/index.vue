@@ -250,6 +250,49 @@
         </div>
       </div>
 
+      <!-- 新版PPT动画入口 -->
+      <div class="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-8 text-white">
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icon icon="lucide:presentation" class="w-10 h-10 text-white" />
+          </div>
+          <h3 class="text-3xl font-bold mb-4">新版PPT动画演示</h3>
+          <p class="text-xl opacity-90 mb-6">
+            适合毕业论文答辩的亮色配色方案，专业的PPT动画框设计
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:palette" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">亮色配色</h4>
+              <p class="text-sm opacity-90">适合答辩的专业配色方案</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:maximize" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">全屏模式</h4>
+              <p class="text-sm opacity-90">支持全屏演示，键盘控制</p>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Icon icon="lucide:building" class="w-6 h-6 text-white" />
+              </div>
+              <h4 class="font-semibold mb-2">广州大学</h4>
+              <p class="text-sm opacity-90">右上角固定显示学校标识</p>
+            </div>
+          </div>
+          <router-link
+            to="/ppt-animations/video-intro-new"
+            class="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+          >
+            <Icon icon="lucide:play" class="w-5 h-5 mr-2" />
+            观看新版动画
+          </router-link>
+        </div>
+      </div>
+
       <!-- 使用说明 -->
       <div class="mt-16 bg-white rounded-xl shadow-lg p-8">
         <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">使用说明</h3>
