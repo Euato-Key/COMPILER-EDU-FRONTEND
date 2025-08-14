@@ -23,7 +23,7 @@
       </div>
 
       <!-- 幻灯片内容 -->
-              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/12)}%)` }">
+              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/13)}%)` }">
 
         <!-- 第1页：标题页 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -627,13 +627,65 @@
           </div>
         </div>
 
+        <!-- 第14页：进入学习页 -->
+        <div class="slide slide-14" :class="{ 'active': currentSlide === 12 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">进入学习</h1>
+              <p class="subtitle">接下来，让我们逐一探索这些模块如何通过细致步骤、个性化交互以及智能化管控，让编译原理的学习变得可触、可感、可操作。</p>
+            </div>
+
+            <div class="learning-intro-section">
+              <div class="learning-intro">
+                <h2>学习体验的核心要素</h2>
+                <p>通过细致步骤、个性化交互以及智能化管控，让编译原理的学习变得可触、可感、可操作</p>
+              </div>
+
+              <div class="learning-features">
+                <div class="learning-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:layers" class="icon" />
+                  </div>
+                  <div class="feature-content">
+                    <h3>细致步骤</h3>
+                    <p>每个模块都被拆解为符合逻辑递进关系的详细步骤，基于学科知识的内在结构进行启发式设计</p>
+                  </div>
+                </div>
+                <div class="learning-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:user-check" class="icon" />
+                  </div>
+                  <div class="feature-content">
+                    <h3>个性化交互</h3>
+                    <p>基于用户输入与操作轨迹，提供完全个性化的练习内容和定制化反馈</p>
+                  </div>
+                </div>
+                <div class="learning-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:shield-check" class="icon" />
+                  </div>
+                  <div class="feature-content">
+                    <h3>智能化管控</h3>
+                    <p>从输入验证到实时校验，再到错误提醒，确保学习过程的规范性和有效性</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="learning-summary">
+                <h3>可触、可感、可操作</h3>
+                <p>让抽象的编译原理概念变得具体化，通过可视化动画和交互式操作，让学习过程更加直观和高效。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 全屏时隐藏的控制按钮 -->
       <div v-if="!isFullscreen" class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 12"
+            v-for="i in 13"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -761,7 +813,7 @@ const previousSlide = () => {
     if (currentSlide.value > 0) {
       currentSlide.value--
     } else {
-      currentSlide.value = 11
+      currentSlide.value = 12
     }
     setTimeout(() => {
       isTransitioning.value = false
@@ -770,7 +822,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 11 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 12 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     setTimeout(() => {
@@ -782,7 +834,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 11) {
+    if (currentSlide.value < 12) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -1110,7 +1162,7 @@ onUnmounted(() => {
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 1200%;
+  width: 1300%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1118,8 +1170,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 12);
-  min-width: calc(100% / 12);
+  width: calc(100% / 13);
+  min-width: calc(100% / 13);
   height: 100%;
   display: flex;
   align-items: center;
@@ -2412,6 +2464,15 @@ onUnmounted(() => {
     text-align: center;
   }
 
+  .learning-features {
+    grid-template-columns: 1fr;
+  }
+
+  .learning-feature {
+    flex-direction: column;
+    text-align: center;
+  }
+
   .flow-steps {
     flex-direction: column;
     gap: 1rem;
@@ -2581,7 +2642,8 @@ onUnmounted(() => {
 .slide-10 .main-title,
 .slide-11 .main-title,
 .slide-12 .main-title,
-.slide-13 .main-title {
+.slide-13 .main-title,
+.slide-14 .main-title {
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
@@ -3158,6 +3220,125 @@ onUnmounted(() => {
 }
 
 .control-summary p {
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* 第14页：进入学习页 */
+.learning-intro-section {
+  margin-top: 0.5rem;
+}
+
+.learning-intro {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.learning-intro h2 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.6rem;
+}
+
+.learning-intro p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.learning-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.learning-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-50px);
+}
+
+.learning-feature:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateX(10px) translateY(-5px);
+  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
+}
+
+.learning-feature .feature-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.learning-feature .feature-icon .icon {
+  width: 25px;
+  height: 25px;
+  color: white;
+}
+
+.learning-feature .feature-content h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 0.3rem;
+}
+
+.learning-feature .feature-content p {
+  color: #64748b;
+  line-height: 1.3;
+  font-size: 0.9rem;
+}
+
+.learning-summary {
+  text-align: center;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.learning-summary h3 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.8rem;
+}
+
+.learning-summary p {
   color: #64748b;
   font-size: 1rem;
   line-height: 1.5;
@@ -3772,6 +3953,52 @@ onUnmounted(() => {
   animation: controlSummarySlide 1.5s ease-out 5.5s forwards;
 }
 
+/* 第14页：进入学习页动画 */
+.slide-14.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-14.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+  margin-bottom: 1rem;
+}
+
+.slide-14.active .learning-intro-section {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-14.active .learning-intro {
+  animation: learningIntroSlide 1.5s ease-out 3s forwards, learningIntroGlow 3s ease-in-out 4.5s infinite;
+}
+
+.slide-14.active .learning-feature:nth-child(1) {
+  animation: learningFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards, learningFeatureFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-14.active .learning-feature:nth-child(2) {
+  animation: learningFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.3s forwards, learningFeatureFloat 3s ease-in-out 6.3s infinite;
+}
+
+.slide-14.active .learning-feature:nth-child(3) {
+  animation: learningFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.6s forwards, learningFeatureFloat 3s ease-in-out 6.6s infinite;
+}
+
+.slide-14.active .learning-feature:nth-child(1) .feature-icon {
+  animation: learningIconSpin 1.5s ease-out 4.5s forwards, learningIconGlow 2s ease-in-out 6.5s infinite;
+}
+
+.slide-14.active .learning-feature:nth-child(2) .feature-icon {
+  animation: learningIconSpin 1.5s ease-out 4.8s forwards, learningIconGlow 2s ease-in-out 6.8s infinite;
+}
+
+.slide-14.active .learning-feature:nth-child(3) .feature-icon {
+  animation: learningIconSpin 1.5s ease-out 5.1s forwards, learningIconGlow 2s ease-in-out 7.1s infinite;
+}
+
+.slide-14.active .learning-summary {
+  animation: learningSummarySlide 1.5s ease-out 5.5s forwards;
+}
+
 /* 第11页：有限自动机步骤部分 */
 .fa-steps-section {
   margin-top: 2rem;
@@ -4299,6 +4526,100 @@ onUnmounted(() => {
 }
 
 @keyframes controlSummarySlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 第14页动画关键帧 */
+@keyframes learningIntroSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes learningIntroGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6), 0 0 60px rgba(118, 75, 162, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes learningFeatureSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.5) rotateY(-45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-20px) scale(1.1) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes learningFeatureFloat {
+  0%, 100% {
+    transform: translateY(0) rotateY(0deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) rotateY(2deg);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+  }
+  50% {
+    transform: translateY(-5px) rotateY(-1deg);
+    box-shadow: 0 10px 25px rgba(118, 75, 162, 0.2);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(3deg);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  }
+}
+
+@keyframes learningIconSpin {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes learningIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes learningSummarySlide {
   0% {
     opacity: 0;
     transform: translateY(30px) scale(0.95);
