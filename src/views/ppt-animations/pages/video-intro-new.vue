@@ -23,7 +23,7 @@
       </div>
 
       <!-- 幻灯片内容 -->
-              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/8)}%)` }">
+              <div class="slides-wrapper" :style="{ transform: `translateX(-${currentSlide * (100/12)}%)` }">
 
         <!-- 第1页：标题页 -->
         <div class="slide slide-1" :class="{ 'active': currentSlide === 0 }">
@@ -398,13 +398,242 @@
           </div>
         </div>
 
+        <!-- 第10页：步骤拆解体现知识结构 -->
+        <div class="slide slide-10" :class="{ 'active': currentSlide === 8 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">步骤拆解体现知识结构</h1>
+              <p class="subtitle">每个模块都被拆解为符合逻辑递进关系的详细步骤，这种拆解方式并非简单的流程切割，而是基于《编译原理》学科知识的内在结构进行的启发式设计</p>
+            </div>
+
+            <div class="knowledge-structure-section">
+              <div class="structure-intro">
+                <h2>启发式知识分解</h2>
+                <p>基于《编译原理》学科知识的内在结构进行的启发式设计，每一步都对应着核心知识点的递进关系</p>
+              </div>
+
+              <div class="structure-features">
+                <div class="structure-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:layers" class="icon" />
+                  </div>
+                  <h3>逻辑递进</h3>
+                  <p>符合知识结构的逻辑递进关系，从基础到高级逐步深入</p>
+                </div>
+                <div class="structure-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:target" class="icon" />
+                  </div>
+                  <h3>核心知识点</h3>
+                  <p>每一步都对应着模块的核心知识点，确保学习重点明确</p>
+                </div>
+                <div class="structure-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:check-circle" class="icon" />
+                  </div>
+                  <h3>验证机制</h3>
+                  <p>每一步都有明确的操作指引和验证机制，确保学习效果</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第11页：有限自动机步骤拆解示例 -->
+        <div class="slide slide-11" :class="{ 'active': currentSlide === 9 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">有限自动机步骤拆解示例</h1>
+              <p class="subtitle">以有限自动机（FA）为例，展示从正则式输入到DFA构建与最小化的完整流程</p>
+            </div>
+
+            <div class="fa-steps-section">
+              <div class="fa-flow-container">
+                <div class="fa-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:file-text" class="icon" />
+                    </div>
+                    <h4>正则式输入</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>用户输入正则表达式，系统进行语法验证</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="fa-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:git-branch" class="icon" />
+                    </div>
+                    <h4>NFA 绘制</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>动态构建NFA状态图，可视化展示转换过程</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="fa-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:network" class="icon" />
+                    </div>
+                    <h4>子集法转换</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>逐步展示子集构造算法，生成DFA状态</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+
+                <div class="flow-arrow">
+                  <Icon icon="lucide:arrow-right" class="arrow-icon" />
+                </div>
+
+                <div class="fa-step-card">
+                  <div class="step-header">
+                    <div class="step-icon">
+                      <Icon icon="lucide:target" class="icon" />
+                    </div>
+                    <h4>DFA 构建与最小化</h4>
+                  </div>
+                  <div class="step-content">
+                    <p>完成DFA构建并进行状态最小化优化</p>
+                  </div>
+                  <div class="step-decoration">
+                    <div class="decoration-dot"></div>
+                    <div class="decoration-line"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fa-description">
+                <h3>词法分析模块的核心知识点递进</h3>
+                <p>每一步都对应着词法分析模块的核心知识点递进，且每一步都有明确的操作指引和验证机制；步骤清晰且紧密衔接，能帮助学生逐步攻克复杂问题。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第12页：线上智能管控解题过程 -->
+        <div class="slide slide-12" :class="{ 'active': currentSlide === 10 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">线上智能管控解题过程</h1>
+              <p class="subtitle">系统并非单纯的工具载体，而是对整个解题流程实现了智能化管控</p>
+            </div>
+
+            <div class="control-process-section">
+              <div class="control-intro">
+                <h2>智能化管控机制</h2>
+                <p>从用户输入的有效性验证，到每一步操作的实时校验，再到错误节点的及时提醒，都通过线上管控机制确保学习过程的规范性和有效性</p>
+              </div>
+
+              <div class="control-features">
+                <div class="control-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:check-circle" class="icon" />
+                  </div>
+                  <h3>输入验证</h3>
+                  <p>实时验证用户输入的正则式、文法等内容的语法正确性</p>
+                </div>
+                <div class="control-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:eye" class="icon" />
+                  </div>
+                  <h3>实时校验</h3>
+                  <p>对每一步操作进行实时校验，确保操作的正确性和规范性</p>
+                </div>
+                <div class="control-feature">
+                  <div class="feature-icon">
+                    <Icon icon="lucide:alert-triangle" class="icon" />
+                  </div>
+                  <h3>错误提醒</h3>
+                  <p>及时发现并提醒错误节点，避免学生在错误路径上盲目探索</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第13页：管控效果与学习效率 -->
+        <div class="slide slide-13" :class="{ 'active': currentSlide === 11 }">
+          <div class="slide-content">
+            <div class="header-section">
+              <h1 class="main-title">管控效果与学习效率</h1>
+              <p class="subtitle">通过线上管控机制确保学习过程的规范性和有效性，提升学习效率</p>
+            </div>
+
+            <div class="efficiency-section">
+              <div class="efficiency-intro">
+                <h2>学习效率提升</h2>
+                <p>避免学生在错误路径上盲目探索，通过智能管控机制提升学习效率</p>
+              </div>
+
+              <div class="efficiency-benefits">
+                <div class="benefit-item">
+                  <div class="benefit-icon">
+                    <Icon icon="lucide:zap" class="icon" />
+                  </div>
+                  <div class="benefit-content">
+                    <h3>快速纠错</h3>
+                    <p>及时发现错误并给出纠正建议，避免错误累积</p>
+                  </div>
+                </div>
+                <div class="benefit-item">
+                  <div class="benefit-icon">
+                    <Icon icon="lucide:target" class="icon" />
+                  </div>
+                  <div class="benefit-content">
+                    <h3>精准指导</h3>
+                    <p>基于错误类型提供精准的学习指导和改进建议</p>
+                  </div>
+                </div>
+                <div class="benefit-item">
+                  <div class="benefit-icon">
+                    <Icon icon="lucide:trending-up" class="icon" />
+                  </div>
+                  <div class="benefit-content">
+                    <h3>效率提升</h3>
+                    <p>通过规范化流程和智能提醒，显著提升学习效率</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-summary">
+                <h3>智能管控的核心价值</h3>
+                <p>系统不仅是一个工具，更是一个智能化的学习伙伴，通过全方位的管控机制，确保每个学习环节都高效、规范、有效，让学习过程更加顺畅和高效。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 全屏时隐藏的控制按钮 -->
       <div v-if="!isFullscreen" class="top-slide-controls">
         <div class="slide-indicators">
           <button
-            v-for="i in 8"
+            v-for="i in 12"
             :key="i"
             @click="goToSlide(i - 1)"
             class="indicator"
@@ -515,7 +744,7 @@ const getParticleShape = (index: number) => {
 const nextSlide = () => {
   if (!isTransitioning.value) {
     isTransitioning.value = true
-    if (currentSlide.value < 7) {
+    if (currentSlide.value < 12) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -532,7 +761,7 @@ const previousSlide = () => {
     if (currentSlide.value > 0) {
       currentSlide.value--
     } else {
-      currentSlide.value = 7
+      currentSlide.value = 11
     }
     setTimeout(() => {
       isTransitioning.value = false
@@ -541,7 +770,7 @@ const previousSlide = () => {
 }
 
 const goToSlide = (index: number) => {
-  if (index >= 0 && index <= 7 && index !== currentSlide.value && !isTransitioning.value) {
+  if (index >= 0 && index <= 11 && index !== currentSlide.value && !isTransitioning.value) {
     isTransitioning.value = true
     currentSlide.value = index
     setTimeout(() => {
@@ -553,7 +782,7 @@ const goToSlide = (index: number) => {
 // 自动播放
 const startAutoPlay = () => {
   autoPlayTimer = window.setInterval(() => {
-    if (currentSlide.value < 7) {
+    if (currentSlide.value < 11) {
       currentSlide.value++
     } else {
       currentSlide.value = 0
@@ -881,7 +1110,7 @@ onUnmounted(() => {
 /* 幻灯片容器 */
 .slides-wrapper {
   position: relative;
-  width: 800%;
+  width: 1200%;
   height: 100%;
   display: flex;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -889,8 +1118,8 @@ onUnmounted(() => {
 }
 
 .slide {
-  width: calc(100% / 8);
-  min-width: calc(100% / 8);
+  width: calc(100% / 12);
+  min-width: calc(100% / 12);
   height: 100%;
   display: flex;
   align-items: center;
@@ -2147,6 +2376,42 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
   }
 
+  .structure-features {
+    grid-template-columns: 1fr;
+  }
+
+  .fa-flow-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .fa-step-card {
+    min-width: 280px;
+    width: 100%;
+  }
+
+  .fa-step-card .step-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .fa-flow-container .flow-arrow {
+    transform: rotate(90deg);
+  }
+
+  .control-features {
+    grid-template-columns: 1fr;
+  }
+
+  .efficiency-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .benefit-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
   .flow-steps {
     flex-direction: column;
     gap: 1rem;
@@ -2274,48 +2539,52 @@ onUnmounted(() => {
 }
 
 .slide-9.active .ai-header {
-  animation: aiHeaderGlow 3s ease-in-out 3.5s infinite;
+  animation: aiHeaderGlow 3s ease-in-out 3s infinite;
 }
 
 .slide-9.active .ai-icon {
-  animation: aiIconRotate 2s ease-out 2.5s forwards, aiIconPulse 2s ease-in-out 4.5s infinite;
+  animation: aiIconRotate 2s ease-out 2.2s forwards, aiIconPulse 2s ease-in-out 4.5s infinite;
 }
 
 .slide-9.active .design-philosophy {
-  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards;
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3.5s forwards;
 }
 
 .slide-9.active .philosophy-item:nth-child(1) {
-  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5.5s forwards, philosophyItemFloat 3s ease-in-out 7.5s infinite;
+  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards, philosophyItemFloat 3s ease-in-out 6s infinite;
 }
 
 .slide-9.active .philosophy-item:nth-child(2) {
-  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6s forwards, philosophyItemFloat 3s ease-in-out 8s infinite;
+  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.3s forwards, philosophyItemFloat 3s ease-in-out 6.3s infinite;
 }
 
 .slide-9.active .philosophy-item:nth-child(3) {
-  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.5s forwards, philosophyItemFloat 3s ease-in-out 8.5s infinite;
+  animation: philosophyItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.6s forwards, philosophyItemFloat 3s ease-in-out 6.6s infinite;
 }
 
 .slide-9.active .philosophy-icon:nth-child(1) {
-  animation: iconSpin 1.5s ease-out 6s forwards, iconGlow 2s ease-in-out 7.5s infinite;
+  animation: iconSpin 1.5s ease-out 4.5s forwards, iconGlow 2s ease-in-out 6.5s infinite;
 }
 
 .slide-9.active .philosophy-icon:nth-child(2) {
-  animation: iconSpin 1.5s ease-out 6.5s forwards, iconGlow 2s ease-in-out 8s infinite;
+  animation: iconSpin 1.5s ease-out 4.8s forwards, iconGlow 2s ease-in-out 6.8s infinite;
 }
 
 .slide-9.active .philosophy-icon:nth-child(3) {
-  animation: iconSpin 1.5s ease-out 7s forwards, iconGlow 2s ease-in-out 8.5s infinite;
+  animation: iconSpin 1.5s ease-out 5.1s forwards, iconGlow 2s ease-in-out 7.1s infinite;
 }
 
 /* 第8页和第9页的样式 */
-/* 第8页和第9页的标题样式，与前面页面保持一致 */
+/* 第8页到第13页的标题样式，与前面页面保持一致 */
 .slide-8 .main-title,
-.slide-9 .main-title {
+.slide-9 .main-title,
+.slide-10 .main-title,
+.slide-11 .main-title,
+.slide-12 .main-title,
+.slide-13 .main-title {
   font-size: 2.5rem;
   font-weight: bold;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -2567,6 +2836,511 @@ onUnmounted(() => {
   line-height: 1.5;
 }
 
+/* 第10页和第11页的样式 */
+/* 第10页：知识结构部分 */
+.knowledge-structure-section {
+  margin-top: 2rem;
+}
+
+.structure-intro {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.structure-intro h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.structure-intro p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.structure-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.structure-feature {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1.2rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+  transform: translateY(50px) scale(0.8);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.structure-feature:hover {
+  transform: translateY(-15px) scale(1.03);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.structure-feature:hover .feature-icon {
+  transform: scale(1.1);
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+}
+
+.structure-feature .feature-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.structure-feature .feature-icon .icon {
+  width: 35px;
+  height: 35px;
+  color: white;
+}
+
+.structure-feature h3 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.structure-feature p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* 第11页：有限自动机步骤部分 */
+.fa-steps-section {
+  margin-top: 2rem;
+}
+
+/* 第12页：线上智能管控解题过程 */
+.control-process-section {
+  margin-top: 2rem;
+}
+
+.control-intro {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.control-intro h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.control-intro p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.control-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.control-feature {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1.2rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+  transform: translateY(50px) scale(0.8);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.control-feature:hover {
+  transform: translateY(-15px) scale(1.03);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.control-feature:hover .feature-icon {
+  transform: scale(1.1);
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+}
+
+.control-feature .feature-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.control-feature .feature-icon .icon {
+  width: 35px;
+  height: 35px;
+  color: white;
+}
+
+.control-feature h3 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.control-feature p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* 第13页：管控效果与学习效率 */
+.efficiency-section {
+  margin-top: 0.5rem;
+}
+
+.efficiency-intro {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.efficiency-intro h2 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.6rem;
+}
+
+.efficiency-intro p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.efficiency-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-50px);
+}
+
+.benefit-item:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateX(10px) translateY(-5px);
+  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
+}
+
+.benefit-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.benefit-icon .icon {
+  width: 25px;
+  height: 25px;
+  color: white;
+}
+
+.benefit-content h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 0.3rem;
+}
+
+.benefit-content p {
+  color: #64748b;
+  line-height: 1.3;
+  font-size: 0.9rem;
+}
+
+.control-summary {
+  text-align: center;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.control-summary h3 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.8rem;
+}
+
+.control-summary p {
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.fa-flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 3rem;
+  padding: 0 1rem;
+}
+
+.fa-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.fa-step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.fa-step-card:hover::before {
+  opacity: 1;
+}
+
+.fa-step-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+}
+
+.fa-step-card .step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.fa-step-card .step-icon {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+}
+
+.fa-step-card .step-icon .icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
+.fa-step-card .step-header h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.fa-step-card .step-content {
+  text-align: center;
+  flex: 1;
+}
+
+.fa-step-card .step-content p {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.fa-step-card .step-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fa-step-card .decoration-dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+  border-radius: 50%;
+  animation: decorationPulse 2s ease-in-out infinite;
+}
+
+.fa-step-card .decoration-line {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
+  animation: decorationFlow 3s ease-in-out infinite;
+}
+
+.fa-flow-container .flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.fa-flow-container .flow-arrow .arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #10b981;
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
+
+.fa-description {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.fa-description h3 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.fa-description p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
 /* 第8页和第9页的动画关键帧 */
 @keyframes titleSlideInEnhanced {
   0% {
@@ -2806,6 +3580,732 @@ onUnmounted(() => {
   50% {
     box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
     transform: scale(1.1);
+  }
+}
+
+/* 第10页：步骤拆解体现知识结构 */
+.slide-10.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-10.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-10.active .knowledge-structure-section {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-10.active .structure-intro {
+  animation: structureIntroSlide 1.5s ease-out 3s forwards, structureIntroGlow 3s ease-in-out 4.5s infinite;
+}
+
+.slide-10.active .structure-feature:nth-child(1) {
+  animation: structureFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards, structureFeatureFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-10.active .structure-feature:nth-child(2) {
+  animation: structureFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.3s forwards, structureFeatureFloat 3s ease-in-out 6.3s infinite;
+}
+
+.slide-10.active .structure-feature:nth-child(3) {
+  animation: structureFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.6s forwards, structureFeatureFloat 3s ease-in-out 6.6s infinite;
+}
+
+.slide-10.active .structure-feature:nth-child(1) .feature-icon {
+  animation: structureIconSpin 1.5s ease-out 4.5s forwards, structureIconGlow 2s ease-in-out 6.5s infinite;
+}
+
+.slide-10.active .structure-feature:nth-child(2) .feature-icon {
+  animation: structureIconSpin 1.5s ease-out 4.8s forwards, structureIconGlow 2s ease-in-out 6.8s infinite;
+}
+
+.slide-10.active .structure-feature:nth-child(3) .feature-icon {
+  animation: structureIconSpin 1.5s ease-out 5.1s forwards, structureIconGlow 2s ease-in-out 7.1s infinite;
+}
+
+/* 第11页：有限自动机步骤拆解示例 */
+.slide-11.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-11.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-11.active .fa-steps-section {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-11.active .fa-step-card:nth-child(1) {
+  animation: faStepCardSlide 1.5s ease-out 3s forwards, faStepCardFloat 3s ease-in-out 5s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(3) {
+  animation: faStepCardSlide 1.5s ease-out 3.5s forwards, faStepCardFloat 3s ease-in-out 5.5s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(5) {
+  animation: faStepCardSlide 1.5s ease-out 4s forwards, faStepCardFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(7) {
+  animation: faStepCardSlide 1.5s ease-out 4.5s forwards, faStepCardFloat 3s ease-in-out 6.5s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(1) .step-icon {
+  animation: faStepIconSpin 1s ease-out 3.5s forwards, faStepIconGlow 2s ease-in-out 5.5s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(3) .step-icon {
+  animation: faStepIconSpin 1s ease-out 4s forwards, faStepIconGlow 2s ease-in-out 6s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(5) .step-icon {
+  animation: faStepIconSpin 1s ease-out 4.5s forwards, faStepIconGlow 2s ease-in-out 6.5s infinite;
+}
+
+.slide-11.active .fa-step-card:nth-child(7) .step-icon {
+  animation: faStepIconSpin 1s ease-out 5s forwards, faStepIconGlow 2s ease-in-out 7s infinite;
+}
+
+.slide-11.active .flow-arrow:nth-child(2) {
+  animation: faFlowArrowAppear 1s ease-out 3.2s forwards, faFlowArrowPulse 2s ease-in-out 4.2s infinite;
+}
+
+.slide-11.active .flow-arrow:nth-child(4) {
+  animation: faFlowArrowAppear 1s ease-out 3.7s forwards, faFlowArrowPulse 2s ease-in-out 4.7s infinite;
+}
+
+.slide-11.active .flow-arrow:nth-child(6) {
+  animation: faFlowArrowAppear 1s ease-out 4.2s forwards, faFlowArrowPulse 2s ease-in-out 5.2s infinite;
+}
+
+.slide-11.active .fa-description {
+  animation: faDescriptionSlide 1.5s ease-out 5.5s forwards;
+}
+
+/* 第12页：线上智能管控解题过程 */
+.slide-12.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-12.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+}
+
+.slide-12.active .control-process-section {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-12.active .control-intro {
+  animation: controlIntroSlide 1.5s ease-out 3s forwards, controlIntroGlow 3s ease-in-out 4.5s infinite;
+}
+
+.slide-12.active .control-feature:nth-child(1) {
+  animation: controlFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards, controlFeatureFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-12.active .control-feature:nth-child(2) {
+  animation: controlFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.3s forwards, controlFeatureFloat 3s ease-in-out 6.3s infinite;
+}
+
+.slide-12.active .control-feature:nth-child(3) {
+  animation: controlFeatureSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.6s forwards, controlFeatureFloat 3s ease-in-out 6.6s infinite;
+}
+
+.slide-12.active .control-feature:nth-child(1) .feature-icon {
+  animation: controlIconSpin 1.5s ease-out 4.5s forwards, controlIconGlow 2s ease-in-out 6.5s infinite;
+}
+
+.slide-12.active .control-feature:nth-child(2) .feature-icon {
+  animation: controlIconSpin 1.5s ease-out 4.8s forwards, controlIconGlow 2s ease-in-out 6.8s infinite;
+}
+
+.slide-12.active .control-feature:nth-child(3) .feature-icon {
+  animation: controlIconSpin 1.5s ease-out 5.1s forwards, controlIconGlow 2s ease-in-out 7.1s infinite;
+}
+
+/* 第13页：管控效果与学习效率 */
+.slide-13.active .main-title {
+  animation: titleSlideInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+.slide-13.active .subtitle {
+  animation: subtitleFadeInEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+  margin-bottom: 1rem;
+}
+
+.slide-13.active .efficiency-section {
+  animation: sectionSlideInEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+}
+
+.slide-13.active .efficiency-intro {
+  animation: efficiencyIntroSlide 1.5s ease-out 3s forwards, efficiencyIntroGlow 3s ease-in-out 4.5s infinite;
+}
+
+.slide-13.active .benefit-item:nth-child(1) {
+  animation: benefitItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4s forwards, benefitItemFloat 3s ease-in-out 6s infinite;
+}
+
+.slide-13.active .benefit-item:nth-child(2) {
+  animation: benefitItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.3s forwards, benefitItemFloat 3s ease-in-out 6.3s infinite;
+}
+
+.slide-13.active .benefit-item:nth-child(3) {
+  animation: benefitItemSlide 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.6s forwards, benefitItemFloat 3s ease-in-out 6.6s infinite;
+}
+
+.slide-13.active .benefit-item:nth-child(1) .benefit-icon {
+  animation: benefitIconSpin 1.5s ease-out 4.5s forwards, benefitIconGlow 2s ease-in-out 6.5s infinite;
+}
+
+.slide-13.active .benefit-item:nth-child(2) .benefit-icon {
+  animation: benefitIconSpin 1.5s ease-out 4.8s forwards, benefitIconGlow 2s ease-in-out 6.8s infinite;
+}
+
+.slide-13.active .benefit-item:nth-child(3) .benefit-icon {
+  animation: benefitIconSpin 1.5s ease-out 5.1s forwards, benefitIconGlow 2s ease-in-out 7.1s infinite;
+}
+
+.slide-13.active .control-summary {
+  animation: controlSummarySlide 1.5s ease-out 5.5s forwards;
+}
+
+/* 第11页：有限自动机步骤部分 */
+.fa-steps-section {
+  margin-top: 2rem;
+}
+
+.fa-flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 3rem;
+  padding: 0 1rem;
+}
+
+.fa-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.fa-step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.fa-step-card:hover::before {
+  opacity: 1;
+}
+
+.fa-step-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+}
+
+.fa-step-card .step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.fa-step-card .step-icon {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+}
+
+.fa-step-card .step-icon .icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
+.fa-step-card .step-header h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.fa-step-card .step-content {
+  text-align: center;
+  flex: 1;
+}
+
+.fa-step-card .step-content p {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.fa-step-card .step-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fa-step-card .decoration-dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+  border-radius: 50%;
+  animation: decorationPulse 2s ease-in-out infinite;
+}
+
+.fa-step-card .decoration-line {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
+  animation: decorationFlow 3s ease-in-out infinite;
+}
+
+.fa-flow-container .flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.fa-flow-container .flow-arrow .arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #10b981;
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
+
+.fa-description {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.fa-description h3 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.fa-description p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* 第10页和第11页的动画关键帧 */
+@keyframes structureIntroSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes structureIntroGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6), 0 0 60px rgba(118, 75, 162, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes structureFeatureSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.5) rotateY(-45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-20px) scale(1.1) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes structureFeatureFloat {
+  0%, 100% {
+    transform: translateY(0) rotateY(0deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) rotateY(2deg);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+  }
+  50% {
+    transform: translateY(-5px) rotateY(-1deg);
+    box-shadow: 0 10px 25px rgba(118, 75, 162, 0.2);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(3deg);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  }
+}
+
+@keyframes structureIconSpin {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes structureIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes faStepCardSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateX(45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px) scale(1.05) rotateX(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes faStepCardFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  }
+  75% {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
+  }
+}
+
+@keyframes faStepIconSpin {
+  0% {
+    transform: scale(0) rotate(180deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(90deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes faStepIconGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6), 0 0 20px rgba(16, 185, 129, 0.4);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes faFlowArrowAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(180deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2) rotate(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes faFlowArrowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.8));
+  }
+}
+
+@keyframes faDescriptionSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 第12页和第13页的动画关键帧 */
+@keyframes controlIntroSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes controlIntroGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6), 0 0 60px rgba(118, 75, 162, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes controlFeatureSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.5) rotateY(-45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-20px) scale(1.1) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes controlFeatureFloat {
+  0%, 100% {
+    transform: translateY(0) rotateY(0deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) rotateY(2deg);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+  }
+  50% {
+    transform: translateY(-5px) rotateY(-1deg);
+    box-shadow: 0 10px 25px rgba(118, 75, 162, 0.2);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(3deg);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  }
+}
+
+@keyframes controlIconSpin {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes controlIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes efficiencyIntroSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes efficiencyIntroGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6), 0 0 60px rgba(118, 75, 162, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes benefitItemSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.5) rotateY(-45deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-20px) scale(1.1) rotateY(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes benefitItemFloat {
+  0%, 100% {
+    transform: translateY(0) rotateY(0deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  25% {
+    transform: translateY(-8px) rotateY(2deg);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+  }
+  50% {
+    transform: translateY(-5px) rotateY(-1deg);
+    box-shadow: 0 10px 25px rgba(118, 75, 162, 0.2);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(3deg);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  }
+}
+
+@keyframes benefitIconSpin {
+  0% {
+    transform: scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(-180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes benefitIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes controlSummarySlide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 </style>
