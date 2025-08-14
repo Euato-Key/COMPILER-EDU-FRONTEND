@@ -1209,12 +1209,12 @@ onUnmounted(() => {
 }
 
 .logo-svg {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
 }
 
 .logo-text {
-  height: 36px;
+  height: 45px;
   width: auto;
 }
 
@@ -2626,12 +2626,12 @@ onUnmounted(() => {
 }
 
 .logo-svg {
-    width: 36px;
-    height: 36px;
+    width: 45px;
+    height: 45px;
 }
 
 .logo-text {
-    height: 28px;
+    height: 35px;
   }
 }
 
@@ -3500,49 +3500,64 @@ onUnmounted(() => {
   padding: 2rem;
 }
 
-/* 感谢标题 */
+/* 感谢标题 - 重构动画 */
 .thank-you-title {
   opacity: 0;
-  transform: translateX(-100vw) scale(0.3);
-  animation: thankYouTitleSlideIn 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+  transform: translateY(100px) scale(0.5) rotateX(90deg);
   margin-bottom: 2rem;
   text-align: center;
 }
 
 .slide-15.active .thank-you-title {
-  opacity: 1;
-  transform: translateX(0) scale(1);
+  animation: thankYouTitleEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+}
+
+/* 全屏模式下的动画修复 */
+.ppt-frame.fullscreen .slide-15.active .thank-you-title {
+  animation: thankYouTitleEnhanced 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
 }
 
 .slide-15 .main-title {
-  font-size: 4rem;
+  font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: thankYouTitleGlow 3s ease-in-out infinite, thankYouTitleBreath 4s ease-in-out infinite;
   line-height: 1.2;
-  opacity: 1;
+  opacity: 0;
+  transform: translateY(30px) scale(0.8);
 }
 
 .slide-15 .subtitle {
   font-size: 1.5rem;
   color: #64748b;
-  opacity: 0.8;
   font-weight: 500;
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
 }
 
 .slide-15.active .main-title {
-  opacity: 1;
+  animation: titleSlideInEnhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.2s forwards,
+             titleGlowEnhanced 3s ease-in-out 3s infinite;
 }
 
 .slide-15.active .subtitle {
-  opacity: 0.8;
+  animation: subtitleFadeInEnhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.8s forwards;
 }
 
-/* 团队和指导老师容器 */
+/* 全屏模式下的标题和副标题动画修复 */
+.ppt-frame.fullscreen .slide-15.active .main-title {
+  animation: titleSlideInEnhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.2s forwards,
+             titleGlowEnhanced 3s ease-in-out 3s infinite;
+}
+
+.ppt-frame.fullscreen .slide-15.active .subtitle {
+  animation: subtitleFadeInEnhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.8s forwards;
+}
+
+/* 团队和指导老师容器 - 重构动画 */
 .team-advisor-section {
   display: flex;
   gap: 4rem;
@@ -3550,22 +3565,38 @@ onUnmounted(() => {
   justify-content: center;
   flex-wrap: wrap;
   opacity: 0;
-  transform: scale(0.1) rotate(180deg);
-  animation: teamAdvisorZoomIn 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards;
+  transform: translateY(100px) scale(0.8) rotateY(45deg);
   max-width: 1200px;
   width: 100%;
 }
 
+.slide-15.active .team-advisor-section {
+  animation: teamAdvisorEnhanced 3s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2.5s forwards;
+}
+
+/* 全屏模式下的团队容器动画修复 */
+.ppt-frame.fullscreen .slide-15.active .team-advisor-section {
+  animation: teamAdvisorEnhanced 3s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2.5s forwards;
+}
+
 /* 开发团队 */
 .team-section {
-  opacity: 1;
-  transform: none;
-  animation: none;
+  opacity: 0;
+  transform: translateX(100px) scale(0.7) rotateY(30deg);
   display: flex;
   flex-direction: column;
   min-height: 350px;
   flex: 1;
   max-width: 600px;
+}
+
+.slide-15.active .team-section {
+  animation: teamSectionEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.5s forwards;
+}
+
+/* 全屏模式下的团队部分动画修复 */
+.ppt-frame.fullscreen .slide-15.active .team-section {
+  animation: teamSectionEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.5s forwards;
 }
 
 .section-title {
@@ -3607,10 +3638,33 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.member-item:nth-child(1) { animation: member1WaveIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.2s forwards; }
-.member-item:nth-child(2) { animation: member2SpiralIn 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 4.8s forwards; }
-.member-item:nth-child(3) { animation: member3ZoomIn 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 5.4s forwards; }
-.member-item:nth-child(4) { animation: member4ShakeIn 1.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6s forwards; }
+/* 成员动画 - 重构为更丰富的效果 */
+.slide-15.active .member-item:nth-child(1) {
+  animation: member1Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5.5s forwards;
+}
+.slide-15.active .member-item:nth-child(2) {
+  animation: member2Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5.8s forwards;
+}
+.slide-15.active .member-item:nth-child(3) {
+  animation: member3Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.1s forwards;
+}
+.slide-15.active .member-item:nth-child(4) {
+  animation: member4Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.4s forwards;
+}
+
+/* 全屏模式下的成员动画修复 */
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(1) {
+  animation: member1Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5.5s forwards;
+}
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(2) {
+  animation: member2Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 5.8s forwards;
+}
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(3) {
+  animation: member3Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.1s forwards;
+}
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(4) {
+  animation: member4Enhanced 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 6.4s forwards;
+}
 
 .member-item:hover {
   transform: translateY(-10px) scale(1.05);
@@ -3628,6 +3682,16 @@ onUnmounted(() => {
 .member-item:nth-child(2) { animation-delay: 1.5s; }
 .member-item:nth-child(3) { animation-delay: 3s; }
 .member-item:nth-child(4) { animation-delay: 4.5s; }
+
+/* 全屏模式下的持续动画修复 */
+.ppt-frame.fullscreen .slide-15.active .member-item {
+  animation: memberFloat 6s ease-in-out infinite;
+}
+
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(1) { animation-delay: 0s; }
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(2) { animation-delay: 1.5s; }
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(3) { animation-delay: 3s; }
+.ppt-frame.fullscreen .slide-15.active .member-item:nth-child(4) { animation-delay: 4.5s; }
 
 .member-avatar {
   width: 80px;
@@ -3689,16 +3753,24 @@ onUnmounted(() => {
   text-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
 }
 
-/* 指导老师 */
+/* 指导老师 - 重构动画 */
 .advisor-section {
   opacity: 0;
-  transform: scale(0.5) rotateY(-90deg);
-  animation: advisorSlideIn 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3.5s forwards;
+  transform: translateX(-100px) scale(0.7) rotateY(-30deg);
   display: flex;
   flex-direction: column;
   min-height: 350px;
   flex: 1;
   max-width: 400px;
+}
+
+.slide-15.active .advisor-section {
+  animation: advisorEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3.5s forwards;
+}
+
+/* 全屏模式下的指导老师动画修复 */
+.ppt-frame.fullscreen .slide-15.active .advisor-section {
+  animation: advisorEnhanced 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 3.5s forwards;
 }
 
 .advisor-info {
@@ -5337,11 +5409,247 @@ onUnmounted(() => {
 @keyframes advisorPulse {
   0%, 100% {
     transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+  }
+}
+
+/* 重构的感谢页动画关键帧 */
+@keyframes thankYouTitleEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.5) rotateX(90deg);
+  }
+  30% {
+    opacity: 0.3;
+    transform: translateY(60px) scale(0.7) rotateX(60deg);
+  }
+  60% {
+    opacity: 0.7;
+    transform: translateY(20px) scale(0.9) rotateX(30deg);
+  }
+  85% {
+    opacity: 0.9;
+    transform: translateY(-10px) scale(1.05) rotateX(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes titleSlideInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.8);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-5px) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes titleGlowEnhanced {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 40px rgba(59, 130, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes subtitleFadeInEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-3px) scale(1.05);
+  }
+  100% {
+    opacity: 0.8;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes teamAdvisorEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8) rotateY(45deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateY(60px) scale(0.9) rotateY(30deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(20px) scale(1.05) rotateY(15deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateY(-5px) scale(1.1) rotateY(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes advisorEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.7) rotateY(-30deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateX(-60px) scale(0.8) rotateY(-20deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(-20px) scale(0.95) rotateY(-10deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateX(5px) scale(1.05) rotateY(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes member1Enhanced {
+  0% {
+    opacity: 0;
+    transform: translateX(-150px) scale(0.3) rotateZ(-45deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateX(-80px) scale(0.6) rotateZ(-25deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(-20px) scale(0.9) rotateZ(-10deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateX(5px) scale(1.1) rotateZ(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes member2Enhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.3) rotateZ(45deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateY(60px) scale(0.6) rotateZ(25deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(20px) scale(0.9) rotateZ(10deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateY(-5px) scale(1.1) rotateZ(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes member3Enhanced {
+  0% {
+    opacity: 0;
+    transform: translateX(150px) scale(0.3) rotateZ(45deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateX(80px) scale(0.6) rotateZ(25deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(20px) scale(0.9) rotateZ(10deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateX(-5px) scale(1.1) rotateZ(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes member4Enhanced {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.3) rotateZ(-45deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateY(-60px) scale(0.6) rotateZ(-25deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-20px) scale(0.9) rotateZ(-10deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateY(5px) scale(1.1) rotateZ(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateZ(0deg);
+  }
+}
+
+@keyframes advisorPulse {
+  0%, 100% {
+    transform: scale(1);
     box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
   }
   50% {
     transform: scale(1.02);
     box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+  }
+}
+
+@keyframes teamSectionEnhanced {
+  0% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.7) rotateY(30deg);
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateX(60px) scale(0.8) rotateY(20deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(20px) scale(0.95) rotateY(10deg);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateX(-5px) scale(1.05) rotateY(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
   }
 }
 </style>
