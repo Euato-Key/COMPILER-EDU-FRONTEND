@@ -3980,7 +3980,7 @@ onUnmounted(() => {
     transform: translateY(50px) scale(0.8);
   }
   50% {
-    opacity: 0.5;
+  opacity: 0.5;
     transform: translateY(-10px) scale(1.05);
   }
   100% {
