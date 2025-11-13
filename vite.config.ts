@@ -3,17 +3,17 @@ import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import vueDevTools from 'vite-plugin-vue-devtools'
-
+// import vueDevTools from 'vite-plugin-vue-devtools'
+// 开发的时候可以把上面一行注释去除
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/COMPILER-EDU-FRONTEND/' : '/',
+  base: '/',
   plugins: [
     vue(),
     vueJsx(),
-    vueDevTools(),
+    // vueDevTools(),
     tailwindcss(),
     {
       name: 'markdown-loader',

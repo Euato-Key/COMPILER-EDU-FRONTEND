@@ -72,55 +72,6 @@ export const useDocStore = defineStore('doc', () => {
         ]
       },
       {
-        id: 'finite-automata',
-        title: '有限自动机',
-        icon: 'git-branch',
-        children: [
-          {
-            id: 'fa-overview',
-            title: 'FA概述',
-            file: 'markdown/fa-overview.md',
-            order: 1
-          },
-          {
-            id: '01-regex-input',
-            title: '第一步：正则表达式输入',
-            file: 'markdown/01-regex-input.md',
-            order: 2
-          },
-          {
-            id: '02-nfa-construction',
-            title: '第二步：NFA构造',
-            file: 'markdown/02-nfa-construction.md',
-            order: 3
-          },
-          {
-            id: '03-subset-construction',
-            title: '第三步：子集构造法',
-            file: 'markdown/03-subset-construction.md',
-            order: 4
-          },
-          {
-            id: '04-dfa-visualization',
-            title: '第四步：DFA可视化',
-            file: 'markdown/04-dfa-visualization.md',
-            order: 5
-          },
-          {
-            id: '05-dfa-minimization',
-            title: '第五步：DFA最小化',
-            file: 'markdown/05-dfa-minimization.md',
-            order: 6
-          },
-          {
-            id: '06-minimized-dfa-visualization',
-            title: '第六步：最小化DFA可视化',
-            file: 'markdown/06-minimized-dfa-visualization.md',
-            order: 7
-          }
-        ]
-      },
-      {
         id: 'fa-new',
         title: 'FA模块详解',
         icon: 'git-branch',
@@ -289,25 +240,6 @@ export const useDocStore = defineStore('doc', () => {
             title: '第五步：字符串分析',
             file: 'markdown/slr1/step5-string-analysis.md',
             order: 6
-          }
-        ]
-      },
-      {
-        id: 'parsing',
-        title: '语法分析',
-        icon: 'layers',
-        children: [
-          {
-            id: 'll1-parsing',
-            title: 'LL1分析',
-            file: 'markdown/ll1-parsing.md',
-            order: 1
-          },
-          {
-            id: 'lr-parsing',
-            title: 'LR分析',
-            file: 'markdown/lr-parsing.md',
-            order: 2
           }
         ]
       },

@@ -117,22 +117,12 @@ const loadDocument = async (sectionId: string, pageId: string) => {
       throw new Error('页面不存在')
     }
 
-    // 加载 Markdown 文件
-    let markdownContent: string
-
-    try {
-      // 尝试从 src/docs/markdown 加载新文档
-      const module = await import(`../markdown/${page.file.replace('markdown/', '')}`)
-      markdownContent = module.default
-    } catch (error) {
-      console.log('从src/docs/markdown加载失败，尝试从public/docs加载:', error)
-      // 如果失败，回退到从 public/docs 加载旧文档
-      const response = await fetch(`/docs/${page.file}`)
-      if (!response.ok) {
-        throw new Error('文件加载失败')
-      }
-      markdownContent = await response.text()
+    // 加载 Markdown 文件 - 从 public/docs 加载
+    const response = await fetch(`/docs/${page.file}`)
+    if (!response.ok) {
+      throw new Error('文件加载失败')
     }
+    const markdownContent = await response.text()
     console.log('Markdown内容长度:', markdownContent.length) // 调试信息
     console.log('Markdown内容前100字符:', markdownContent.substring(0, 100)) // 调试信息
 
