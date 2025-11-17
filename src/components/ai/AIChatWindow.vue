@@ -7,7 +7,7 @@
           <Icon icon="lucide:brain" class="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 class="font-semibold text-gray-900">AI 教学助手</h3>
+          <h3 class="font-semibold text-gray-900">编译知脑</h3>
           <p class="text-xs text-gray-500">编译原理智能问答</p>
         </div>
       </div>
@@ -40,7 +40,7 @@
         <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
           <Icon icon="lucide:sparkles" class="w-8 h-8 text-purple-600 animate-bounce" />
         </div>
-        <h4 class="font-medium text-gray-900 mb-2">欢迎使用AI教学助手</h4>
+        <h4 class="font-medium text-gray-900 mb-2">欢迎使用编译知脑</h4>
         <p class="text-sm text-gray-500 mb-4">我可以帮助您理解编译原理的概念和算法</p>
 
         <!-- 预设问题 -->

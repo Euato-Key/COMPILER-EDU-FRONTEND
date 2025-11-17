@@ -27,7 +27,7 @@
         <!-- 工具提示 -->
         <div class="absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none transform scale-95 group-hover:scale-100">
           <div class="bg-gray-900 text-white text-sm px-2 py-1 rounded whitespace-nowrap shadow-lg">
-            {{ isExpanded ? '收起AI助手' : '展开AI助手' }}
+            {{ isExpanded ? '收起编译知脑' : '展开编译知脑' }}
           </div>
           <div class="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-r-4 border-r-gray-900 border-t-2 border-t-transparent border-b-2 border-b-transparent"></div>
         </div>
