@@ -20,6 +20,17 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+### Backend API Configuration
+
+后端 API 地址配置位于 `src/lib/request.ts` 文件中。
+
+**开发环境快速修改：**
+
+直接修改 `src/lib/request.ts` 第 3 行：
+```typescript
+const baseURL = 'http://127.0.0.1:5000' // 修改为后端地址
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh
