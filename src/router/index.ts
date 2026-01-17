@@ -8,6 +8,7 @@ import lr0Routes from './modules/lr0'
 import slr1Routes from './modules/slr1'
 import devRoutes from './modules/dev'
 import docRoutes from './modules/docs'
+import recordRoutes from './modules/record'
 
 // 基础路由
 const baseRoutes: RouteRecordRaw[] = [
@@ -30,7 +31,8 @@ const routes: RouteRecordRaw[] = [
   ...lr0Routes,
   ...slr1Routes,
   ...devRoutes,
-  ...docRoutes
+  ...docRoutes,
+  ...recordRoutes
 ]
 
 const router = createRouter({

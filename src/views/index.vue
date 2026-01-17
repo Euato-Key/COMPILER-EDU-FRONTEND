@@ -8,6 +8,12 @@
             <h1 class="text-2xl font-bold theme-header-text">编译原理可视化工具</h1>
           </div>
           <div class="flex items-center gap-2">
+            <router-link
+              to="/record"
+              class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
+            >
+              答题记录
+            </router-link>
             <ThemeSelector />
             <router-link
               to="/docs"
