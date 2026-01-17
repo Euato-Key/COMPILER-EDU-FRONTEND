@@ -50,9 +50,11 @@
           <p class="text-sm theme-content-placeholder mb-4">
             查看您在FA算法中的答题记录和得分情况
           </p>
-          <div class="flex items-center justify-between text-sm">
-            <span class="theme-content-placeholder">暂未开发</span>
-            <Icon icon="lucide:arrow-right" class="w-4 h-4 theme-content-text group-hover:translate-x-1 transition-transform" />
+          <div class="flex items-center justify-center mt-4">
+            <span class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              查看答题记录
+              <Icon icon="lucide:arrow-right" class="w-4 h-4 ml-2" />
+            </span>
           </div>
         </router-link>
 
@@ -68,9 +70,11 @@
           <p class="text-sm theme-content-placeholder mb-4">
             查看您在LL1分析算法中的答题记录和得分情况
           </p>
-          <div class="flex items-center justify-between text-sm">
-            <span class="theme-content-placeholder">暂未开发</span>
-            <Icon icon="lucide:arrow-right" class="w-4 h-4 theme-content-text group-hover:translate-x-1 transition-transform" />
+          <div class="flex items-center justify-center mt-4">
+            <span class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              查看答题记录
+              <Icon icon="lucide:arrow-right" class="w-4 h-4 ml-2" />
+            </span>
           </div>
         </router-link>
 
@@ -86,9 +90,11 @@
           <p class="text-sm theme-content-placeholder mb-4">
             查看您在LR0分析算法中的答题记录和得分情况
           </p>
-          <div class="flex items-center justify-between text-sm">
-            <span class="theme-content-placeholder">暂未开发</span>
-            <Icon icon="lucide:arrow-right" class="w-4 h-4 theme-content-text group-hover:translate-x-1 transition-transform" />
+          <div class="flex items-center justify-center mt-4">
+            <span class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+              查看答题记录
+              <Icon icon="lucide:arrow-right" class="w-4 h-4 ml-2" />
+            </span>
           </div>
         </router-link>
 
@@ -104,9 +110,11 @@
           <p class="text-sm theme-content-placeholder mb-4">
             查看您在SLR1分析算法中的答题记录和得分情况
           </p>
-          <div class="flex items-center justify-between text-sm">
-            <span class="theme-content-placeholder">暂未开发</span>
-            <Icon icon="lucide:arrow-right" class="w-4 h-4 theme-content-text group-hover:translate-x-1 transition-transform" />
+          <div class="flex items-center justify-center mt-4">
+            <span class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+              查看答题记录
+              <Icon icon="lucide:arrow-right" class="w-4 h-4 ml-2" />
+            </span>
           </div>
         </router-link>
       </div>
