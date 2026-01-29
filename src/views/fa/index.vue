@@ -37,6 +37,13 @@
           
           <div class="flex items-center gap-2">
             <ThemeSelector />
+            <router-link
+              to="/record/fa"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <Icon icon="lucide:history" class="w-4 h-4" />
+              答题记录
+            </router-link>
             <button
               @click="resetProgress"
               class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
@@ -89,6 +96,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { Icon } from '@iconify/vue'
 // 修改引入：使用新的 Store
 import { useFAStoreNew } from '@/stores'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'

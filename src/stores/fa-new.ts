@@ -40,6 +40,7 @@ export interface FAStoreData {
  */
 export interface FAHistoryRecord {
   id: string             // 唯一标识
+  createdAt: string      // 创建时间
   timestamp: string      // 最后修改时间
   regex: string          // 正则表达式
   userData: {
@@ -268,6 +269,7 @@ export const useFAStore = defineStore('fa', () => {
       const newId = generateUniqueId()
       const newRecord: FAHistoryRecord = {
         id: newId,
+        createdAt: nowTime,
         timestamp: nowTime,
         regex: inputRegex.value,
         userData: snapshotData as any

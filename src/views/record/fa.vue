@@ -86,6 +86,7 @@
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">序号</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">记录 ID</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">正则表达式</th>
+              <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">创建时间</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">最后修改</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-center">操作</th>
             </tr>
@@ -100,6 +101,9 @@
               </td>
               <td class="px-6 py-4">
                 <code class="text-sm font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded">{{ record.regex }}</code>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                {{ formatDate(record.createdAt) }}
               </td>
               <td class="px-6 py-4 text-sm text-gray-500">
                 {{ formatDate(record.timestamp) }}
@@ -211,18 +215,31 @@ const handleRestore = async (recordId: string) => {
 const formatDate = (timestamp: string) => {
   if (!timestamp) return '-'
   try {
-    const date = new Date(timestamp)
-    if (isNaN(date.getTime())) return timestamp
+    // 首先尝试解析标准的 Date 格式
+    let date = new Date(timestamp)
     
-    return new Intl.DateTimeFormat('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(date).replace(/\//g, '-')
+    // 如果解析失败，尝试处理 "日/月/年, 时:分:秒" 格式
+    if (isNaN(date.getTime())) {
+      const regex = /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{1,2}):(\d{1,2})$/;
+      const match = timestamp.match(regex);
+      
+      if (match) {
+        const [, day, month, year, hours, minutes, seconds] = match;
+        date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes), parseInt(seconds));
+      } else {
+        return timestamp
+      }
+    }
+    
+    // 格式化为中文风格：年月日 时分秒
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   } catch (e) {
     return timestamp
   }
