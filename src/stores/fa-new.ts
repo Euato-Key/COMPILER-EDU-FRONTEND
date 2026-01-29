@@ -338,39 +338,28 @@ export const useFAStore = defineStore('fa', () => {
 
   const deleteHistoryRecord = (recordId: string) => {
     historyList.value = historyList.value.filter(item => item.id !== recordId)
-    // 如果删除的是当前正在看的记录，把当前ID置空，防止后续误更新
+    
+    // 如果删除的是当前正在看的记录，执行深度重置
     if (currentRecordId.value === recordId) {
       currentRecordId.value = null
-      
-      // 同时重置所有状态，确保页面不会显示已删除的内容
       inputRegex.value = ''
-      canvasData.value = {
-        nodes: [],
-        edges: []
-      }
-      step3Data.value = null
-      step5Data.value = null
-      originalData.value = null
       
-      // 由于配置了 autoSave: true，状态会自动保存
+      // 直接调用现成的清空函数，它会自动处理 step2/4/6 以及 step3/5 的 undefined 赋值
+      clearAllStepData() 
+      
+      console.log(`[FA Store] 当前记录已删除并重置状态`)
     }
   }
 
   const clearAllHistory = () => {
     historyList.value = []
     currentRecordId.value = null
-    
-    // 同时重置所有状态，确保页面不会显示已清空的内容
     inputRegex.value = ''
-    canvasData.value = {
-      nodes: [],
-      edges: []
-    }
-    step3Data.value = null
-    step5Data.value = null
-    originalData.value = null
     
-    // 由于配置了 autoSave: true，状态会自动保存
+    // 同样直接调用现成的清空函数
+    clearAllStepData()
+    
+    console.log(`[FA Store] 所有历史记录已清空并重置状态`)
   }
 
   // ------------------------------------------
