@@ -980,6 +980,22 @@ const validateField = (value: string | undefined, rowIndex: number, field: strin
     fieldValidationRef.value[fieldKey] = 'invalid'
     if (tableType === 'table') showTableErrors.value = true
     else showMatrixErrors.value = true
+
+    const correctValue = tableType === 'table'
+      ? (answerConversionTable.value[field]?.[rowIndex] || '-')
+      : (answerTransitionMatrix.value[rowIndex.toString()]?.[field] || '-')
+
+    faStore.addErrorLog({
+      step: 'step3',
+      tableType: tableType === 'table' ? 'conversionTable' : 'transitionMatrix',
+      location: {
+        row: rowIndex,
+        col: field,
+        fieldKey
+      },
+      wrongValue: fieldValue,
+      correctValue: correctValue
+    })
   } else {
     delete validationRef.value[fieldKey]
     fieldValidationRef.value[fieldKey] = 'valid'

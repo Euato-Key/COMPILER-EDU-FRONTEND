@@ -853,6 +853,19 @@ const handlePSetBlur = (pItem: PSetItem) => {
   if (hasDuplicateStateSets()) {
     pItem.check = ValidationState.ERROR
     pItem.errorMessage = '存在重复的状态子集'
+
+    // 记录错误日志
+    const pSetIndex = localPSets.value.findIndex(item => item.id === pItem.id)
+    faStore.addErrorLog({
+      step: 'step5',
+      tableType: 'pSets',
+      location: {
+        row: pSetIndex,
+        fieldKey: pItem.id
+      },
+      wrongValue: inputText,
+      correctValue: '无重复的状态子集'
+    })
     return
   }
 
@@ -875,6 +888,19 @@ const handlePSetBlur = (pItem: PSetItem) => {
     } else {
       pItem.check = ValidationState.ERROR
       pItem.errorMessage = '答案不正确'
+
+      // 记录错误日志
+      const pSetIndex = localPSets.value.findIndex(item => item.id === pItem.id)
+      faStore.addErrorLog({
+        step: 'step5',
+        tableType: 'pSets',
+        location: {
+          row: pSetIndex,
+          fieldKey: pItem.id
+        },
+        wrongValue: inputText,
+        correctValue: answerList[0] || '参考标准答案'
+      })
     }
   }
 }
@@ -993,6 +1019,19 @@ const validatePSetsAgainstAnswers = (answerList: string[], inputList: PSetItem[]
       item.check = ValidationState.ERROR
       item.errorMessage = '答案不正确'
       allCorrect = false
+
+      // 记录错误日志
+      const pSetIndex = inputList.findIndex(i => i.id === item.id)
+      faStore.addErrorLog({
+        step: 'step5',
+        tableType: 'pSets',
+        location: {
+          row: pSetIndex,
+          fieldKey: item.id
+        },
+        wrongValue: itemText || '(空)',
+        correctValue: answerList[0] || '参考标准答案'
+      })
     }
   }
 
@@ -1316,6 +1355,24 @@ const validateMatrixField = (cell: MatrixCell | undefined) => {
     matrixValidationErrors.value[fieldKey] = errors
     matrixFieldValidation.value[fieldKey] = 'invalid'
     showMatrixErrors.value = true
+
+    // 记录错误日志
+    faStore.addErrorLog({
+      step: 'step5',
+      tableType: 'minimizedMatrix',
+      location: {
+        row: cell.rowIndex,
+        col: matrixStateColumns.value[cell.colIndex],
+        fieldKey
+      },
+      wrongValue: fieldValue || '(空)',
+      correctValue: (() => {
+        const tableToNumMin = faStore.originalData?.table_to_num_min
+        const stateName = matrixStateColumns.value[cell!.colIndex]
+        const rawAnswer = tableToNumMin?.[stateName]?.[cell!.rowIndex]
+        return rawAnswer === null || rawAnswer === undefined || rawAnswer === '' ? '-' : String(rawAnswer)
+      })()
+    })
   } else {
     console.log('Clearing errors for matrix field:', fieldKey)
     delete matrixValidationErrors.value[fieldKey]

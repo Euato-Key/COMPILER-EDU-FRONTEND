@@ -10,6 +10,23 @@ const maxHistoryRecords = 50
 // ================= 类型定义 =================
 
 /**
+ * 错误记录项：用于 PDF 导出对比和 AI 分析
+ */
+export interface FAErrorLog {
+  id: string
+  step: 'step3' | 'step5'
+  tableType: 'conversionTable' | 'transitionMatrix' | 'pSets' | 'minimizedMatrix'
+  location: {
+    row: number       // 行索引
+    col?: string      // 列名 (pSets可不传)
+    fieldKey: string  // 原始字段标识，如 "matrix-0-Ia"
+  }
+  wrongValue: string  // 学生填错的内容
+  correctValue: string // 标准答案
+  timestamp: string   // 记录时间
+}
+
+/**
  * FA Store 用户正在操作的数据类型 (画布、表格等)
  */
 export interface FAStoreData {
@@ -43,6 +60,7 @@ export interface FAHistoryRecord {
   createdAt: string      // 创建时间
   timestamp: string      // 最后修改时间
   regex: string          // 正则表达式
+  errorLogs: FAErrorLog[] // 错误轨迹记录
   userData: {
     canvasData: FAStoreData['canvasData']
     step3Data: FAStoreData['step3Data']
@@ -76,6 +94,8 @@ export const useFAStore = defineStore('fa', () => {
   const step3Data = ref<FAStoreData['step3Data']>(undefined)
   const step5Data = ref<FAStoreData['step5Data']>(undefined)
 
+  // === 错误日志状态 (Active Session Error Logs) ===
+  const errorLogs = ref<FAErrorLog[]>([])
   // === 历史记录列表 (History Archive) ===
   const historyList = ref<FAHistoryRecord[]>([])
 
@@ -187,14 +207,14 @@ export const useFAStore = defineStore('fa', () => {
     try {
       commonStore.setLoading(true)
       commonStore.clearError()
-      
+
       // 如果不是正在复现历史，则清空当前数据
       if (!isRestoring) {
         clearAllStepData()
         // ==================== 新增这一行 ====================
         // 关键修复：只要是重新分析（非复现），就视为新会话，
         // 强制断开与当前 ID 的关联，这样 saveToHistory 才会生成新 ID
-        currentRecordId.value = null 
+        currentRecordId.value = null
         // ===================================================
       }
 
@@ -246,6 +266,8 @@ export const useFAStore = defineStore('fa', () => {
       step5Data: step5Data.value ? JSON.parse(JSON.stringify(step5Data.value)) : undefined
     }
     // ==================== 修改结束 ====================
+    // 深拷贝错误日志
+    const snapshotErrors = JSON.parse(JSON.stringify(errorLogs.value))
 
     if (currentRecordId.value) {
       // === 更新已有记录 ===
@@ -253,6 +275,7 @@ export const useFAStore = defineStore('fa', () => {
       if (index !== -1) {
         historyList.value[index].timestamp = nowTime
         historyList.value[index].regex = inputRegex.value
+        historyList.value[index].errorLogs = snapshotErrors
         historyList.value[index].userData = snapshotData as any // 类型断言，避免TS过于严格的检查
         
         // 把更新后的这条移到最前面
@@ -272,6 +295,7 @@ export const useFAStore = defineStore('fa', () => {
         createdAt: nowTime,
         timestamp: nowTime,
         regex: inputRegex.value,
+        errorLogs: snapshotErrors,
         userData: snapshotData as any
       }
 
@@ -308,7 +332,7 @@ export const useFAStore = defineStore('fa', () => {
     if (isSuccess) {
       // === 核心修复点：安全地覆盖用户数据 ===
       // 在 JSON.parse 之前先判断记录中是否存在该数据
-      
+
       if (record.userData.canvasData) {
         canvasData.value = JSON.parse(JSON.stringify(record.userData.canvasData))
       } else {
@@ -341,30 +365,43 @@ export const useFAStore = defineStore('fa', () => {
     
     // 如果删除的是当前正在看的记录，执行深度重置
     if (currentRecordId.value === recordId) {
-      currentRecordId.value = null
-      inputRegex.value = ''
-      
-      // 直接调用现成的清空函数，它会自动处理 step2/4/6 以及 step3/5 的 undefined 赋值
-      clearAllStepData() 
-      
+      resetAll()
       console.log(`[FA Store] 当前记录已删除并重置状态`)
     }
   }
 
   const clearAllHistory = () => {
     historyList.value = []
-    currentRecordId.value = null
-    inputRegex.value = ''
-    
-    // 同样直接调用现成的清空函数
-    clearAllStepData()
-    
+    resetAll()
     console.log(`[FA Store] 所有历史记录已清空并重置状态`)
   }
 
   // ------------------------------------------
   // 6. 普通数据管理 Actions
   // ------------------------------------------
+
+  /**
+   * 记录错误日志
+   * @param log 错误信息 (不含ID和时间戳)
+   */
+  const addErrorLog = (log: Omit<FAErrorLog, 'id' | 'timestamp'>) => {
+    // 避免在极短时间内重复记录完全相同的错误
+    const isDuplicate = errorLogs.value.some(item => 
+      item.step === log.step && 
+      item.tableType === log.tableType && 
+      item.location.fieldKey === log.location.fieldKey &&
+      item.wrongValue === log.wrongValue
+    )
+
+    if (!isDuplicate) {
+      errorLogs.value.push({
+        ...log,
+        id: generateUniqueId(),
+        timestamp: new Date().toLocaleString()
+      })
+      console.log(`[FA Store] 记录错误: ${log.location.fieldKey} -> ${log.wrongValue}`)
+    }
+  }
 
   const setInputRegex = (regex: string) => {
     inputRegex.value = regex
@@ -386,6 +423,7 @@ export const useFAStore = defineStore('fa', () => {
     clearCanvasData('step6')
     clearStep3Data()
     clearStep5Data()
+    errorLogs.value = [] // 清空错误日志
   }
 
   /**
@@ -442,10 +480,18 @@ export const useFAStore = defineStore('fa', () => {
   // ------------------------------------------
   
   const persistenceConfig = {
-    key: 'fa_store_v3', // 升级版本号
-    version: '3.0.0',
+    key: 'fa_store_v4', // 升级版本号
+    version: '4.0.0',
     // 必须包含 currentRecordId，这样刷新页面后，系统还知道你正在编辑哪条记录
-    include: ['currentRecordId', 'inputRegex', 'canvasData', 'step3Data', 'step5Data', 'historyList'],
+    include: [
+      'currentRecordId', 
+      'inputRegex', 
+      'canvasData', 
+      'step3Data', 
+      'step5Data', 
+      'errorLogs', // 包含错误日志
+      'historyList'
+    ],
     autoSave: true,
     ttl: 30 * 24 * 60 * 60 * 1000, 
     saveDelay: 500,
@@ -458,6 +504,7 @@ export const useFAStore = defineStore('fa', () => {
       canvasData,
       step3Data,
       step5Data,
+      errorLogs, // 托管错误日志
       historyList,
     },
     ...persistenceConfig,
@@ -471,6 +518,7 @@ export const useFAStore = defineStore('fa', () => {
     originalData,
     validationData,
     canvasData,
+    errorLogs, // 暴露错误日志
     historyList,
 
     // Computed
@@ -492,6 +540,7 @@ export const useFAStore = defineStore('fa', () => {
     restoreFromHistory,
     deleteHistoryRecord,
     clearAllHistory,
+    addErrorLog, // 暴露记录错误的方法
     saveCanvasData,
     loadCanvasData,
     clearCanvasData,
