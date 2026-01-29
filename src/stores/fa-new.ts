@@ -299,15 +299,34 @@ export const useFAStore = defineStore('fa', () => {
     // 2. 恢复正则
     inputRegex.value = record.regex
 
-    // 3. 请求后端
+    // 3. 请求后端 (获取背景数据)
+    // 传入 true 表示这是复现操作，不要清空当前已有的 userData，因为我们要手动覆盖它
     const isSuccess = await performFAAnalysis(true)
 
     if (isSuccess) {
-      // 4. 覆盖用户数据
-      canvasData.value = JSON.parse(JSON.stringify(record.userData.canvasData))
-      step3Data.value = JSON.parse(JSON.stringify(record.userData.step3Data))
-      step5Data.value = JSON.parse(JSON.stringify(record.userData.step5Data))
-      console.log(`[FA Store] 已加载历史记录: ${recordId}`)
+      // === 核心修复点：安全地覆盖用户数据 ===
+      // 在 JSON.parse 之前先判断记录中是否存在该数据
+      
+      if (record.userData.canvasData) {
+        canvasData.value = JSON.parse(JSON.stringify(record.userData.canvasData))
+      } else {
+        // 如果记录里没有画布数据，则初始化为空
+        canvasData.value = { step2: undefined, step4: undefined, step6: undefined }
+      }
+
+      if (record.userData.step3Data) {
+        step3Data.value = JSON.parse(JSON.stringify(record.userData.step3Data))
+      } else {
+        step3Data.value = undefined
+      }
+
+      if (record.userData.step5Data) {
+        step5Data.value = JSON.parse(JSON.stringify(record.userData.step5Data))
+      } else {
+        step5Data.value = undefined
+      }
+      
+      console.log(`[FA Store] 历史记录已成功安全复现: ${recordId}`)
       return true
     } else {
       commonStore.setError('无法复现：后端数据请求失败')

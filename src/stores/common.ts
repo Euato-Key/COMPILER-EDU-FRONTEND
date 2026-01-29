@@ -6,6 +6,7 @@ export const useCommonStore = defineStore('common', () => {
   // 状态
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const success = ref<string | null>(null)
   const apiConnected = ref<boolean | null>(null)
 
   // Actions
@@ -15,10 +16,20 @@ export const useCommonStore = defineStore('common', () => {
 
   const setError = (message: string | null) => {
     error.value = message
+    success.value = null
+  }
+
+  const setSuccess = (message: string | null) => {
+    success.value = message
+    error.value = null
   }
 
   const clearError = () => {
     error.value = null
+  }
+
+  const clearSuccess = () => {
+    success.value = null
   }
 
   // API测试连接
@@ -26,6 +37,7 @@ export const useCommonStore = defineStore('common', () => {
     try {
       setLoading(true)
       clearError()
+      clearSuccess()
 
       const response = await testAPI()
 
@@ -50,12 +62,15 @@ export const useCommonStore = defineStore('common', () => {
     // 状态
     loading,
     error,
+    success,
     apiConnected,
 
     // Actions
     setLoading,
     setError,
+    setSuccess,
     clearError,
+    clearSuccess,
     testConnection,
   }
 })
