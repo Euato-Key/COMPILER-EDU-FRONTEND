@@ -352,8 +352,7 @@ export const useFAStore = defineStore('fa', () => {
       step5Data.value = null
       originalData.value = null
       
-      // 保存重置后的状态
-      saveState()
+      // 由于配置了 autoSave: true，状态会自动保存
     }
   }
 
@@ -371,8 +370,7 @@ export const useFAStore = defineStore('fa', () => {
     step5Data.value = null
     originalData.value = null
     
-    // 保存重置后的状态
-    saveState()
+    // 由于配置了 autoSave: true，状态会自动保存
   }
 
   // ------------------------------------------
