@@ -120,6 +120,15 @@
                     恢复
                   </button>
                   <button
+                    @click="handleViewReport(record.id)"
+                    class="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm flex items-center gap-1.5 shadow-sm active:scale-95"
+                    :disabled="commonStore.loading"
+                  >
+                    <Icon v-if="!commonStore.loading" icon="lucide:file-text" class="w-4 h-4" />
+                    <Icon v-else icon="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                    查看报告
+                  </button>
+                  <button
                     @click="handleDelete(record.id)"
                     class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
                     title="删除"
@@ -211,14 +220,17 @@ const handleRestore = async (recordId: string) => {
   }
 }
 
-// 4. 时间格式化
+// 4. 查看报告
+const handleViewReport = (recordId: string) => {
+  router.push(`/report/fa/${recordId}`)
+}
+
+// 5. 时间格式化
 const formatDate = (timestamp: string) => {
   if (!timestamp) return '-'
   try {
-    // 首先尝试解析标准的 Date 格式
     let date = new Date(timestamp)
     
-    // 如果解析失败，尝试处理 "日/月/年, 时:分:秒" 格式
     if (isNaN(date.getTime())) {
       const regex = /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{1,2}):(\d{1,2})$/;
       const match = timestamp.match(regex);
@@ -231,7 +243,6 @@ const formatDate = (timestamp: string) => {
       }
     }
     
-    // 格式化为中文风格：年月日 时分秒
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')

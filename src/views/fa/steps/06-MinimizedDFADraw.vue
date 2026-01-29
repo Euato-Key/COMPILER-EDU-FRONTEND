@@ -153,21 +153,34 @@
 
     <div class="step-actions">
       <div class="flex justify-between items-center">
-        <button
-          @click="$emit('prev-step')"
-          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
-          上一步
-        </button>
-        <div class="text-sm text-gray-500">步骤 6 / 6</div>
-        <button
-          @click="complete"
-          class="px-6 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors"
-        >
-          完成
-          <Icon icon="lucide:check" class="w-4 h-4 inline ml-2" />
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            @click="$emit('prev-step')"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Icon icon="lucide:chevron-left" class="w-4 h-4 inline mr-2" />
+            上一步
+          </button>
+          <button
+            @click="handleViewReport"
+            class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+            :disabled="!faStore.currentRecordId"
+            :title="!faStore.currentRecordId ? '需要先保存答题记录' : ''"
+          >
+            <Icon icon="lucide:file-text" class="w-4 h-4" />
+            查看报告
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-sm text-gray-500">步骤 6 / 6</div>
+          <button
+            @click="complete"
+            class="px-6 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors"
+          >
+            完成
+            <Icon icon="lucide:check" class="w-4 h-4 inline ml-2" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -175,6 +188,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useFAStoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
@@ -186,7 +200,7 @@ const emit = defineEmits<{
   complete: [data: any]
 }>()
 
-// 使用 FA Store
+const router = useRouter()
 const faStore = useFAStoreNew()
 
 // 本地状态
@@ -467,6 +481,20 @@ const complete = () => {
 
   // 触发完成事件
   emit('complete', stepData)
+}
+
+// 查看本次答题报告
+const handleViewReport = () => {
+  if (!faStore.currentRecordId) {
+    console.warn('当前没有可用的记录ID')
+    return
+  }
+  
+  // 保存当前状态到历史记录
+  faStore.saveToHistory()
+  
+  // 跳转到报告页面
+  router.push(`/report/fa/${faStore.currentRecordId}`)
 }
 </script>
 

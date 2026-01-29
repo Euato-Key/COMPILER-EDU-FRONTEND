@@ -36,6 +36,7 @@
     "file-saver": "^2.0.5",
     "gsap": "^3.13.0",
     "highlight.js": "^11.11.1",
+    "html2pdf.js": "^0.14.0",
     "katex": "^0.16.22",
     "lucide-vue-next": "^0.525.0",
     "markdown-it": "^14.1.0",
