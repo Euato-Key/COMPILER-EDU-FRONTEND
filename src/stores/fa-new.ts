@@ -341,12 +341,38 @@ export const useFAStore = defineStore('fa', () => {
     // 如果删除的是当前正在看的记录，把当前ID置空，防止后续误更新
     if (currentRecordId.value === recordId) {
       currentRecordId.value = null
+      
+      // 同时重置所有状态，确保页面不会显示已删除的内容
+      inputRegex.value = ''
+      canvasData.value = {
+        nodes: [],
+        edges: []
+      }
+      step3Data.value = null
+      step5Data.value = null
+      originalData.value = null
+      
+      // 保存重置后的状态
+      saveState()
     }
   }
 
   const clearAllHistory = () => {
     historyList.value = []
     currentRecordId.value = null
+    
+    // 同时重置所有状态，确保页面不会显示已清空的内容
+    inputRegex.value = ''
+    canvasData.value = {
+      nodes: [],
+      edges: []
+    }
+    step3Data.value = null
+    step5Data.value = null
+    originalData.value = null
+    
+    // 保存重置后的状态
+    saveState()
   }
 
   // ------------------------------------------
