@@ -1,3 +1,4 @@
+<!-- COMPILER-EDU-FRONTEND\src\views\fa\steps\01-RegexInput.vue -->
 <template>
   <div class="regex-input-step">
     <!-- 步骤头部 -->
@@ -25,12 +26,14 @@
             <!-- 输入框 -->
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2"> 正则表达式 </label>
+              <!-- 绑定到 localRegex，与 Store 分离 -->
               <input
-                v-model="faStore.inputRegex"
+                v-model="localRegex"
                 type="text"
                 placeholder="例如: (a|b)*abb"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 @keyup.enter="validateRegex"
+                @input="onInputChange"
               />
             </div>
 
@@ -41,7 +44,7 @@
                 <button
                   v-for="example in examples"
                   :key="example.pattern"
-                  @click="faStore.setInputRegex(example.pattern)"
+                  @click="applyExample(example.pattern)"
                   class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
                 >
                   {{ example.pattern }}
@@ -53,14 +56,14 @@
             <div class="flex gap-3">
               <button
                 @click="validateRegex"
-                :disabled="!faStore.inputRegex.trim() || commonStore.loading"
+                :disabled="!localRegex.trim() || commonStore.loading"
                 class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 <Icon
                   :icon="commonStore.loading ? 'lucide:loader-2' : 'lucide:check-circle'"
                   :class="['w-4 h-4 inline mr-2', commonStore.loading ? 'animate-spin' : '']"
                 />
-                {{ commonStore.loading ? '验证中...' : '验证正则' }}
+                {{ commonStore.loading ? '分析中...' : '验证并生成' }}
               </button>
               <button
                 @click="clearInput"
@@ -71,7 +74,7 @@
               </button>
             </div>
 
-            <!-- 验证结果 -->
+            <!-- 验证结果提示 -->
             <div v-if="validationResult" class="mt-4">
               <div
                 :class="[
@@ -96,7 +99,7 @@
                         validationResult.valid ? 'text-green-800' : 'text-red-800',
                       ]"
                     >
-                      {{ validationResult.valid ? '正则表达式有效' : '正则表达式无效' }}
+                      {{ validationResult.title }}
                     </p>
                     <p
                       :class="[
@@ -112,15 +115,22 @@
             </div>
           </div>
 
-          <!-- 当前输入预览 -->
+          <!-- 当前已生效的输入预览 (Store中的数据) -->
           <div
             v-if="faStore.inputRegex"
             class="mt-4 bg-white border border-gray-200 rounded-lg p-6 flex-1"
           >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">当前输入</h3>
-            <div class="font-mono text-lg bg-gray-100 p-3 rounded border">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">当前已生效正则</h3>
+              <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-bold">
+                <Icon icon="lucide:check" class="w-3 h-3 inline mr-1" />已验证
+              </span>
+            </div>
+            
+            <div class="font-mono text-lg bg-gray-100 p-3 rounded border text-blue-700 font-bold break-all">
               {{ faStore.inputRegex }}
             </div>
+            
             <div v-if="parsedInfo" class="mt-4 text-sm text-gray-600">
               <p><strong>解析信息：</strong></p>
               <ul class="list-disc list-inside space-y-1 mt-2">
@@ -229,12 +239,13 @@
 
         <div class="text-sm text-gray-500">步骤 1 / 6</div>
 
+        <!-- 只有当 Store 里有验证通过的结果时，才允许下一步 -->
         <button
           @click="proceedToNext"
-          :disabled="!isValidAndReady"
+          :disabled="!canProceed"
           :class="[
             'px-6 py-2 rounded-lg transition-colors',
-            isValidAndReady
+            canProceed
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed',
           ]"
@@ -248,9 +259,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useFAStore, useCommonStore } from '@/stores'
+import { useFAStoreNew, useCommonStore } from '@/stores'
 
 const emit = defineEmits<{
   'next-step': []
@@ -258,17 +269,22 @@ const emit = defineEmits<{
   complete: [data: Record<string, unknown>]
 }>()
 
-// 使用 Pinia stores
-const faStore = useFAStore()
+const faStore = useFAStoreNew()
 const commonStore = useCommonStore()
 
-// 本地状态（用于表单验证等临时状态）
+// 本地输入框绑定的变量
+const localRegex = ref('')
+
+// 状态恢复锁，防止重复请求
+const isRecovering = ref(false)
+
+// 验证结果提示
 const validationResult = ref<{
   valid: boolean
+  title: string
   message: string
 } | null>(null)
 
-// 示例正则表达式
 const examples = [
   { pattern: '(a|b)*abb', description: '以 abb 结尾的字符串' },
   { pattern: '(a|b)*a(a|b)', description: '倒数第二个字符是 a' },
@@ -277,166 +293,144 @@ const examples = [
   { pattern: 'a(a|b)*', description: 'a 开头后跟任意 a 或 b' },
 ]
 
-// 解析信息
+// === 核心逻辑：尝试恢复会话 ===
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+  
+  // 如果 Store 里有正则，但没有分析结果，说明需要从后端找回数据
+  if (faStore.inputRegex && !faStore.hasResult()) {
+    isRecovering.value = true
+    console.log('[FA-RECOVERY] 检测到正则记录，正在静默恢复分析结果...', faStore.inputRegex)
+    
+    try {
+      // 传入 true 表示恢复模式：不清空 ID，不清空用户已填写的答案
+      const success = await faStore.performFAAnalysis(true)
+      
+      if (success) {
+        console.log('[FA-RECOVERY] 分析结果恢复成功')
+        validationResult.value = {
+          valid: true,
+          title: '已恢复数据',
+          message: `已找回记录 ${faStore.currentRecordId || ''} 的分析结果`,
+        }
+      }
+    } catch (err) {
+      console.error('[FA-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+    }
+  } else if (faStore.hasResult()) {
+    // 已经有结果了（比如从步骤2退回）
+    validationResult.value = {
+      valid: true,
+      title: '已生效',
+      message: '正则表达式当前处于激活状态',
+    }
+  }
+}
+
+// === 监听器：处理持久化数据的延迟加载 ===
+watch(
+  () => faStore.inputRegex,
+  (newVal) => {
+    // 1. 当 Store 里的正则被加载出来时，同步给本地输入框
+    if (newVal && !localRegex.value) {
+      localRegex.value = newVal
+    }
+    // 2. 尝试执行恢复逻辑
+    if (newVal) {
+      handleRecovery()
+    }
+  },
+  { immediate: true } // 立即执行，防止数据已经存在的情况
+)
+
+onMounted(async () => {
+  console.log('[FA-DEBUG] 组件已挂载，当前 Store 状态:', {
+    regex: faStore.inputRegex,
+    hasResult: faStore.hasResult()
+  })
+  
+  // 确保在挂载后再执行一次，处理极端情况
+  await nextTick()
+  handleRecovery()
+})
+
+// === 计算属性 ===
 const parsedInfo = computed(() => {
   if (!faStore.inputRegex) return null
-
   const charCount = faStore.inputRegex.length
   const operatorCount = (faStore.inputRegex.match(/[|*()]/g) || []).length
-
-  // 计算嵌套深度
-  let depth = 0
-  let maxDepth = 0
+  let depth = 0, maxDepth = 0
   for (const char of faStore.inputRegex) {
-    if (char === '(') {
-      depth++
-      maxDepth = Math.max(maxDepth, depth)
-    } else if (char === ')') {
-      depth--
-    }
+    if (char === '(') { depth++; maxDepth = Math.max(maxDepth, depth) }
+    else if (char === ')') { depth-- }
   }
-
-  return {
-    charCount,
-    operatorCount,
-    nestingDepth: maxDepth,
-  }
+  return { charCount, operatorCount, nestingDepth: maxDepth }
 })
 
-// 是否验证通过且准备就绪
-const isValidAndReady = computed(() => {
-  return validationResult.value?.valid === true && faStore.hasResult() && !commonStore.loading
+const canProceed = computed(() => {
+  return faStore.hasResult() && !commonStore.loading
 })
 
-// 验证正则表达式
+// === 交互方法 ===
+const onInputChange = () => {
+  if (validationResult.value && !validationResult.value.valid) {
+    validationResult.value = null
+  }
+}
+
+const applyExample = (pattern: string) => {
+  localRegex.value = pattern
+}
+
 const validateRegex = async () => {
-  if (!faStore.inputRegex.trim()) {
-    validationResult.value = {
-      valid: false,
-      message: '请输入正则表达式',
-    }
+  if (!localRegex.value.trim()) {
+    validationResult.value = { valid: false, title: '输入为空', message: '请输入正则表达式' }
     return
   }
 
-  // 基本语法检查
   try {
-    // 关键修改：像旧代码一样处理空格，只消除空格但不消除换行
-    const pattern = faStore.inputRegex.replace(/ +/g, '')
-
-    console.log('经过处理后的输入Regex：', pattern) // 调试用
-
-    // 检查是否包含中文
-    if (/[\u4e00-\u9fa5]/.test(pattern)) {
-      validationResult.value = {
-        valid: false,
-        message: '输入不能包含中文字符',
-      }
-      return
-    }
-
-    // 检查ASCII字符范围（32-126）、特殊字符ε和•符号
-    for (const char of pattern) {
-      const charCode = char.charCodeAt(0)
-      if (char !== 'ε' && char !== '•' && (charCode < 32 || charCode > 126)) {
-        validationResult.value = {
-          valid: false,
-          message: `字符 "${char}" 不在允许范围内。只能输入ASCII字符(32-126)、特殊字符ε和•符号`,
-        }
-        return
-      }
-    }
-
-    // 检查括号匹配
-    let openCount = 0
-    for (const char of pattern) {
-      if (char === '(') openCount++
-      else if (char === ')') openCount--
-      if (openCount < 0) {
-        throw new Error('括号不匹配：右括号多于左括号')
-      }
-    }
-    if (openCount > 0) {
-      throw new Error('括号不匹配：左括号多于右括号')
-    }
-
-    // 检查空操作符
-    if (pattern.includes('||') || pattern.includes('**') || pattern.includes('••')) {
-      throw new Error('不允许连续的操作符')
-    }
-
-    // 检查开头结尾的操作符
-    if (/^[|*•]/.test(pattern)) {
-      throw new Error('正则表达式不能以操作符开头')
-    }
-    if (/[|•]$/.test(pattern)) {
-      throw new Error('正则表达式不能以操作符结尾')
-    }
-
-    // 重要：更新store中的正则表达式为处理后的版本（去空格）
+    const pattern = localRegex.value.replace(/ +/g, '')
     faStore.setInputRegex(pattern)
 
-    // 调用store的分析方法
+    // 新分析（非恢复模式）
     const success = await faStore.performFAAnalysis()
 
     if (success) {
+      faStore.saveToHistory()
       validationResult.value = {
         valid: true,
-        message: '正则表达式验证成功，已生成 NFA/DFA',
+        title: '验证成功',
+        message: '已生成新分析结果并创建答题记录',
       }
     } else {
       validationResult.value = {
         valid: false,
-        message: commonStore.error || '分析失败',
+        title: '验证失败',
+        message: commonStore.error || '后端解析正则表达式失败',
       }
     }
   } catch (error) {
     validationResult.value = {
       valid: false,
+      title: '格式错误',
       message: error instanceof Error ? error.message : '未知错误',
     }
   }
 }
 
-// 清空输入
 const clearInput = () => {
+  localRegex.value = ''
   faStore.resetAll()
   validationResult.value = null
 }
 
-// 进入下一步
 const proceedToNext = () => {
-  if (!isValidAndReady.value || !faStore.originalData) return
-
-  // 发送完成事件，传递正则表达式数据和FA结果
-  const stepData = {
-    regex: faStore.inputRegex,
-    parsedInfo: parsedInfo.value,
-    faResult: faStore.originalData,
-    validationData: faStore.validationData,
-    timestamp: new Date().toISOString(),
-  }
-
-  console.log('Step 1 completed with data:', stepData)
-
-  // 滚动到页面顶部
+  if (!canProceed.value || !faStore.originalData) return
   window.scrollTo({ top: 0, behavior: 'smooth' })
-
-  // 直接进入下一步，数据已经保存在 Pinia store 中
-  emit('complete', stepData)
   emit('next-step')
 }
-
-// 监听输入变化，自动验证
-watch(
-  () => faStore.inputRegex,
-  (newValue) => {
-    if (newValue && validationResult.value) {
-      // 清空之前的验证结果，用户修改时重新验证
-      validationResult.value = null
-      faStore.clearAnalysis()
-    }
-  },
-)
 </script>
 
 <style scoped>

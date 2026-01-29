@@ -501,7 +501,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useFAStore } from '@/stores'
+import { useFAStoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable } from '@/components/fa'
 
@@ -542,7 +542,7 @@ interface MatrixCell {
 }
 
 // 使用 FA Store
-const faStore = useFAStore()
+const faStore = useFAStoreNew()
 
 // 本地状态
 const alphabetSymbols = ref<string[]>([])
@@ -1379,7 +1379,8 @@ const formatFieldKey = (fieldKey: string) => {
 // 保存05页面数据
 const saveStep5Data = () => {
   faStore.saveStep5Data(localPSets.value, minimizedMatrix.value)
-  console.log('05页面数据已保存')
+  faStore.saveToHistory()
+  console.log('05页面数据已保存并同步到历史记录')
 }
 
 // 构建最小化状态转换矩阵数据

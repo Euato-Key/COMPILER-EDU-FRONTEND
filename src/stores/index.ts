@@ -5,6 +5,7 @@ export { useLL1Store } from './ll1'
 export { useLR0Store } from './lr0'
 export { useSLR1Store } from './slr1'
 export { useFAStore } from './fa'
+export { useFAStore as useFAStoreNew } from './fa-new'
 
 // 导出AI聊天store
 export { useFAChatStore } from './faChat'

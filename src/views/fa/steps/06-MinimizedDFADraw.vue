@@ -176,7 +176,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useFAStore } from '@/stores'
+import { useFAStoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable, FA_vueflow } from '@/components/fa'
 
@@ -187,7 +187,7 @@ const emit = defineEmits<{
 }>()
 
 // 使用 FA Store
-const faStore = useFAStore()
+const faStore = useFAStoreNew()
 
 // 本地状态
 const dfaStateCount = ref(0)
@@ -248,7 +248,10 @@ onMounted(() => {
     const savedData = faStore.loadCanvasData('step6')
     if (savedData && newMinimizedDFACanvasRef.value) {
       console.log('恢复步骤6画布数据:', savedData)
-      newMinimizedDFACanvasRef.value.loadData(savedData)
+      // 确保组件已挂载，调用子组件方法加载数据
+      nextTick(() => {
+        newMinimizedDFACanvasRef.value?.loadData(savedData)
+      })
     }
 
     // 添加自动保存事件监听
@@ -258,21 +261,37 @@ onMounted(() => {
   }
 })
 
-// 自动保存功能
+// === 核心修改：实时保存逻辑 ===
+// 这是一个防抖计时器，避免用户拖动节点时过于频繁地写入 LocalStorage
+let autoSaveTimer: number | null = null
+
 const handleCanvasDataChanged = (event: CustomEvent) => {
   const { nodes, edges } = event.detail
+  
+  // 1. 更新当前 Store 中的状态 (内存)
   faStore.saveCanvasData('step6', nodes, edges)
-  console.log('步骤6画布数据自动保存')
+  
+  // 2. 防抖保存到历史记录 (持久化)
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = window.setTimeout(() => {
+    faStore.saveToHistory()
+    console.log('步骤6画布数据已同步到历史记录')
+  }, 1000) // 延迟1秒保存
 }
 
 // 组件卸载时保存数据并移除事件监听
 onUnmounted(() => {
   document.removeEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
+  
+  // 清除未执行的防抖保存
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
 
+  // 离开页面时，强制保存一次最新状态
   if (newMinimizedDFACanvasRef.value) {
     const canvasData = newMinimizedDFACanvasRef.value.saveData()
     faStore.saveCanvasData('step6', canvasData.nodes, canvasData.edges)
-    console.log('步骤6画布数据已保存')
+    faStore.saveToHistory()
+    console.log('步骤6画布数据最终保存')
   }
 })
 

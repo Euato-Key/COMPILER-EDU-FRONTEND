@@ -1,3 +1,4 @@
+<!-- COMPILER-EDU-FRONTEND\src\views\fa\index.vue -->
 <template>
   <div class="fa-layout min-h-screen theme-main-bg theme-transition">
     <!-- 头部导航 -->
@@ -13,14 +14,34 @@
             </router-link>
             <span class="text-gray-400">|</span>
             <h1 class="text-xl font-semibold text-gray-800">有限自动机 (FA)</h1>
+            
+            <!-- 新增：状态显示栏 -->
+            <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="text-gray-500">ID:</span>
+                <span v-if="faStore.currentRecordId" class="font-mono text-blue-600 font-bold">
+                  {{ faStore.currentRecordId }}
+                </span>
+                <span v-else class="text-green-600 font-bold">新会话</span>
+              </div>
+              <span class="text-gray-300">|</span>
+              <div class="flex items-center gap-1 max-w-[200px]">
+                <span class="text-gray-500">正则:</span>
+                <span v-if="faStore.inputRegex" class="font-mono text-gray-900 truncate" :title="faStore.inputRegex">
+                  {{ faStore.inputRegex }}
+                </span>
+                <span v-else class="text-gray-400 italic">未设置</span>
+              </div>
+            </div>
           </div>
+          
           <div class="flex items-center gap-2">
             <ThemeSelector />
             <button
               @click="resetProgress"
-              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
             >
-              重置进度
+              <span class="text-lg">+</span> 新建答题
             </button>
             <router-link
               to="/ll1"
@@ -68,7 +89,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useFAStore } from '@/stores'
+// 修改引入：使用新的 Store
+import { useFAStoreNew } from '@/stores'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
@@ -87,8 +109,8 @@ import MinimizedDFADraw from './steps/06-MinimizedDFADraw.vue'
 const router = useRouter()
 const route = useRoute()
 
-// 使用FA Store
-const faStore = useFAStore()
+// 修改：使用新的 FA Store
+const faStore = useFAStoreNew()
 
 // 使用FA AI聊天store
 const faChatStore = useFAChatStore()
@@ -177,8 +199,6 @@ const currentStepComponent = computed(() => {
 const navigateToStep = (stepId: number) => {
   currentStep.value = stepId
   router.push({ query: { step: stepId } })
-
-  // 滚动到页面顶部
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -199,16 +219,14 @@ const prevStep = () => {
 // 步骤完成回调
 const onStepComplete = (data: Record<string, unknown>) => {
   console.log('Step completed:', currentStep.value, data)
-  // 更新聊天上下文
   updateChatContext()
 }
 
-// 重置进度
+// 重置进度 (新建答题)
 const resetProgress = () => {
-  if (confirm('确定要重置所有进度吗？')) {
-    faStore.resetAll() // 使用store的重置方法
+  if (confirm('确定要新建答题吗？这将清空当前进度并开始一个新的会话。')) {
+    faStore.resetAll() // 这会清空数据并将 currentRecordId 置为 null
     navigateToStep(1)
-    // 清空AI聊天上下文
     faChatStore.clearChat()
     updateChatContext()
   }
@@ -216,10 +234,7 @@ const resetProgress = () => {
 
 // 更新聊天上下文
 const updateChatContext = () => {
-  // 获取FA store中的数据
   const faData = faStore
-
-  // 更新聊天上下文
   chatContext.value = {
     currentPage: 'fa',
     userInput: {
@@ -242,8 +257,6 @@ const updateChatContext = () => {
     userAnswers: {},
     pageContext: `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`
   }
-
-  // 更新store中的上下文
   faChatStore.updateContext(chatContext.value)
 }
 
@@ -261,14 +274,11 @@ onMounted(() => {
   if (step >= 1 && step <= faSteps.length) {
     currentStep.value = step
   }
-
-  // 初始化聊天上下文
   updateChatContext()
 })
 
-// 组件卸载时可以选择性保留数据
 onUnmounted(() => {
-  // FA数据会保留在store中，可以在其他地方访问
+  // FA数据会保留在store中
 })
 </script>
 

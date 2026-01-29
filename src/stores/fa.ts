@@ -184,6 +184,9 @@ export const useFAStore = defineStore('fa', () => {
     try {
       commonStore.setLoading(true)
       commonStore.clearError()
+      
+      // 清空所有之前的分析数据和用户数据
+      clearAllStepData()
 
       const response = await getDFAM(inputRegex.value.trim())
 
@@ -212,19 +215,29 @@ export const useFAStore = defineStore('fa', () => {
     originalData.value = null
     validationData.value = null
   }
+  
+  // 清空所有步骤数据（用户输入和画布数据）
+  const clearAllStepData = () => {
+    // 清除分析结果
+    clearAnalysis()
+    
+    // 清除所有画布数据
+    clearCanvasData('step2')
+    clearCanvasData('step4')
+    clearCanvasData('step6')
+    
+    // 清除步骤3的数据
+    clearStep3Data()
+    
+    // 清除步骤5的数据
+    clearStep5Data()
+  }
 
   // 重置所有状态
   const resetAll = () => {
     inputRegex.value = ''
-    clearAnalysis()
+    clearAllStepData() // 使用新的清除函数清空所有步骤数据
     commonStore.clearError()
-    canvasData.value = {
-      step2: undefined,
-      step4: undefined,
-      step6: undefined
-    }
-    // 清除03页面数据
-    step3Data.value = undefined
   }
 
   // 保存画布数据
@@ -410,6 +423,7 @@ export const useFAStore = defineStore('fa', () => {
     setInputRegex,
     performFAAnalysis: enhancedPerformFAAnalysis,
     clearAnalysis,
+    clearAllStepData,
     resetAll,
 
     // 画布数据管理

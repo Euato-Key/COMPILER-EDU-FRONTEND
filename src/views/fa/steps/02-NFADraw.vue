@@ -29,6 +29,10 @@
           <div class="bg-white border border-gray-200 rounded-lg">
             <div class="h-[700px] p-4">
               <div class="w-full h-full">
+                <!-- 
+                  注意：FA_vueflow 组件内部应该抛出 'canvas-data-changed' 事件
+                  或者提供 @change 事件。这里假设它通过原生 DOM 事件通信。
+                -->
                 <FA_vueflow ref="newFACanvasRef" FA_type="NFA" />
               </div>
             </div>
@@ -45,17 +49,10 @@
                   <li>• 为每个基本符号创建状态和转换</li>
                   <li>• 处理连接、选择和闭包操作</li>
                   <li>• 确保有明确的初始状态和接受状态</li>
-                  <li>• 完成绘制后可点击右下方  "查看答案"  按钮，显示正确答案后，请自行检验NFA构造的正确性</li>
+                  <li>• 完成绘制后可点击右下方 "查看答案" 按钮，显示正确答案后，请自行检验NFA构造的正确性</li>
                 </ul>
               </div>
             </div>
-
-
-
-            <!-- 集成ThompsonRules可视化 -->
-            <!-- <div class="mt-6">
-              <ThompsonRules />
-            </div> -->
           </div>
         </div>
 
@@ -94,14 +91,12 @@
                 </div>
               </div>
 
-              <!-- 固定的SVG容器，避免条件渲染导致DOM销毁 -->
+              <!-- 固定的SVG容器 -->
               <div
                 v-else
                 ref="answerSvgContainer"
                 class="h-full w-full flex items-center justify-center bg-gray-50 rounded"
-              >
-                <!-- SVG内容将直接渲染到这里，不会被状态变化影响 -->
-              </div>
+              ></div>
             </div>
 
             <!-- 答案分析 -->
@@ -165,7 +160,8 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { FA_vueflow } from '@/components/fa'
-import { useFAStore } from '@/stores'
+// 修改引入：使用新的 Store
+import { useFAStoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
 
 const emit = defineEmits<{
@@ -174,8 +170,8 @@ const emit = defineEmits<{
   complete: [data: any]
 }>()
 
-// 使用 FA Store
-const faStore = useFAStore()
+// 使用新的 FA Store
+const faStore = useFAStoreNew()
 
 // 本地状态
 const showAnswer = ref(false)
@@ -191,11 +187,22 @@ const isConstructionComplete = computed(() => {
   return showAnswer.value
 })
 
-// 自动保存功能
+// === 核心修改：实时保存逻辑 ===
+// 这是一个防抖计时器，避免用户拖动节点时过于频繁地写入 LocalStorage
+let autoSaveTimer: number | null = null
+
 const handleCanvasDataChanged = (event: CustomEvent) => {
   const { nodes, edges } = event.detail
+  
+  // 1. 更新当前 Store 中的状态 (内存)
   faStore.saveCanvasData('step2', nodes, edges)
-  console.log('步骤2画布数据自动保存')
+  
+  // 2. 防抖保存到历史记录 (持久化)
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = window.setTimeout(() => {
+    faStore.saveToHistory()
+    console.log('步骤2画布数据已同步到历史记录')
+  }, 1000) // 延迟1秒保存
 }
 
 // 组件初始化
@@ -209,25 +216,33 @@ onMounted(() => {
   const savedData = faStore.loadCanvasData('step2')
   if (savedData && newFACanvasRef.value) {
     console.log('恢复步骤2画布数据:', savedData)
-    newFACanvasRef.value.loadData(savedData)
+    // 确保组件已挂载，调用子组件方法加载数据
+    nextTick(() => {
+      newFACanvasRef.value?.loadData(savedData)
+    })
   }
 
   // 添加自动保存事件监听
   document.addEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
 })
 
-// 组件卸载时保存数据并移除事件监听
+// 组件卸载时
 onUnmounted(() => {
   document.removeEventListener('canvas-data-changed', handleCanvasDataChanged as EventListener)
+  
+  // 清除未执行的防抖保存
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
 
+  // 离开页面时，强制保存一次最新状态
   if (newFACanvasRef.value) {
     const canvasData = newFACanvasRef.value.saveData()
     faStore.saveCanvasData('step2', canvasData.nodes, canvasData.edges)
-    console.log('步骤2画布数据已保存')
+    faStore.saveToHistory()
+    console.log('步骤2画布数据最终保存')
   }
 })
 
-// 答案控制 - 采用06的正确方式
+// 答案控制
 const toggleAnswer = async () => {
   showAnswer.value = !showAnswer.value
 
@@ -237,16 +252,14 @@ const toggleAnswer = async () => {
   }
 }
 
-// 渲染SVG答案 - 每次显示都重新渲染
+// 渲染SVG答案
 const renderSvgAnswer = async () => {
   if (!answerSvgContainer.value || !nfaDotString.value) return
 
   try {
-    // 使用 viz.js 渲染 DOT 字符串
     const viz = await instance()
     const svg = viz.renderSVGElement(nfaDotString.value)
 
-    // 清空容器并添加SVG
     answerSvgContainer.value.innerHTML = ''
     if (svg) {
       svg.classList.add('nfa-svg')
@@ -282,9 +295,7 @@ const proceedToNext = () => {
     },
   }
 
-  // 滚动到页面顶部
   window.scrollTo({ top: 0, behavior: 'smooth' })
-
   emit('complete', stepData)
   emit('next-step')
 }

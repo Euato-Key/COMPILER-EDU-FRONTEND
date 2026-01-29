@@ -515,13 +515,11 @@
                       :show-answer="true"
                       :final-state-config="{
                         isFinalState: (row: number, col: string, value: any) => {
-                          // 动态生成列映射，支持任意数量的符号
                           const columnMapping: Record<string, string> = {}
                           columnMapping['S'] = 'I'
                           alphabetSymbols.forEach(symbol => {
                             columnMapping[symbol] = `I${symbol}`
                           })
-
                           const mappedColumn = columnMapping[col] || col
                           return finalStatePositions.some((pos: {row: number, col: string}) => pos.row === row && pos.col === mappedColumn)
                         }
@@ -538,25 +536,20 @@
             </div>
           </div>
 
-          <!-- 大毛玻璃覆盖层 - 覆盖整个状态转换矩阵区域 -->
+          <!-- 大毛玻璃覆盖层 -->
           <div
             v-if="isMatrixLocked"
             class="absolute inset-0 z-50 backdrop-blur-xl backdrop-saturate-150 bg-gradient-to-br from-white/85 via-white/75 to-white/70 rounded-lg border border-white/50 flex items-center justify-center animate-[glassAppear_0.3s_ease-out]"
           >
             <div class="flex flex-col items-center justify-center h-full w-full px-8 py-12">
-              <!-- 锁图标 -->
               <div class="flex items-center justify-center mb-8 animate-pulse">
                 <Icon icon="lucide:lock" class="w-16 h-16 text-blue-100 drop-shadow-lg" />
               </div>
-
-              <!-- 文字内容 -->
               <div class="text-center space-y-4 max-w-md">
                 <h3 class="text-xl font-bold text-gray-900 drop-shadow-md">需要先查看转换表答案</h3>
                 <p class="text-base text-gray-800 leading-relaxed drop-shadow-sm">
                   请先查看上方 NFA → DFA 转换表的标准答案后再填写状态转换矩阵
                 </p>
-
-                <!-- 引导按钮 -->
                 <div class="mt-8 animate-bounce">
                   <div
                     class="inline-flex items-center px-5 py-3 bg-blue-600/90 hover:bg-blue-700/90 rounded-xl shadow-lg backdrop-blur-sm border border-blue-400/30 transition-all duration-300 cursor-pointer group"
@@ -572,8 +565,6 @@
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
 
@@ -610,22 +601,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useFAStore } from '@/stores'
+// 修改引入：使用新的 Store
+import { useFAStoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
 import { TransitionTable } from '@/components/fa'
 import { ProgressBar } from '@/components/shared'
 
 // 类型定义
-// 新的转换表结构 - 按列组织（每列一个输入符号）
 interface ConversionTableData {
-  [inputSymbol: string]: string[] // 每个输入符号对应一列数据
+  [inputSymbol: string]: string[]
 }
 
-// 新的状态转换矩阵结构 - 按行组织（每行一个输入符号）
 interface TransitionMatrixData {
-  [rowIndex: string]: Record<string, string> // 每行对应一个状态转换
+  [rowIndex: string]: Record<string, string>
 }
 
 const emit = defineEmits<{
@@ -634,17 +624,17 @@ const emit = defineEmits<{
   complete: [data: Record<string, unknown>]
 }>()
 
-// 使用 FA Store
-const faStore = useFAStore()
+// 使用新的 FA Store
+const faStore = useFAStoreNew()
 
 // NFA SVG 渲染
 const nfaSvg = ref('')
 
-// 用户填写的表格 - 新的数据结构
-const userConversionTable = ref<ConversionTableData>({}) // 转换表：列布局
-const userTransitionMatrix = ref<TransitionMatrixData>({}) // 状态转换矩阵：行布局
+// 用户填写的表格
+const userConversionTable = ref<ConversionTableData>({})
+const userTransitionMatrix = ref<TransitionMatrixData>({})
 
-// 答案数据 - 新的数据结构
+// 答案数据
 const answerConversionTable = ref<ConversionTableData>({})
 const answerTransitionMatrix = ref<TransitionMatrixData>({})
 
@@ -653,29 +643,67 @@ const showTableAnswer = ref(false)
 const showMatrixAnswer = ref(false)
 
 // 字母表符号和状态信息
-const alphabetSymbols = ref<string[]>([]) // 输入符号 ['a', 'b']
-const conversionTableColumns = ref<string[]>([]) // 转换表列标题 ['I', 'Ia', 'Ib']
-const matrixStateColumns = ref<string[]>([]) // 矩阵状态列 ['S', 'a', 'b']
+const alphabetSymbols = ref<string[]>([])
+const conversionTableColumns = ref<string[]>([])
+const matrixStateColumns = ref<string[]>([])
 const dfaStates = ref<string[]>([])
 
 // 表格行数控制
-const conversionTableRowCount = ref(0) // 转换表的行数（动态调整）
+const conversionTableRowCount = ref(0)
 
 // 验证状态管理
-const tableValidationErrors = ref<Record<string, string[]>>({}) // 每个字段的错误信息
+const tableValidationErrors = ref<Record<string, string[]>>({})
 const matrixValidationErrors = ref<Record<string, string[]>>({})
-const tableFieldValidation = ref<Record<string, 'valid' | 'invalid' | 'normal'>>({}) // 字段验证状态
+const tableFieldValidation = ref<Record<string, 'valid' | 'invalid' | 'normal'>>({})
 const matrixFieldValidation = ref<Record<string, 'valid' | 'invalid' | 'normal'>>({})
-const showTableErrors = ref(false) // 是否显示转换表错误
-const showMatrixErrors = ref(false) // 是否显示矩阵错误
-const showTableSuccess = ref(false) // 是否显示转换表成功提示
-const showMatrixSuccess = ref(false) // 是否显示矩阵成功提示
+const showTableErrors = ref(false)
+const showMatrixErrors = ref(false)
+const showTableSuccess = ref(false)
+const showMatrixSuccess = ref(false)
 
-// 计算属性
+// 终态位置列表
+const finalStatePositions = ref<Array<{row: number, col: string}>>([])
+
+// === 核心修改：防抖保存逻辑 ===
+let autoSaveTimer: number | null = null
+
+const triggerAutoSave = () => {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = window.setTimeout(() => {
+    saveStep3Data()
+    faStore.saveToHistory() // 同步到历史记录
+    console.log('步骤3数据已自动保存到历史记录')
+  }, 1000)
+}
+
+// 保存03页面数据 (写入 Store)
+const saveStep3Data = () => {
+  faStore.saveStep3Data(
+    userConversionTable.value,
+    userTransitionMatrix.value,
+    conversionTableRowCount.value
+  )
+}
+
+// 监听数据变化，触发防抖保存
+watch(
+  [userConversionTable, userTransitionMatrix, conversionTableRowCount],
+  () => {
+    triggerAutoSave()
+  },
+  { deep: true }
+)
+
+// 组件卸载时强制保存
+onUnmounted(() => {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  saveStep3Data()
+  faStore.saveToHistory()
+})
+
+// === 计算属性 ===
 const constructionComplete = computed(() => {
-  // 必须同时查看两个答案
-  const hasViewedBothAnswers = showTableAnswer.value && showMatrixAnswer.value
-  return hasViewedBothAnswers
+  return showTableAnswer.value && showMatrixAnswer.value
 })
 
 const totalTransitions = computed(() => {
@@ -687,118 +715,58 @@ const totalTransitions = computed(() => {
   return total
 })
 
-// 转换表完成率计算
+// 转换表完成率
 const tableCompletionRate = computed(() => {
-  // 如果用户没有添加任何行，返回0
-  if (conversionTableRowCount.value === 0) {
-    return 0
-  }
-
-  // 如果没有列定义，返回0
-  if (conversionTableColumns.value.length === 0) {
-    return 0
-  }
-
-  // 获取标准答案的行数
+  if (conversionTableRowCount.value === 0 || conversionTableColumns.value.length === 0) return 0
+  
   const answerRowCount = Math.max(
-    ...conversionTableColumns.value.map((col) => {
-      const colData = answerConversionTable.value[col] || []
-      return colData.length
-    })
+    ...conversionTableColumns.value.map((col) => answerConversionTable.value[col]?.length || 0)
   )
+  if (answerRowCount === 0) return 0
 
-  // 如果没有答案数据，返回0
-  if (answerRowCount === 0) {
-    return 0
-  }
-
-  // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * conversionTableColumns.value.length
-
-  // 计算用户已完成的字段数
   let completedFields = 0
 
   conversionTableColumns.value.forEach((column) => {
     const columnData = userConversionTable.value[column] || []
     for (let i = 0; i < answerRowCount; i++) {
-      const fieldValue = columnData[i] || ''
-      if (fieldValue.trim() !== '') {
-        completedFields++
-      }
+      if ((columnData[i] || '').trim() !== '') completedFields++
     }
   })
 
   return totalRequiredFields > 0 ? Math.round((completedFields / totalRequiredFields) * 100) : 0
 })
 
-// 状态转换矩阵完成率计算
+// 矩阵完成率
 const matrixCompletionRate = computed(() => {
-  // 如果没有状态列定义，返回0
-  if (matrixStateColumns.value.length === 0) {
-    return 0
-  }
+  if (matrixStateColumns.value.length === 0 || Object.keys(userTransitionMatrix.value).length === 0) return 0
 
-  // 如果用户矩阵没有初始化，返回0
-  if (Object.keys(userTransitionMatrix.value).length === 0) {
-    return 0
-  }
-
-  // 获取标准答案的行数
   const answerRowCount = Object.keys(answerTransitionMatrix.value).length
+  if (answerRowCount === 0) return 0
 
-  // 如果没有答案数据，返回0
-  if (answerRowCount === 0) {
-    return 0
-  }
-
-  // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * matrixStateColumns.value.length
-
-  // 计算用户已完成的字段数
   let completedFields = 0
 
   for (let i = 0; i < answerRowCount; i++) {
     const rowKey = i.toString()
     matrixStateColumns.value.forEach((state) => {
-      const fieldValue = userTransitionMatrix.value[rowKey]?.[state] || ''
-      if (fieldValue.trim() !== '') {
-        completedFields++
-      }
+      if ((userTransitionMatrix.value[rowKey]?.[state] || '').trim() !== '') completedFields++
     })
   }
 
   return totalRequiredFields > 0 ? Math.round((completedFields / totalRequiredFields) * 100) : 0
 })
 
-// 转换表正确完成率计算（只计算填写正确的内容）
+// 转换表正确率
 const tableCorrectCompletionRate = computed(() => {
-  // 如果用户没有添加任何行，返回0
-  if (conversionTableRowCount.value === 0) {
-    return 0
-  }
-
-  // 如果没有列定义，返回0
-  if (conversionTableColumns.value.length === 0) {
-    return 0
-  }
-
-  // 获取标准答案的行数
+  if (conversionTableRowCount.value === 0 || conversionTableColumns.value.length === 0) return 0
+  
   const answerRowCount = Math.max(
-    ...conversionTableColumns.value.map((col) => {
-      const colData = answerConversionTable.value[col] || []
-      return colData.length
-    })
+    ...conversionTableColumns.value.map((col) => answerConversionTable.value[col]?.length || 0)
   )
+  if (answerRowCount === 0) return 0
 
-  // 如果没有答案数据，返回0
-  if (answerRowCount === 0) {
-    return 0
-  }
-
-  // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * conversionTableColumns.value.length
-
-  // 计算用户正确填写的字段数
   let correctFields = 0
 
   conversionTableColumns.value.forEach((column) => {
@@ -806,11 +774,7 @@ const tableCorrectCompletionRate = computed(() => {
     const answerColumnData = answerConversionTable.value[column] || []
 
     for (let i = 0; i < answerRowCount; i++) {
-      const userValue = columnData[i] || ''
-      const answerValue = answerColumnData[i] || ''
-
-      // 使用状态集合比较函数来判断是否正确
-      if (compareStateSets(userValue, answerValue)) {
+      if (compareStateSets(columnData[i] || '', answerColumnData[i] || '')) {
         correctFields++
       }
     }
@@ -819,30 +783,14 @@ const tableCorrectCompletionRate = computed(() => {
   return totalRequiredFields > 0 ? Math.round((correctFields / totalRequiredFields) * 100) : 0
 })
 
-// 矩阵正确完成率计算（只计算填写正确的内容）
+// 矩阵正确率
 const matrixCorrectCompletionRate = computed(() => {
-  // 如果没有状态列定义，返回0
-  if (matrixStateColumns.value.length === 0) {
-    return 0
-  }
+  if (matrixStateColumns.value.length === 0 || Object.keys(userTransitionMatrix.value).length === 0) return 0
 
-  // 如果用户矩阵没有初始化，返回0
-  if (Object.keys(userTransitionMatrix.value).length === 0) {
-    return 0
-  }
-
-  // 获取标准答案的行数
   const answerRowCount = Object.keys(answerTransitionMatrix.value).length
+  if (answerRowCount === 0) return 0
 
-  // 如果没有答案数据，返回0
-  if (answerRowCount === 0) {
-    return 0
-  }
-
-  // 计算总体需要的字段数（标准答案的所有字段）
   const totalRequiredFields = answerRowCount * matrixStateColumns.value.length
-
-  // 计算用户正确填写的字段数
   let correctFields = 0
 
   for (let i = 0; i < answerRowCount; i++) {
@@ -850,8 +798,6 @@ const matrixCorrectCompletionRate = computed(() => {
     matrixStateColumns.value.forEach((state) => {
       const userValue = userTransitionMatrix.value[rowKey]?.[state] || ''
       const answerValue = answerTransitionMatrix.value[rowKey]?.[state] || ''
-
-      // 使用状态集合比较函数来判断是否正确
       if (compareStateSets(userValue, answerValue)) {
         correctFields++
       }
@@ -861,87 +807,48 @@ const matrixCorrectCompletionRate = computed(() => {
   return totalRequiredFields > 0 ? Math.round((correctFields / totalRequiredFields) * 100) : 0
 })
 
-// 总体完成率计算
+// 总体完成率
 const overallCompletionRate = computed(() => {
   const tableRate = tableCorrectCompletionRate.value
   const matrixRate = matrixCorrectCompletionRate.value
-
-  // 检查是否有标准答案数据来确定权重
   const hasTableAnswer = Object.keys(answerConversionTable.value).length > 0
   const hasMatrixAnswer = Object.keys(answerTransitionMatrix.value).length > 0
 
-  // 如果两个表格都没有答案数据，返回0
-  if (!hasTableAnswer && !hasMatrixAnswer) {
-    return 0
-  }
-
-  // 如果只有一个表格有答案数据，只计算该表格的完成率
-  if (hasTableAnswer && !hasMatrixAnswer) {
-    return tableRate
-  }
-  if (!hasTableAnswer && hasMatrixAnswer) {
-    return matrixRate
-  }
-
-  // 如果两个表格都有答案数据，计算加权平均
-  // 转换表和矩阵各占50%的权重
-  const weightedAverage = (tableRate * 0.5) + (matrixRate * 0.5)
-  return Math.round(weightedAverage)
+  if (!hasTableAnswer && !hasMatrixAnswer) return 0
+  if (hasTableAnswer && !hasMatrixAnswer) return tableRate
+  if (!hasTableAnswer && hasMatrixAnswer) return matrixRate
+  return Math.round((tableRate * 0.5) + (matrixRate * 0.5))
 })
 
-// 矩阵锁定状态：只有查看了转换表答案后才能操作矩阵
-const isMatrixLocked = computed(() => {
-  return !showTableAnswer.value && !showMatrixAnswer.value
-})
+const isMatrixLocked = computed(() => !showTableAnswer.value && !showMatrixAnswer.value)
+const matrixRowCount = computed(() => Object.keys(answerTransitionMatrix.value).length || 0)
 
-// 矩阵行数 - 动态匹配答案的行数
-const matrixRowCount = computed(() => {
-  return Object.keys(answerTransitionMatrix.value).length || 0
-})
+// === 操作函数 ===
 
-// 新的表格操作函数
 const addTableRow = () => {
   conversionTableRowCount.value++
-  console.log('添加转换表行，当前行数:', conversionTableRowCount.value)
-
-  // 确保每列都有足够的数据
   conversionTableColumns.value.forEach((column) => {
-    if (!userConversionTable.value[column]) {
-      userConversionTable.value[column] = []
-    }
-    // 填充到新的行数
+    if (!userConversionTable.value[column]) userConversionTable.value[column] = []
     while (userConversionTable.value[column].length < conversionTableRowCount.value) {
       userConversionTable.value[column].push('')
     }
   })
-
-  // 保存数据
-  saveStep3Data()
 }
 
 const removeTableRow = (rowIndex: number) => {
   if (conversionTableRowCount.value > 0) {
     conversionTableRowCount.value--
-    // 从每列中删除指定行
     conversionTableColumns.value.forEach((column) => {
       if (userConversionTable.value[column]) {
         userConversionTable.value[column].splice(rowIndex, 1)
       }
     })
   }
-
-  // 保存数据
-  saveStep3Data()
 }
 
-// 更新转换表单元格值
 const updateConversionTable = (column: string, rowIndex: number, value: string) => {
-  if (!userConversionTable.value[column]) {
-    userConversionTable.value[column] = []
-  }
-  if (!userConversionTable.value[column][rowIndex]) {
-    userConversionTable.value[column][rowIndex] = ''
-  }
+  if (!userConversionTable.value[column]) userConversionTable.value[column] = []
+  if (!userConversionTable.value[column][rowIndex]) userConversionTable.value[column][rowIndex] = ''
   userConversionTable.value[column][rowIndex] = value
 }
 
@@ -952,14 +859,9 @@ const clearUserTable = () => {
   tableFieldValidation.value = {}
   showTableErrors.value = false
   showTableSuccess.value = false
-
-  // 保存数据
-  saveStep3Data()
 }
 
-// 矩阵操作函数 - 矩阵是固定结构，不需要添加/删除行
 const clearUserMatrix = () => {
-  // 重新初始化矩阵数据
   Object.keys(userTransitionMatrix.value).forEach((rowKey) => {
     userTransitionMatrix.value[rowKey] = {}
     matrixStateColumns.value.forEach((state) => {
@@ -970,276 +872,15 @@ const clearUserMatrix = () => {
   matrixFieldValidation.value = {}
   showMatrixErrors.value = false
   showMatrixSuccess.value = false
-
-  // 保存数据
-  saveStep3Data()
 }
 
-// 更新状态转换矩阵单元格值
 const updateTransitionMatrix = (rowIndex: number, state: string, value: string) => {
   const rowKey = String(rowIndex)
-  if (!userTransitionMatrix.value[rowKey]) {
-    userTransitionMatrix.value[rowKey] = {}
-  }
+  if (!userTransitionMatrix.value[rowKey]) userTransitionMatrix.value[rowKey] = {}
   userTransitionMatrix.value[rowKey][state] = value
 }
 
-// 初始化数据结构
-const initializeDataStructures = () => {
-  console.log('初始化数据结构')
-  console.log('转换表列:', conversionTableColumns.value)
-  console.log('字母表符号:', alphabetSymbols.value)
-  console.log('矩阵状态列:', matrixStateColumns.value)
-
-  // 初始化转换表数据结构
-  conversionTableColumns.value.forEach((column) => {
-    if (!userConversionTable.value[column]) {
-      userConversionTable.value[column] = []
-    }
-  })
-
-  // 转换表初始为空，用户需要手动添加行
-  conversionTableRowCount.value = 0
-  console.log('转换表初始化为空，用户需要手动添加行')
-
-  // 初始化矩阵数据结构 - 只有在有答案数据时才初始化
-  if (Object.keys(answerTransitionMatrix.value).length > 0) {
-    Object.keys(answerTransitionMatrix.value).forEach((rowKey) => {
-      if (!userTransitionMatrix.value[rowKey]) {
-        userTransitionMatrix.value[rowKey] = {}
-      }
-      matrixStateColumns.value.forEach((state) => {
-        if (!userTransitionMatrix.value[rowKey][state]) {
-          userTransitionMatrix.value[rowKey][state] = ''
-        }
-      })
-    })
-  } else {
-    // 如果没有答案数据，清空用户矩阵
-    userTransitionMatrix.value = {}
-  }
-}
-
-// 验证功能
-const validateField = (
-  value: string | undefined,
-  rowIndex: number,
-  field: string,
-  tableType: 'table' | 'matrix',
-) => {
-  const fieldKey = `${tableType}-${rowIndex}-${field}`
-  const errors: string[] = []
-
-    // 确保value是字符串
-  const fieldValue = value || ''
-
-  console.log('Validating field:', { fieldKey, fieldValue, rowIndex, field, tableType })
-
-  // 更新验证状态
-  const validationRef = tableType === 'table' ? tableValidationErrors : matrixValidationErrors
-  const fieldValidationRef = tableType === 'table' ? tableFieldValidation : matrixFieldValidation
-
-  // 1. 检查是否为空
-  if (!fieldValue || fieldValue.trim() === '') {
-    if (field === 'state') {
-      errors.push('状态名称不能为空')
-    } else {
-      errors.push('转换关系不能为空')
-    }
-  }
-
-  // 2. 检查输入格式：确保符号之间用空格隔开
-  if (tableType === 'table' && fieldValue && fieldValue.trim() !== '') {
-    const trimmedValue = fieldValue.trim()
-    if (trimmedValue && trimmedValue !== '-') {
-      const hasMultipleChars = trimmedValue.length > 1
-      const hasSpaces = trimmedValue.includes(' ')
-      if (hasMultipleChars && !hasSpaces) {
-        errors.push('多个符号之间需要用空格隔开')
-      }
-    }
-  }
-
-  // 3. 如果是状态字段，检查状态来源合法性
-  if (field === 'state' && fieldValue && fieldValue.trim() !== '') {
-    const isValidState = validateStateSource(fieldValue.trim(), rowIndex, tableType)
-    if (!isValidState) {
-      errors.push('新状态必须来源于之前行的转换结果')
-    }
-  }
-
-  // 4. 如果是转换字段，检查转换正确性
-  if (field !== 'state' && fieldValue && fieldValue.trim() !== '') {
-    const isValidTransition = validateTransition(rowIndex, field, fieldValue.trim(), tableType)
-    if (!isValidTransition) {
-      errors.push('转换结果与标准答案不符')
-    }
-  }
-
-  if (errors.length > 0) {
-    console.log('Setting errors for field:', fieldKey, errors)
-    validationRef.value[fieldKey] = errors
-    fieldValidationRef.value[fieldKey] = 'invalid'
-    // 失焦验证时也要显示错误信息
-    if (tableType === 'table') {
-      showTableErrors.value = true
-      console.log('Table errors after setting:', tableValidationErrors.value)
-      console.log('showTableErrors:', showTableErrors.value)
-    } else {
-      showMatrixErrors.value = true
-      console.log('Matrix errors after setting:', matrixValidationErrors.value)
-      console.log('showMatrixErrors:', showMatrixErrors.value)
-    }
-  } else {
-    console.log('Clearing errors for field:', fieldKey)
-    delete validationRef.value[fieldKey]
-    fieldValidationRef.value[fieldKey] = 'valid'
-    // 检查是否还有其他错误，如果没有则隐藏错误面板
-    if (Object.keys(validationRef.value).length === 0) {
-      if (tableType === 'table') {
-        showTableErrors.value = false
-      } else {
-        showMatrixErrors.value = false
-      }
-    }
-  }
-
-  console.log('Validation complete for field:', fieldKey, 'Errors count:', errors.length)
-}
-
-// 验证状态来源合法性 - 更新为新数据结构
-const validateStateSource = (
-  stateName: string,
-  currentRowIndex: number,
-  tableType: 'table' | 'matrix',
-): boolean => {
-  // 第一行的状态（通常是初始状态）总是合法的
-  if (currentRowIndex === 0) return true
-
-  if (tableType === 'table') {
-    // 转换表：检查该状态是否在之前的行中作为转换结果出现过
-    for (let rowIndex = 0; rowIndex < currentRowIndex; rowIndex++) {
-      for (const column of conversionTableColumns.value) {
-        const cellValue = userConversionTable.value[column]?.[rowIndex]?.trim()
-        if (cellValue && cellValue !== '-' && cellValue.includes(stateName)) {
-          return true
-        }
-      }
-    }
-  } else {
-    // 矩阵：不需要验证状态来源，因为状态列是固定的
-    return matrixStateColumns.value.includes(stateName)
-  }
-
-  return false
-}
-
-// 比较状态集合是否相等（考虑顺序无关性）
-const compareStateSets = (set1: string, set2: string): boolean => {
-  // 如果都是空值或'-'，认为相等
-  if ((!set1 || set1.trim() === '' || set1.trim() === '-') &&
-      (!set2 || set2.trim() === '' || set2.trim() === '-')) {
-    return true
-  }
-
-  // 如果只有一个为空，不相等
-  if (!set1 || set1.trim() === '' || set1.trim() === '-' ||
-      !set2 || set2.trim() === '' || set2.trim() === '-') {
-    return false
-  }
-
-  // 分割状态集合，去除空格并排序
-  const states1 = set1.trim().split(/\s+/).sort()
-  const states2 = set2.trim().split(/\s+/).sort()
-
-  // 比较长度
-  if (states1.length !== states2.length) {
-    return false
-  }
-
-  // 逐个比较状态
-  for (let i = 0; i < states1.length; i++) {
-    if (states1[i] !== states2[i]) {
-      return false
-    }
-  }
-
-  return true
-}
-
-// 验证转换正确性 - 更新为新数据结构
-const validateTransition = (
-  rowIndex: number,
-  field: string,
-  userValue: string,
-  tableType: 'table' | 'matrix',
-): boolean => {
-  if (tableType === 'table') {
-    // 转换表验证：根据列名找到对应的答案数据
-    const answerColumn = answerConversionTable.value[field]
-    if (!answerColumn || !answerColumn[rowIndex]) {
-      console.log(`转换表验证失败：找不到答案数据 ${field}[${rowIndex}]`)
-      return false
-    }
-
-    const correctValue = answerColumn[rowIndex] || '-'
-
-    // 使用状态集合比较函数（考虑顺序无关性）
-    const isEqual = compareStateSets(userValue, correctValue)
-
-    console.log(`转换表验证：${field}[${rowIndex}] 用户值:"${userValue}" 正确答案:"${correctValue}" 相等:${isEqual}`)
-    return isEqual
-  } else {
-    // 矩阵验证：字段名直接是状态名，行索引通过参数传递
-    const answerRow = answerTransitionMatrix.value[rowIndex.toString()]
-    if (!answerRow) {
-      console.log(`矩阵验证失败：找不到行 ${rowIndex} 的答案数据`)
-      return false
-    }
-
-    const correctValue = answerRow[field] || '-'
-
-    // 对于矩阵，也使用状态集合比较函数
-    const isEqual = compareStateSets(userValue, correctValue)
-
-    console.log(`矩阵验证：${rowIndex}-${field} 用户值:"${userValue}" 正确答案:"${correctValue}" 相等:${isEqual}`)
-    return isEqual
-  }
-}
-
-// 验证整个表格 - 更新为新数据结构
-const validateTable = (tableType: 'table' | 'matrix') => {
-  console.log(`开始验证${tableType === 'table' ? '转换表' : '矩阵'}`)
-
-  if (tableType === 'table') {
-    // 验证转换表
-    for (let rowIndex = 0; rowIndex < conversionTableRowCount.value; rowIndex++) {
-      conversionTableColumns.value.forEach((column) => {
-        const value = userConversionTable.value[column]?.[rowIndex] || ''
-        validateField(value, rowIndex, column, tableType)
-      })
-    }
-  } else {
-    // 验证矩阵
-    Object.keys(userTransitionMatrix.value).forEach((rowKey) => {
-      matrixStateColumns.value.forEach((state) => {
-        const value = userTransitionMatrix.value[rowKey]?.[state] || ''
-        validateField(value, Number(rowKey), state, tableType)
-      })
-    })
-  }
-
-  // 显示错误信息
-  if (tableType === 'table') {
-    showTableErrors.value = Object.keys(tableValidationErrors.value).length > 0
-    console.log('转换表验证完成，错误数量:', Object.keys(tableValidationErrors.value).length)
-  } else {
-    showMatrixErrors.value = Object.keys(matrixValidationErrors.value).length > 0
-    console.log('矩阵验证完成，错误数量:', Object.keys(matrixValidationErrors.value).length)
-  }
-}
-
-// 获取字段的CSS类
+// 获取字段的CSS类 (用于动态改变输入框边框颜色)
 const getFieldClass = (rowIndex: number, field: string, tableType: 'table' | 'matrix') => {
   const fieldKey = `${tableType}-${rowIndex}-${field}`
   const fieldValidationRef = tableType === 'table' ? tableFieldValidation : matrixFieldValidation
@@ -1252,22 +893,126 @@ const getFieldClass = (rowIndex: number, field: string, tableType: 'table' | 'ma
   } else if (validationStatus === 'invalid') {
     return `${baseClass} border-red-500 bg-red-50 focus:ring-red-500`
   } else {
+    // 默认状态（普通输入中）
     const ringColor = tableType === 'table' ? 'focus:ring-blue-500' : 'focus:ring-purple-500'
     return `${baseClass} border-gray-300 ${ringColor}`
   }
 }
 
-// 手动验证按钮处理
+// === 验证逻辑 ===
+
+const compareStateSets = (set1: string, set2: string): boolean => {
+  if ((!set1 || set1.trim() === '' || set1.trim() === '-') &&
+      (!set2 || set2.trim() === '' || set2.trim() === '-')) return true
+  if (!set1 || set1.trim() === '' || set1.trim() === '-' ||
+      !set2 || set2.trim() === '' || set2.trim() === '-') return false
+  
+  const states1 = set1.trim().split(/\s+/).sort()
+  const states2 = set2.trim().split(/\s+/).sort()
+  
+  if (states1.length !== states2.length) return false
+  for (let i = 0; i < states1.length; i++) {
+    if (states1[i] !== states2[i]) return false
+  }
+  return true
+}
+
+const validateStateSource = (stateName: string, currentRowIndex: number, tableType: 'table' | 'matrix'): boolean => {
+  if (currentRowIndex === 0) return true
+  if (tableType === 'table') {
+    for (let rowIndex = 0; rowIndex < currentRowIndex; rowIndex++) {
+      for (const column of conversionTableColumns.value) {
+        const cellValue = userConversionTable.value[column]?.[rowIndex]?.trim()
+        if (cellValue && cellValue !== '-' && cellValue.includes(stateName)) return true
+      }
+    }
+  } else {
+    return matrixStateColumns.value.includes(stateName)
+  }
+  return false
+}
+
+const validateTransition = (rowIndex: number, field: string, userValue: string, tableType: 'table' | 'matrix'): boolean => {
+  if (tableType === 'table') {
+    const answerColumn = answerConversionTable.value[field]
+    if (!answerColumn || !answerColumn[rowIndex]) return false
+    return compareStateSets(userValue, answerColumn[rowIndex] || '-')
+  } else {
+    const answerRow = answerTransitionMatrix.value[rowIndex.toString()]
+    if (!answerRow) return false
+    return compareStateSets(userValue, answerRow[field] || '-')
+  }
+}
+
+const validateField = (value: string | undefined, rowIndex: number, field: string, tableType: 'table' | 'matrix') => {
+  const fieldKey = `${tableType}-${rowIndex}-${field}`
+  const errors: string[] = []
+  const fieldValue = value || ''
+  
+  const validationRef = tableType === 'table' ? tableValidationErrors : matrixValidationErrors
+  const fieldValidationRef = tableType === 'table' ? tableFieldValidation : matrixFieldValidation
+
+  if (!fieldValue || fieldValue.trim() === '') {
+    errors.push(field === 'state' ? '状态名称不能为空' : '转换关系不能为空')
+  }
+
+  if (tableType === 'table' && fieldValue && fieldValue.trim() !== '') {
+    const trimmedValue = fieldValue.trim()
+    if (trimmedValue && trimmedValue !== '-' && trimmedValue.length > 1 && !trimmedValue.includes(' ')) {
+      errors.push('多个符号之间需要用空格隔开')
+    }
+  }
+
+  if (field === 'state' && fieldValue && fieldValue.trim() !== '') {
+    if (!validateStateSource(fieldValue.trim(), rowIndex, tableType)) {
+      errors.push('新状态必须来源于之前行的转换结果')
+    }
+  }
+
+  if (field !== 'state' && fieldValue && fieldValue.trim() !== '') {
+    if (!validateTransition(rowIndex, field, fieldValue.trim(), tableType)) {
+      errors.push('转换结果与标准答案不符')
+    }
+  }
+
+  if (errors.length > 0) {
+    validationRef.value[fieldKey] = errors
+    fieldValidationRef.value[fieldKey] = 'invalid'
+    if (tableType === 'table') showTableErrors.value = true
+    else showMatrixErrors.value = true
+  } else {
+    delete validationRef.value[fieldKey]
+    fieldValidationRef.value[fieldKey] = 'valid'
+    if (Object.keys(validationRef.value).length === 0) {
+      if (tableType === 'table') showTableErrors.value = false
+      else showMatrixErrors.value = false
+    }
+  }
+}
+
+const validateTable = (tableType: 'table' | 'matrix') => {
+  if (tableType === 'table') {
+    for (let rowIndex = 0; rowIndex < conversionTableRowCount.value; rowIndex++) {
+      conversionTableColumns.value.forEach((column) => {
+        validateField(userConversionTable.value[column]?.[rowIndex] || '', rowIndex, column, tableType)
+      })
+    }
+    showTableErrors.value = Object.keys(tableValidationErrors.value).length > 0
+  } else {
+    Object.keys(userTransitionMatrix.value).forEach((rowKey) => {
+      matrixStateColumns.value.forEach((state) => {
+        validateField(userTransitionMatrix.value[rowKey]?.[state] || '', Number(rowKey), state, tableType)
+      })
+    })
+    showMatrixErrors.value = Object.keys(matrixValidationErrors.value).length > 0
+  }
+}
+
 const handleValidateTable = () => {
   validateTable('table')
-
-  // 检查是否全部正确
   if (Object.keys(tableValidationErrors.value).length === 0 && tableCorrectCompletionRate.value === 100) {
     showTableSuccess.value = true
-    // 3秒后自动隐藏成功提示
-    setTimeout(() => {
-      showTableSuccess.value = false
-    }, 3000)
+    setTimeout(() => { showTableSuccess.value = false }, 3000)
   } else {
     showTableSuccess.value = false
   }
@@ -1275,70 +1020,41 @@ const handleValidateTable = () => {
 
 const handleValidateMatrix = () => {
   validateTable('matrix')
-
-  // 检查是否全部正确
   if (Object.keys(matrixValidationErrors.value).length === 0 && matrixCorrectCompletionRate.value === 100) {
     showMatrixSuccess.value = true
-    // 3秒后自动隐藏成功提示
-    setTimeout(() => {
-      showMatrixSuccess.value = false
-    }, 3000)
+    setTimeout(() => { showMatrixSuccess.value = false }, 3000)
   } else {
     showMatrixSuccess.value = false
   }
 }
 
-// 格式化错误信息的辅助函数
 const formatFieldKey = (fieldKey: string, tableType: 'table' | 'matrix') => {
   const parts = fieldKey.split('-')
   if (parts.length >= 3) {
-    const rowIndex = parseInt(parts[1]) + 1 // 转换为1-based索引
+    const rowIndex = parseInt(parts[1]) + 1
     const fieldName = parts[2]
-
-    if (tableType === 'table') {
-      // 转换表：显示列名
-      return `第${rowIndex}行${fieldName}列`
-    } else {
-      // 矩阵：字段名直接是状态名（如 "S", "a", "b"）
-      return `第${rowIndex}行${fieldName}列`
-    }
+    return `第${rowIndex}行${fieldName}列`
   }
   return fieldKey
 }
 
-// 终态位置列表（从转换表中提取的含Y单元格的位置）
-const finalStatePositions = ref<Array<{row: number, col: string}>>([])
+// === 数据处理 ===
 
-
-
-// 提取终态位置（从转换表中含Y的单元格位置）
 const extractFinalStatePositions = (conversionTable: ConversionTableData) => {
   const positions: Array<{row: number, col: string}> = []
-
-  console.log('开始提取终态位置，转换表数据:', conversionTable)
-
-  // 遍历转换表的所有列
   Object.keys(conversionTable).forEach((column) => {
     const columnData = conversionTable[column]
-    console.log(`检查列 ${column}:`, columnData)
-
     if (Array.isArray(columnData)) {
       columnData.forEach((cellValue, rowIndex) => {
-        console.log(`检查单元格 [${rowIndex}][${column}]: ${cellValue}`)
-        // 如果单元格包含Y，记录这个位置
         if (cellValue && cellValue.includes('Y')) {
           positions.push({row: rowIndex, col: column})
-          console.log(`找到终态位置: 行${rowIndex}, 列${column} -> ${cellValue}`)
         }
       })
     }
   })
-
   finalStatePositions.value = positions
-  console.log('提取的终态位置列表:', finalStatePositions.value)
 }
 
-// 渲染 NFA SVG
 const renderNFASvg = async () => {
   if (faStore.nfaDotString) {
     try {
@@ -1352,245 +1068,124 @@ const renderNFASvg = async () => {
   }
 }
 
-// 从FA数据中提取字母表符号
 const extractAlphabetFromFAData = (data: Record<string, any>) => {
   const symbols = new Set<string>()
-
-  // 从转换表中提取符号
   if (data.table) {
     Object.keys(data.table).forEach((symbol) => {
       if (symbol !== 'I' && symbol !== 'ε' && symbol !== 'epsilon') {
-        // 从 Ia, Ib 中提取 a, b
-        const extractedSymbol = symbol.replace('I', '')
-        symbols.add(extractedSymbol)
+        symbols.add(symbol.replace('I', ''))
       }
     })
   }
-
-  // 如果从table中没有提取到符号，尝试从table_to_num中提取
   if (symbols.size === 0 && data.table_to_num) {
     Object.keys(data.table_to_num).forEach((symbol) => {
-      if (symbol !== 'S') {
-        symbols.add(symbol)
-      }
+      if (symbol !== 'S') symbols.add(symbol)
     })
   }
-
   alphabetSymbols.value = Array.from(symbols).sort()
-  console.log('提取的字母表符号:', alphabetSymbols.value)
 }
 
-// 新的数据处理函数 - 转换表数据处理（列布局）
 const processTableDataToColumns = (table: Record<string, any[]>, symbols: string[]): ConversionTableData => {
   const result: ConversionTableData = {}
-
   if (!table) return result
-
-  console.log('处理转换表数据，原始table:', table)
-  console.log('符号列表:', symbols)
-
-  // 创建列数据结构 - 使用后端返回的原始列名
   const allColumns = ['I', ...symbols.map((s) => `I${s}`)]
-  console.log('所有列名:', allColumns)
-
-  // 初始化每列
-  allColumns.forEach((column) => {
-    result[column] = []
-  })
-
-  // 获取最大行数
-  const maxRows = Math.max(
-    ...allColumns.map((col) => {
-      const colData = table[col]
-      return Array.isArray(colData) ? colData.length : 0
-    })
-  )
-  console.log('最大行数:', maxRows)
-
-  // 填充数据
+  allColumns.forEach((column) => { result[column] = [] })
+  
+  const maxRows = Math.max(...allColumns.map(col => Array.isArray(table[col]) ? table[col].length : 0))
+  
   for (let rowIndex = 0; rowIndex < maxRows; rowIndex++) {
     allColumns.forEach((column) => {
       const colData = table[column]
-      console.log(`处理列 ${column} 第 ${rowIndex} 行:`, colData?.[rowIndex])
-
       if (colData && Array.isArray(colData) && colData[rowIndex]) {
         const cellData = colData[rowIndex]
-        if (Array.isArray(cellData)) {
-          // 如果是嵌套数组，将其转换为字符串，符号之间用空格隔开
-          const cellValue = cellData.join(' ') || '-'
-          result[column].push(cellValue)
-          console.log(`列 ${column} 第 ${rowIndex} 行结果:`, cellValue)
-        } else {
-          const cellValue = String(cellData) || '-'
-          result[column].push(cellValue)
-          console.log(`列 ${column} 第 ${rowIndex} 行结果:`, cellValue)
-        }
+        result[column].push(Array.isArray(cellData) ? (cellData.join(' ') || '-') : (String(cellData) || '-'))
       } else {
         result[column].push('-')
-        console.log(`列 ${column} 第 ${rowIndex} 行结果: -`)
       }
     })
   }
-
-  console.log('最终转换表结果:', result)
   return result
 }
 
-// 新的数据处理函数 - 矩阵数据处理（行布局）
 const processMatrixDataToRows = (tableToNum: Record<string, any[]>, symbols: string[]): TransitionMatrixData => {
   const result: TransitionMatrixData = {}
-
   if (!tableToNum) return result
-
-  console.log('处理矩阵数据，原始tableToNum:', tableToNum)
-  console.log('符号列表:', symbols)
-
-  // 获取所有状态（S, a, b）
+  
   const allStates = Object.keys(tableToNum)
-  const sKeys = allStates.filter((x) => x === 'S')
-  const nonSKeys = allStates.filter((x) => x !== 'S').sort()
-  const stateKeys = [...sKeys, ...nonSKeys]
-  console.log('状态键:', stateKeys)
-
-  // 获取最大行数（数组长度）
-  const maxRows = Math.max(
-    ...stateKeys.map((state) => {
-      const stateData = tableToNum[state]
-      return Array.isArray(stateData) ? stateData.length : 0
-    })
-  )
-  console.log('最大行数:', maxRows)
-
-  // 为每一行创建数据
+  const stateKeys = [...allStates.filter(x => x === 'S'), ...allStates.filter(x => x !== 'S').sort()]
+  
+  const maxRows = Math.max(...stateKeys.map(state => Array.isArray(tableToNum[state]) ? tableToNum[state].length : 0))
+  
   for (let rowIndex = 0; rowIndex < maxRows; rowIndex++) {
     const rowKey = rowIndex.toString()
     result[rowKey] = {}
-
     stateKeys.forEach((state) => {
       const stateData = tableToNum[state]
-      if (stateData && Array.isArray(stateData) && stateData[rowIndex]) {
-        result[rowKey][state] = stateData[rowIndex]
-        console.log(`矩阵 ${rowKey}-${state}:`, result[rowKey][state])
-      } else {
-        result[rowKey][state] = '-'
-        console.log(`矩阵 ${rowKey}-${state}: -`)
-      }
+      result[rowKey][state] = (stateData && Array.isArray(stateData) && stateData[rowIndex]) ? stateData[rowIndex] : '-'
     })
   }
-
-  console.log('最终矩阵结果:', result)
   return result
 }
 
-// 生成答案数据（更新为新数据结构）
 const generateAnswerData = (data: Record<string, any>) => {
-  console.log('原始数据:', data)
-
-  // 使用与extractAlphabetFromFAData相同的逻辑提取符号
   const symbols = new Set<string>()
-
-  // 从转换表中提取符号
   if (data.table) {
     Object.keys(data.table).forEach((symbol) => {
-      if (symbol !== 'I' && symbol !== 'ε' && symbol !== 'epsilon') {
-        // 从 Ia, Ib 中提取 a, b
-        const extractedSymbol = symbol.replace('I', '')
-        symbols.add(extractedSymbol)
-      }
+      if (symbol !== 'I' && symbol !== 'ε' && symbol !== 'epsilon') symbols.add(symbol.replace('I', ''))
     })
   }
-
-  // 如果从table中没有提取到符号，尝试从table_to_num中提取
   if (symbols.size === 0 && data.table_to_num) {
     Object.keys(data.table_to_num).forEach((symbol) => {
-      if (symbol !== 'S') {
-        symbols.add(symbol)
-      }
+      if (symbol !== 'S') symbols.add(symbol)
     })
   }
-
   const symbolArray = Array.from(symbols).sort()
-  console.log('提取的符号:', symbolArray)
-
-  // 生成转换表答案（列布局）
+  
   answerConversionTable.value = processTableDataToColumns(data.table, symbolArray)
-  console.log('转换表答案:', answerConversionTable.value)
-
-  // 生成状态转换矩阵答案（行布局）
   answerTransitionMatrix.value = processMatrixDataToRows(data.table_to_num, symbolArray)
-
-  // 设置列信息 - 使用后端返回的原始列名
+  
   conversionTableColumns.value = ['I', ...symbolArray.map((s) => `I${s}`)]
-  console.log('转换表列名:', conversionTableColumns.value)
-
-  // 设置矩阵状态列 - 根据后端数据动态确定表头
+  
   if (data.table_to_num) {
     const allStates = Object.keys(data.table_to_num)
-    console.log('table_to_num的所有键:', allStates)
-    const sKeys = allStates.filter((x) => x === 'S')
-    const nonSKeys = allStates.filter((x) => x !== 'S').sort()
-    matrixStateColumns.value = [...sKeys, ...nonSKeys]
-    console.log('矩阵状态列:', matrixStateColumns.value)
+    matrixStateColumns.value = [...allStates.filter(x => x === 'S'), ...allStates.filter(x => x !== 'S').sort()]
   } else {
-    // 如果没有 table_to_num 数据，设置为空数组
     matrixStateColumns.value = []
   }
-
-  // 更新DFA状态（从转换表的I列获取）
+  
   dfaStates.value = answerConversionTable.value['I'] || []
-
-  // 提取终态位置列表
   extractFinalStatePositions(answerConversionTable.value)
 }
 
-// 答案显示控制
-const toggleTableAnswer = () => {
-  showTableAnswer.value = !showTableAnswer.value
+const toggleTableAnswer = () => { showTableAnswer.value = !showTableAnswer.value }
+const toggleMatrixAnswer = () => { showMatrixAnswer.value = !showMatrixAnswer.value }
+
+const initializeDataStructures = () => {
+  conversionTableColumns.value.forEach((column) => {
+    if (!userConversionTable.value[column]) userConversionTable.value[column] = []
+  })
+  conversionTableRowCount.value = 0
+  
+  if (Object.keys(answerTransitionMatrix.value).length > 0) {
+    Object.keys(answerTransitionMatrix.value).forEach((rowKey) => {
+      if (!userTransitionMatrix.value[rowKey]) userTransitionMatrix.value[rowKey] = {}
+      matrixStateColumns.value.forEach((state) => {
+        if (!userTransitionMatrix.value[rowKey][state]) userTransitionMatrix.value[rowKey][state] = ''
+      })
+    })
+  } else {
+    userTransitionMatrix.value = {}
+  }
 }
 
-const toggleMatrixAnswer = () => {
-  showMatrixAnswer.value = !showMatrixAnswer.value
-}
-
-// 保存03页面数据
-const saveStep3Data = () => {
-  faStore.saveStep3Data(
-    userConversionTable.value,
-    userTransitionMatrix.value,
-    conversionTableRowCount.value
-  )
-  console.log('03页面数据已保存')
-}
-
-// 进入下一步
 const proceedToNext = () => {
   if (constructionComplete.value) {
-    // 保存当前数据
     saveStep3Data()
-
-    const stepData = {
-      conversionTable: answerConversionTable.value,
-      transitionMatrix: answerTransitionMatrix.value,
-      dfaStates: dfaStates.value,
-      alphabetSymbols: alphabetSymbols.value,
-      conversionTableColumns: conversionTableColumns.value,
-      matrixStateColumns: matrixStateColumns.value,
-      totalTransitions: totalTransitions.value,
-      userConversionTable: userConversionTable.value,
-      userTransitionMatrix: userTransitionMatrix.value,
-      timestamp: new Date().toISOString(),
-    }
-
-    localStorage.setItem('fa-step3-data', JSON.stringify(stepData))
-
-    // 滚动到页面顶部
     window.scrollTo({ top: 0, behavior: 'smooth' })
-
     emit('next-step')
   }
 }
 
-// 组件挂载时的初始化
 onMounted(() => {
   if (!faStore.hasResult()) {
     console.warn('No FA data found, please complete step 1 first')
@@ -1600,37 +1195,18 @@ onMounted(() => {
   try {
     const faResult = faStore.originalData
     if (faResult) {
-      console.log('开始初始化FA数据')
-
-      // 1. 提取字母表符号
       extractAlphabetFromFAData(faResult)
-
-      // 2. 生成答案数据
       generateAnswerData(faResult)
-
-      // 3. 初始化用户数据结构（必须在生成答案数据之后）
       initializeDataStructures()
-
-      // 4. 渲染NFA SVG
       renderNFASvg()
-
-      console.log('FA数据初始化完成')
-      console.log('转换表列:', conversionTableColumns.value)
-      console.log('矩阵状态列:', matrixStateColumns.value)
-      console.log('答案转换表:', answerConversionTable.value)
-      console.log('答案矩阵:', answerTransitionMatrix.value)
     }
 
-    // 5. 尝试恢复03页面的用户数据
     const savedStep3Data = faStore.loadStep3Data()
     if (savedStep3Data) {
-      console.log('恢复03页面数据:', savedStep3Data)
       userConversionTable.value = savedStep3Data.userConversionTable || {}
       userTransitionMatrix.value = savedStep3Data.userTransitionMatrix || {}
       conversionTableRowCount.value = savedStep3Data.conversionTableRowCount || 0
     } else {
-      // 如果没有保存的数据，确保初始化为空状态
-      console.log('没有保存的数据，初始化为空状态')
       userConversionTable.value = {}
       userTransitionMatrix.value = {}
       conversionTableRowCount.value = 0
@@ -1639,22 +1215,9 @@ onMounted(() => {
     console.error('处理FA数据失败：', error)
   }
 })
-
-// 监听数据变化，自动保存
-watch(
-  [userConversionTable, userTransitionMatrix, conversionTableRowCount],
-  () => {
-    // 延迟保存，避免频繁保存
-    setTimeout(() => {
-      saveStep3Data()
-    }, 1000)
-  },
-  { deep: true }
-)
 </script>
 
 <style scoped>
-/* 自定义动画 - 这些无法用Tailwind实现，需要保留 */
 @keyframes glassAppear {
   from {
     opacity: 0;
