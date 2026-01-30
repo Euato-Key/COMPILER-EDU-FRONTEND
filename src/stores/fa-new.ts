@@ -136,9 +136,12 @@ export const useFAStore = defineStore('fa', () => {
       for (const [key, transitions] of Object.entries(rawData.table)) {
         if (Array.isArray(transitions)) {
           transitions.forEach((transition: any, index: number) => {
+            // 'S' 列是只读的，不需要用户填写
+            // 对于其他列，第一行是状态名称，也是只读的
+            const category = key === 'S' ? 'onlyRead' : (index === 0 ? 'onlyRead' : 'blank')
             data.table.push({
               id: 'table' + index + key,
-              category: 'blank',
+              category: category,
               state: 'normal',
               check: 'normal',
               coords: [index.toString(), key],
@@ -152,9 +155,12 @@ export const useFAStore = defineStore('fa', () => {
       for (const [key, transitions] of Object.entries(rawData.table_to_num)) {
         if (Array.isArray(transitions)) {
           transitions.forEach((transition: any, index: number) => {
+            // 'S' 列是只读的，不需要用户填写
+            // 对于其他列，第一行是状态名称，也是只读的
+            const category = key === 'S' ? 'onlyRead' : (index === 0 ? 'onlyRead' : 'blank')
             data.table_to_num.push({
               id: 'table_to_num' + index + key,
-              category: 'blank',
+              category: category,
               state: 'normal',
               check: 'normal',
               coords: [index.toString(), key],
@@ -168,9 +174,12 @@ export const useFAStore = defineStore('fa', () => {
       for (const [key, transitions] of Object.entries(rawData.table_to_num_min)) {
         if (Array.isArray(transitions)) {
           transitions.forEach((transition: any, index: number) => {
+            // 'S' 列是只读的，不需要用户填写
+            // 对于其他列，第一行是状态名称，也是只读的
+            const category = key === 'S' ? 'onlyRead' : (index === 0 ? 'onlyRead' : 'blank')
             data.table_to_num_min.push({
               id: 'table_to_num_min' + index + key,
-              category: 'blank',
+              category: category,
               state: 'normal',
               check: 'normal',
               coords: [index.toString(), key],
@@ -184,7 +193,7 @@ export const useFAStore = defineStore('fa', () => {
       rawData.P.forEach((partition: string[], index: number) => {
         data.p_list.push({
           id: 'p_list' + index,
-          category: 'onlyRead',
+          category: 'blank',
           state: 'normal',
           check: 'normal',
           text: '{' + partition.join(', ') + '}',

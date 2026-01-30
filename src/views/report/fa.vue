@@ -368,7 +368,21 @@ onMounted(async () => {
     return
   }
 
-  reportData.value = generateFAReport(record)
-  loading.value = false
+  // 重新获取后端数据以生成验证数据
+  try {
+    // 设置正则表达式
+    faStore.setInputRegex(record.regex)
+    // 执行分析（复现模式）
+    await faStore.performFAAnalysis(true)
+    
+    // 使用后端数据生成报告
+    reportData.value = generateFAReport(record, faStore.validationData || undefined)
+  } catch (error) {
+    console.error('获取后端数据失败:', error)
+    // 失败时使用默认方式生成报告
+    reportData.value = generateFAReport(record)
+  } finally {
+    loading.value = false
+  }
 })
 </script>

@@ -1,4 +1,5 @@
 import type { FAHistoryRecord } from '@/stores/fa-new'
+import type { DataFAType } from '@/types/fa'
 
 export interface FAReportStats {
   recordId: string
@@ -63,7 +64,7 @@ export interface FAReportStats {
   }
 }
 
-export function generateFAReport(record: FAHistoryRecord): FAReportStats {
+export function generateFAReport(record: FAHistoryRecord, validationData?: DataFAType): FAReportStats {
   const { id, regex, createdAt, timestamp, errorLogs, userData } = record
 
   const stats: FAReportStats = {
@@ -136,64 +137,119 @@ export function generateFAReport(record: FAHistoryRecord): FAReportStats {
     stats.canvas.overall = stats.canvas.step2 && stats.canvas.step4 && stats.canvas.step6
   }
 
-  if (userData.step3Data) {
-    const { userConversionTable, userTransitionMatrix, conversionTableRowCount } = userData.step3Data
+  // Step 3 进度计算（基于后端验证数据）
+  if (validationData) {
+    const s3Data = userData.step3Data; // 提取局部变量解决 ts(18048)
+
+    // --- 1. 转换表 (NFA->DFA) 进度 ---
+    const conversionTableTotal = validationData.table.filter(item => item.category !== 'onlyRead').length
+    let conversionTableFilled = 0
     
-    const conversionTableTotal = Object.keys(userConversionTable).reduce((sum, col) => {
-      return sum + (userConversionTable[col]?.length || 0)
-    }, 0)
-    const conversionTableFilled = Object.keys(userConversionTable).reduce((sum, col) => {
-      return sum + (userConversionTable[col]?.filter(v => v && v.trim()).length || 0)
-    }, 0)
+    if (s3Data?.userConversionTable) {
+      // 遍历每一列，累加有值的单元格
+      Object.values(s3Data.userConversionTable).forEach(columnArray => {
+        if (Array.isArray(columnArray)) {
+          conversionTableFilled += columnArray.filter(v => v && v.trim()).length
+        }
+      })
+    }
     
+    // 使用 Math.min(100, ...) 防止进度超过 100%
     stats.step3.conversionTable.progress = conversionTableTotal > 0 
-      ? Math.round((conversionTableFilled / conversionTableTotal) * 100) 
+      ? Math.min(100, Math.round((conversionTableFilled / conversionTableTotal) * 100)) 
       : 0
     stats.step3.conversionTable.completed = stats.step3.conversionTable.progress === 100
     
-    const matrixTotal = Object.keys(userTransitionMatrix).reduce((sum, rowKey) => {
-      return sum + Object.keys(userTransitionMatrix[rowKey]).length
-    }, 0)
-    const matrixFilled = Object.keys(userTransitionMatrix).reduce((sum, rowKey) => {
-      return sum + Object.values(userTransitionMatrix[rowKey]).filter(v => v && v.trim()).length
-    }, 0)
+    // --- 2. 转移矩阵 (DFA) 进度 ---
+    const transitionMatrixTotal = validationData.table_to_num.filter(item => item.category !== 'onlyRead').length
+    let transitionMatrixFilled = 0
     
-    stats.step3.transitionMatrix.progress = matrixTotal > 0 
-      ? Math.round((matrixFilled / matrixTotal) * 100) 
+    if (s3Data?.userTransitionMatrix) {
+      // 遍历每一行对象
+      Object.values(s3Data.userTransitionMatrix).forEach(rowObject => {
+        if (rowObject && typeof rowObject === 'object') {
+          // 累加该行中所有非空的值
+          transitionMatrixFilled += Object.values(rowObject).filter(v => v && v.trim()).length
+        }
+      })
+    }
+    
+    // 使用 Math.min(100, ...) 防止进度超过 100%
+    stats.step3.transitionMatrix.progress = transitionMatrixTotal > 0 
+      ? Math.min(100, Math.round((transitionMatrixFilled / transitionMatrixTotal) * 100)) 
       : 0
     stats.step3.transitionMatrix.completed = stats.step3.transitionMatrix.progress === 100
+    
+    // --- 3. Step 3 整体进度 ---
+    const step3Total = conversionTableTotal + transitionMatrixTotal
+    const step3Filled = conversionTableFilled + transitionMatrixFilled
     
     stats.step3.overall.progress = Math.round(
       (stats.step3.conversionTable.progress + stats.step3.transitionMatrix.progress) / 2
     )
     stats.step3.overall.completed = stats.step3.conversionTable.completed && stats.step3.transitionMatrix.completed
-  }
+  } else {
+    // ... (保持原有的 else 逻辑不变)
+    stats.step3.conversionTable.completed = false
+    stats.step3.conversionTable.progress = 0
+    stats.step3.transitionMatrix.completed = false
+    stats.step3.transitionMatrix.progress = 0
+    stats.step3.overall.completed = false
+    stats.step3.overall.progress = 0
+  } 
 
-  if (userData.step5Data) {
-    const { userPSets, userMinimizedMatrix } = userData.step5Data
+  // Step 5 进度计算（基于后端验证数据）
+  if (validationData) {
+    const s5Data = userData.step5Data; // 提取局部变量解决 TS 潜在警告
+
+    // 1. P集合进度计算
+    const pSetsTotal = validationData.p_list.filter(item => item.category !== 'onlyRead').length
+    let pSetsFilled = 0
     
-    const pSetsTotal = userPSets.length
-    const pSetsFilled = userPSets.filter(p => p.text && p.text.trim()).length
+    if (s5Data?.userPSets) {
+      pSetsFilled = s5Data.userPSets.filter(p => p.text && p.text.trim()).length
+    }
     
     stats.step5.pSets.progress = pSetsTotal > 0 
-      ? Math.round((pSetsFilled / pSetsTotal) * 100) 
+      ? Math.min(100, Math.round((pSetsFilled / pSetsTotal) * 100)) 
       : 0
     stats.step5.pSets.completed = stats.step5.pSets.progress === 100
     
-    const matrixTotal = userMinimizedMatrix.filter(cell => cell.category !== 'onlyRead').length
-    const matrixFilled = userMinimizedMatrix.filter(
-      cell => cell.category !== 'onlyRead' && cell.value && cell.value.trim()
-    ).length
+    // 2. 最小化矩阵进度计算
+    const minimizedMatrixTotal = validationData.table_to_num_min.filter(item => item.category !== 'onlyRead').length
+    let minimizedMatrixFilledCount = 0
     
-    stats.step5.minimizedMatrix.progress = matrixTotal > 0 
-      ? Math.round((matrixFilled / matrixTotal) * 100) 
+    if (s5Data?.userMinimizedMatrix) {
+      minimizedMatrixFilledCount = s5Data.userMinimizedMatrix.filter(cell => {
+        const isNotReadonly = cell.category !== 'onlyRead'
+        // 判定已填：check 状态不是 empty，或者 value 有实际内容
+        const hasInteraction = cell.check && cell.check !== 'empty' 
+        const hasValue = cell.value !== undefined && cell.value !== null && cell.value.trim() !== ''
+        return isNotReadonly && (hasInteraction || hasValue)
+      }).length
+    }
+    
+    stats.step5.minimizedMatrix.progress = minimizedMatrixTotal > 0 
+      ? Math.min(100, Math.round((minimizedMatrixFilledCount / minimizedMatrixTotal) * 100)) 
       : 0
     stats.step5.minimizedMatrix.completed = stats.step5.minimizedMatrix.progress === 100
+    
+    // 3. Step 5 整体进度
+    const step5TotalWeight = pSetsTotal + minimizedMatrixTotal
+    const step5FilledWeight = pSetsFilled + minimizedMatrixFilledCount
     
     stats.step5.overall.progress = Math.round(
       (stats.step5.pSets.progress + stats.step5.minimizedMatrix.progress) / 2
     )
     stats.step5.overall.completed = stats.step5.pSets.completed && stats.step5.minimizedMatrix.completed
+  } else {
+    // 没有后端验证数据，标注为未完成
+    stats.step5.pSets.completed = false
+    stats.step5.pSets.progress = 0
+    stats.step5.minimizedMatrix.completed = false
+    stats.step5.minimizedMatrix.progress = 0
+    stats.step5.overall.completed = false
+    stats.step5.overall.progress = 0
   }
 
   errorLogs.forEach(log => {
@@ -216,15 +272,28 @@ export function generateFAReport(record: FAHistoryRecord): FAReportStats {
     }
   })
 
-  const step3Weight = 0.5
-  const step5Weight = 0.5
-  
-  stats.overall.progress = Math.round(
-    stats.step3.overall.progress * step3Weight + 
-    stats.step5.overall.progress * step5Weight
+  let canvasCount = 0
+  if (stats.canvas.step2) canvasCount++
+  if (stats.canvas.step4) canvasCount++
+  if (stats.canvas.step6) canvasCount++
+  const canvasProgress = Math.round((canvasCount / 3) * 100)
+
+  // 2. 综合计算总体进度 (给画布、Step3、Step5 分配权重)
+  // 建议权重：画布 20%, Step 3 40%, Step 5 40%
+  // 这样只要 Step 3 的转换表是 50%，总体进度就会被拉下来
+  const totalProgress = (
+    (canvasProgress * 0.2) + 
+    (stats.step3.overall.progress * 0.4) + 
+    (stats.step5.overall.progress * 0.4)
   )
+
+  stats.overall.progress = Math.min(100, Math.round(totalProgress))
   
-  stats.overall.completed = stats.step3.overall.completed && stats.step5.overall.completed
+  // 3. 总体完成状态判断
+  stats.overall.completed = 
+    stats.canvas.overall && 
+    stats.step3.overall.completed && 
+    stats.step5.overall.completed
 
   return stats
 }
