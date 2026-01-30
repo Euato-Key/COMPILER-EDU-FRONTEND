@@ -17,16 +17,11 @@
           </div>
           <div class="flex items-center gap-3">
             <button
-              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              @click="showStudentInfoModal('html')"
             >
               <Icon icon="lucide:download" class="w-4 h-4" />
-              导出 PDF
-            </button>
-            <button
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <Icon icon="lucide:printer" class="w-4 h-4" />
-              打印
+              导出报告
             </button>
           </div>
         </div>
@@ -53,7 +48,7 @@
       </div>
     </div>
 
-    <div v-else class="max-w-7xl mx-auto px-4 py-8">
+    <div v-else id="report-content" class="max-w-7xl mx-auto px-4 py-8">
       <div class="space-y-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -252,6 +247,13 @@
         </div>
       </div>
     </div>
+
+    <!-- 学生信息填写弹窗 -->
+    <StudentInfoModal
+      :visible="studentInfoModalVisible"
+      @close="studentInfoModalVisible = false"
+      @confirm="handleStudentInfoConfirm"
+    />
   </div>
 </template>
 
@@ -261,8 +263,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useFAStoreNew } from '@/stores'
 import { generateFAReport, getErrorSummary, type FAReportStats } from './utils/fa-report'
+import { exportHTML } from './utils/html-export'
 import ReportProgressCard from './components/ReportProgressCard.vue'
 import ReportErrorList from './components/ReportErrorList.vue'
+import StudentInfoModal from './components/StudentInfoModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -270,6 +274,8 @@ const faStore = useFAStoreNew()
 
 const loading = ref(true)
 const reportData = ref<FAReportStats | null>(null)
+const studentInfoModalVisible = ref(false)
+const currentAction = ref<'html' | null>(null)
 
 const errorSummary = computed(() => {
   if (!reportData.value) return null
@@ -316,6 +322,34 @@ function formatDate(timestamp: string) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   } catch (e) {
     return timestamp
+  }
+}
+
+function showStudentInfoModal(action: 'html') {
+  currentAction.value = action
+  studentInfoModalVisible.value = true
+}
+
+async function handleStudentInfoConfirm(studentInfo: {
+  name: string
+  studentId: string
+  className: string
+}) {
+  studentInfoModalVisible.value = false
+  
+  try {
+    await exportHTML({
+      containerId: 'report-content',
+      studentInfo,
+      reportTitle: 'FA 答题报告',
+      modelName: 'FA',
+      recordId: route.params.id as string
+    })
+  } catch (error) {
+    console.error('操作失败:', error)
+    alert('操作失败，请稍后重试')
+  } finally {
+    currentAction.value = null
   }
 }
 

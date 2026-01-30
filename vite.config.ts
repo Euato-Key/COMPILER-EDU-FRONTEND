@@ -4,8 +4,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
-// 开发的时候可以把上面一行注释去除
 import tailwindcss from '@tailwindcss/vite'
+import postcssOKLabFunction from '@csstools/postcss-oklab-function'
+import postcssNesting from 'postcss-nesting'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -33,8 +34,15 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  // --- 新增以下 server 配置 ---
   server: {
-    host: '0.0.0.0' // 允许通过 IP 访问
+    host: '0.0.0.0'
+  },
+  css: {
+    postcss: {
+      plugins: [
+        postcssOKLabFunction(),
+        postcssNesting(),
+      ],
+    },
   }
 })
