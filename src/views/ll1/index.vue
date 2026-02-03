@@ -259,7 +259,7 @@ const updateChatContext = () => {
   chatContext.value = {
     currentPage: 'll1',
     userInput: {
-      grammar: ll1Data.grammar || '',
+      grammar: ll1Data.grammar,
       currentStep: currentStep.value,
       stepName: ll1Steps[currentStep.value - 1]?.name || ''
     },
@@ -267,8 +267,8 @@ const updateChatContext = () => {
       productions: ll1Data.productions || [],
       firstSets: ll1Data.firstSets || {},
       followSets: ll1Data.followSets || {},
-      parsingTable: ll1Data.parsingTable || {},
-      analysisResult: ll1Data.analysisResult || null
+      parsingTable: ll1Data.parseTable || {},
+      analysisResult: ll1Data.inputAnalysisResult || null
     },
     userAnswers: {},
     pageContext: `LL1语法分析 - ${ll1Steps[currentStep.value - 1]?.name || ''}`

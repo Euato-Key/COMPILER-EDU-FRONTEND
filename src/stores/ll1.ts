@@ -17,6 +17,7 @@ export const useLL1Store = defineStore('ll1', () => {
   const inputAnalysisResult = ref<AnalysisStepInfo | null>(null)
 
   // 计算属性 - 从原始数据提取
+  const grammar = computed(() => productions.value.join('\n'))
   const parseTable = computed(() => originalData.value?.table || {})
   const firstSets = computed(() => originalData.value?.first || {})
   const followSets = computed(() => originalData.value?.follow || {})
@@ -437,6 +438,7 @@ export const useLL1Store = defineStore('ll1', () => {
     inputAnalysisResult,
 
     // 计算属性
+    grammar,
     parseTable,
     firstSets,
     followSets,
