@@ -265,7 +265,7 @@ export const useFAStore = defineStore('fa', () => {
     }
 
     const nowTime = new Date().toLocaleString()
-    
+
     // ==================== 修改开始 ====================
     // 修复：JSON.stringify(undefined) 会导致 JSON.parse 报错
     // 我们需要先判断 value 是否存在，存在才进行深拷贝，否则保持 undefined
@@ -286,11 +286,11 @@ export const useFAStore = defineStore('fa', () => {
         historyList.value[index].regex = inputRegex.value
         historyList.value[index].errorLogs = snapshotErrors
         historyList.value[index].userData = snapshotData as any // 类型断言，避免TS过于严格的检查
-        
+
         // 把更新后的这条移到最前面
         const updatedRecord = historyList.value.splice(index, 1)[0]
         historyList.value.unshift(updatedRecord)
-        
+
         console.log(`[FA Store] 更新历史记录: ${currentRecordId.value}`)
       } else {
         currentRecordId.value = null
@@ -330,7 +330,7 @@ export const useFAStore = defineStore('fa', () => {
 
     // 1. 设置当前ID (标记我们正在查看旧记录)
     currentRecordId.value = recordId
-    
+
     // 2. 恢复正则
     inputRegex.value = record.regex
 
@@ -360,7 +360,7 @@ export const useFAStore = defineStore('fa', () => {
       } else {
         step5Data.value = undefined
       }
-      
+
       console.log(`[FA Store] 历史记录已成功安全复现: ${recordId}`)
       return true
     } else {
@@ -371,7 +371,7 @@ export const useFAStore = defineStore('fa', () => {
 
   const deleteHistoryRecord = (recordId: string) => {
     historyList.value = historyList.value.filter(item => item.id !== recordId)
-    
+
     // 如果删除的是当前正在看的记录，执行深度重置
     if (currentRecordId.value === recordId) {
       resetAll()
@@ -395,9 +395,9 @@ export const useFAStore = defineStore('fa', () => {
    */
   const addErrorLog = (log: Omit<FAErrorLog, 'id' | 'timestamp'>) => {
     // 避免在极短时间内重复记录完全相同的错误
-    const isDuplicate = errorLogs.value.some(item => 
-      item.step === log.step && 
-      item.tableType === log.tableType && 
+    const isDuplicate = errorLogs.value.some(item =>
+      item.step === log.step &&
+      item.tableType === log.tableType &&
       item.location.fieldKey === log.location.fieldKey &&
       item.wrongValue === log.wrongValue
     )
@@ -424,7 +424,7 @@ export const useFAStore = defineStore('fa', () => {
     originalData.value = null
     validationData.value = null
   }
-  
+
   const clearAllStepData = () => {
     clearAnalysis()
     clearCanvasData('step2')
@@ -487,22 +487,21 @@ export const useFAStore = defineStore('fa', () => {
   // ------------------------------------------
   // 7. 持久化配置
   // ------------------------------------------
-  
+
   const persistenceConfig = {
     key: 'fa_store_v4', // 升级版本号
     version: '4.0.0',
     // 必须包含 currentRecordId，这样刷新页面后，系统还知道你正在编辑哪条记录
     include: [
-      'currentRecordId', 
-      'inputRegex', 
-      'canvasData', 
-      'step3Data', 
-      'step5Data', 
+      'currentRecordId',
+      'inputRegex',
+      'canvasData',
+      'step3Data',
+      'step5Data',
       'errorLogs', // 包含错误日志
       'historyList'
     ],
     autoSave: true,
-    ttl: 30 * 24 * 60 * 60 * 1000, 
     saveDelay: 500,
   }
 
@@ -559,7 +558,7 @@ export const useFAStore = defineStore('fa', () => {
     loadStep5Data,
     hasResult,
     getValidationTable,
-    
+
     // Persistence
     persistence: {
       save: persistence.save,

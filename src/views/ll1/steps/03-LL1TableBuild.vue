@@ -152,10 +152,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
-import { useLL1Store } from '@/stores/ll1'
+import { useLL1Store } from '@/stores'
 import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
 // 导入提取的组件
@@ -196,6 +196,18 @@ const terminals = computed(() => {
 
 // 用户输入的分析表
 const userTable = ref<Record<string, string>>({})
+
+// 监听并在变化时存入 store
+let saveTimer: any = null
+watch(userTable, () => {
+  ll1Store.saveStep3Data(userTable.value)
+  
+  // 实时保存到历史记录（带防抖）
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    ll1Store.saveToHistory()
+  }, 1000)
+}, { deep: true })
 
 // 校验状态
 const tableValidation = ref<Record<string, 'correct' | 'incorrect' | ''>>({})
@@ -418,7 +430,7 @@ const checkTable = async () => {
           '请仔细对比您的答案与正确答案，理解First集和Follow集规则的应用。',
           '答案已显示',
           6000,
-          'top-center'
+          'center'
         )
       } else {
         const correctEntries = Object.values(tableValidation.value).filter(v => v === 'correct').length
@@ -429,10 +441,17 @@ const checkTable = async () => {
           `请检查错误项目，确保按照First集和Follow集规则正确填写产生式。\n\n正确填写项：${correctEntries}/${requiredEntries.length}`,
           '请修正错误',
           5000,
-          'top-center'
+          'center'
         )
       }
     }
+
+    // 取消防抖定时器，立即保存
+    if (saveTimer) {
+      clearTimeout(saveTimer)
+      saveTimer = null
+    }
+    ll1Store.saveToHistory()
   } finally {
     checking.value = false
   }
@@ -440,6 +459,12 @@ const checkTable = async () => {
 
 // 初始化
 const initializeState = () => {
+  if (ll1Store.step3Data) {
+    userTable.value = JSON.parse(JSON.stringify(ll1Store.step3Data.userTable))
+    // 同时也需要恢复校验状态（可选，或者让用户重新校验）
+    return
+  }
+
   if (originalData.value) {
     userTable.value = {}
     tableValidation.value = {}
@@ -459,6 +484,18 @@ watch(() => originalData.value, (newData) => {
 
 onMounted(() => {
   initializeState()
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  if (copyTipTimer) {
+    clearTimeout(copyTipTimer)
+    copyTipTimer = null
+  }
 })
 
 // 提示动画逻辑
@@ -584,7 +621,7 @@ const clearAllStates = () => {
   tableCellHighlightState.value = {}
   flyingSymbols.value = []
 
-  showHintModal('info', '状态已清空', '所有用户输入和提示状态已重置。', '', '状态重置完成', 3000, 'top-center')
+  showHintModal('info', '状态已清空', '所有用户输入和提示状态已重置。', '', '状态重置完成', 3000, 'center')
 }
 </script>
 

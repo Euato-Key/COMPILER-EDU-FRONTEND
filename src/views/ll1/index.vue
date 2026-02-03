@@ -13,21 +13,39 @@
             </router-link>
             <span class="text-gray-400">|</span>
             <h1 class="text-xl font-semibold text-gray-800">LL1 语法分析</h1>
+            
+            <!-- 状态显示栏 -->
+            <div v-if="ll1Store.productions.length" class="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="text-gray-500">ID:</span>
+                <span v-if="ll1Store.currentRecordId" class="font-mono text-blue-600 font-bold">
+                  {{ ll1Store.currentRecordId }}
+                </span>
+                <span v-else class="text-green-600 font-bold">新会话</span>
+              </div>
+              <span class="text-gray-300">|</span>
+              <div class="flex items-center gap-1 max-w-[300px]">
+                <span class="text-gray-500">文法:</span>
+                <span class="font-mono text-gray-900 truncate" :title="ll1Store.grammar">
+                  {{ ll1Store.productions[0] }}{{ ll1Store.productions.length > 1 ? '...' : '' }}
+                </span>
+              </div>
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <ThemeSelector />
-            <!-- 持久化控制按钮 -->
-            <button
-              @click="saveProgress"
-              class="px-3 py-1.5 text-sm theme-header-text hover:opacity-80 hover:bg-gray-50 rounded-lg transition-colors"
+            <router-link
+              to="/record/ll1"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
             >
-              保存进度
-            </button>
+              <Icon icon="lucide:history" class="w-4 h-4" />
+              历史记录
+            </router-link>
             <button
               @click="resetProgress"
-              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
             >
-              重置进度
+              <span class="text-lg">+</span> 新建答题
             </button>
             <router-link
               to="/lr0"
@@ -99,9 +117,7 @@ import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useLL1Store } from '@/stores/ll1'
-import { useCommonStore } from '@/stores/common'
-import { useLL1ChatStore } from '@/stores'
+import { useLL1Store, useCommonStore, useLL1ChatStore } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
 // 导入步骤组件
@@ -116,6 +132,13 @@ const route = useRoute()
 // 获取 Store 实例
 const ll1Store = useLL1Store()
 const commonStore = useCommonStore()
+
+// 立即尝试加载持久化数据
+try {
+  ll1Store.persistence.load()
+} catch (err) {
+  console.warn('Failed to load persisted data:', err)
+}
 
 // 使用LL1 AI聊天store
 const ll1ChatStore = useLL1ChatStore()
@@ -238,17 +261,7 @@ const handleStepClick = (stepId: number) => {
   }
 }
 
-// 保存进度
-const saveProgress = () => {
-  try {
-    ll1Store.persistence.save()
-    commonStore.setError('') // 清除错误
-    // 可以显示保存成功提示
-    console.log('Progress saved successfully')
-  } catch (err) {
-    commonStore.setError('保存进度失败')
-  }
-}
+
 
 // 更新聊天上下文
 const updateChatContext = () => {
@@ -279,13 +292,41 @@ const updateChatContext = () => {
 }
 
 // 重置进度
+// === 核心逻辑：尝试恢复会话 ===
+const isRecovering = ref(false)
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+  
+  if (ll1Store.productions.length > 0 && !ll1Store.originalData) {
+    isRecovering.value = true
+    try {
+      console.log('[LL1-RECOVERY] 检测到文法记录，正在静默恢复分析结果...', ll1Store.productions)
+      const success = await ll1Store.performLL1Analysis(true)
+      if (success) {
+        console.log('[LL1-RECOVERY] 分析结果恢复成功')
+        if (ll1Store.inputString) {
+          await ll1Store.analyzeInputString()
+        }
+      }
+    } catch (err) {
+      console.error('[LL1-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+      updateChatContext()
+    }
+  }
+}
+
+// 重置进度
 const resetProgress = () => {
-  ll1Store.resetAll()
-  navigateToStep(1)
-  // 清空AI聊天上下文
-  ll1ChatStore.clearChat()
-  updateChatContext()
-  console.log('Progress reset')
+  if (confirm('确定要新建答题吗？这将清空当前所有进度。')) {
+    ll1Store.resetAll()
+    navigateToStep(1)
+    // 清空AI聊天上下文
+    ll1ChatStore.clearChat()
+    updateChatContext()
+    console.log('Progress reset')
+  }
 }
 
 // 清除错误
@@ -299,20 +340,14 @@ watch(currentStep, () => {
 })
 
 // 组件挂载时的初始化
-onMounted(() => {
+onMounted(async () => {
   // 从路由获取步骤
   const step = Number(route.query.step) || 1
   if (step >= 1 && step <= ll1Steps.length) {
     currentStep.value = step
   }
 
-  // 尝试加载持久化数据
-  try {
-    ll1Store.persistence.load()
-  } catch (err) {
-    console.warn('Failed to load persisted data:', err)
-  }
-
+  await handleRecovery()
   // 初始化聊天上下文
   updateChatContext()
 })

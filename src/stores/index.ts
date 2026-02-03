@@ -1,7 +1,7 @@
 // 导出所有store
 export { useAppStore, type AnalysisType } from './app'
 export { useCommonStore } from './common'
-export { useLL1Store } from './ll1'
+export { useLL1Store, useLL1Store as useLL1StoreNew } from './ll1-new'
 export { useLR0Store } from './lr0'
 export { useSLR1Store } from './slr1'
 export { useFAStore } from './fa'

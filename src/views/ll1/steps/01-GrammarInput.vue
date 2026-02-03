@@ -162,10 +162,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
-import { useLL1Store } from '@/stores/ll1'
 import { validateOnInput, validateOnSubmit } from '../utils/validation'
 import { EXAMPLE_GRAMMARS, type GrammarExample } from '../utils/constants'
 import GrammarInputTips from '../components/GrammarInputTips.vue'
@@ -174,6 +173,7 @@ import GrammarExamples from '../components/GrammarExamples.vue'
 import GrammarAnalysisResult from '../components/GrammarAnalysisResult.vue'
 
 // 获取 Store 实例
+import { useLL1Store, useCommonStore } from '@/stores'
 const ll1Store = useLL1Store()
 
 // 解构响应式状态（用于模板绑定）
@@ -197,6 +197,56 @@ const validationMessage = ref('')
 const canValidate = computed(() => inputErrors.value.length === 0 && grammarInput.value.trim().length > 0)
 const canProceed = computed(() => {
   return validationStatus.value === 'success' && productions.value.length > 0 && originalData.value !== null
+})
+
+// === 核心逻辑：尝试恢复会话 ===
+const isRecovering = ref(false)
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+  
+  if (ll1Store.productions.length > 0 && !ll1Store.originalData) {
+    isRecovering.value = true
+    console.log('[LL1-RECOVERY] 检测到文法记录，正在静默恢复分析结果...', ll1Store.productions)
+    try {
+      const success = await ll1Store.performLL1Analysis(true)
+      if (success) {
+        console.log('[LL1-RECOVERY] 分析结果恢复成功')
+        validationStatus.value = 'success'
+        validationMessage.value = '已恢复数据'
+      }
+    } catch (err) {
+      console.error('[LL1-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+    }
+  } else if (ll1Store.originalData) {
+    validationStatus.value = 'success'
+    validationMessage.value = '文法当前处于激活状态'
+  }
+}
+
+// 监听持久化数据的异步加载
+watch(
+  () => ll1Store.grammar,
+  (newVal) => {
+    // 如果本地输入框为空，尝试从 store 同步
+    if (newVal && !grammarInput.value) {
+      grammarInput.value = newVal
+    }
+    // 只要有文法，就尝试执行分析恢复（以获取 originalData）
+    if (newVal) {
+      handleRecovery()
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  // 确保挂载时同步一次
+  if (ll1Store.grammar && !grammarInput.value) {
+    grammarInput.value = ll1Store.grammar
+  }
+  handleRecovery()
 })
 
 // 处理输入变化
@@ -238,15 +288,21 @@ async function handleValidateGrammar() {
       return
     }
 
+    // 设置文法到 store
+    ll1Store.setProductions(validation.processedLines)
+
     // 提交后端
-    const success = await ll1Store.performLL1Analysis(validation.processedLines)
+    const success = await ll1Store.performLL1Analysis()
+
+    // 只要点击了验证且后端返回成功（得到了 originalData），就整体保存一次进度
+    if (success) {
+      ll1Store.saveToHistory()
+    }
 
     // 检查后端验证结果
     if (success && ll1Store.isLL1Grammar === true) {
-      // 后端验证通过，存储用户输入和后端数据
-      ll1Store.setProductions(validation.processedLines)
       validationStatus.value = 'success'
-      validationMessage.value = '文法验证成功：符合LL(1)文法规范'
+      validationMessage.value = '文法验证成功：符合LL(1)文法规范，已保存答题记录'
       // 清除错误
       submitErrors.value = []
     } else {

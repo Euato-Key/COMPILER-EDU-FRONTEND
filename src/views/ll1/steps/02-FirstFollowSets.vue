@@ -173,9 +173,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useLL1Store } from '@/stores/ll1'
+import { useLL1Store, useCommonStore } from '@/stores'
 import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
 // 新提取的组件
@@ -188,10 +188,8 @@ import FirstFollowRules from '../components/FirstFollowRules.vue'
 // 新提取的工具函数
 import { 
   areCharacterSetsEqual, 
-  calculateFirstSetForSymbol,
   calculateFirstSetHint,
   calculateFollowSetHint,
-  getProductionsForSymbol
 } from '../utils/first-follow-sets'
 
 const emit = defineEmits<{
@@ -199,7 +197,6 @@ const emit = defineEmits<{
   'prev-step': []
 }>()
 
-// 使用pinia store
 const ll1Store = useLL1Store()
 
 // 数据引用
@@ -210,6 +207,68 @@ const correctFollowSets = computed(() => ll1Store.followSets)
 // 用户输入的集合
 const userFirstSets = ref<Record<string, string>>({})
 const userFollowSets = ref<Record<string, string>>({})
+
+// 核心初始化逻辑
+const initializeState = () => {
+  if (ll1Store.step2Data) {
+    userFirstSets.value = JSON.parse(JSON.stringify(ll1Store.step2Data.userFirstSets))
+    userFollowSets.value = JSON.parse(JSON.stringify(ll1Store.step2Data.userFollowSets))
+  } else if (originalData.value?.Vn) {
+    const vn = originalData.value.Vn
+    const newFirstSets: Record<string, string> = {}
+    const newFollowSets: Record<string, string> = {}
+    vn.forEach(symbol => {
+      newFirstSets[symbol] = ''
+      newFollowSets[symbol] = ''
+    })
+    userFirstSets.value = newFirstSets
+    userFollowSets.value = newFollowSets
+  }
+}
+
+// 监听并在变化时存入 store
+let saveTimer: any = null
+watch([userFirstSets, userFollowSets], () => {
+  ll1Store.saveStep2Data(userFirstSets.value, userFollowSets.value)
+  
+  // 实时保存到历史记录（带防抖）
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    ll1Store.saveToHistory()
+  }, 1000)
+}, { deep: true })
+
+// 监听 originalData 变化，用于刷新后的数据恢复
+watch(() => originalData.value, (newVal) => {
+  if (newVal && Object.keys(userFirstSets.value).length === 0) {
+    initializeState()
+  }
+}, { immediate: true })
+
+// 恢复数据
+onMounted(() => {
+  initializeState()
+
+  // 初始化验证状态
+  if (originalData.value?.Vn) {
+    originalData.value.Vn.forEach(symbol => {
+      firstValidation.value[symbol] = ''
+      followValidation.value[symbol] = ''
+    })
+  }
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  if (copyTipTimer) {
+    clearTimeout(copyTipTimer)
+    copyTipTimer = null
+  }
+})
 
 // 验证状态
 const firstValidation = ref<Record<string, 'correct' | 'incorrect' | ''>>({})
@@ -371,6 +430,13 @@ const checkFirstSets = async () => {
   } else {
     showHintModal('error', 'First集校验失败', `还有${totalCount - correctCount}个First集填写错误，请检查并修正。`, `正确填写：${correctCount}/${totalCount}`, '请修正错误', 5000, 'top-center')
   }
+  
+  // 取消防抖定时器，立即保存
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  ll1Store.saveToHistory()
   loading.value.first = false
 }
 
@@ -401,6 +467,13 @@ const checkFollowSets = async () => {
   } else {
     showHintModal('error', 'Follow集校验失败', `还有${totalCount - correctCount}个Follow集填写错误，请检查并修正。`, `正确填写：${correctCount}/${totalCount}`, '请修正错误', 5000, 'top-center')
   }
+
+  // 取消防抖定时器，立即保存
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  ll1Store.saveToHistory()
   loading.value.follow = false
 }
 
@@ -470,6 +543,9 @@ const executeHintAnimation = async (symbol: string) => {
   symbolHighlightState.value[symbol] = true
   await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
 
+  // 收集所有需要添加的符号（使用 Set 去重）
+  const symbolsToAdd = new Set<string>()
+
   for (let i = 0; i < hint.steps.length; i++) {
     const step = hint.steps[i]
     showHintModal('hint', '计算步骤', step.description, step.description, '观察高亮和飞行动画', 3000, 'bottom-left')
@@ -477,17 +553,26 @@ const executeHintAnimation = async (symbol: string) => {
     step.productions.forEach(prod => { productionHighlightState.value[prod] = true })
     step.rules.forEach(rule => { ruleHighlightState.value[rule] = true })
 
+    // 先执行所有飞行动画，收集符号
     for (const flyingSymbol of step.finalSymbols) {
-      await executeFlyingAnimation(symbol, flyingSymbol)
-      const currentVal = userFirstSets.value[symbol] || ''
-      if (!currentVal.split(' ').includes(flyingSymbol)) {
-        userFirstSets.value[symbol] = currentVal ? `${currentVal} ${flyingSymbol}` : flyingSymbol
+      // 只在尚未添加过的符号上执行动画
+      if (!symbolsToAdd.has(flyingSymbol)) {
+        await executeFlyingAnimation(symbol, flyingSymbol)
+        symbolsToAdd.add(flyingSymbol)
       }
     }
 
     await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
     step.productions.forEach(prod => { productionHighlightState.value[prod] = false })
     step.rules.forEach(rule => { ruleHighlightState.value[rule] = false })
+  }
+
+  // 批量更新数据，避免触发多次 watch
+  const currentVal = userFirstSets.value[symbol] || ''
+  const currentSymbols = new Set(currentVal.split(' ').filter(s => s.trim()))
+  const newSymbols = Array.from(symbolsToAdd).filter(s => !currentSymbols.has(s))
+  if (newSymbols.length > 0) {
+    userFirstSets.value[symbol] = currentVal ? `${currentVal} ${newSymbols.join(' ')}` : newSymbols.join(' ')
   }
 
   symbolHighlightState.value[symbol] = false
@@ -543,6 +628,9 @@ const executeFollowHintAnimation = async (symbol: string) => {
   symbolHighlightState.value[symbol] = true
   await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
 
+  // 收集所有需要添加的符号（使用 Set 去重）
+  const symbolsToAdd = new Set<string>()
+
   for (let i = 0; i < hint.steps.length; i++) {
     const step = hint.steps[i]
     showHintModal('hint', 'Follow计算步骤', step.description, step.description, '观察高亮和飞行动画', 3000, 'bottom-left')
@@ -550,17 +638,26 @@ const executeFollowHintAnimation = async (symbol: string) => {
     step.productions.forEach(prod => { productionHighlightState.value[prod] = true })
     step.rules.forEach(rule => { ruleHighlightState.value[rule] = true })
 
+    // 先执行所有飞行动画，收集符号
     for (const flyingSymbol of step.finalSymbols) {
-      await executeFollowFlyingAnimation(symbol, flyingSymbol)
-      const currentVal = userFollowSets.value[symbol] || ''
-      if (!currentVal.split(' ').includes(flyingSymbol)) {
-        userFollowSets.value[symbol] = currentVal ? `${currentVal} ${flyingSymbol}` : flyingSymbol
+      // 只在尚未添加过的符号上执行动画
+      if (!symbolsToAdd.has(flyingSymbol)) {
+        await executeFollowFlyingAnimation(symbol, flyingSymbol)
+        symbolsToAdd.add(flyingSymbol)
       }
     }
 
     await new Promise(resolve => setTimeout(resolve, 1000 / animationSpeed.value))
     step.productions.forEach(prod => { productionHighlightState.value[prod] = false })
     step.rules.forEach(rule => { ruleHighlightState.value[rule] = false })
+  }
+
+  // 批量更新数据，避免触发多次 watch
+  const currentVal = userFollowSets.value[symbol] || ''
+  const currentSymbols = new Set(currentVal.split(' ').filter(s => s.trim()))
+  const newSymbols = Array.from(symbolsToAdd).filter(s => !currentSymbols.has(s))
+  if (newSymbols.length > 0) {
+    userFollowSets.value[symbol] = currentVal ? `${currentVal} ${newSymbols.join(' ')}` : newSymbols.join(' ')
   }
 
   symbolHighlightState.value[symbol] = false
@@ -604,17 +701,6 @@ const executeFollowFlyingAnimation = async (targetSymbol: string, flyingSymbol: 
 }
 
 const handleNextStep = () => { ll1Store.inputString = ''; emit('next-step') }
-
-onMounted(() => {
-  if (originalData.value?.Vn) {
-    originalData.value.Vn.forEach(symbol => {
-      userFirstSets.value[symbol] = ''
-      userFollowSets.value[symbol] = ''
-      firstValidation.value[symbol] = ''
-      followValidation.value[symbol] = ''
-    })
-  }
-})
 </script>
 
 <style scoped>
