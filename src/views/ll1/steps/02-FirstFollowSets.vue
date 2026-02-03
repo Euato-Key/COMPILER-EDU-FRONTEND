@@ -422,6 +422,22 @@ const checkFirstSets = async () => {
       correctCount++
     } else {
       firstValidation.value[symbol] = 'incorrect'
+      
+      // 生成提示信息
+      let hintText = ''
+      const hintData = calculateFirstSetHint(symbol, originalData.value.formulas_dict)
+      if (hintData && hintData.steps) {
+        hintText = hintData.steps.map((s, i) => `${i + 1}. ${s.description}`).join('\n')
+      }
+
+      ll1Store.addErrorLog({
+        step: 'step2',
+        type: 'firstSet',
+        location: { row: symbol, fieldKey: `first-${symbol}` },
+        wrongValue: userInput,
+        correctValue: correctSetStr,
+        hint: hintText
+      })
     }
   }
 
@@ -459,6 +475,22 @@ const checkFollowSets = async () => {
       correctCount++
     } else {
       followValidation.value[symbol] = 'incorrect'
+
+      // 生成提示信息
+      let hintText = ''
+      const hintData = calculateFollowSetHint(symbol, originalData.value)
+      if (hintData && hintData.steps) {
+        hintText = hintData.steps.map((s, i) => `${i + 1}. ${s.description}`).join('\n')
+      }
+
+      ll1Store.addErrorLog({
+        step: 'step2',
+        type: 'followSet',
+        location: { row: symbol, fieldKey: `follow-${symbol}` },
+        wrongValue: userInput,
+        correctValue: correctSetStr,
+        hint: hintText
+      })
     }
   }
 

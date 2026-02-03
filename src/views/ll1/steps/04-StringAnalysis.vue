@@ -559,6 +559,37 @@ const onValidate = () => {
     return
   }
 
+  // Record errors
+  const standardStacks = inputAnalysisResult.value.info_stack || []
+  const standardInputs = inputAnalysisResult.value.info_str || []
+  const normalize = (s: string) => s.replace(/\s+/g, '')
+
+  // Check existing steps
+  userSteps.value.forEach((step, index) => {
+      // If user has more steps than standard, they are errors if they deviate? 
+      // Or maybe standard result ends but user keeps going incorrectly.
+      // We only check against available standard steps.
+      if (index < standardStacks.length) {
+          const stdStack = standardStacks[index]
+          const stdInput = standardInputs[index]
+          if (normalize(step.stack) !== normalize(stdStack) || normalize(step.input) !== normalize(stdInput)) {
+             ll1Store.addErrorLog({
+                 step: 'step4',
+                 type: 'analysisStep',
+                 location: { stepIndex: index, fieldKey: `step-${index}` },
+                 wrongValue: `Stack: ${step.stack}, Input: ${step.input}`,
+                 correctValue: `Stack: ${stdStack}, Input: ${stdInput}`
+             })
+          }
+      }
+  })
+  
+  // Check for missing steps if user has fewer steps than standard and isn't finished
+  // (Logic validation handles the "incomplete" message, but we might want to log it as an error if it's considered "wrong" in this context? 
+  //  Usually "missing" isn't a recorded "error value", but the user request says "Error recording". 
+  //  If they submit incomplete work as "Check", maybe just recording *wrong* values is enough.)
+  //  I will stick to recording explicit mismatches.
+
   const result = validateUserAnalysis(userSteps.value, inputAnalysisResult.value)
   
   if (result.valid) {

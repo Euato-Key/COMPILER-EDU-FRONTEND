@@ -397,6 +397,43 @@ const checkTable = async () => {
       tableValidation.value[key] = status
       if (status !== 'correct') {
         isAllCorrect = false
+
+        // 生成提示信息
+        let hintText = ''
+        const correctProd = getCorrectEntry(nt, t)
+        if (correctProd) { // 只有标准答案不为空时才去解释为什么是这个答案
+           // correctProd 格式可能为 "S->aB"
+           // 1. 如果是 First集规则: specific first char or non-terminal
+           // 提取右部
+           const parts = correctProd.split('->')
+           if (parts.length === 2) {
+             const rightPart = parts[1]
+             // 计算该右部的 First 集
+             // 注意: originalData.value 需要传递给 calculateFirstSetForProduction
+             // 此时 originalData.value 结构包含 {Vn, Vt, first...}
+             const firstSet = calculateFirstSetForProduction(rightPart, originalData.value as any) 
+             
+             if (firstSet.includes(t)) {
+                hintText = `根据First集规则：\n因为终结符 ${t} ∈ First(${rightPart})，\n所以 M[${nt}, ${t}] = ${correctProd}`
+             } else if (firstSet.includes('ε') && originalData.value.follow[nt]?.includes(t)) {
+                hintText = `根据Follow集规则：\n因为 ε ∈ First(${rightPart}) 且 ${t} ∈ Follow(${nt})，\n所以 M[${nt}, ${t}] = ${correctProd}`
+             } else {
+                 // 兜底
+                hintText = `M[${nt}, ${t}] 应填入 ${correctProd}`
+             }
+           }
+        } else {
+             hintText = `该单元格 M[${nt}, ${t}] 应为空（Error）`
+        }
+
+        ll1Store.addErrorLog({
+            step: 'step3',
+            type: 'parsingTable',
+            location: { row: nt, col: t, fieldKey: key },
+            wrongValue: userInput,
+            correctValue: correctEntry,
+            hint: hintText
+        })
       }
     }
 

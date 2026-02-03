@@ -35,6 +35,25 @@ export interface LL1StoreData {
 }
 
 /**
+ * 错误记录项：用于 PDF 导出对比和 AI 分析
+ */
+export interface LL1ErrorLog {
+    id: string
+    step: 'step2' | 'step3' | 'step4'
+    type: 'firstSet' | 'followSet' | 'parsingTable' | 'analysisStep'
+    location: {
+        row?: string | number // 行索引 (step3, step4) 或 NonTerminal (step2)
+        col?: string // 列名 (step3)
+        stepIndex?: number // 步骤索引 (step4)
+        fieldKey?: string // 字段标识
+    }
+    wrongValue: string // 学生填错的内容
+    correctValue: string // 标准答案
+    timestamp: string // 记录时间
+    hint?: string // 错误原因/提示动画信息
+}
+
+/**
  * 历史记录单条结构
  */
 export interface LL1HistoryRecord {
@@ -43,6 +62,7 @@ export interface LL1HistoryRecord {
     timestamp: string      // 最后修改时间
     grammar: string        // 文法内容 (用于显示)
     productions: string[]  // 产生式列表
+    errorLogs: LL1ErrorLog[] // 错误日志
     userData: {
         inputString: string
         step2Data: LL1StoreData['step2Data']
@@ -73,6 +93,9 @@ export const useLL1Store = defineStore('ll1', () => {
     const step2Data = ref<LL1StoreData['step2Data']>(undefined)
     const step3Data = ref<LL1StoreData['step3Data']>(undefined)
     const step4Data = ref<LL1StoreData['step4Data']>(undefined)
+
+    // === 错误日志状态 (Active Session Error Logs) ===
+    const errorLogs = ref<LL1ErrorLog[]>([])
 
     // === 历史记录列表 (History Archive) ===
     const historyList = ref<LL1HistoryRecord[]>([])
@@ -321,12 +344,16 @@ export const useLL1Store = defineStore('ll1', () => {
             step4Data: step4Data.value ? JSON.parse(JSON.stringify(step4Data.value)) : undefined
         }
 
+        // 深拷贝错误日志
+        const snapshotErrors = JSON.parse(JSON.stringify(errorLogs.value))
+
         if (currentRecordId.value) {
             const index = historyList.value.findIndex(item => item.id === currentRecordId.value)
             if (index !== -1) {
                 historyList.value[index].timestamp = nowTime
                 historyList.value[index].grammar = grammar.value
                 historyList.value[index].productions = JSON.parse(JSON.stringify(productions.value))
+                historyList.value[index].errorLogs = snapshotErrors
                 historyList.value[index].userData = snapshotData as any
 
                 const updatedRecord = historyList.value.splice(index, 1)[0]
@@ -344,6 +371,7 @@ export const useLL1Store = defineStore('ll1', () => {
                 timestamp: nowTime,
                 grammar: grammar.value,
                 productions: JSON.parse(JSON.stringify(productions.value)),
+                errorLogs: snapshotErrors,
                 userData: snapshotData as any
             }
 
@@ -436,6 +464,7 @@ export const useLL1Store = defineStore('ll1', () => {
         step2Data.value = undefined
         step3Data.value = undefined
         step4Data.value = undefined
+        errorLogs.value = [] // 清空错误日志
     }
 
     const resetAll = () => {
@@ -471,6 +500,26 @@ export const useLL1Store = defineStore('ll1', () => {
         }
     }
 
+    // 记录错误日志
+    const addErrorLog = (log: Omit<LL1ErrorLog, 'id' | 'timestamp'>) => {
+        // 避免在极短时间内重复记录完全相同的错误（与 FA 逻辑保持一致）
+        const isDuplicate = errorLogs.value.some(item =>
+            item.step === log.step &&
+            item.type === log.type &&
+            item.location.fieldKey === log.location.fieldKey &&
+            item.wrongValue === log.wrongValue
+        )
+
+        if (!isDuplicate) {
+            errorLogs.value.push({
+                ...log,
+                id: generateUniqueId(),
+                timestamp: new Date().toLocaleString()
+            })
+            console.log(`[LL1 Store] 记录错误: [${log.step}] ${JSON.stringify(log.location)} -> ${log.wrongValue}`)
+        }
+    }
+
     // ------------------------------------------
     // 7. 持久化配置
     // ------------------------------------------
@@ -485,6 +534,7 @@ export const useLL1Store = defineStore('ll1', () => {
             'step2Data',
             'step3Data',
             'step4Data',
+            'errorLogs',
             'historyList'
         ],
         autoSave: true,
@@ -499,6 +549,7 @@ export const useLL1Store = defineStore('ll1', () => {
             step2Data,
             step3Data,
             step4Data,
+            errorLogs,
             historyList,
         },
         ...persistenceConfig,
@@ -515,6 +566,7 @@ export const useLL1Store = defineStore('ll1', () => {
         step2Data,
         step3Data,
         step4Data,
+        errorLogs,
         historyList,
 
         // Computed
@@ -538,6 +590,7 @@ export const useLL1Store = defineStore('ll1', () => {
         saveStep4Data,
         resetAll,
         validateGrammar,
+        addErrorLog,
 
         // Persistence
         persistence: {
