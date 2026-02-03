@@ -68,6 +68,7 @@
                   @toggle-answer="onShowAnswer"
                   @redo="onResetUserSteps"
                   @hint="onHint"
+                  @validate="onValidate"
                 />
               </template>
             </AnalysisStepTable>
@@ -175,7 +176,8 @@ import {
   initAnalysisSteps,
   performDeduction,
   performMatch,
-  getAnalysisHint
+  getAnalysisHint,
+  validateUserAnalysis
 } from '../utils/string-analysis'
 
 // 组件事件
@@ -454,7 +456,13 @@ const onShowAnswer = () => {
 
 // 重做
 const onResetUserSteps = () => {
-  handleInitUserSteps()
+  // 直接重置为初始状态，不从 store 读取
+  if (originalData.value && inputString.value && inputAnalysisResult.value) {
+    const startSymbol = originalData.value.Vn[0] || ''
+    const initialInput = inputAnalysisResult.value.info_str[0] || ''
+    userSteps.value = initAnalysisSteps(startSymbol, initialInput)
+  }
+  
   hintActive.value = false
   hintRow.value = ''
   hintCol.value = ''
@@ -542,6 +550,25 @@ const onHint = async () => {
       4000,
       'center'
     )
+  }
+}
+// 验证按钮
+const onValidate = () => {
+  if (!inputAnalysisResult.value) {
+    showHintModal('warning', '无法验证', '未获取到标准答案分析结果，请稍后再试。', '', '检查数据', 3000, 'center')
+    return
+  }
+
+  const result = validateUserAnalysis(userSteps.value, inputAnalysisResult.value)
+  
+  if (result.valid) {
+    if (result.message.includes('未完成')) {
+      showHintModal('info', '验证通过', result.message, '请继续执行后续步骤。', '继续分析', 3000, 'center')
+    } else {
+      showHintModal('success', '验证通过', result.message, '恭喜你，所有步骤都正确！', '太棒了', 3000, 'center')
+    }
+  } else {
+    showHintModal('error', '验证失败', result.message, '请检查该步骤的操作是否符合LL1文法规则。', '检查错误', 4000, 'center')
   }
 }
 

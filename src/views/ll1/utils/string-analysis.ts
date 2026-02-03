@@ -91,3 +91,63 @@ export const getAnalysisHint = (
 
     return { type: 'error' }
 }
+
+/**
+ * 验证用户分析步骤
+ * @param userSteps 用户步骤
+ * @param standardResult 标准结果
+ */
+export const validateUserAnalysis = (
+    userSteps: { stack: string; input: string }[],
+    standardResult: any
+): { valid: boolean; errorIndex: number; message: string } => {
+    if (!standardResult || !standardResult.info_stack || !standardResult.info_str) {
+        return { valid: false, errorIndex: -1, message: '无法获取标准答案进行验证' }
+    }
+
+    const standardStacks = standardResult.info_stack
+    const standardInputs = standardResult.info_str
+
+    for (let i = 0; i < userSteps.length; i++) {
+        const userStep = userSteps[i]
+
+        // 检查是否超出标准答案长度
+        if (i >= standardStacks.length) {
+            return {
+                valid: false,
+                errorIndex: i,
+                message: `步骤 ${i + 1} 超出标准答案范围，您的分析步骤过多。`
+            }
+        }
+
+        const stdStack = standardStacks[i]
+        const stdInput = standardInputs[i]
+
+        if (userStep.stack !== stdStack) {
+            return {
+                valid: false,
+                errorIndex: i,
+                message: `步骤 ${i + 1} 栈内容错误。您的栈: "${userStep.stack}"，正确应为: "${stdStack}"`
+            }
+        }
+
+        if (userStep.input !== stdInput) {
+            return {
+                valid: false,
+                errorIndex: i,
+                message: `步骤 ${i + 1} 输入串内容错误。您的输入: "${userStep.input}"，正确应为: "${stdInput}"`
+            }
+        }
+    }
+
+    // 检查是否步骤太少
+    if (userSteps.length < standardStacks.length) {
+        return {
+            valid: true, // 目前为止是正确的，但未完成
+            errorIndex: -1,
+            message: '当前步骤正确，但这并不是完整的分析过程，请继续分析。'
+        }
+    }
+
+    return { valid: true, errorIndex: -1, message: '验证通过！您的分析过程完全正确。' }
+}

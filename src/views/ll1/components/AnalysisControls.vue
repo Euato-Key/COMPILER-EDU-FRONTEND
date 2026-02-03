@@ -31,6 +31,12 @@
     >
       提示
     </button>
+    <button
+      @click="$emit('validate')"
+      class="px-3 py-2 bg-gradient-to-r from-teal-500 to-green-600 text-white rounded-lg hover:from-teal-600 hover:to-green-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+    >
+      检验
+    </button>
   </div>
 </template>
 
@@ -46,5 +52,6 @@ defineEmits<{
   'toggle-answer': []
   'redo': []
   'hint': []
+  'validate': []
 }>()
 </script>
