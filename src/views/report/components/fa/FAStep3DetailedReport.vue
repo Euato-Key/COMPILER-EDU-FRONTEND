@@ -10,17 +10,17 @@
         <p class="text-xs text-gray-500 mt-1">集成了标准答案、我的最终答案以及历史错误记录（以标准答案规模为准）</p>
       </div>
       <div class="p-6 overflow-x-auto">
-        <table class="min-w-full border-collapse border border-gray-200">
+        <table class="min-w-full border-collapse border-2 border-gray-400">
           <thead>
             <tr class="bg-gray-100">
-              <th v-for="col in conversionCols" :key="col" class="border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 text-center">
+              <th v-for="col in conversionCols" :key="col" class="border border-gray-400 px-4 py-3 text-sm font-semibold text-gray-700 text-center">
                 {{ col }}
               </th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="rowIdx in conversionMaxRows" :key="rowIdx" :class="rowIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'">
-              <td v-for="col in conversionCols" :key="col" class="border border-gray-200 p-2 min-w-[150px]">
+              <td v-for="col in conversionCols" :key="col" class="border border-gray-400 p-2 min-w-[150px]">
                 <div class="flex flex-col gap-2">
                   <!-- 标准答案 -->
                   <div class="answer-item p-2 bg-blue-50 border border-blue-100 rounded">
@@ -87,17 +87,17 @@
         <p class="text-xs text-gray-500 mt-1">显示状态重命名后的转移关系（以标准答案规模为准）</p>
       </div>
       <div class="p-6 overflow-x-auto">
-        <table class="min-w-full border-collapse border border-gray-200">
+        <table class="min-w-full border-collapse border-2 border-gray-400">
           <thead>
             <tr class="bg-gray-100">
-              <th v-for="col in matrixCols" :key="col" class="border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 text-center">
+              <th v-for="col in matrixCols" :key="col" class="border border-gray-400 px-4 py-3 text-sm font-semibold text-gray-700 text-center">
                 {{ col }}
               </th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="rowIdx in matrixMaxRows" :key="rowIdx" :class="rowIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'">
-              <td v-for="col in matrixCols" :key="col" class="border border-gray-200 p-2 min-w-[150px]">
+              <td v-for="col in matrixCols" :key="col" class="border border-gray-400 p-2 min-w-[150px]">
                 <div class="flex flex-col gap-2">
                   <!-- 标准答案 -->
                   <div class="answer-item p-2 bg-blue-50 border border-blue-100 rounded">

@@ -97,13 +97,23 @@
           上一步
         </button>
         <div class="text-sm text-gray-500 font-medium">步骤 4 / 4</div>
-        <button
-          @click="complete"
-          class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
-        >
-          完成
-          <Icon icon="lucide:check" class="w-5 h-5" />
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            v-if="ll1Store.currentRecordId"
+            @click="viewReport"
+            class="px-5 py-3 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-100 transition-all duration-300 flex items-center gap-2 font-semibold"
+          >
+            <Icon icon="lucide:file-text" class="w-5 h-5" />
+            查看报告
+          </button>
+          <button
+            @click="complete"
+            class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold"
+          >
+            完成
+            <Icon icon="lucide:check" class="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -157,6 +167,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
@@ -182,6 +193,14 @@ import {
 
 // 组件事件
 const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: any] }>()
+const router = useRouter()
+
+const viewReport = () => {
+    ll1Store.saveToHistory()
+    if (ll1Store.currentRecordId) {
+        router.push(`/report/ll1/${ll1Store.currentRecordId}`)
+    }
+}
 
 // 获取 Store 实例
 import { useLL1Store, useCommonStore } from '@/stores'
