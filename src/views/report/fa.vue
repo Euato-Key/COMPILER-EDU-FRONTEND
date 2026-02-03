@@ -195,6 +195,42 @@
           </div>
         </div>
 
+        <!-- 绘图对比详情 -->
+        <div v-if="currentRecord && currentRecord.userData" class="space-y-6">
+          <FACanvasReport
+            :user-data="currentRecord.userData.canvasData"
+            :answer-data="{
+              nfaDot: faStore.nfaDotString,
+              dfaDot: faStore.dfaDotString,
+              minDfaDot: faStore.minDfaDotString
+            }"
+          />
+        </div>
+
+        <!-- 答题表格详情 (步骤 3) -->
+        <div v-if="currentRecord && currentRecord.userData && faStore.originalData" class="space-y-6">
+          <FAStep3DetailedReport
+            :standard-data="{
+              table: faStore.originalData.table,
+              table_to_num: faStore.originalData.table_to_num
+            }"
+            :user-data="currentRecord.userData.step3Data"
+            :error-logs="currentRecord.errorLogs || []"
+          />
+        </div>
+
+        <!-- 答题表格详情 (步骤 5) -->
+        <div v-if="currentRecord && currentRecord.userData && faStore.originalData" class="space-y-6">
+          <FAStep5DetailedReport
+            :standard-data="{
+              P: faStore.originalData.P,
+              table_to_num_min: faStore.originalData.table_to_num_min
+            }"
+            :user-data="currentRecord.userData.step5Data"
+            :error-logs="currentRecord.errorLogs || []"
+          />
+        </div>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Icon icon="lucide:alert-circle" class="w-5 h-5 text-red-600" />
@@ -267,6 +303,9 @@ import { exportHTML } from './utils/html-export'
 import ReportProgressCard from './components/ReportProgressCard.vue'
 import ReportErrorList from './components/ReportErrorList.vue'
 import StudentInfoModal from './components/StudentInfoModal.vue'
+import FACanvasReport from './components/fa/FACanvasReport.vue'
+import FAStep3DetailedReport from './components/fa/FAStep3DetailedReport.vue'
+import FAStep5DetailedReport from './components/fa/FAStep5DetailedReport.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -274,6 +313,7 @@ const faStore = useFAStoreNew()
 
 const loading = ref(true)
 const reportData = ref<FAReportStats | null>(null)
+const currentRecord = ref<any>(null)
 const studentInfoModalVisible = ref(false)
 const currentAction = ref<'html' | null>(null)
 
@@ -367,6 +407,8 @@ onMounted(async () => {
     loading.value = false
     return
   }
+
+  currentRecord.value = record
 
   // 重新获取后端数据以生成验证数据
   try {
