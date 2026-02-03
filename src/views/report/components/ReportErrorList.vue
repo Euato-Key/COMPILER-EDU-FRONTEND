@@ -53,6 +53,13 @@
                   </div>
                 </div>
               </div>
+              <div v-if="error.hint" class="mt-2 text-xs bg-amber-50 border border-amber-200 text-amber-800 p-2 rounded">
+                <div class="font-semibold mb-1 flex items-center gap-1">
+                  <Icon icon="lucide:lightbulb" class="w-3 h-3" />
+                  提示信息：
+                </div>
+                {{ error.hint }}
+              </div>
             </div>
           </div>
         </div>
@@ -75,6 +82,7 @@ interface ErrorItem {
   wrongValue: string
   correctValue: string
   timestamp: string
+  hint?: string
 }
 
 interface ErrorSections {

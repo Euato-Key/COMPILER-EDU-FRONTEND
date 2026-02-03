@@ -597,7 +597,8 @@ const onValidate = () => {
                  type: 'analysisStep',
                  location: { stepIndex: index, fieldKey: `step-${index}` },
                  wrongValue: `Stack: ${step.stack}, Input: ${step.input}`,
-                 correctValue: `Stack: ${stdStack}, Input: ${stdInput}`
+                 correctValue: `Stack: ${stdStack}, Input: ${stdInput}`,
+                 hint: `分析步骤与标准不一致。标准步骤为：栈[${stdStack}]，输入[${stdInput}]；你的步骤为：栈[${step.stack}]，输入[${step.input}]。请检查该步的推导或匹配操作。`
              })
           }
       }

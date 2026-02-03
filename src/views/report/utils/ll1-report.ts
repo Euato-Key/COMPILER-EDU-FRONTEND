@@ -284,7 +284,8 @@ export function getLL1ErrorSummary(errorLogs: LL1HistoryRecord['errorLogs']) {
             location: locStr,
             wrongValue: log.wrongValue,
             correctValue: log.correctValue,
-            timestamp: log.timestamp
+            timestamp: log.timestamp,
+            hint: log.hint
         }
 
         if (log.step === 'step2') {
