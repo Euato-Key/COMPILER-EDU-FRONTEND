@@ -11,8 +11,8 @@
       </div>
       
       <div class="p-6">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+        <div>
+          <table class="w-full divide-y divide-gray-200">
             <thead>
               <tr class="bg-gray-50">
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">非终结符</th>
@@ -23,8 +23,8 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
               <tr v-for="vn in nonTerminals" :key="`first-${vn}`" class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap font-mono font-bold text-gray-900 bg-gray-50/50">{{ vn }}</td>
-                <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-700 relative group">
+                <td class="px-4 py-3 font-mono font-bold text-gray-900 bg-gray-50/50">{{ vn }}</td>
+                <td class="px-4 py-3 font-mono text-gray-700 relative group">
                   <div class="flex flex-col gap-2">
                     <!-- Historical Errors with Hints -->
                     <div v-if="getErrorHistory(vn, 'firstSet').length > 0" class="flex flex-wrap gap-2 opacity-70 mb-1">
@@ -77,7 +77,7 @@
                      <div class="whitespace-pre-wrap">{{ getHint(vn, 'firstSet') }}</div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-600">
+                <td class="px-4 py-3 font-mono text-gray-600">
                    <div class="flex flex-wrap gap-2">
                     <span 
                       v-for="(symbol, idx) in splitSet(getCorrectFirstSet(vn))" 
@@ -88,7 +88,7 @@
                     </span>
                    </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">
+                <td class="px-4 py-3 text-center">
                   <Icon 
                     v-if="isSetEqual(getUserFirstSet(vn), getCorrectFirstSet(vn))" 
                     icon="lucide:check-circle" 
@@ -125,20 +125,20 @@
       </div>
       
       <div class="p-6">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+        <div>
+          <table class="w-full divide-y divide-gray-200">
             <thead>
               <tr class="bg-gray-50">
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">非终结符</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学生作答</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标准答案</th>
-                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">状态</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">非终结符</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学生作答</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标准答案</th>
+                <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">状态</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
               <tr v-for="vn in nonTerminals" :key="`follow-${vn}`" class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap font-mono font-bold text-gray-900 bg-gray-50/50">{{ vn }}</td>
-                <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-700 relative group">
+                <td class="px-4 py-3 font-mono font-bold text-gray-900 bg-gray-50/50">{{ vn }}</td>
+                <td class="px-4 py-3 font-mono text-gray-700 relative group">
                   <div class="flex flex-col gap-2">
                     <!-- Historical Errors with Hints -->
                     <div v-if="getErrorHistory(vn, 'followSet').length > 0" class="flex flex-wrap gap-2 opacity-70 mb-1">
@@ -190,7 +190,7 @@
                      <div class="whitespace-pre-wrap">{{ getHint(vn, 'followSet') }}</div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-600">
+                <td class="px-4 py-3 font-mono text-gray-600">
                    <div class="flex flex-wrap gap-2">
                     <span 
                       v-for="(symbol, idx) in splitSet(getCorrectFollowSet(vn))" 
@@ -201,7 +201,7 @@
                     </span>
                    </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">
+                <td class="px-4 py-3 text-center">
                   <Icon 
                     v-if="isSetEqual(getUserFollowSet(vn), getCorrectFollowSet(vn))" 
                     icon="lucide:check-circle" 

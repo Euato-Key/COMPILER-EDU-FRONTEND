@@ -22,8 +22,8 @@
            <p class="text-lg">数据不足，无法展示分析表</p>
            <p class="text-sm mt-2">请确保已完成步骤3的答题</p>
         </div>
-        <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 border">
+        <div v-else>
+          <table class="w-full divide-y divide-gray-200 border">
             <thead>
               <tr class="bg-gray-50">
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border bg-gray-50 sticky left-0 z-10 w-24">
@@ -32,7 +32,7 @@
                 <th 
                   v-for="vt in colHeaders" 
                   :key="vt" 
-                  class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border min-w-[120px]"
+                  class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border"
                 >
                   {{ vt }}
                 </th>
@@ -46,7 +46,7 @@
                 <td 
                   v-for="vt in colHeaders" 
                   :key="`${vn}|${vt}`" 
-                  class="px-4 py-3 text-center border relative group min-h-[60px]"
+                  class="px-3 py-3 text-center border relative group"
                   :class="getCellClass(vn, vt)"
                 >
                   <div class="flex flex-col items-center gap-1 text-xs">
