@@ -173,6 +173,10 @@ import { Icon } from '@iconify/vue'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
 import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
+// 导入提取的 composables
+import { useHintModal } from '@/composables/useHintModal'
+import { useAnimationSpeed } from '@/composables/useAnimationSpeed'
+
 // 导入提取的组件
 import GrammarAnalysisResult from '../components/GrammarAnalysisResult.vue'
 import StringInputSection from '../components/StringInputSection.vue'
@@ -190,6 +194,10 @@ import {
   getAnalysisHint,
   validateUserAnalysis
 } from '../utils/string-analysis'
+
+// 使用 composables
+const { hintModalVisible, hintModalConfig, showHintModal, closeHintModal } = useHintModal()
+const { animationSpeed, animationSpeedStyle, increaseAnimationSpeed, decreaseAnimationSpeed, resetAnimationSpeed } = useAnimationSpeed()
 
 // 组件事件
 const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: any] }>()
@@ -234,21 +242,6 @@ const message = ref<string | null>(null)
 const messageType = ref<'success' | 'error'>('success')
 let messageTimer: number | null = null
 
-// 动画提示弹窗状态
-const hintModalVisible = ref(false)
-const hintModalConfig = ref({
-  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
-  title: '',
-  message: '',
-  details: '',
-  action: '',
-  duration: 3000,
-  position: 'top-right' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
-})
-
-// 动画速度控制
-const animationSpeed = ref(1.0)
-
 // 飞行动画状态
 const flyingSymbols = ref<
   Array<{
@@ -264,10 +257,6 @@ const VtAll = computed(() => {
   const vt = originalData.value?.Vt || []
   return [...vt, '#']
 })
-
-const animationSpeedStyle = computed(() => ({
-  '--animation-speed': animationSpeed.value
-}))
 
 const isAnalysisComplete = computed(() => {
   if (userSteps.value.length === 0) return false
@@ -700,25 +689,6 @@ const executeLL1FlyingAnimation = async (nonTerminal: string, terminal: string, 
   await new Promise((resolve) => setTimeout(resolve, 1500 / animationSpeed.value))
   flyingSymbols.value = flyingSymbols.value.filter(fs => !(fs.symbol === production && fs.target === 'stack'))
 }
-
-const showHintModal = (
-  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
-  title: string,
-  message: string,
-  details?: string,
-  action?: string,
-  duration = 3000,
-  position = 'top-right' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
-) => {
-  hintModalConfig.value = { type, title, message, details: details || '', action: action || '', duration, position }
-  hintModalVisible.value = true
-}
-
-const closeHintModal = () => { hintModalVisible.value = false }
-
-const increaseAnimationSpeed = () => { if (animationSpeed.value < 2.0) animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25) }
-const decreaseAnimationSpeed = () => { if (animationSpeed.value > 0.25) animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25) }
-const resetAnimationSpeed = () => { animationSpeed.value = 1.0 }
 
 const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
   message.value = msg

@@ -159,6 +159,10 @@ import { Icon } from '@iconify/vue'
 import { useLL1Store } from '@/stores'
 import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
+// 导入提取的 composables
+import { useHintModal } from '@/composables/useHintModal'
+import { useAnimationSpeed } from '@/composables/useAnimationSpeed'
+
 // 导入提取的组件
 import TableBuildInstruction from '../components/TableBuildInstruction.vue'
 import FirstFollowSummary from '../components/FirstFollowSummary.vue'
@@ -173,6 +177,10 @@ import {
   validateTableCell as validateCellLogic,
   calculateFirstSetForProduction
 } from '../utils/ll1-table-build'
+
+// 使用 composables
+const { hintModalVisible, hintModalConfig, showHintModal, closeHintModal } = useHintModal()
+const { animationSpeed, animationSpeedStyle, increaseAnimationSpeed, decreaseAnimationSpeed, resetAnimationSpeed } = useAnimationSpeed()
 
 // 获取 Store 实例
 const ll1Store = useLL1Store()
@@ -239,24 +247,6 @@ const flyingSymbols = ref<Array<{
   y: number
 }>>([])
 
-// 动画提示弹窗状态
-const hintModalVisible = ref(false)
-const hintModalConfig = ref({
-  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
-  title: '',
-  message: '',
-  details: '',
-  action: '',
-  duration: 3000,
-  position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
-})
-
-// 动画速度控制
-const animationSpeed = ref(1.0)
-const animationSpeedStyle = computed(() => ({
-  '--animation-speed': animationSpeed.value
-}))
-
 const hasTableErrors = computed(() => {
   return Object.values(tableValidation.value).some((status) => status === 'incorrect')
 })
@@ -276,49 +266,6 @@ const allCompleted = computed(() => {
 
 const copyTip = ref('')
 let copyTipTimer: number | null = null
-
-// 显示动画提示弹窗
-const showHintModal = (
-  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
-  title: string,
-  message: string,
-  details?: string,
-  action?: string,
-  duration = 3000,
-  position = 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
-) => {
-  hintModalConfig.value = {
-    type,
-    title,
-    message,
-    details: details || '',
-    action: action || '',
-    duration,
-    position
-  }
-  hintModalVisible.value = true
-}
-
-const closeHintModal = () => {
-  hintModalVisible.value = false
-}
-
-// 动画速度控制函数
-const increaseAnimationSpeed = () => {
-  if (animationSpeed.value < 2.0) {
-    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
-  }
-}
-
-const decreaseAnimationSpeed = () => {
-  if (animationSpeed.value > 0.25) {
-    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
-  }
-}
-
-const resetAnimationSpeed = () => {
-  animationSpeed.value = 1.0
-}
 
 // 拖拽事件处理函数
 const onProductionDragStart = (production: string, event: DragEvent) => {

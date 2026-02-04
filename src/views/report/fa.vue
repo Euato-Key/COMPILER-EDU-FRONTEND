@@ -1,32 +1,11 @@
 <template>
   <div class="fa-report-page min-h-screen bg-gray-50">
-    <header class="bg-white border-b sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <router-link
-              to="/record/fa"
-              class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
-            >
-              <Icon icon="lucide:arrow-left" class="w-6 h-6" />
-            </router-link>
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900">FA 答题报告</h1>
-              <p class="text-sm text-gray-500 mt-1">查看详细的答题进度和错误分析</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <button
-              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-              @click="showStudentInfoModal('html')"
-            >
-              <Icon icon="lucide:download" class="w-4 h-4" />
-              导出报告
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <ReportHeader
+      title="FA 答题报告"
+      subtitle="查看详细的答题进度和错误分析"
+      back-link="/record/fa"
+      @export="showStudentInfoModal('html')"
+    />
 
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
@@ -300,6 +279,8 @@ import { Icon } from '@iconify/vue'
 import { useFAStoreNew } from '@/stores'
 import { generateFAReport, getErrorSummary, type FAReportStats } from './utils/fa-report'
 import { exportHTML } from './utils/html-export'
+import { getOverallProgressBarClass } from './utils/report-helpers'
+import ReportHeader from './components/ReportHeader.vue'
 import ReportProgressCard from './components/ReportProgressCard.vue'
 import ReportErrorList from './components/ReportErrorList.vue'
 import StudentInfoModal from './components/StudentInfoModal.vue'
@@ -328,13 +309,6 @@ const errorSummary = computed(() => {
   
   return getErrorSummary(record.errorLogs)
 })
-
-function getOverallProgressBarClass(progress: number) {
-  if (progress === 100) return 'bg-green-500'
-  if (progress >= 80) return 'bg-blue-500'
-  if (progress >= 50) return 'bg-yellow-500'
-  return 'bg-orange-500'
-}
 
 function showStudentInfoModal(action: 'html') {
   currentAction.value = action

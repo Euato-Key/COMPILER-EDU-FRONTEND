@@ -754,6 +754,8 @@ import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useSLR1Store } from '@/stores/slr1'
 import { useCommonStore } from '@/stores/common'
+import { useHintModal } from '@/composables/useHintModal'
+import { useAnimationSpeed } from '@/composables/useAnimationSpeed'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
 import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 
@@ -827,23 +829,9 @@ const highlightTableBasis = ref({
   inputStringCell: '',
 })
 
-// 动画提示弹窗状态
-const hintModalVisible = ref(false)
-const hintModalConfig = ref({
-  type: 'hint' as 'success' | 'error' | 'warning' | 'info' | 'hint',
-  title: '',
-  message: '',
-  details: '',
-  action: '',
-  duration: 3000,
-  position: 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
-})
-
-// 动画速度控制
-const animationSpeed = ref(1.0)
-const animationSpeedStyle = computed(() => ({
-  '--animation-speed': animationSpeed.value
-}))
+// 使用composables
+const { hintModalVisible, hintModalConfig, showHintModal, closeHintModal } = useHintModal()
+const { animationSpeed, animationSpeedStyle, increaseAnimationSpeed, decreaseAnimationSpeed, resetAnimationSpeed } = useAnimationSpeed()
 
 // 从store获取状态
 const analysisData = computed(() => slr1Store.analysisResult)
@@ -893,7 +881,7 @@ const analysisSteps = computed(() => {
           }
 
           // 将状态栈字符串按可能的状态进行分割
-          const states = []
+          const states: string[] = []
           let remaining = stateStack
 
           while (remaining.length > 0) {
@@ -2042,50 +2030,6 @@ function resetHint() {
   hintActive.value = false
   hintMessage.value = ''
   flyingSymbols.value = []
-}
-
-// 显示动画提示弹窗
-const showHintModal = (
-  type: 'success' | 'error' | 'warning' | 'info' | 'hint',
-  title: string,
-  message: string,
-  details?: string,
-  action?: string,
-  duration = 3000,
-  position = 'bottom-left' as 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
-) => {
-  hintModalConfig.value = {
-    type,
-    title,
-    message,
-    details: details || '',
-    action: action || '',
-    duration,
-    position
-  }
-  hintModalVisible.value = true
-}
-
-// 关闭动画提示弹窗
-const closeHintModal = () => {
-  hintModalVisible.value = false
-}
-
-// 动画速度控制函数
-const increaseAnimationSpeed = () => {
-  if (animationSpeed.value < 2.0) {
-    animationSpeed.value = Math.min(2.0, animationSpeed.value + 0.25)
-  }
-}
-
-const decreaseAnimationSpeed = () => {
-  if (animationSpeed.value > 0.25) {
-    animationSpeed.value = Math.max(0.25, animationSpeed.value - 0.25)
-  }
-}
-
-const resetAnimationSpeed = () => {
-  animationSpeed.value = 1.0
 }
 
 // 监听分析结果变化，重置提示状态
