@@ -40,12 +40,12 @@
           清空
         </button>
         <button
-          @click="$emit('check')"
-          :disabled="checking"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+          @click="$emit('show-answer')"
+          :disabled="showAnswer"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
         >
-          <Icon v-if="checking" icon="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
-          校验
+          <Icon icon="lucide:eye" class="w-4 h-4 mr-2" />
+          显示答案
         </button>
       </div>
     </div>
@@ -106,8 +106,7 @@
                 ]"
                 :data-table-cell="`${nonTerminal}|${terminal}`"
                 @focus="$emit('cell-focus', nonTerminal, terminal)"
-                @input="$emit('cell-change', nonTerminal, terminal)"
-                @blur="$emit('cell-change', nonTerminal, terminal)"
+                @blur="$emit('cell-blur', nonTerminal, terminal)"
                 @dragover.prevent
                 @drop="onDrop($event, nonTerminal, terminal)"
               />
@@ -221,8 +220,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   'cell-change': [nt: string, t: string]
   'cell-focus': [nt: string, t: string]
+  'cell-blur': [nt: string, t: string]
   'cell-drop': [nt: string, t: string, production: string]
-  'check': []
+  'show-answer': []
   'hint': []
   'clear': []
 }>()

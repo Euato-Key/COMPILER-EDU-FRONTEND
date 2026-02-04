@@ -219,10 +219,12 @@ export function generateLL1Report(
         }
         stats.step4.overall.progress = stats.step4.analysisSteps.progress
         stats.step4.overall.completed = stats.step4.analysisSteps.completed
-    } else if (!userData.inputString) {
-        // If no input string, Step 4 doesn't apply or is considered empty
-        // We can treat it as 0 progress but maybe not penalize overall too much if it wasn't started?
-        // For now, 0.
+    } else {
+        // If no input string, Step 4 is 0% progress
+        stats.step4.analysisSteps.progress = 0
+        stats.step4.analysisSteps.completed = false
+        stats.step4.overall.progress = 0
+        stats.step4.overall.completed = false
     }
 
     // Overall Calculation (Weighted)

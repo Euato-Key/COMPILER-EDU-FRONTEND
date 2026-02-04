@@ -73,8 +73,9 @@
               :get-correct-entry="getCorrectEntry"
               @cell-change="validateTableCell"
               @cell-focus="clearTableValidation"
+              @cell-blur="handleCellBlur"
               @cell-drop="onTableDrop"
-              @check="checkTable"
+              @show-answer="showCorrectAnswer"
               @hint="executeTableHintAnimation"
               @clear="clearAllStates"
             />
@@ -263,7 +264,14 @@ const hasTableErrors = computed(() => {
 const remainingAttempts = computed(() => Math.max(0, maxAttempts - attempts.value))
 
 const allCompleted = computed(() => {
-  return attempts.value >= maxAttempts && showAnswer.value
+  // 如果用户点击了显示答案，或者所有填写的单元格都正确，则可以进入下一步
+  if (showAnswer.value) return true
+  
+  // 检查所有已填写的单元格是否正确
+  const filledEntries = Object.entries(userTable.value).filter(([_, value]) => value.trim() !== '')
+  if (filledEntries.length === 0) return false
+  
+  return filledEntries.every(([key, _]) => tableValidation.value[key] === 'correct')
 })
 
 const copyTip = ref('')
@@ -369,129 +377,69 @@ const validateTableCell = (nonTerminal: string, terminal: string) => {
   tableValidation.value[key] = validateCellLogic(userValue, correctValue, nonTerminal)
 }
 
-// 校验函数
-const checkTable = async () => {
-  if (!originalData.value?.table) return
-
-  checking.value = true
-  attempts.value++
-
-  try {
-    const tableData = originalData.value.table
-    const requiredEntries = Object.keys(tableData)
-
-    if (requiredEntries.length === 0) {
-      tableValidated.value = true
-      showAnswer.value = false
-      return
-    }
-
-    let isAllCorrect = true
-
-    for (const key of requiredEntries) {
-      const [nt, t] = key.split('|')
-      const userInput = (userTable.value[key] || '').trim()
-      const correctEntry = getCorrectEntry(nt, t)
-
-      const status = validateCellLogic(userInput, correctEntry, nt)
-      tableValidation.value[key] = status
-      if (status !== 'correct') {
-        isAllCorrect = false
-
-        // 生成提示信息
-        let hintText = ''
-        const correctProd = getCorrectEntry(nt, t)
-        if (correctProd) { // 只有标准答案不为空时才去解释为什么是这个答案
-           // correctProd 格式可能为 "S->aB"
-           // 1. 如果是 First集规则: specific first char or non-terminal
-           // 提取右部
-           const parts = correctProd.split('->')
-           if (parts.length === 2) {
-             const rightPart = parts[1]
-             // 计算该右部的 First 集
-             // 注意: originalData.value 需要传递给 calculateFirstSetForProduction
-             // 此时 originalData.value 结构包含 {Vn, Vt, first...}
-             const firstSet = calculateFirstSetForProduction(rightPart, originalData.value as any) 
-             
-             if (firstSet.includes(t)) {
-                hintText = `根据First集规则：\n因为终结符 ${t} ∈ First(${rightPart})，\n所以 M[${nt}, ${t}] = ${correctProd}`
-             } else if (firstSet.includes('ε') && originalData.value.follow[nt]?.includes(t)) {
-                hintText = `根据Follow集规则：\n因为 ε ∈ First(${rightPart}) 且 ${t} ∈ Follow(${nt})，\n所以 M[${nt}, ${t}] = ${correctProd}`
-             } else {
-                 // 兜底
-                hintText = `M[${nt}, ${t}] 应填入 ${correctProd}`
-             }
-           }
-        } else {
-             hintText = `该单元格 M[${nt}, ${t}] 应为空（Error）`
-        }
-
-        ll1Store.addErrorLog({
-            step: 'step3',
-            type: 'parsingTable',
-            location: { row: nt, col: t, fieldKey: key },
-            wrongValue: userInput,
-            correctValue: correctEntry,
-            hint: hintText
-        })
-      }
-    }
-
-    tableValidated.value = true
-
-    if (isAllCorrect) {
-      showAnswer.value = false
-      const correctEntries = Object.values(tableValidation.value).filter(v => v === 'correct').length
-      const totalEntries = Object.keys(tableValidation.value).length
-
-      showHintModal(
-        'success',
-        '校验成功',
-        'LL1分析表校验成功！该文法是LL1文法。',
-        `恭喜！您已正确构建了LL1分析表，所有产生式都按照First集和Follow集规则正确填写。\n\n正确填写项：${correctEntries}/${totalEntries}`,
-        '分析表构建完成',
-        5000,
-        'center'
-      )
-    } else {
-      if (attempts.value >= maxAttempts) {
-        for (const key of requiredEntries) {
-          userTable.value[key] = getCorrectEntry(key.split('|')[0], key.split('|')[1])
-          tableValidation.value[key] = 'correct'
-        }
-        showAnswer.value = true
-        showHintModal(
-          'warning',
-          '显示答案',
-          '已达到最大尝试次数，已显示正确答案。',
-          '请仔细对比您的答案与正确答案，理解First集和Follow集规则的应用。',
-          '答案已显示',
-          6000,
-          'center'
-        )
-      } else {
-        const correctEntries = Object.values(tableValidation.value).filter(v => v === 'correct').length
-        showHintModal(
-          'error',
-          '校验失败',
-          `LL1分析表校验失败，还有${remainingAttempts.value}次尝试机会。`,
-          `请检查错误项目，确保按照First集和Follow集规则正确填写产生式。\n\n正确填写项：${correctEntries}/${requiredEntries.length}`,
-          '请修正错误',
-          5000,
-          'center'
-        )
-      }
-    }
-
-    // 取消防抖定时器，立即保存
-    if (saveTimer) {
-      clearTimeout(saveTimer)
-      saveTimer = null
-    }
-    ll1Store.saveToHistory()
-  } finally {
-    checking.value = false
+// 处理单元格失去焦点事件：校验并记录错误
+const handleCellBlur = (nonTerminal: string, terminal: string) => {
+  const key = `${nonTerminal}|${terminal}`
+  const userValue = (userTable.value[key] || '').trim()
+  
+  // 如果用户没有输入，不记录错误
+  if (!userValue) {
+    tableValidation.value[key] = ''
+    return
   }
+  
+  const correctEntry = getCorrectEntry(nonTerminal, terminal)
+  const status = validateCellLogic(userValue, correctEntry, nonTerminal)
+  
+  // 更新校验状态
+  tableValidation.value[key] = status
+  
+  // 如果错误，记录错误日志
+  if (status === 'incorrect') {
+    // 生成提示信息
+    let hintText = ''
+    if (correctEntry) {
+      const parts = correctEntry.split('->')
+      if (parts.length === 2) {
+        const rightPart = parts[1]
+        const firstSet = calculateFirstSetForProduction(rightPart, originalData.value as any)
+        
+        if (firstSet.includes(terminal)) {
+          hintText = `根据First集规则：\n因为终结符 ${terminal} ∈ First(${rightPart})，\n所以 M[${nonTerminal}, ${terminal}] = ${correctEntry}`
+        } else if (firstSet.includes('ε') && originalData.value?.follow?.[nonTerminal]?.includes(terminal)) {
+          hintText = `根据Follow集规则：\n因为 ε ∈ First(${rightPart}) 且 ${terminal} ∈ Follow(${nonTerminal})，\n所以 M[${nonTerminal}, ${terminal}] = ${correctEntry}`
+        } else {
+          hintText = `M[${nonTerminal}, ${terminal}] 应填入 ${correctEntry}`
+        }
+      }
+    } else {
+      hintText = `该单元格 M[${nonTerminal}, ${terminal}] 应为空（Error）`
+    }
+    
+    ll1Store.addErrorLog({
+      step: 'step3',
+      type: 'parsingTable',
+      location: { row: nonTerminal, col: terminal, fieldKey: key },
+      wrongValue: userValue,
+      correctValue: correctEntry,
+      hint: hintText
+    })
+  }
+}
+
+// 显示正确答案
+const showCorrectAnswer = () => {
+  showAnswer.value = true
+
+  showHintModal(
+    'info',
+    '显示答案',
+    '已显示正确答案，请仔细对比学习。',
+    '请对比您的答案与正确答案的差异，理解First集和Follow集规则的应用。',
+    '答案已显示',
+    5000,
+    'center'
+  )
 }
 
 // 初始化

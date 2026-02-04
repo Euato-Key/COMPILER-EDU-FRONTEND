@@ -50,6 +50,16 @@
 
     <div v-else id="report-content" class="max-w-7xl mx-auto px-4 py-8">
       <div class="space-y-6">
+        <!-- 后端错误提示 -->
+        <div v-if="backendError" class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <Icon icon="lucide:alert-circle" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div class="flex-1">
+            <h3 class="text-sm font-medium text-amber-800 mb-1">验证数据获取提示</h3>
+            <p class="text-sm text-amber-700">{{ backendError }}</p>
+            <p class="text-xs text-amber-600 mt-1">报告将使用历史记录数据生成，部分验证信息可能不可用。</p>
+          </div>
+        </div>
+
         <!-- 基础信息卡片 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -142,31 +152,73 @@
             }"
             :stats="reportData.step3"
           />
-        </div>
-        
-        <!-- Step 4 单独展示 (如果有输入串) -->
-        <div v-if="currentRecord && currentRecord.userData.inputString" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             <ReportProgressCard
-                title="步骤 4：输入串分析"
-                icon="lucide:play-circle"
-                iconColor="text-orange-600"
-                :items="{
-                  analysisSteps: {
-                    label: '分析步骤验证',
-                    progress: reportData.step4.analysisSteps.progress,
-                    completed: reportData.step4.analysisSteps.completed
-                  }
-                }"
-                :stats="reportData.step4"
-             />
-             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-center">
-                 <h3 class="text-sm font-semibold text-gray-500 mb-2">输入串</h3>
-                 <div class="p-4 bg-orange-50 rounded-lg text-lg font-mono text-orange-900 break-all">
-                     {{ currentRecord.userData.inputString }}
-                 </div>
-             </div>
+
+          <ReportProgressCard
+            title="步骤 4：输入串分析"
+            icon="lucide:play-circle"
+            iconColor="text-orange-600"
+            :items="{
+              analysisSteps: {
+                label: '分析步骤验证',
+                progress: reportData.step4.analysisSteps.progress,
+                completed: reportData.step4.analysisSteps.completed
+              }
+            }"
+            :stats="reportData.step4"
+          />
+
+          <div v-if="currentRecord && currentRecord.userData.inputString" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-center">
+              <h3 class="text-sm font-semibold text-gray-500 mb-2">输入串</h3>
+              <div class="p-4 bg-orange-50 rounded-lg text-lg font-mono text-orange-900 break-all">
+                  {{ currentRecord.userData.inputString }}
+              </div>
+          </div>
+          <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-center">
+              <h3 class="text-sm font-semibold text-gray-500 mb-2">输入串</h3>
+              <div class="p-4 bg-gray-50 rounded-lg text-center text-gray-400">
+                  <Icon icon="lucide:alert-circle" class="w-8 h-8 mx-auto mb-2" />
+                  <p>未设置输入串</p>
+                  <p class="text-xs mt-1">步骤 4 需要输入串才能进行分析</p>
+              </div>
+          </div>
         </div>
 
+        <!-- 详细答题回顾区域 -->
+        <div class="space-y-8 mt-8 border-t pt-8 border-gray-200">
+           <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+              <Icon icon="lucide:clipboard-check" class="w-7 h-7 text-blue-600" />
+              详细答题回顾
+           </h2>
+
+           <!-- Step 2 Detail -->
+           <LL1Step2Report 
+              :step2-data="currentRecord?.userData.step2Data"
+              :original-data="ll1Store.originalData || undefined"
+              :error-logs="currentRecord?.errorLogs"
+           />
+
+           <!-- Step 3 Detail -->
+           <LL1Step3Report 
+              :step3-data="currentRecord?.userData.step3Data"
+              :original-data="ll1Store.originalData || undefined"
+              :error-logs="currentRecord?.errorLogs"
+           />
+
+           <!-- Step 4 Detail -->
+           <div v-if="currentRecord && currentRecord.userData.inputString">
+              <LL1Step4Report 
+                 v-if="ll1Store.inputAnalysisResult"
+                 :step4-data="currentRecord.userData.step4Data"
+                 :input-analysis-result="ll1Store.inputAnalysisResult"
+                 :error-logs="currentRecord?.errorLogs"
+              />
+              <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                 <Icon icon="lucide:alert-triangle" class="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                 <h3 class="text-lg font-medium text-gray-900 mb-2">分析结果获取失败</h3>
+                 <p class="text-gray-500">后端未能返回输入串的分析结果，无法显示详细的分析步骤。</p>
+              </div>
+           </div>
+        </div>
 
         <!-- 错误统计概览 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -187,7 +239,7 @@
               <div class="text-3xl font-bold text-pink-600">{{ reportData.errors.step3.total }}</div>
               <div class="text-sm text-pink-700 mt-1">步骤 3 错误</div>
             </div>
-            <div class="p-4 bg-orange-50 rounded-lg border border-orange-200">
+            <div v-if="currentRecord && currentRecord.userData.inputString" class="p-4 bg-orange-50 rounded-lg border border-orange-200">
               <div class="text-3xl font-bold text-orange-600">{{ reportData.errors.step4.total }}</div>
               <div class="text-sm text-orange-700 mt-1">步骤 4 错误</div>
             </div>
@@ -223,7 +275,7 @@
           />
 
           <ReportErrorList
-             v-if="errorSummary"
+             v-if="errorSummary && currentRecord && currentRecord.userData.inputString"
              title="步骤 4 错误详情"
              :error-sections="{
                '分析步骤': errorSummary.step4.analysisSteps
@@ -256,6 +308,10 @@ import { exportHTML } from './utils/html-export'
 import ReportProgressCard from './components/ReportProgressCard.vue'
 import ReportErrorList from './components/ReportErrorList.vue'
 import StudentInfoModal from './components/StudentInfoModal.vue'
+import LL1Step2Report from './components/ll1/LL1Step2Report.vue'
+import LL1Step3Report from './components/ll1/LL1Step3Report.vue'
+import LL1Step4Report from './components/ll1/LL1Step4Report.vue'
+import { formatDate } from '@/utils/date'
 
 const route = useRoute()
 const router = useRouter()
@@ -266,6 +322,7 @@ const reportData = ref<LL1ReportStats | null>(null)
 const currentRecord = ref<any>(null)
 const studentInfoModalVisible = ref(false)
 const currentAction = ref<'html' | null>(null)
+const backendError = ref<string | null>(null)
 
 const errorSummary = computed(() => {
   if (!reportData.value) return null
@@ -283,30 +340,6 @@ function getOverallProgressBarClass(progress: number) {
   if (progress >= 80) return 'bg-blue-500'
   if (progress >= 50) return 'bg-yellow-500'
   return 'bg-orange-500'
-}
-
-function formatDate(timestamp: string) {
-  if (!timestamp) return '-'
-  try {
-    let date = new Date(timestamp)
-    
-    // Handle timestamp format inconsistencies if any
-    if (isNaN(date.getTime())) {
-        // Simple fallback parsing for common locale strings
-        return timestamp
-    }
-    
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    const seconds = String(date.getSeconds()).padStart(2, '0')
-    
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-  } catch (e) {
-    return timestamp
-  }
 }
 
 function showStudentInfoModal(action: 'html') {
@@ -373,6 +406,7 @@ onMounted(async () => {
     })
   } catch (error) {
     console.error('获取后端验证数据失败:', error)
+    backendError.value = '后端验证数据获取失败，报告可能缺少部分验证信息'
     // Fallback: 仅使用记录数据，无验证数据（进度可能不准）
     reportData.value = generateLL1Report(record)
   } finally {
