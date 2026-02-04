@@ -247,7 +247,7 @@ function getHint(vn: string, vt: string): string | null {
   )
   
   if (logs.length === 0) return null
-  return logs[logs.length - 1].hint
+  return logs[logs.length - 1].hint ?? null
 }
 
 // 获取错误历史
