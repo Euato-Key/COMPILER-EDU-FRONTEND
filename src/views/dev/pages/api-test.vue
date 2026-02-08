@@ -26,9 +26,9 @@
         <div class="test-card">
           <div class="test-header">
             <h3>服务器连接</h3>
-            <button @click="testConnection" :disabled="commonAPI.loading.value" class="test-btn">
+            <button @click="testConnection" :disabled="commonLoading" class="test-btn">
               <Icon
-                v-if="commonAPI.loading.value"
+                v-if="commonLoading"
                 icon="lucide:loader-2"
                 class="w-4 h-4 animate-spin"
               />
@@ -55,9 +55,9 @@
         <div class="test-card">
           <div class="test-header">
             <h3>LL1分析测试</h3>
-            <button @click="testLL1" :disabled="ll1API.loading.value" class="test-btn">
+            <button @click="testLL1" :disabled="ll1Loading" class="test-btn">
               <Icon
-                v-if="ll1API.loading.value"
+                v-if="ll1Loading"
                 icon="lucide:loader-2"
                 class="w-4 h-4 animate-spin"
               />
@@ -92,9 +92,9 @@
         <div class="test-card">
           <div class="test-header">
             <h3>LR0分析测试</h3>
-            <button @click="testLR0" :disabled="lr0API.loading.value" class="test-btn">
+            <button @click="testLR0" :disabled="lr0Loading" class="test-btn">
               <Icon
-                v-if="lr0API.loading.value"
+                v-if="lr0Loading"
                 icon="lucide:loader-2"
                 class="w-4 h-4 animate-spin"
               />
@@ -129,9 +129,9 @@
         <div class="test-card">
           <div class="test-header">
             <h3>SLR1分析测试</h3>
-            <button @click="testSLR1" :disabled="slr1API.loading.value" class="test-btn">
+            <button @click="testSLR1" :disabled="slr1Loading" class="test-btn">
               <Icon
-                v-if="slr1API.loading.value"
+                v-if="slr1Loading"
                 icon="lucide:loader-2"
                 class="w-4 h-4 animate-spin"
               />
@@ -166,9 +166,9 @@
         <div class="test-card">
           <div class="test-header">
             <h3>正则表达式转DFAM</h3>
-            <button @click="testFA" :disabled="faAPI.loading.value" class="test-btn">
+            <button @click="testFA" :disabled="faLoading" class="test-btn">
               <Icon
-                v-if="faAPI.loading.value"
+                v-if="faLoading"
                 icon="lucide:loader-2"
                 class="w-4 h-4 animate-spin"
               />
@@ -199,14 +199,20 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useCommonAPI, useLL1API, useLR0API, useSLR1API, useFAAPI } from '@/composables/api'
+import {
+  testAPI,
+  getLL1AnalyseAPI,
+  getLR0AnalyseAPI,
+  getSLR1AnalyseAPI,
+  getDFAM,
+} from '@/api'
 
-// API composables
-const commonAPI = useCommonAPI()
-const ll1API = useLL1API()
-const lr0API = useLR0API()
-const slr1API = useSLR1API()
-const faAPI = useFAAPI()
+// 加载状态
+const commonLoading = ref(false)
+const ll1Loading = ref(false)
+const lr0Loading = ref(false)
+const slr1Loading = ref(false)
+const faLoading = ref(false)
 
 // 测试输入
 const ll1Productions = ref('E -> E + T | T\nT -> T * F | F\nF -> ( E ) | i')
@@ -240,8 +246,9 @@ const overallStatus = computed(() => {
 
 // 测试函数
 const testConnection = async () => {
+  commonLoading.value = true
   try {
-    const result = await commonAPI.test()
+    const result = await testAPI()
     connectionResult.value = {
       success: true,
       message: '服务器连接成功',
@@ -253,13 +260,16 @@ const testConnection = async () => {
       message: `连接失败: ${error.message}`,
       data: null,
     }
+  } finally {
+    commonLoading.value = false
   }
 }
 
 const testLL1 = async () => {
+  ll1Loading.value = true
   try {
     const productions = ll1Productions.value.split('\n').filter((p) => p.trim())
-    const result = await ll1API.analyseGrammar(productions)
+    const result = await getLL1AnalyseAPI(productions)
     ll1Result.value = {
       success: true,
       message: 'LL1分析成功',
@@ -271,13 +281,16 @@ const testLL1 = async () => {
       message: `LL1分析失败: ${error.message}`,
       data: null,
     }
+  } finally {
+    ll1Loading.value = false
   }
 }
 
 const testLR0 = async () => {
+  lr0Loading.value = true
   try {
     const productions = lr0Productions.value.split('\n').filter((p) => p.trim())
-    const result = await lr0API.analyseGrammar(productions)
+    const result = await getLR0AnalyseAPI(productions)
     lr0Result.value = {
       success: true,
       message: 'LR0分析成功',
@@ -289,13 +302,16 @@ const testLR0 = async () => {
       message: `LR0分析失败: ${error.message}`,
       data: null,
     }
+  } finally {
+    lr0Loading.value = false
   }
 }
 
 const testSLR1 = async () => {
+  slr1Loading.value = true
   try {
     const productions = slr1Productions.value.split('\n').filter((p) => p.trim())
-    const result = await slr1API.analyseGrammar(productions)
+    const result = await getSLR1AnalyseAPI(productions)
     slr1Result.value = {
       success: true,
       message: 'SLR1分析成功',
@@ -307,12 +323,15 @@ const testSLR1 = async () => {
       message: `SLR1分析失败: ${error.message}`,
       data: null,
     }
+  } finally {
+    slr1Loading.value = false
   }
 }
 
 const testFA = async () => {
+  faLoading.value = true
   try {
-    const result = await faAPI.analyseRegex(regexInput.value)
+    const result = await getDFAM(regexInput.value)
     faResult.value = {
       success: true,
       message: '有限自动机分析成功',
@@ -324,6 +343,8 @@ const testFA = async () => {
       message: `有限自动机分析失败: ${error.message}`,
       data: null,
     }
+  } finally {
+    faLoading.value = false
   }
 }
 
