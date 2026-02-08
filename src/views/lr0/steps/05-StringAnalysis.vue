@@ -82,14 +82,7 @@
         </div>
       </div>
 
-      <!-- 检查前置条件 -->
-      <div v-if="!analysisData" class="text-center py-20">
-        <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成前面的步骤</h3>
-        <p class="text-gray-500">需要先完成文法分析和分析表构造才能进行字符串分析</p>
-      </div>
-
-      <div v-else class="space-y-8">
+      <div class="space-y-8">
         <!-- 输入字符串 -->
         <div class="bg-white border border-gray-200 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">输入待分析字符串</h3>
@@ -343,7 +336,13 @@
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="text-lg font-semibold text-gray-900">LR0移进-规约分析答题表</h3>
-                <p class="text-sm text-gray-600 mt-1">请手动填写分析步骤</p>
+                <p class="text-sm text-gray-600 mt-1">
+                  请手动填写分析步骤
+                  <span v-if="lr0Store.inputString" class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    <Icon icon="lucide:file-text" class="w-3 h-3" />
+                    输入串: {{ lr0Store.inputString }}
+                  </span>
+                </p>
               </div>
               <div class="flex items-center gap-2">
                 <button
@@ -699,19 +698,29 @@
 
         <div class="text-sm text-gray-500 font-medium">步骤 5 / 5</div>
 
-        <button
-          @click="complete"
-          :disabled="!isStepComplete"
-          :class="[
-            'px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold',
-            isStepComplete
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
-              : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed',
-          ]"
-        >
-          完成分析
-          <Icon icon="lucide:check" class="w-5 h-5" />
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            v-if="lr0Store.currentRecordId"
+            @click="viewReport"
+            class="px-5 py-3 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-100 transition-all duration-300 flex items-center gap-2 font-semibold"
+          >
+            <Icon icon="lucide:file-text" class="w-5 h-5" />
+            查看报告
+          </button>
+          <button
+            @click="complete"
+            :disabled="!isStepComplete"
+            :class="[
+              'px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold',
+              isStepComplete
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
+                : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed',
+            ]"
+          >
+            完成分析
+            <Icon icon="lucide:check" class="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -746,15 +755,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useLR0Store } from '@/stores/lr0'
+import { useLR0StoreNew } from '@/stores'
 import { useCommonStore } from '@/stores/common'
 import { useHintModal } from '@/composables/useHintModal'
 import { useAnimationSpeed } from '@/composables/useAnimationSpeed'
 import CompilerAnalyzer from '@/animation/components/CompilerAnalyzer.vue'
 import AnimationHintModal from '@/components/shared/AnimationHintModal.vue'
 import type { AnalysisStepInfo } from '@/types'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits<{
   'next-step': []
@@ -777,11 +787,29 @@ const emit = defineEmits<{
   ]
 }>()
 
-const lr0Store = useLR0Store()
+const router = useRouter()
+const lr0Store = useLR0StoreNew()
 const commonStore = useCommonStore()
 
-// 组件状态
-const inputString = ref('')
+// 查看报告
+const viewReport = () => {
+  lr0Store.saveToHistory()
+  if (lr0Store.currentRecordId) {
+    router.push(`/report/lr0/${lr0Store.currentRecordId}`)
+  }
+}
+
+// 步骤完成状态
+const isInitialized = ref(false)
+
+// 保存定时器
+let saveTimer: any = null
+
+// 组件状态 - 使用 store 中的 inputString
+const inputString = computed({
+  get: () => lr0Store.inputString,
+  set: (value) => lr0Store.setInputString(value)
+})
 
 // 示例字符串（单字符格式，不包含#）
 // 根据LR0示例文法设定：
@@ -801,6 +829,9 @@ const userAnswers = ref<{
   symbolStack: [],
   inputString: [],
 })
+
+// 用于控制是否跳过保存的标志（避免 clearAll 等操作触发保存）
+const skipSave = ref(false)
 
 // 验证状态
 const validationStatus = ref<{
@@ -846,10 +877,10 @@ const { hintModalVisible, hintModalConfig, showHintModal, closeHintModal } = use
 const { animationSpeed, animationSpeedStyle, increaseAnimationSpeed, decreaseAnimationSpeed, resetAnimationSpeed } = useAnimationSpeed()
 
 // 从store获取状态
-const analysisData = computed(() => lr0Store.analysisResult)
+const analysisData = computed(() => lr0Store.originalData)
 const isAnalyzing = computed(() => commonStore.loading)
 const analysisResult = computed(() => lr0Store.inputAnalysisResult)
-const grammarInfo = computed(() => lr0Store.analysisResult)
+const grammarInfo = computed(() => lr0Store.originalData)
 const analysisSteps = computed(() => {
   if (lr0Store.inputAnalysisResult) {
     // 构造分析步骤数据
@@ -1026,7 +1057,82 @@ const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
     validationStatus.value[field][index] = 'correct'
   } else {
     validationStatus.value[field][index] = 'error'
+
+    // 记录错误日志
+    const fieldNames = {
+      stateStack: '状态栈',
+      symbolStack: '符号栈',
+      inputString: '输入串'
+    }
+
+    // 获取当前步骤的提示信息
+    const step = analysisSteps.value[index]
+    const stateStack = step.stateStack.trim()
+    const states = stateStack.split(/\s+/).filter((s) => s.trim() !== '')
+    const state = states[states.length - 1] || '0'
+    const symbol = step.inputString[0]
+    const action = getActionValue(Number(state), symbol)
+
+    // 构建提示信息
+    let hintInfo = `第${index}步${fieldNames[field]}填写错误，正确值应为: ${correctValue}`
+    let hintDetails = ''
+
+    if (action.startsWith('s')) {
+      // 移进操作
+      const newState = action.replace('s', '')
+      hintDetails = `提示：当前状态${state}，输入符号${symbol}，ACTION[${state},${symbol}]=${action}（移进到状态${newState}）`
+    } else if (action.startsWith('r')) {
+      // 规约操作
+      const prodIndex = parseInt(action.replace('r', '')) - 1
+      const production = numberedProductions.value[prodIndex]
+      hintDetails = `提示：当前状态${state}，输入符号${symbol}，ACTION[${state},${symbol}]=${action}（用产生式${production}规约）`
+    } else if (action === 'acc') {
+      hintDetails = `提示：当前状态${state}，输入符号${symbol}，ACTION[${state},${symbol}]=acc（接受）`
+    } else {
+      hintDetails = `提示：当前状态${state}，输入符号${symbol}，ACTION[${state},${symbol}]无对应动作（分析错误）`
+    }
+
+    lr0Store.addErrorLog({
+      step: 'step5',
+      type: 'analysisStep',
+      location: { stepIndex: index, fieldKey: `${field}-${index}` },
+      wrongValue: userValue,
+      correctValue: correctValue,
+      hint: `${hintInfo}\n${hintDetails}`,
+      hintDetails: {
+        state,
+        symbol,
+        action,
+        actionCell: `ACTION[${state},${symbol}]`,
+        actionType: action.startsWith('s') ? 'shift' : action.startsWith('r') ? 'reduce' : action === 'acc' ? 'accept' : 'error'
+      }
+    })
   }
+
+  // 注意：数据保存已由 watch(userAnswers, ...) 自动处理，无需手动调用
+}
+
+// 保存用户填写的步骤数据
+const saveUserSteps = () => {
+  // 直接从 userAnswers 获取数据，不依赖 analysisSteps
+  const stepCount = userAnswers.value.stateStack.length
+  const userSteps = []
+  
+  for (let i = 0; i < stepCount; i++) {
+    userSteps.push({
+      stack: userAnswers.value.stateStack[i] || '',
+      input: userAnswers.value.symbolStack[i] || '',
+      action: userAnswers.value.inputString[i] || '',
+    })
+  }
+  
+  lr0Store.saveStep5Data(userSteps)
+  
+  // 防抖保存到历史记录
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    lr0Store.saveToHistory()
+  }, 1000)
 }
 
 // 清除验证状态
@@ -1041,10 +1147,7 @@ const getCellStyle = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
 
   const status = validationStatus.value[field][index]
 
-  if (showAnswers.value) {
-    return 'bg-green-100 border-green-300'
-  }
-
+  // 显示答案不再影响单元格样式，仅显示答案表格
   switch (status) {
     case 'correct':
       return 'bg-green-100 border-green-300'
@@ -1076,6 +1179,9 @@ const showCorrectAnswers = () => {
 
 // 一键清除所有答案
 const clearAll = () => {
+  // 设置跳过保存标志，避免触发 watcher 保存
+  skipSave.value = true
+
   // 清空用户答案
   userAnswers.value = {
     stateStack: new Array(analysisSteps.value.length).fill(''),
@@ -1095,16 +1201,42 @@ const clearAll = () => {
 
   // 重置动画状态
   resetHint()
+
+  // 重置跳过保存标志（在下一个 tick 后）
+  nextTick(() => {
+    skipSave.value = false
+  })
 }
 
 // 监听分析步骤变化，初始化答题数组
 const initUserAnswers = () => {
   if (analysisSteps.value.length > 0) {
-    userAnswers.value = {
-      stateStack: new Array(analysisSteps.value.length).fill(''),
-      symbolStack: new Array(analysisSteps.value.length).fill(''),
-      inputString: new Array(analysisSteps.value.length).fill(''),
+    // 检查是否已经有用户输入的数据（避免覆盖用户当前输入）
+    const hasUserData = userAnswers.value.stateStack.some(s => s.trim() !== '') ||
+                        userAnswers.value.symbolStack.some(s => s.trim() !== '') ||
+                        userAnswers.value.inputString.some(s => s.trim() !== '')
+    
+    // 如果有保存的数据且当前没有用户数据，恢复数据
+    if (!hasUserData && lr0Store.step5Data && lr0Store.step5Data.userSteps && lr0Store.step5Data.userSteps.length > 0) {
+      const savedSteps = lr0Store.step5Data.userSteps
+      // 确保保存的数据长度与当前分析步骤长度匹配
+      const stepCount = analysisSteps.value.length
+      userAnswers.value = {
+        stateStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.stack || ''),
+        symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.input || ''),
+        inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.action || ''),
+      }
+      console.log('恢复 step5Data:', lr0Store.step5Data)
+      console.log('恢复后的 userAnswers:', userAnswers.value)
+    } else if (userAnswers.value.stateStack.length !== analysisSteps.value.length) {
+      // 初始化空数据（长度不匹配时）
+      userAnswers.value = {
+        stateStack: new Array(analysisSteps.value.length).fill(''),
+        symbolStack: new Array(analysisSteps.value.length).fill(''),
+        inputString: new Array(analysisSteps.value.length).fill(''),
+      }
     }
+
     validationStatus.value = {
       stateStack: {},
       symbolStack: {},
@@ -1123,6 +1255,43 @@ watch(
   { immediate: true },
 )
 
+// 监听 step5Data 变化，确保在历史记录恢复后能正确初始化
+// 注意：这里需要避免与 userAnswers 的 watcher 形成循环
+watch(
+  () => lr0Store.step5Data,
+  (newStep5Data, oldStep5Data) => {
+    // 只在 step5Data 从外部变化时触发（如历史记录恢复），而不是由当前组件保存触发的
+    if (newStep5Data && newStep5Data.userSteps && analysisSteps.value.length > 0) {
+      // 检查是否已经有用户输入的数据
+      const hasUserData = userAnswers.value.stateStack.some(s => s.trim() !== '') ||
+                          userAnswers.value.symbolStack.some(s => s.trim() !== '') ||
+                          userAnswers.value.inputString.some(s => s.trim() !== '')
+      
+      // 只有当当前没有用户数据时才恢复（避免覆盖用户正在输入的内容）
+      if (!hasUserData) {
+        console.log('step5Data 变化，重新初始化用户答案:', newStep5Data)
+        initUserAnswers()
+      }
+    }
+  },
+  { deep: true }
+)
+
+// 监听用户答案变化，自动保存到 store（模仿 LL1 的实现）
+watch(
+  userAnswers,
+  () => {
+    // 如果设置了跳过保存标志，则不执行保存
+    if (skipSave.value) {
+      return
+    }
+    if (analysisSteps.value.length > 0) {
+      saveUserSteps()
+    }
+  },
+  { deep: true }
+)
+
 // 分析字符串
 const analyzeString = async () => {
   if (!inputString.value?.trim()) {
@@ -1130,16 +1299,8 @@ const analyzeString = async () => {
     return
   }
 
-  if (!lr0Store.analysisResult) {
-    commonStore.setError('请先完成文法分析')
-    return
-  }
-
   try {
-    // 更新store中的输入串
-    lr0Store.setInputString(inputString.value.trim())
-
-    // 执行分析
+    // 执行分析（inputString 已经通过 computed 的 setter 同步到 store）
     const success = await lr0Store.analyzeInputString()
 
     if (success) {
@@ -1157,6 +1318,21 @@ const resetAnalysis = () => {
   lr0Store.setInputString('')
   commonStore.clearError()
 }
+
+// 组件挂载时初始化
+onMounted(async () => {
+  // 延迟执行，确保 persistence 已经从 localStorage 加载数据
+  await new Promise(resolve => setTimeout(resolve, 100))
+  isInitialized.value = true
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+})
 
 // 完成分析
 const complete = () => {

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, type PropType, type Ref, computed, watch } from 'vue';
-import type { dataDfaType} from '@/utils/type/LR0type';
 import { VueFlow,Handle,Position,useVueFlow,MarkerType, type NodeChange} from "@vue-flow/core"
 import { Background } from '@vue-flow/background'
 const { onConnect,addEdges,addNodes,onNodeClick,onEdgeClick,findNode,findEdge,getNodes,getEdges,
@@ -9,17 +8,37 @@ const { onConnect,addEdges,addNodes,onNodeClick,onEdgeClick,findNode,findEdge,ge
 import customEdge from '@/components/lr/custom-edge.vue';
 import customNode from '@/components/lr/custom-node.vue';
 import ModalDialog from '@/components/shared/ModalDialog.vue';
+import { useLR0StoreNew } from '@/stores';
+
+const lr0Store = useLR0StoreNew();
 
 const props = defineProps({
   check_DFA:{
-    type: Array as PropType<dataDfaType[]>,
+    type: Array as PropType<any[]>,
     required:true
+  },
+  savedNodes: {
+    type: Array as PropType<any[]>,
+    default: () => []
+  },
+  savedEdges: {
+    type: Array as PropType<any[]>,
+    default: () => []
   },
 })
 
-const answerItems = ref<dataDfaType[]>([])
-answerItems.value = props.check_DFA.slice() // 深拷贝，拷贝到该组件中
-console.log(answerItems.value)
+const answerItems = ref<any[]>([])
+// 检查数据是否存在
+const hasValidData = computed(() => {
+  return props.check_DFA && Array.isArray(props.check_DFA) && props.check_DFA.length > 0
+})
+
+// 只在有有效数据时才拷贝
+if (hasValidData.value) {
+  answerItems.value = props.check_DFA.slice() // 深拷贝，拷贝到该组件中
+}
+console.log('LR0DrawDFA - check_DFA:', props.check_DFA)
+console.log('LR0DrawDFA - answerItems:', answerItems.value)
 
 let checkRight_Items:string[] = [] //  close表：已经check Right的Answer_item的id
 let checkRIght_Gotos:string[] = [] //  close表：已经check RIght的Answer_Gotos的连线（item_id + gotoV + next_id）
@@ -42,7 +61,7 @@ let nodeId_Map_ItemId = {}
 let edgeId_Map_GotosId = {}
 const next_step_open:Ref<boolean[]> =  ref([false,false])
 let showAnswer_cnt = 3
-const emit = defineEmits(["open_step4"])
+const emit = defineEmits(["open_step4", "validate-complete"])
 
 // 弹窗状态
 const modalVisible = ref(false)
@@ -80,26 +99,35 @@ watch(next_step_open.value, (newValue:boolean[])=>{
   }
 })
 
-const nodes = ref([
-  {
-    id: 'node1',
-    data: {
-      label:"",
-      pros:[
-        {
-          id:"node1"+"_pro"+Date.now(),
-          category:"onlyRead",
-          check:"normal",
-          state:"normal",
-          text:answerItems.value[0].pros[0]?.text
-        }
-      ],
-    },
-    type: 'custom',
-    position: { x: 50, y: 50 },
-    label:"",
-  },
-])
+// 初始化节点 - 如果有数据则使用数据，否则使用空节点
+const getInitialNodes = () => {
+  if (hasValidData.value && answerItems.value[0]?.pros?.[0]?.text) {
+    return [
+      {
+        id: 'node1',
+        data: {
+          label: "",
+          pros: [
+            {
+              id: "node1" + "_pro" + Date.now(),
+              category: "onlyRead",
+              check: "normal",
+              state: "normal",
+              text: answerItems.value[0].pros[0]?.text
+            }
+          ],
+        },
+        type: 'custom',
+        position: { x: 50, y: 50 },
+        label: "",
+      },
+    ]
+  }
+  // 无数据时返回空数组
+  return []
+}
+
+const nodes = ref(getInitialNodes())
 
 const edges = ref([
   // default bezier edge
@@ -133,7 +161,11 @@ const edges = ref([
   // },
 ])
 
-addNodes(nodes.value)
+// 只在有数据时添加节点
+if (hasValidData.value && nodes.value.length > 0) {
+  addNodes(nodes.value)
+}
+
 const initVar = () => {
   checkRight_Items = []
   checkRIght_Gotos = []
@@ -212,6 +244,7 @@ const checkItem = () => {
   if(checkRight_Items.length>=answerItem_totalNum.value) {
     showModal('success', 'Item校验成功', '恭喜！所有 Item 校验正确！', '您可以继续进行Goto连线的校验。')
     next_step_open.value[0]=true
+    emit('validate-complete')
     return
   }
 
@@ -228,22 +261,69 @@ const checkItem = () => {
     NodeMatchRight_cnt = 0
     everyEpooch_Items.clear()
     showModal('success', 'Item校验成功', `当前所有 Item 检测成功，可继续添加${addNodeLimit}个 Item`)
+    emit('validate-complete')
     return
   }
 
   if(NodeMatchRight_cnt > 0){
     showModal('success', 'Item校验成功', `${NodeMatchRight_cnt}个 Item 校验成功！`)
+    emit('validate-complete')
     return
   }else{
+    // 收集用户填写的所有项目集内容
+    const userItems = getNodes.value
+      .filter(node => !checkRight_local_node.includes(node.id))
+      .map(node => {
+        const prosText = node.data.pros.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ')
+        return `节点${node.id}: ${prosText || '(空)'}`
+      })
+      .join('; ')
+
     showModal('error', 'Item校验失败', '无 Item 校验成功，请检查您的输入。')
+    // 记录错误日志
+    lr0Store.addErrorLog({
+      step: 'step3',
+      type: 'dfaState',
+      location: { fieldKey: 'checkItem' },
+      wrongValue: userItems || '未填写任何项目集',
+      correctValue: `应包含项目集: ${answerItems.value.map(item => `${item.id}: ${item.pros.map((p: any) => p.text).join(', ')}`).join('; ')}`,
+      hint: '请检查项目集的产生式是否正确'
+    })
+    emit('validate-complete')
     return
   }
 }
 const checkGoto = () => {
   if(next_step_open.value[1]) return
 
+  // 检查是否有未校验的Item
+  const uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
+  if (uncheckedNodes.length > 0) {
+    const uncheckedNodeIds = uncheckedNodes.map(node => node.id).join(', ')
+    showModal('warning', '请先校验Item', `您还有未校验的Item节点: ${uncheckedNodeIds}`, '请先点击"校验Item"按钮完成所有Item的校验，再进行Goto连线校验。')
+    lr0Store.addErrorLog({
+      step: 'step3',
+      type: 'dfaState',
+      location: { fieldKey: 'checkGoto' },
+      wrongValue: '尝试校验Goto但存在未校验的Item',
+      correctValue: '应先完成所有Item的校验',
+      hint: `请先校验以下Item节点: ${uncheckedNodeIds}`
+    })
+    emit('validate-complete')
+    return
+  }
+
   // 将 edge 与 item.next_ids 匹配
   let edgeMatchRight_cnt = 0
+  // 记录错误的Goto连线详情
+  const wrongGotos: Array<{
+    edgeId: string,
+    sourceNode: string,
+    targetNode: string,
+    gotoChar: string,
+    expectedTarget?: string,
+    reason: string
+  }> = []
 
   for(const edge of getEdges.value){
     if(checkRight_local_edge.includes(edge.id)) continue
@@ -254,9 +334,35 @@ const checkGoto = () => {
     const sourceId_Answer = nodeId_Map_ItemId[sourceId_local] ?  nodeId_Map_ItemId[sourceId_local] : ""
     const targetId_Answer = nodeId_Map_ItemId[targetId_local] ?  nodeId_Map_ItemId[targetId_local] : ""
 
-    if(!sourceId_Answer && !targetId_Answer) continue
+    // 获取源Item的详细信息
+    const sourceItemLabel = nodeId_Map_ItemId[sourceId_local] || sourceId_local
+    const targetItemLabel = nodeId_Map_ItemId[targetId_local] || targetId_local
+
+    if(!sourceId_Answer && !targetId_Answer) {
+      wrongGotos.push({
+        edgeId: edge.id,
+        sourceNode: sourceItemLabel,
+        targetNode: targetItemLabel,
+        gotoChar: inpGotoCh_local || '(空)',
+        reason: '源节点和目标节点都未通过Item校验'
+      })
+      continue
+    }
+
+    if(!sourceId_Answer) {
+      wrongGotos.push({
+        edgeId: edge.id,
+        sourceNode: sourceItemLabel,
+        targetNode: targetItemLabel,
+        gotoChar: inpGotoCh_local || '(空)',
+        reason: '源节点未通过Item校验'
+      })
+      continue
+    }
 
     const sou_AnswerItem = answerItems.value[parseInt(sourceId_Answer[sourceId_Answer.length-1])]
+    let matched = false
+
     for(const key of Object.keys(sou_AnswerItem.next_ids)){
       const answer_goto_id = sou_AnswerItem.id + "-> " + key + "-> " + "Item" + sou_AnswerItem.next_ids[key]
       if(checkRIght_Gotos.includes(answer_goto_id)) continue
@@ -267,22 +373,66 @@ const checkGoto = () => {
         checkRIght_Gotos.push(answer_goto_id)
         checkRight_local_edge.push(edge.id)
         edgeId_Map_GotosId[edge.id]=answer_goto_id
+        matched = true
         break
       }
+    }
+
+    if(!matched) {
+      // 找出该源Item应该有的正确转移
+      const expectedTargets = Object.entries(sou_AnswerItem.next_ids)
+        .map(([ch, nextId]) => `${ch}→Item${nextId}`)
+        .join(', ')
+
+      wrongGotos.push({
+        edgeId: edge.id,
+        sourceNode: sourceItemLabel,
+        targetNode: targetItemLabel,
+        gotoChar: inpGotoCh_local || '(空)',
+        expectedTarget: expectedTargets || '无转移',
+        reason: targetId_Answer ? '转移字符或目标状态错误' : '目标节点未通过Item校验'
+      })
     }
   }
 
   if( checkRIght_Gotos.length>=answerGotos_totalNum.value ) {
     showModal('success', 'Goto校验成功', '恭喜！所有 Goto 连线校验正确！', '您的DFA构造已经完成。')
     next_step_open.value[1]=true
+    emit('validate-complete')
     return
   }
 
   if(edgeMatchRight_cnt > 0){
     showModal('success', 'Goto校验成功', `${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
+    emit('validate-complete')
     return
   }else{
+    // 构建详细的错误信息
+    const wrongGotoDetails = wrongGotos.map(g => {
+      let detail = `连线: ${g.sourceNode} --${g.gotoChar}--> ${g.targetNode}`
+      if (g.expectedTarget) {
+        detail += ` | 正确应为: ${g.sourceNode} 的转移 [${g.expectedTarget}]`
+      }
+      detail += ` | 错误原因: ${g.reason}`
+      return detail
+    }).join('; ')
+
+    // 构建正确的Goto关系
+    const correctGotos = answerItems.value
+      .flatMap(item => Object.entries(item.next_ids).map(([ch, nextId]) => `${item.id} --${ch}--> Item${nextId}`))
+      .join('; ')
+
     showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
+    // 记录错误日志
+    lr0Store.addErrorLog({
+      step: 'step3',
+      type: 'dfaState',
+      location: { fieldKey: 'checkGoto' },
+      wrongValue: wrongGotoDetails || '未绘制任何Goto连线',
+      correctValue: `应包含转移关系: ${correctGotos}`,
+      hint: '请检查Goto连线的源状态、目标状态和转移字符是否正确'
+    })
+    emit('validate-complete')
     return
   }
 }
@@ -516,6 +666,26 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
     }
   }
   // console.log(getEdges.value) // 打印的 id、 source、target是新连接后的正确信息， 但data、sourceNode、targetNode有问题
+})
+
+// 监听保存的数据，恢复用户绘制的 DFA
+watch(
+  [() => props.savedNodes, () => props.savedEdges],
+  ([newNodes, newEdges]) => {
+    if (newNodes && newNodes.length > 0) {
+      nodes.value = JSON.parse(JSON.stringify(newNodes))
+    }
+    if (newEdges && newEdges.length > 0) {
+      edges.value = JSON.parse(JSON.stringify(newEdges))
+    }
+  },
+  { immediate: true }
+)
+
+// 暴露方法给父组件
+defineExpose({
+  getNodes: () => getNodes.value,
+  getEdges: () => getEdges.value
 })
 </script>
 

@@ -109,7 +109,7 @@
                   >
                     <input
                       v-model="userInputs.actions[`${stateIndex - 1},${terminal}`]"
-                      @blur="validateCell(`${stateIndex - 1},${terminal}`, 'action')"
+                      @blur="handleCellBlur(`${stateIndex - 1},${terminal}`, 'action')"
                       @input="clearValidation(`${stateIndex - 1},${terminal}`, 'action')"
                       :class="getCellStyle(`${stateIndex - 1},${terminal}`, 'action')"
                       class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-cyan-500 rounded transition-colors"
@@ -125,7 +125,7 @@
                   >
                     <input
                       v-model="userInputs.gotos[`${stateIndex - 1},${nonterminal}`]"
-                      @blur="validateCell(`${stateIndex - 1},${nonterminal}`, 'goto')"
+                      @blur="handleCellBlur(`${stateIndex - 1},${nonterminal}`, 'goto')"
                       @input="clearValidation(`${stateIndex - 1},${nonterminal}`, 'goto')"
                       :class="getCellStyle(`${stateIndex - 1},${nonterminal}`, 'goto')"
                       class="w-full px-1 py-0.5 text-xs text-center border-0 focus:ring-1 focus:ring-cyan-500 rounded transition-colors"
@@ -299,6 +299,8 @@ interface Props {
     actions: Record<string, string>
     gotos: Record<string, string>
   }
+  savedActionTable?: Record<string, string>
+  savedGotoTable?: Record<string, string>
 }
 
 // Events 定义
@@ -312,11 +314,14 @@ const props = withDefaults(defineProps<Props>(), {
   terminals: () => [],
   nonterminals: () => [],
   correctAnswers: () => ({ actions: {}, gotos: {} }),
+  savedActionTable: () => ({}),
+  savedGotoTable: () => ({}),
 })
 
 const emit = defineEmits<{
-  'validation-complete': [result: ValidationResult]
+  'validation-complete': [result: ValidationResult & { userActionTable?: Record<string, string>; userGotoTable?: Record<string, string> }]
   'step-complete': [isComplete: boolean]
+  'cell-blur': [userActionTable: Record<string, string>, userGotoTable: Record<string, string>]
 }>()
 
 // 响应式数据
@@ -336,6 +341,7 @@ const validationResults = reactive({
 const isValidating = ref(false)
 const showAnswers = ref(false)
 const hasValidationResults = ref(false)
+const isInitialized = ref(false) // 防止重复初始化时清空验证结果
 
 // 计算属性
 const stateCount = computed(() => {
@@ -345,7 +351,7 @@ const stateCount = computed(() => {
 
 const validationStats = computed(() => {
   const allResults = [
-    ...Object.values(validationResults.actions),
+    ...Object.values(validationResults. actions),
     ...Object.values(validationResults.gotos),
   ]
   const correct = allResults.filter((r) => r.type === 'correct').length
@@ -377,7 +383,13 @@ const isTableComplete = computed(() => {
   return allResults.length === totalCells && correctResults === totalCells && !hasErrors
 })
 
-// 方法
+// 单元格失焦处理
+const handleCellBlur = (key: string, type: 'action' | 'goto') => {
+  validateCell(key, type)
+  emit('cell-blur', { ...userInputs.actions }, { ...userInputs.gotos })
+}
+
+// 验证单个单元格
 const validateCell = (key: string, type: 'action' | 'goto') => {
   const userInput = (type === 'action' ? userInputs.actions[key] : userInputs.gotos[key]) || ''
   const correctAnswer = getCorrectAnswer(key, type)
@@ -424,6 +436,7 @@ const clearValidation = (key: string, type: 'action' | 'goto') => {
 
 const validateTable = async () => {
   isValidating.value = true
+  const errors: Array<{ key: string; type: 'action' | 'goto'; userValue: string; correctValue: string }> = []
 
   try {
     // 验证所有 ACTION 单元格
@@ -431,6 +444,17 @@ const validateTable = async () => {
       for (const terminal of [...props.terminals, '#']) {
         const key = `${stateIndex},${terminal}`
         validateCell(key, 'action')
+        
+        // 收集错误信息
+        const result = validationResults.actions[key]
+        if (result && result.type === 'incorrect') {
+          errors.push({
+            key,
+            type: 'action',
+            userValue: userInputs.actions[key] || '',
+            correctValue: result.correctAnswer || ''
+          })
+        }
       }
     }
 
@@ -439,6 +463,17 @@ const validateTable = async () => {
       for (const nonterminal of props.nonterminals) {
         const key = `${stateIndex},${nonterminal}`
         validateCell(key, 'goto')
+        
+        // 收集错误信息
+        const result = validationResults.gotos[key]
+        if (result && result.type === 'incorrect') {
+          errors.push({
+            key,
+            type: 'goto',
+            userValue: userInputs.gotos[key] || '',
+            correctValue: result.correctAnswer || ''
+          })
+        }
       }
     }
 
@@ -454,7 +489,12 @@ const validateTable = async () => {
     )
     const isValid = !hasErrors
 
-    emit('validation-complete', { isValid, errors: [] })
+    emit('validation-complete', { 
+      isValid, 
+      errors,
+      userActionTable: { ...userInputs.actions },
+      userGotoTable: { ...userInputs.gotos }
+    })
     emit('step-complete', isTableComplete.value)
   } finally {
     isValidating.value = false
@@ -524,14 +564,25 @@ const toggleAnswerDisplay = () => {
 
 // 初始化用户输入数据结构
 const initializeUserInputs = () => {
-  // 清空验证结果，避免初始化时显示验证状态
-  Object.keys(validationResults.actions).forEach((key) => {
-    delete validationResults.actions[key]
-  })
-  Object.keys(validationResults.gotos).forEach((key) => {
-    delete validationResults.gotos[key]
-  })
-  hasValidationResults.value = false
+  // 首先恢复保存的数据
+  if (props.savedActionTable && Object.keys(props.savedActionTable).length > 0) {
+    Object.assign(userInputs.actions, props.savedActionTable)
+  }
+  if (props.savedGotoTable && Object.keys(props.savedGotoTable).length > 0) {
+    Object.assign(userInputs.gotos, props.savedGotoTable)
+  }
+
+  // 只在第一次初始化时清空验证结果
+  if (!isInitialized.value) {
+    Object.keys(validationResults.actions).forEach((key) => {
+      delete validationResults.actions[key]
+    })
+    Object.keys(validationResults.gotos).forEach((key) => {
+      delete validationResults.gotos[key]
+    })
+    hasValidationResults.value = false
+    isInitialized.value = true
+  }
 
   // 初始化 ACTION 输入
   for (let stateIndex = 0; stateIndex < stateCount.value; stateIndex++) {

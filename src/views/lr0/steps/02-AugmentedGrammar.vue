@@ -13,10 +13,10 @@
     </div>
 
     <div class="step-content">
-              <!-- 说明区域和原文法并排显示 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <!-- 左侧：增广文法构造规则 -->
-          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+      <!-- 说明区域和原文法并排显示 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 左侧：增广文法构造规则 -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm">
           <div class="flex items-start">
             <Icon icon="lucide:info" class="w-5 h-5 text-blue-600 mt-0.5 mr-3" />
             <div>
@@ -52,24 +52,24 @@
             </div>
             <h3 class="text-xl font-bold text-blue-900">原文法</h3>
           </div>
-              <div class="space-y-2">
-                  <div
+          <div class="space-y-2">
+            <div
               v-for="(production, index) in originalGrammar"
-                    :key="index"
+              :key="index"
               class="font-mono text-base bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-blue-800 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <span class="text-blue-600 font-semibold">{{ index + 1 }}.</span> {{ production }}
-                  </div>
-                </div>
-              </div>
+            >
+              <span class="text-blue-600 font-semibold">{{ index + 1 }}.</span> {{ production }}
             </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 从前面步骤获取数据 -->
       <div v-if="!grammarData" class="text-center py-20">
         <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成前面的步骤</h3>
         <p class="text-gray-500">需要先完成文法输入才能构造增广文法</p>
-                  </div>
+      </div>
 
       <div v-else class="space-y-6">
         <!-- 步骤说明 -->
@@ -110,8 +110,8 @@
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
               <Icon icon="lucide:edit-3" class="w-6 h-6 text-white" />
-              </div>
-              <div>
+            </div>
+            <div>
               <h3 class="text-2xl font-bold text-blue-900">增广文法产生式</h3>
               <p class="text-blue-600 text-sm">请填写增广后的文法产生式（每个产生式右侧只有一个候选式）</p>
             </div>
@@ -144,7 +144,7 @@
                     @input="checkFormCompletion"
                     :readonly="formula.readonly"
                   />
-                  </div>
+                </div>
 
                 <!-- 操作按钮 -->
                 <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -167,7 +167,7 @@
                 </div>
               </div>
             </div>
-                  </div>
+          </div>
 
           <!-- 提示信息 -->
           <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -262,9 +262,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
-import { useLR0Store } from '@/stores/lr0'
+import { useLR0StoreNew, useCommonStore } from '@/stores'
 
 interface AugmentedFormula {
   id: string
@@ -278,7 +279,12 @@ const emit = defineEmits<{
   'prev-step': []
 }>()
 
-const lr0Store = useLR0Store()
+// 获取 Store 实例
+const lr0Store = useLR0StoreNew()
+const commonStore = useCommonStore()
+
+// 解构响应式状态
+const { originalData } = storeToRefs(lr0Store)
 
 // 响应式数据
 const augmentedFormulas = ref<AugmentedFormula[]>([])
@@ -286,13 +292,14 @@ const formulaCounter = ref(1)
 const isValidating = ref(false)
 const validationMessage = ref('')
 const validationSuccess = ref(false)
+const isInitialized = ref(false) // 防止重复初始化
 
 // 计算属性
 const startSymbol = computed(() => {
-  return lr0Store.analysisResult?.S || 'S'
+  return originalData.value?.S || 'S'
 })
 
-const grammarData = computed(() => lr0Store.analysisResult)
+const grammarData = computed(() => originalData.value)
 
 const originalGrammar = computed(() => {
   return lr0Store.productions || []
@@ -314,13 +321,47 @@ const getInputClass = (status: string) => {
   }
 }
 
+// 核心初始化逻辑
+const initializeState = () => {
+  // 防止重复初始化
+  if (isInitialized.value) {
+    return
+  }
+
+  // 如果有保存的 step2Data，恢复数据
+  if (lr0Store.step2Data?.userAugmentedFormulas && lr0Store.step2Data.userAugmentedFormulas.length > 0) {
+    // 只有在有保存数据时才恢复，覆盖当前状态
+    augmentedFormulas.value = JSON.parse(JSON.stringify(lr0Store.step2Data.userAugmentedFormulas))
+    formulaCounter.value = augmentedFormulas.value.length + 1
+    // 恢复验证状态
+    validationSuccess.value = lr0Store.step2Data.validationSuccess || false
+    if (validationSuccess.value) {
+      validationMessage.value = '增广文法构造正确！'
+    }
+    isInitialized.value = true
+  } else if (augmentedFormulas.value.length === 0) {
+    // 没有保存数据且当前为空时，添加默认产生式
+    augmentedFormulas.value.push({
+      id: `formula_${formulaCounter.value++}`,
+      text: startSymbol.value ? `${startSymbol.value}'->${startSymbol.value}` : '',
+      status: 'normal',
+      readonly: false,
+    })
+    isInitialized.value = true
+  } else {
+    isInitialized.value = true
+  }
+}
+
 // 检查表单完成度
 const checkFormCompletion = () => {
   // 重置验证状态
   validationMessage.value = ''
   validationSuccess.value = false
   augmentedFormulas.value.forEach((formula) => {
-    formula.status = 'normal'
+    if (formula.status !== 'correct') {
+      formula.status = 'normal'
+    }
   })
 }
 
@@ -390,12 +431,30 @@ const validateFormulas = async () => {
         validationMessage.value = '某些产生式不正确，请检查'
       }
     }
+
+    // 记录错误日志
+    if (!validationSuccess.value) {
+      for (const formula of augmentedFormulas.value) {
+        if (formula.status === 'error') {
+          lr0Store.addErrorLog({
+            step: 'step2',
+            type: 'augmentedFormula',
+            location: { row: formula.id, fieldKey: `formula-${formula.id}` },
+            wrongValue: formula.text,
+            correctValue: correctFormulas.join('\n'),
+            hint: '答案错误'
+          })
+        }
+      }
+    }
   } catch (error) {
     console.error('验证失败:', error)
     validationSuccess.value = false
     validationMessage.value = '验证失败，请检查输入'
   } finally {
     isValidating.value = false
+    // 立即保存到历史记录
+    saveToHistoryImmediate()
   }
 }
 
@@ -420,6 +479,9 @@ const showAnswer = () => {
 
   validationMessage.value = '已显示标准答案'
   validationSuccess.value = true
+
+  // 保存到历史记录
+  saveToHistoryImmediate()
 }
 
 // 下一步
@@ -431,34 +493,69 @@ const nextStep = () => {
   }
 }
 
-// 初始化
-const initializeFormulas = () => {
-  if (augmentedFormulas.value.length === 0) {
-    // 添加第一个空的产生式 - 移除空格以匹配后端格式
-    augmentedFormulas.value.push({
-      id: `formula_${formulaCounter.value++}`,
-      text: startSymbol.value ? `${startSymbol.value}'->${startSymbol.value}` : '',
-      status: 'normal',
-      readonly: false,
-    })
-  }
+// 保存到 store（防抖）
+let saveTimer: any = null
+const saveToStore = () => {
+  lr0Store.saveStep2Data(augmentedFormulas.value, validationSuccess.value)
 }
 
-// 监听store中的分析结果变化
+// 立即保存到历史记录
+const saveToHistoryImmediate = () => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  saveToStore()
+  lr0Store.saveToHistory()
+}
+
+// 监听 augmentedFormulas 变化，自动保存
 watch(
-  () => lr0Store.analysisResult,
-  (newValue) => {
-    if (newValue && augmentedFormulas.value.length === 0) {
-      initializeFormulas()
-    }
+  [augmentedFormulas, validationSuccess],
+  () => {
+    saveToStore()
+    // 防抖保存到历史记录
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      lr0Store.saveToHistory()
+    }, 1000)
   },
-  { immediate: true },
+  { deep: true }
 )
 
 // 组件挂载时初始化
 onMounted(() => {
-  if (lr0Store.analysisResult) {
-    initializeFormulas()
+  // 延迟执行，确保 persistence 已经从 localStorage 加载数据
+  setTimeout(() => {
+    initializeState()
+  }, 100)
+})
+
+// 监听 originalData 变化，用于数据恢复
+watch(
+  () => originalData.value,
+  (newVal) => {
+    if (newVal && !isInitialized.value) {
+      // 如果还没有初始化过数据，且没有保存的数据，添加默认产生式
+      if (!lr0Store.step2Data?.userAugmentedFormulas && augmentedFormulas.value.length === 0) {
+        augmentedFormulas.value.push({
+          id: `formula_${formulaCounter.value++}`,
+          text: startSymbol.value ? `${startSymbol.value}'->${startSymbol.value}` : '',
+          status: 'normal',
+          readonly: false,
+        })
+        isInitialized.value = true
+      }
+    }
+  },
+  { immediate: true }
+)
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
   }
 })
 </script>

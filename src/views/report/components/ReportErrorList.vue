@@ -60,6 +60,38 @@
                 </div>
                 {{ error.hint }}
               </div>
+              <!-- 显示详细位置信息（用于LR0步骤4和步骤5） -->
+              <div v-if="error.details && (error.details.tableType || error.details.stepIndex)" class="mt-2 text-xs bg-blue-50 border border-blue-200 text-blue-800 p-2 rounded">
+                <div class="font-semibold mb-1 flex items-center gap-1">
+                  <Icon icon="lucide:map-pin" class="w-3 h-3" />
+                  详细位置：
+                </div>
+                <template v-if="error.details.tableType">
+                  <div>表类型: {{ error.details.tableType }}</div>
+                  <div>状态: {{ error.details.state }}, 符号: {{ error.details.symbol }}</div>
+                </template>
+                <template v-if="error.details.stepIndex">
+                  <div>步骤: {{ error.details.stepIndex }}</div>
+                  <div>字段: {{ error.details.fieldName }}</div>
+                </template>
+              </div>
+              <!-- 显示步骤5的提示详情（ACTION/GOTO表信息） -->
+              <div v-if="error.details?.hintDetails" class="mt-2 text-xs bg-purple-50 border border-purple-200 text-purple-800 p-2 rounded">
+                <div class="font-semibold mb-1 flex items-center gap-1">
+                  <Icon icon="lucide:lightbulb" class="w-3 h-3" />
+                  提示信息：
+                </div>
+                <div>当前状态: {{ error.details.hintDetails.state }}</div>
+                <div>输入符号: {{ error.details.hintDetails.symbol }}</div>
+                <div>ACTION表单元格: {{ error.details.hintDetails.actionCell }}</div>
+                <div>动作: {{ error.details.hintDetails.action }}</div>
+                <div>动作类型: 
+                  <span v-if="error.details.hintDetails.actionType === 'shift'" class="text-blue-600 font-medium">移进 (Shift)</span>
+                  <span v-else-if="error.details.hintDetails.actionType === 'reduce'" class="text-green-600 font-medium">规约 (Reduce)</span>
+                  <span v-else-if="error.details.hintDetails.actionType === 'accept'" class="text-purple-600 font-medium">接受 (Accept)</span>
+                  <span v-else class="text-red-600 font-medium">错误 (Error)</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -84,6 +116,7 @@ interface ErrorItem {
   correctValue: string
   timestamp: string
   hint?: string
+  details?: any
 }
 
 interface ErrorSections {

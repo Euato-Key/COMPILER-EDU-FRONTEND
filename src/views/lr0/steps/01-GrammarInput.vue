@@ -67,30 +67,44 @@
           </div>
 
           <div class="bg-white rounded-lg p-4 border border-blue-100 shadow-inner">
-                          <textarea
-                v-model="grammarInput"
-                placeholder="请输入文法产生式，例如：&#10;S -> aAb&#10;A -> c&#10;A -> ε"
-                :class="[
-                  'w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-400 resize-none font-mono text-base transition-all duration-200 bg-gradient-to-r from-gray-50 to-white',
-                  lr0Store.validationErrors.length > 0
-                    ? 'border-red-300 focus:border-red-500 bg-red-50'
-                    : lr0Store.isValidGrammar === true
-                      ? 'border-green-300 focus:border-green-500 bg-green-50'
-                      : 'border-gray-300 focus:border-blue-500',
-                ]"
-                @input="onInputChange"
-              ></textarea>
+            <textarea
+              v-model="grammarInput"
+              placeholder="请输入文法产生式，例如：&#10;S -> aAb&#10;A -> c&#10;A -> ε"
+              :class="[
+                'w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-400 resize-none font-mono text-base transition-all duration-200 bg-gradient-to-r from-gray-50 to-white',
+                lr0Store.validationErrors.length > 0
+                  ? 'border-red-300 focus:border-red-500 bg-red-50'
+                  : lr0Store.isValidGrammar === true
+                    ? 'border-green-300 focus:border-green-500 bg-green-50'
+                    : 'border-gray-300 focus:border-blue-500',
+              ]"
+              @input="onInputChange"
+            ></textarea>
           </div>
 
           <!-- 分析按钮 -->
           <div class="flex justify-center mt-4">
             <button
               @click="analyzeGrammar"
-              :disabled="!grammarInput.trim()"
-              class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+              :disabled="!canValidate || isValidating"
+              :class="[
+                'flex items-center gap-3 px-10 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105',
+                canValidate && !isValidating
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-md'
+              ]"
             >
-              <Icon icon="lucide:play" class="w-5 h-5 inline mr-2" />
-              <span class="font-semibold">分析文法</span>
+              <Icon
+                v-if="isValidating"
+                icon="lucide:loader-2"
+                class="w-5 h-5 animate-spin"
+              />
+              <Icon
+                v-else
+                icon="lucide:play"
+                class="w-5 h-5"
+              />
+              <span>{{ isValidating ? '分析中...' : '分析文法' }}</span>
             </button>
           </div>
         </div>
@@ -197,88 +211,88 @@
             <h3 class="text-lg font-bold text-indigo-900">示例文法</h3>
           </div>
 
-                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
-                  <h4 class="font-semibold text-gray-900">简单文法</h4>
-                </div>
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-base font-mono text-blue-900 font-semibold">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                <h4 class="font-semibold text-gray-900">简单文法</h4>
+              </div>
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-base font-mono text-blue-900 font-semibold">
 S -> Aa
 A -> BD
 B -> b
 D -> d</pre>
-                </div>
-                <button
-                  @click="loadExample(1)"
-                  class="w-full text-xs px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm"
-                >
-                  使用此示例
-                </button>
               </div>
+              <button
+                @click="loadExample(1)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
+            </div>
 
-              <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
-                  <h4 class="font-semibold text-gray-900">递归文法</h4>
-                </div>
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-base font-mono text-green-900 font-semibold">
+            <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                <h4 class="font-semibold text-gray-900">递归文法</h4>
+              </div>
+              <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-base font-mono text-green-900 font-semibold">
 S -> BB
 B -> aB
 B -> b</pre>
-                </div>
-                <button
-                  @click="loadExample(2)"
-                  class="w-full text-xs px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
-                >
-                  使用此示例
-                </button>
               </div>
+              <button
+                @click="loadExample(2)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
+            </div>
 
-              <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
-                  <h4 class="font-semibold text-gray-900">多候选式</h4>
-                </div>
-                <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-base font-mono text-purple-900 font-semibold">
+            <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                <h4 class="font-semibold text-gray-900">多候选式</h4>
+              </div>
+              <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-base font-mono text-purple-900 font-semibold">
 S -> aSd
 S -> bAc
 A -> e
 A -> f</pre>
-                </div>
-                <button
-                  @click="loadExample(3)"
-                  class="w-full text-xs px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm"
-                >
-                  使用此示例
-                </button>
               </div>
+              <button
+                @click="loadExample(3)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
+            </div>
 
-              <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
-                  <h4 class="font-semibold text-gray-900">复杂文法</h4>
-                </div>
-                <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded p-3 mb-3 flex-1">
-                  <pre class="text-base font-mono text-orange-900 font-semibold">
+            <div class="bg-white rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+                <h4 class="font-semibold text-gray-900">复杂文法</h4>
+              </div>
+              <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded p-3 mb-3 flex-1">
+                <pre class="text-base font-mono text-orange-900 font-semibold">
 S -> aX
 S -> bY
 X -> c
 X -> dS
 Y -> c
 Y -> eS</pre>
-                </div>
-                <button
-                  @click="loadExample(4)"
-                  class="w-full text-xs px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
-                >
-                  使用此示例
-                </button>
               </div>
+              <button
+                @click="loadExample(4)"
+                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+              >
+                使用此示例
+              </button>
             </div>
+          </div>
         </div>
 
         <!-- 校验错误显示 -->
@@ -317,19 +331,26 @@ Y -> eS</pre>
 
     <div class="step-actions">
       <div class="flex justify-between items-center">
+        <button
+          disabled
+          class="flex items-center gap-2 px-6 py-2 border border-gray-300 text-gray-400 rounded-lg cursor-not-allowed"
+        >
+          <Icon icon="lucide:chevron-left" class="w-4 h-4" />
+          <span>上一步</span>
+        </button>
         <div class="text-sm text-gray-500">步骤 1 / 5</div>
         <button
           @click="nextStep"
           :disabled="!isStepComplete"
           :class="[
-            'px-6 py-2 rounded-lg transition-colors',
+            'flex items-center gap-2 px-6 py-2 rounded-lg transition-colors',
             isStepComplete
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed',
           ]"
         >
-          下一步
-          <Icon icon="lucide:chevron-right" class="w-4 h-4 inline ml-2" />
+          <span>下一步</span>
+          <Icon icon="lucide:chevron-right" class="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -337,25 +358,32 @@ Y -> eS</pre>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
-import { useLR0Store } from '@/stores/lr0'
-import { useCommonStore } from '@/stores/common'
+import { useLR0StoreNew, useCommonStore } from '@/stores'
 
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
 }>()
 
-const lr0Store = useLR0Store()
+// 获取 Store 实例
+const lr0Store = useLR0StoreNew()
 const commonStore = useCommonStore()
+
+// 解构响应式状态
+const { productions, originalData } = storeToRefs(lr0Store)
 
 // 组件状态
 const grammarInput = ref('')
+const isValidating = ref(false)
+const validationStatus = ref<'none' | 'ready' | 'success' | 'failed'>('none')
+const validationMessage = ref('')
 
 // 从store获取状态
 const analysisResult = computed(() => {
-  if (lr0Store.analysisResult) {
+  if (originalData.value) {
     const hasConflicts = !lr0Store.isLR0Grammar
     return {
       success: !hasConflicts,
@@ -363,10 +391,10 @@ const analysisResult = computed(() => {
       message: hasConflicts
         ? '文法存在冲突，不是LR0文法。后续功能不支持有冲突的文法。'
         : '文法分析完成，符合LR0文法！',
-      data: lr0Store.analysisResult,
+      data: originalData.value,
     }
   }
-  if (commonStore.error) {
+  if (commonStore.error && validationStatus.value === 'failed') {
     return {
       success: false,
       hasConflicts: false,
@@ -377,15 +405,63 @@ const analysisResult = computed(() => {
   return null
 })
 
+// 计算属性
+const canValidate = computed(() => {
+  return grammarInput.value.trim().length > 0 && lr0Store.validationErrors.length === 0
+})
+
 // 步骤完成状态 - 只有真正的LR0文法才能进入下一步
-const isStepComplete = computed(() => lr0Store.analysisResult && lr0Store.isLR0Grammar === true)
+const isStepComplete = computed(() => originalData.value && lr0Store.isLR0Grammar === true)
+
+// === 核心逻辑：尝试恢复会话 ===
+const isRecovering = ref(false)
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+
+  if (lr0Store.productions.length > 0 && !lr0Store.originalData) {
+    isRecovering.value = true
+    console.log('[LR0-RECOVERY] 检测到文法记录，正在静默恢复分析结果...', lr0Store.productions)
+    try {
+      const success = await lr0Store.performLR0Analysis(true)
+      if (success) {
+        console.log('[LR0-RECOVERY] 分析结果恢复成功')
+        validationStatus.value = 'success'
+        validationMessage.value = '已恢复数据'
+      }
+    } catch (err) {
+      console.error('[LR0-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+    }
+  } else if (lr0Store.originalData) {
+    validationStatus.value = 'success'
+    validationMessage.value = '文法当前处于激活状态'
+  }
+}
+
+// 监听持久化数据的异步加载
+watch(
+  () => lr0Store.grammar,
+  (newVal) => {
+    // 如果本地输入框为空，尝试从 store 同步
+    if (newVal && !grammarInput.value) {
+      grammarInput.value = newVal
+    }
+    // 只要有文法，就尝试执行分析恢复（以获取 originalData）
+    if (newVal) {
+      handleRecovery()
+    }
+  },
+  { immediate: true }
+)
 
 // 组件挂载时加载持久化数据
 onMounted(() => {
-  // 从store加载持久化的产生式
-  if (lr0Store.productions.length > 0) {
-    grammarInput.value = lr0Store.productions.join('\n')
+  // 确保挂载时同步一次
+  if (lr0Store.grammar && !grammarInput.value) {
+    grammarInput.value = lr0Store.grammar
   }
+  handleRecovery()
 })
 
 // 输入变化处理 - 添加实时校验
@@ -404,17 +480,23 @@ const onInputChange = () => {
 
     if (hasFormatError) {
       lr0Store.validationErrors = ['产生式格式不正确，应为 "A->abc" 的形式']
+      validationStatus.value = 'none'
+      validationMessage.value = ''
     } else {
       lr0Store.validationErrors = []
+      validationStatus.value = 'ready'
+      validationMessage.value = '符合文法验证条件：可以进行文法验证'
     }
   } else {
     lr0Store.validationErrors = []
+    validationStatus.value = 'none'
+    validationMessage.value = ''
   }
 }
 
 // 加载示例文法
 const loadExample = (exampleId: number) => {
-  const examples = {
+  const examples: Record<number, string> = {
     1: [
       'S -> Aa',
       'A -> BD',
@@ -442,13 +524,19 @@ const loadExample = (exampleId: number) => {
     ].join('\n'),
   }
 
-  grammarInput.value = examples[exampleId as keyof typeof examples] || ''
+  grammarInput.value = examples[exampleId] || ''
   commonStore.clearError()
+  // 触发输入校验
+  onInputChange()
 }
 
 // 分析文法 - 使用新的校验功能
 const analyzeGrammar = async () => {
-  if (!grammarInput.value.trim()) return
+  if (!grammarInput.value.trim() || isValidating.value) return
+
+  isValidating.value = true
+  validationStatus.value = 'none'
+  validationMessage.value = ''
 
   try {
     // 使用新的校验和分析方法
@@ -456,13 +544,23 @@ const analyzeGrammar = async () => {
 
     if (success) {
       console.log('LR0 analysis completed successfully')
+      // 保存到历史记录
+      lr0Store.saveToHistory()
+      validationStatus.value = 'success'
+      validationMessage.value = '文法验证成功：符合LR0文法规范，已保存答题记录'
     } else {
       console.error('LR0 analysis failed - validation errors or analysis issues')
+      validationStatus.value = 'failed'
+      validationMessage.value = '文法验证失败：不符合LR0文法要求'
     }
   } catch (error: unknown) {
     console.error('Grammar analysis error:', error)
     const errorMessage = error instanceof Error ? error.message : '文法分析失败，请检查输入格式'
     commonStore.setError(errorMessage)
+    validationStatus.value = 'failed'
+    validationMessage.value = '文法验证失败：' + errorMessage
+  } finally {
+    isValidating.value = false
   }
 }
 
@@ -473,35 +571,51 @@ const nextStep = () => {
     emit('next-step')
   }
 }
+
+// 监听grammarInput变化，同步到store（用于显示）
+watch(grammarInput, (newValue) => {
+  if (newValue.trim()) {
+    const lines = newValue.split('\n').filter(line => line.trim())
+    lr0Store.setProductions(lines)
+  } else {
+    lr0Store.setProductions([])
+  }
+})
 </script>
 
 <style scoped>
 .step-header {
   padding: 2rem 2rem 1rem;
   border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
 }
-.step-icon {
-  width: 3rem;
-  height: 3rem;
-  background: #dbeafe;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+
 .step-content {
   padding: 2rem;
+  margin-bottom: 2rem;
 }
+
 .step-actions {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
 }
 
-/* 平滑过渡效果 */
+.step-icon {
+  width: 3rem;
+  height: 3rem;
+  background-color: #dbeafe;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 动画效果 */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: all 0.2s ease-out;
+  transition: all 0.3s ease;
 }
 
 .slide-fade-enter-from {
@@ -511,6 +625,6 @@ const nextStep = () => {
 
 .slide-fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(10px);
 }
 </style>

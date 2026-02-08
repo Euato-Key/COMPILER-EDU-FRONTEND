@@ -1,0 +1,411 @@
+<template>
+  <div class="lr0-step4-report space-y-6">
+    <!-- LR0分析表 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
+          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600" />
+          LR0 分析表
+        </h3>
+        <span class="text-xs font-medium px-2 py-1 bg-white text-pink-600 rounded-lg border border-pink-100">Step 4</span>
+      </div>
+
+      <div class="p-6">
+        <!-- 统计信息 -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="bg-blue-50 rounded-lg border border-blue-200 p-4">
+            <div class="text-2xl font-bold text-blue-600">{{ stateCount }}</div>
+            <div class="text-sm text-blue-700">状态数量</div>
+          </div>
+          <div class="bg-green-50 rounded-lg border border-green-200 p-4">
+            <div class="text-2xl font-bold text-green-600">{{ terminals.length }}</div>
+            <div class="text-sm text-green-700">终结符数量</div>
+          </div>
+          <div class="bg-purple-50 rounded-lg border border-purple-200 p-4">
+            <div class="text-2xl font-bold text-purple-600">{{ nonterminals.length }}</div>
+            <div class="text-sm text-purple-700">非终结符数量</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg border border-orange-200 p-4">
+            <div class="text-2xl font-bold text-orange-600">{{ accuracy }}%</div>
+            <div class="text-sm text-orange-700">正确率</div>
+          </div>
+        </div>
+
+        <!-- 分析表对比 -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-300">
+            <!-- 表头 -->
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  rowspan="2"
+                  class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-gray-100"
+                >
+                  State
+                </th>
+                <th
+                  :colspan="terminals.length + 1"
+                  class="px-3 py-2 border border-gray-300 text-xs font-bold text-blue-900 bg-blue-100 text-center"
+                >
+                  ACTION
+                </th>
+                <th
+                  :colspan="nonterminals.length"
+                  class="px-3 py-2 border border-gray-300 text-xs font-bold text-green-900 bg-green-100 text-center"
+                >
+                  GOTO
+                </th>
+              </tr>
+              <tr>
+                <!-- ACTION列 -->
+                <th
+                  v-for="terminal in terminals"
+                  :key="terminal"
+                  class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50"
+                >
+                  {{ terminal }}
+                </th>
+                <th
+                  class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-blue-50"
+                >
+                  #
+                </th>
+                <!-- GOTO列 -->
+                <th
+                  v-for="nonterminal in nonterminals"
+                  :key="nonterminal"
+                  class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50"
+                >
+                  {{ nonterminal }}
+                </th>
+              </tr>
+            </thead>
+
+            <!-- 表体 -->
+            <tbody>
+              <tr v-for="stateIndex in stateCount" :key="stateIndex - 1" class="hover:bg-gray-50">
+                <td
+                  class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
+                >
+                  {{ stateIndex - 1 }}
+                </td>
+
+                <!-- ACTION单元格 -->
+                <td
+                  v-for="terminal in [...terminals, '#']"
+                  :key="`action-${stateIndex - 1}-${terminal}`"
+                  class="px-2 py-1 border border-gray-300 text-xs"
+                >
+                  <div class="flex flex-col gap-1">
+                    <!-- 历史错误记录 -->
+                    <div v-if="getErrorHistory(stateIndex - 1, terminal, 'action').length > 0" class="mb-1">
+                      <div class="flex flex-wrap gap-1">
+                        <div
+                          v-for="(err, eIdx) in getErrorHistory(stateIndex - 1, terminal, 'action')"
+                          :key="`err-${eIdx}`"
+                          class="relative group/err"
+                        >
+                          <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] line-through decoration-red-400 border border-red-100 cursor-help block">
+                            {{ err.value }}
+                          </span>
+                          <!-- Hint Tooltip -->
+                          <div v-if="err.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-48 p-2 bg-gray-700 text-white text-[10px] rounded shadow-xl opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left">
+                            <div class="font-bold mb-1 border-b border-gray-500 pb-0.5">历史错误</div>
+                            <div class="whitespace-pre-wrap">{{ err.hint }}</div>
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-700"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 用户答案和标准答案对比 -->
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-1">
+                          <span class="text-[10px] text-blue-600 font-medium">学生:</span>
+                          <span
+                            :class="[
+                              'font-mono font-medium',
+                              getCellStatus(stateIndex - 1, terminal, 'action') === 'correct' ? 'text-green-700' :
+                              getCellStatus(stateIndex - 1, terminal, 'action') === 'wrong' ? 'text-red-700' : 'text-gray-500'
+                            ]"
+                          >
+                            {{ getUserValue(stateIndex - 1, terminal, 'action') || '-' }}
+                          </span>
+                        </div>
+                        <div class="flex items-center gap-1 mt-0.5">
+                          <span class="text-[10px] text-green-600 font-medium">答案:</span>
+                          <span class="font-mono font-medium text-green-700">
+                            {{ getCorrectValue(stateIndex - 1, terminal, 'action') || '-' }}
+                          </span>
+                        </div>
+                      </div>
+                      <Icon
+                        v-if="getCellStatus(stateIndex - 1, terminal, 'action') === 'correct'"
+                        icon="lucide:check-circle"
+                        class="w-4 h-4 text-green-500 flex-shrink-0"
+                      />
+                      <Icon
+                        v-else-if="getCellStatus(stateIndex - 1, terminal, 'action') === 'wrong'"
+                        icon="lucide:x-circle"
+                        class="w-4 h-4 text-red-500 flex-shrink-0"
+                      />
+                    </div>
+                  </div>
+                </td>
+
+                <!-- GOTO单元格 -->
+                <td
+                  v-for="nonterminal in nonterminals"
+                  :key="`goto-${stateIndex - 1}-${nonterminal}`"
+                  class="px-2 py-1 border border-gray-300 text-xs"
+                >
+                  <div class="flex flex-col gap-1">
+                    <!-- 历史错误记录 -->
+                    <div v-if="getErrorHistory(stateIndex - 1, nonterminal, 'goto').length > 0" class="mb-1">
+                      <div class="flex flex-wrap gap-1">
+                        <div
+                          v-for="(err, eIdx) in getErrorHistory(stateIndex - 1, nonterminal, 'goto')"
+                          :key="`err-${eIdx}`"
+                          class="relative group/err"
+                        >
+                          <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] line-through decoration-red-400 border border-red-100 cursor-help block">
+                            {{ err.value }}
+                          </span>
+                          <!-- Hint Tooltip -->
+                          <div v-if="err.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-48 p-2 bg-gray-700 text-white text-[10px] rounded shadow-xl opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left">
+                            <div class="font-bold mb-1 border-b border-gray-500 pb-0.5">历史错误</div>
+                            <div class="whitespace-pre-wrap">{{ err.hint }}</div>
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-700"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 用户答案和标准答案对比 -->
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-1">
+                          <span class="text-[10px] text-blue-600 font-medium">学生:</span>
+                          <span
+                            :class="[
+                              'font-mono font-medium',
+                              getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'correct' ? 'text-green-700' :
+                              getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'wrong' ? 'text-red-700' : 'text-gray-500'
+                            ]"
+                          >
+                            {{ getUserValue(stateIndex - 1, nonterminal, 'goto') || '-' }}
+                          </span>
+                        </div>
+                        <div class="flex items-center gap-1 mt-0.5">
+                          <span class="text-[10px] text-green-600 font-medium">答案:</span>
+                          <span class="font-mono font-medium text-green-700">
+                            {{ getCorrectValue(stateIndex - 1, nonterminal, 'goto') || '-' }}
+                          </span>
+                        </div>
+                      </div>
+                      <Icon
+                        v-if="getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'correct'"
+                        icon="lucide:check-circle"
+                        class="w-4 h-4 text-green-500 flex-shrink-0"
+                      />
+                      <Icon
+                        v-else-if="getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'wrong'"
+                        icon="lucide:x-circle"
+                        class="w-4 h-4 text-red-500 flex-shrink-0"
+                      />
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 图例说明 -->
+        <div class="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-600">
+          <div class="flex items-center gap-1">
+            <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-500" />
+            <span>回答正确</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-500" />
+            <span>回答错误</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-red-500 line-through decoration-red-300 text-[10px]">文字</span>
+            <span>历史错误记录</span>
+          </div>
+        </div>
+
+        <!-- 填表规则提示 -->
+        <div class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <Icon icon="lucide:lightbulb" class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
+            <div class="text-sm text-indigo-700">
+              <p class="font-medium mb-2">LR0分析表构造规则：</p>
+              <ul class="space-y-1 text-xs">
+                <li>• <strong>移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）</li>
+                <li>• <strong>规约动作：</strong>A → α·，则对所有终结符a，ACTION[i,a] = rk（第k个产生式）</li>
+                <li>• <strong>接受动作：</strong>S' → S·，则ACTION[i,#] = acc</li>
+                <li>• <strong>GOTO函数：</strong>根据DFA的转移关系填写状态转移</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { Icon } from '@iconify/vue'
+import type { LR0ErrorLog } from '@/stores/lr0-new'
+
+interface Props {
+  step4Data?: {
+    userActionTable: Record<string, string>
+    userGotoTable: Record<string, string>
+  }
+  originalData?: {
+    S?: string
+    Vt?: string[]
+    Vn?: string[]
+    all_dfa?: any[]
+    actions?: Record<string, string>
+    gotos?: Record<string, string>
+  }
+  errorLogs?: LR0ErrorLog[]
+}
+
+const props = defineProps<Props>()
+
+// 计算属性
+const stateCount = computed(() => props.originalData?.all_dfa?.length || 0)
+
+const terminals = computed(() => {
+  if (!props.originalData?.Vt) return []
+  return props.originalData.Vt.map((item: any) =>
+    typeof item === 'object' ? item.text || item.value : item
+  )
+})
+
+const nonterminals = computed(() => {
+  if (!props.originalData?.Vn) return []
+  return props.originalData.Vn
+    .filter((item: any) => {
+      const text = typeof item === 'object' ? item.text || item.value : item
+      return text !== (props.originalData?.S || '') + "'"
+    })
+    .map((item: any) => typeof item === 'object' ? item.text || item.value : item)
+})
+
+// 获取用户填写的值
+const getUserValue = (state: number, symbol: string, type: 'action' | 'goto'): string => {
+  const key = `${state},${symbol}`
+  if (type === 'action') {
+    return props.step4Data?.userActionTable?.[key] || ''
+  } else {
+    return props.step4Data?.userGotoTable?.[key] || ''
+  }
+}
+
+// 获取正确答案
+const getCorrectValue = (state: number, symbol: string, type: 'action' | 'goto'): string => {
+  const key = `${state}|${symbol}`
+  if (type === 'action') {
+    const value = props.originalData?.actions?.[key]
+    return value !== undefined && value !== null ? String(value) : ''
+  } else {
+    const value = props.originalData?.gotos?.[key]
+    return value !== undefined && value !== null ? String(value) : ''
+  }
+}
+
+// 获取单元格状态
+const getCellStatus = (state: number, symbol: string, type: 'action' | 'goto'): 'correct' | 'wrong' | 'empty' => {
+  const userVal = getUserValue(state, symbol, type)
+  const correctVal = getCorrectValue(state, symbol, type)
+
+  // 标准化值（处理空值和 '-'）
+  const normalizedUserVal = userVal?.trim() || ''
+  const normalizedCorrectVal = correctVal?.trim() || ''
+
+  // 如果标准答案为空（或 '-'），用户也留空或填 '-'，算作正确
+  if (!normalizedCorrectVal || normalizedCorrectVal === '-') {
+    if (!normalizedUserVal || normalizedUserVal === '-') {
+      return 'correct'
+    }
+    // 标准答案为空，但用户填写了其他内容，算作错误
+    return 'wrong'
+  }
+
+  // 标准答案不为空的情况
+  if (!normalizedUserVal) return 'empty'
+  if (normalizedUserVal === normalizedCorrectVal) return 'correct'
+  return 'wrong'
+}
+
+// 获取错误历史
+const getErrorHistory = (state: number, symbol: string, type: 'action' | 'goto'): Array<{ value: string; hint: string | undefined }> => {
+  if (!props.errorLogs) return []
+
+  const tableType = type === 'action' ? 'actionTable' : 'gotoTable'
+  const logs = props.errorLogs.filter(log =>
+    log.step === 'step4' &&
+    log.type === tableType &&
+    log.location.row === String(state) &&
+    log.location.col === symbol
+  )
+
+  const history: Array<{ value: string; hint: string | undefined }> = []
+  const seen = new Set<string>()
+
+  logs.forEach(log => {
+    const val = log.wrongValue?.trim() || ''
+    if (val && !seen.has(val)) {
+      history.push({ value: val, hint: log.hint })
+      seen.add(val)
+    }
+  })
+
+  // 排除当前值
+  const currentVal = getUserValue(state, symbol, type)
+  return history.filter(h => h.value !== currentVal)
+}
+
+// 计算正确率
+const accuracy = computed(() => {
+  if (stateCount.value === 0) return 0
+
+  let totalCells = 0
+  let correctCells = 0
+
+  for (let state = 0; state < stateCount.value; state++) {
+    // ACTION cells
+    for (const terminal of [...terminals.value, '#']) {
+      totalCells++
+      if (getCellStatus(state, terminal, 'action') === 'correct') {
+        correctCells++
+      }
+    }
+    // GOTO cells
+    for (const nonterminal of nonterminals.value) {
+      totalCells++
+      if (getCellStatus(state, nonterminal, 'goto') === 'correct') {
+        correctCells++
+      }
+    }
+  }
+
+  if (totalCells === 0) return 0
+  return Math.round((correctCells / totalCells) * 100)
+})
+</script>
+
+<style scoped>
+.lr0-step4-report {
+  width: 100%;
+}
+</style>

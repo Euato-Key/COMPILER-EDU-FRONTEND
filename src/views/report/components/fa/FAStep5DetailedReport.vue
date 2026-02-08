@@ -208,7 +208,8 @@ const analyzedPSets = computed(() => {
     matches: [] as any[]
   }))
 
-  const userList = props.userData.userPSets || []
+  // 安全访问 userData，防止 undefined
+  const userList = props.userData?.userPSets || []
   const wrongInputs = [] as any[]
 
   userList.forEach(u => {
@@ -261,7 +262,7 @@ const getStandardValue = (col: string, row: number) => {
 
 const getUserMatrixValue = (col: string, row: number) => {
   const colIdx = matrixCols.value.indexOf(col)
-  const cell = props.userData.userMinimizedMatrix?.find(c => c.rowIndex === row && c.colIndex === colIdx)
+  const cell = props.userData?.userMinimizedMatrix?.find(c => c.rowIndex === row && c.colIndex === colIdx)
   return cell?.value || ''
 }
 

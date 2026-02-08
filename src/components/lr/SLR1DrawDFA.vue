@@ -18,8 +18,17 @@ const props = defineProps({
 })
 
 const answerItems = ref<SLR1DataDfaType[]>([])
-answerItems.value = props.check_DFA.slice() // 深拷贝，拷贝到该组件中
-console.log(answerItems.value)
+// 检查数据是否存在
+const hasValidData = computed(() => {
+  return props.check_DFA && Array.isArray(props.check_DFA) && props.check_DFA.length > 0
+})
+
+// 只在有有效数据时才拷贝
+if (hasValidData.value) {
+  answerItems.value = props.check_DFA.slice() // 深拷贝，拷贝到该组件中
+}
+console.log('SLR1DrawDFA - check_DFA:', props.check_DFA)
+console.log('SLR1DrawDFA - answerItems:', answerItems.value)
 
 let checkRight_Items: string[] = [] //  close表：已经check Right的Answer_item的id
 let checkRIght_Gotos: string[] = [] //  close表：已经check RIght的Answer_Gotos的连线（item_id + gotoV + next_id）
@@ -80,30 +89,41 @@ watch(next_step_open.value, (newValue: boolean[]) => {
   }
 })
 
-const nodes = ref([
-  {
-    id: 'node1',
-    data: {
-      label: "",
-      pros: [
-        {
-          id: "node1" + "_pro" + Date.now(),
-          category: "onlyRead",
-          check: "normal",
-          state: "normal",
-          text: answerItems.value[0].pros[0]?.text
-        }
-      ],
-    },
-    type: 'custom',
-    position: { x: 50, y: 50 },
-    label: "",
-  },
-])
+// 初始化节点 - 如果有数据则使用数据，否则使用空节点
+const getInitialNodes = () => {
+  if (hasValidData.value && answerItems.value[0]?.pros?.[0]?.text) {
+    return [
+      {
+        id: 'node1',
+        data: {
+          label: "",
+          pros: [
+            {
+              id: "node1" + "_pro" + Date.now(),
+              category: "onlyRead",
+              check: "normal",
+              state: "normal",
+              text: answerItems.value[0].pros[0]?.text
+            }
+          ],
+        },
+        type: 'custom',
+        position: { x: 50, y: 50 },
+        label: "",
+      },
+    ]
+  }
+  // 无数据时返回空数组
+  return []
+}
 
+const nodes = ref(getInitialNodes())
 const edges = ref([])
 
-addNodes(nodes.value)
+// 只在有数据时添加节点
+if (hasValidData.value && nodes.value.length > 0) {
+  addNodes(nodes.value)
+}
 const initVar = () => {
   checkRight_Items = []
   checkRIght_Gotos = []

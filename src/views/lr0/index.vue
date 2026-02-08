@@ -13,21 +13,39 @@
             </router-link>
             <span class="text-gray-400">|</span>
             <h1 class="text-xl font-semibold text-gray-800">LR0 语法分析</h1>
+
+            <!-- 状态显示栏 -->
+            <div v-if="lr0Store.productions.length" class="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="text-gray-500">ID:</span>
+                <span v-if="lr0Store.currentRecordId" class="font-mono text-blue-600 font-bold">
+                  {{ lr0Store.currentRecordId }}
+                </span>
+                <span v-else class="text-green-600 font-bold">新会话</span>
+              </div>
+              <span class="text-gray-300">|</span>
+              <div class="flex items-center gap-1 max-w-[300px]">
+                <span class="text-gray-500">文法:</span>
+                <span class="font-mono text-gray-900 truncate" :title="lr0Store.grammar">
+                  {{ lr0Store.productions[0] }}{{ lr0Store.productions.length > 1 ? '...' : '' }}
+                </span>
+              </div>
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <ThemeSelector />
+            <router-link
+              to="/record/lr0"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <Icon icon="lucide:history" class="w-4 h-4" />
+              历史记录
+            </router-link>
             <button
               @click="resetProgress"
-              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
             >
-              重置进度
-            </button>
-            <button
-              v-if="lr0Store.persistence"
-              @click="lr0Store.persistence.save"
-              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              保存进度
+              <span class="text-lg">+</span> 新建答题
             </button>
             <router-link
               to="/slr1"
@@ -39,6 +57,20 @@
         </div>
       </div>
     </header>
+
+    <!-- 错误提示 -->
+    <div
+      v-if="error"
+      class="fixed top-20 right-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg z-50"
+    >
+      <div class="flex items-center gap-2">
+        <Icon icon="lucide:alert-circle" class="w-5 h-5" />
+        <span>{{ error }}</span>
+        <button @click="clearError" class="ml-2 hover:bg-red-100 rounded p-1">
+          <Icon icon="lucide:x" class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
 
     <!-- 主要内容区域 -->
     <main class="max-w-7xl mx-auto px-4 py-8">
@@ -84,16 +116,25 @@
 <script setup lang="ts">
 import { ref, computed, watch, defineAsyncComponent, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useLR0Store } from '@/stores/lr0'
-import { useLR0ChatStore } from '@/stores'
+import { useLR0StoreNew, useCommonStore, useLR0ChatStore } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
-const lr0Store = useLR0Store()
+// 获取 Store 实例
+const lr0Store = useLR0StoreNew()
+const commonStore = useCommonStore()
+
+// 立即尝试加载持久化数据
+try {
+  lr0Store.persistence.load()
+} catch (err) {
+  console.warn('Failed to load persisted data:', err)
+}
 
 // 使用LR0 AI聊天store
 const lr0ChatStore = useLR0ChatStore()
@@ -106,6 +147,10 @@ const chatContext = ref<ChatContext>({
   userAnswers: {},
   pageContext: 'LR0语法分析学习页面'
 })
+
+// 解构响应式状态（用于模板绑定）
+const { productions, originalData } = storeToRefs(lr0Store)
+const { error } = storeToRefs(commonStore)
 
 // 动态导入所有步骤组件
 const stepComponents = {
@@ -234,16 +279,17 @@ const updateChatContext = () => {
   chatContext.value = {
     currentPage: 'lr0',
     userInput: {
-      grammar: lr0Data.grammar || '',
+      grammar: lr0Data.grammar,
       currentStep: currentStep.value,
       stepName: lr0Steps[currentStep.value - 1]?.name || ''
     },
     backendData: {
       productions: lr0Data.productions || [],
-      augmentedGrammar: lr0Data.augmentedGrammar || [],
-      itemSets: lr0Data.itemSets || [],
-      parsingTable: lr0Data.parsingTable || {},
-      analysisResult: lr0Data.analysisResult || null
+      actionTable: lr0Data.actionTable || {},
+      gotoTable: lr0Data.gotoTable || {},
+      dfaStates: lr0Data.dfaStates || [],
+      dotItems: lr0Data.dotItems || [],
+      analysisResult: lr0Data.originalData || null
     },
     userAnswers: {},
     pageContext: `LR0语法分析 - ${lr0Steps[currentStep.value - 1]?.name || ''}`
@@ -259,9 +305,39 @@ const completeAnalysis = (data: any) => {
   updateChatContext()
 }
 
+// 清除错误
+const clearError = () => {
+  commonStore.clearError()
+}
+
+// === 核心逻辑：尝试恢复会话 ===
+const isRecovering = ref(false)
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+
+  if (lr0Store.productions.length > 0 && !lr0Store.originalData) {
+    isRecovering.value = true
+    try {
+      console.log('[LR0-RECOVERY] 检测到文法记录，正在静默恢复分析结果...', lr0Store.productions)
+      const success = await lr0Store.performLR0Analysis(true)
+      if (success) {
+        console.log('[LR0-RECOVERY] 分析结果恢复成功')
+        if (lr0Store.inputString) {
+          await lr0Store.analyzeInputString()
+        }
+      }
+    } catch (err) {
+      console.error('[LR0-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+      updateChatContext()
+    }
+  }
+}
+
 // 重置进度
 const resetProgress = () => {
-  if (confirm('确定要重置所有进度吗？')) {
+  if (confirm('确定要新建答题吗？这将清空当前所有进度。')) {
     lr0Store.resetAll()
     handleStepClick(1)
     // 清空AI聊天上下文
@@ -271,10 +347,25 @@ const resetProgress = () => {
 }
 
 // 组件挂载时的初始化
-onMounted(() => {
+onMounted(async () => {
   // 初始化聊天上下文
   updateChatContext()
+
+  // 尝试恢复会话
+  await handleRecovery()
 })
+
+// 监听数据变化，自动保存和更新聊天上下文
+watch(
+  [productions, () => lr0Store.inputString],
+  () => {
+    // 防抖保存
+    lr0Store.persistence.save()
+    // 更新聊天上下文
+    updateChatContext()
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>

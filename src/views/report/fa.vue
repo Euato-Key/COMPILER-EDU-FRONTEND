@@ -187,7 +187,7 @@
         </div>
 
         <!-- 答题表格详情 (步骤 3) -->
-        <div v-if="currentRecord && currentRecord.userData && faStore.originalData" class="space-y-6">
+        <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.step3Data && faStore.originalData" class="space-y-6">
           <FAStep3DetailedReport
             :standard-data="{
               table: faStore.originalData.table,
@@ -199,7 +199,7 @@
         </div>
 
         <!-- 答题表格详情 (步骤 5) -->
-        <div v-if="currentRecord && currentRecord.userData && faStore.originalData" class="space-y-6">
+        <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.step5Data && faStore.originalData" class="space-y-6">
           <FAStep5DetailedReport
             :standard-data="{
               P: faStore.originalData.P,

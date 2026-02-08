@@ -117,7 +117,7 @@
 
         <!-- 用户画图区域 -->
         <div class="user-draw-area">
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+          <div v-if="hasDFAData" class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
             <div class="border-b border-green-200 p-5">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
@@ -131,13 +131,47 @@
             </div>
             <!-- 用户画布 -->
             <div class="h-[700px] p-6">
-              <!-- <LRCanvas ref="canvasRef" /> -->
-              <LR0DrawDFA :check_DFA="lr0Store.dfaStates"></LR0DrawDFA>
+              <LR0DrawDFA
+                ref="canvasRef"
+                :check_DFA="lr0Store.dfaStates"
+                :saved-nodes="lr0Store.step3Data?.userDfaStates || []"
+                :saved-edges="lr0Store.step3Data?.userDotItems || []"
+                @validate-complete="handleValidateComplete"
+              ></LR0DrawDFA>
             </div>
           </div>
 
-          <!-- 构造提示 -->
-          <div class="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
+          <!-- 数据加载异常提示 -->
+          <div v-else class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="border-b border-gray-200 p-5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:alert-triangle" class="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800 text-lg">DFA构造画布</h3>
+                  <p class="text-sm text-gray-600 mt-1">在下方画布中构造LR0项目集规范族DFA</p>
+                </div>
+              </div>
+            </div>
+            <div class="h-[700px] p-6 flex items-center justify-center">
+              <div class="text-center">
+                <Icon icon="lucide:alert-triangle" class="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+                <p class="text-xl font-medium text-gray-700 mb-2">数据加载异常</p>
+                <p class="text-gray-500 mb-6">请检查前面的步骤是否正确完成</p>
+                <button
+                  @click="$emit('prev-step')"
+                  class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto"
+                >
+                  <Icon icon="lucide:arrow-left" class="w-5 h-5" />
+                  返回上一步
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 构造提示 - 只在有数据时显示 -->
+          <div v-if="hasDFAData" class="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
             <div class="flex items-start gap-4">
               <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon icon="lucide:lightbulb" class="w-5 h-5 text-white" />
@@ -172,8 +206,8 @@
           </div>
         </div>
 
-        <!-- 答案区域 -->
-        <div class="answer-area">
+        <!-- 答案区域 - 只在有数据时显示 -->
+        <div v-if="hasDFAData" class="answer-area">
           <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl shadow-sm">
             <!-- 答案区域头部 -->
             <div class="border-b border-purple-200 p-5">
@@ -302,12 +336,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, watch, onUnmounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
-import LRCanvas from '@/components/flow/canvas/LRCanvas.vue'
-// import aTest from '@/components/aTest.vue'
 import LR0DrawDFA from '@/components/lr/LR0DrawDFA.vue'
-import { useLR0Store } from '@/stores/lr0'
+import { useLR0StoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
 
 const emit = defineEmits<{
@@ -316,27 +349,30 @@ const emit = defineEmits<{
   complete: [data: unknown]
 }>()
 
-const lr0Store = useLR0Store()
+// 使用新 store
+const lr0Store = useLR0StoreNew()
+const { originalData } = storeToRefs(lr0Store)
 
 // 本地状态
 const showAnswerFlag = ref(false)
 const hasRendered = ref(false) // 防重复渲染
+const isInitialized = ref(false) // 防止重复初始化
 
 // 画布相关
-const canvasRef = ref<InstanceType<typeof LRCanvas>>()
+const canvasRef = ref<InstanceType<typeof LR0DrawDFA>>()
 const answerCanvasContainer = ref<HTMLElement>()
 
 // 计算属性
 const lr0DotString = computed(() => lr0Store.dotString)
-const hasDFAData = computed(() => lr0Store.analysisResult !== null && lr0Store.dotString !== '')
+const hasDFAData = computed(() => originalData.value !== null && lr0Store.dotString !== '')
 
 // 从store获取文法数据
 const grammarInfo = computed(() => {
-  if (lr0Store.analysisResult) {
+  if (originalData.value) {
     // 构造增广产生式
     const augmentedProductions = [
-      `S' -> ${lr0Store.analysisResult.S}`,
-      ...lr0Store.analysisResult.formulas_list,
+      `S' -> ${originalData.value.S}`,
+      ...originalData.value.formulas_list,
     ]
 
     return {
@@ -414,9 +450,118 @@ const isConstructionComplete = computed(() => {
   return showAnswerFlag.value
 })
 
+// 保存到 store（防抖）
+let saveTimer: any = null
+const saveToStore = () => {
+  // 获取用户绘制的 DFA 数据
+  const userDfaStates = canvasRef.value?.getNodes() || []
+  const userDotItems = canvasRef.value?.getEdges() || []
+  lr0Store.saveStep3Data(showAnswerFlag.value, userDfaStates, userDotItems)
+}
+
+// 立即保存到历史记录
+const saveToHistoryImmediate = () => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  saveToStore()
+  lr0Store.saveToHistory()
+}
+
+// 核心初始化逻辑
+const initializeState = async () => {
+  // 防止重复初始化
+  if (isInitialized.value) {
+    return
+  }
+
+  // 如果有保存的 step3Data，恢复数据
+  if (lr0Store.step3Data) {
+    showAnswerFlag.value = lr0Store.step3Data.userShowAnswer || false
+    
+    // 如果之前查看过答案，需要重新渲染
+    if (showAnswerFlag.value && lr0DotString.value) {
+      await nextTick()
+      if (answerCanvasContainer.value) {
+        answerCanvasContainer.value.innerHTML = ''
+        try {
+          const viz = await instance()
+          const svg = viz.renderSVGElement(lr0DotString.value)
+          svg.classList.add('lr0-dfa-svg')
+          answerCanvasContainer.value.appendChild(svg)
+          hasRendered.value = true
+        } catch (error) {
+          console.error('LR0 DFA render failed:', error)
+        }
+      }
+    }
+    
+    isInitialized.value = true
+  } else {
+    isInitialized.value = true
+  }
+}
+
+// 监听 showAnswerFlag 变化，自动保存
+watch(
+  showAnswerFlag,
+  () => {
+    saveToStore()
+    // 防抖保存到历史记录
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      lr0Store.saveToHistory()
+    }, 1000)
+  }
+)
+
+// 定时自动保存 DFA 绘图数据（每10秒）
+let autoSaveTimer: any = null
+const startAutoSave = () => {
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer)
+  }
+  autoSaveTimer = setInterval(() => {
+    saveToStore()
+    lr0Store.saveToHistory()
+  }, 10000) // 每10秒自动保存
+}
+
+// 组件挂载时初始化
+onMounted(async () => {
+  // 延迟执行，确保 persistence 已经从 localStorage 加载数据
+  await new Promise(resolve => setTimeout(resolve, 100))
+  await initializeState()
+  
+  // 启动自动保存
+  startAutoSave()
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer)
+    autoSaveTimer = null
+  }
+})
+
+// 处理校验完成事件
+const handleValidateComplete = () => {
+  // 立即保存当前状态
+  saveToHistoryImmediate()
+}
+
 // 进入下一步
 const proceedToNext = () => {
   if (isConstructionComplete.value) {
+    // 立即保存当前状态
+    saveToHistoryImmediate()
+
     // 从画布获取用户绘制的数据
     const nodes = canvasRef.value?.getNodes() || []
     const edges = canvasRef.value?.getEdges() || []

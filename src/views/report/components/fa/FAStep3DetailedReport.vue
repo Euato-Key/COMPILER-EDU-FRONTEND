@@ -226,10 +226,11 @@ const getStandardValue = (type: 'conversionTable' | 'transitionMatrix', col: str
 
 // 获取用户最终填写的值
 const getFinalUserValue = (type: 'conversionTable' | 'transitionMatrix', col: string, row: number) => {
+  if (!props.userData) return ''
   if (type === 'conversionTable') {
-    return props.userData.userConversionTable[col]?.[row] || ''
+    return props.userData.userConversionTable?.[col]?.[row] || ''
   } else {
-    return props.userData.userTransitionMatrix[String(row)]?.[col] || ''
+    return props.userData.userTransitionMatrix?.[String(row)]?.[col] || ''
   }
 }
 

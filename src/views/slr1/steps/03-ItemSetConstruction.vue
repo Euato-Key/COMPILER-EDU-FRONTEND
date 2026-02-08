@@ -117,7 +117,7 @@
 
         <!-- 用户画图区域 -->
         <div class="user-draw-area">
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+          <div v-if="hasDFAData" class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
             <div class="border-b border-green-200 p-5">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
@@ -135,8 +135,37 @@
             </div>
           </div>
 
-          <!-- 构造提示 -->
-          <div class="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
+          <!-- 数据加载异常提示 -->
+          <div v-else class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="border-b border-gray-200 p-5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
+                  <Icon icon="lucide:alert-triangle" class="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800 text-lg">DFA构造画布</h3>
+                  <p class="text-sm text-gray-600 mt-1">在下方画布中构造SLR1项目集规范族DFA</p>
+                </div>
+              </div>
+            </div>
+            <div class="h-[700px] p-6 flex items-center justify-center">
+              <div class="text-center">
+                <Icon icon="lucide:alert-triangle" class="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+                <p class="text-xl font-medium text-gray-700 mb-2">数据加载异常</p>
+                <p class="text-gray-500 mb-6">请检查前面的步骤是否正确完成</p>
+                <button
+                  @click="$emit('prev-step')"
+                  class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto"
+                >
+                  <Icon icon="lucide:arrow-left" class="w-5 h-5" />
+                  返回上一步
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 构造提示 - 只在有数据时显示 -->
+          <div v-if="hasDFAData" class="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
             <div class="flex items-start gap-4">
               <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon icon="lucide:lightbulb" class="w-5 h-5 text-white" />
@@ -171,8 +200,8 @@
           </div>
         </div>
 
-      <!-- 答案区域 -->
-      <div class="answer-area">
+      <!-- 答案区域 - 只在有数据时显示 -->
+      <div v-if="hasDFAData" class="answer-area">
         <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl shadow-sm">
           <!-- 答案区域头部 -->
           <div class="border-b border-purple-200 p-5">
