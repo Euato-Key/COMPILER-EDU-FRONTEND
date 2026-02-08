@@ -332,59 +332,18 @@ export const useLR0Store = defineStore('lr0', () => {
         currentRecordId.value = null
       }
 
-      // 添加调试日志 - 发送的数据
-      console.log('=== LR0 Analysis Debug ===')
-      console.log('发送给后端的产生式数组:', productions.value)
-      console.log('产生式数量:', productions.value.length)
-      productions.value.forEach((prod, index) => {
-        console.log(`产生式 ${index}:`, `"${prod}"`, '长度:', prod.length)
-      })
-
       const response = await getLR0AnalyseAPI(productions.value)
-
-      // 添加调试日志
-      console.log('LR0 API Response:', response)
-      console.log('Response data:', response.data)
-      console.log('Response status:', response.status)
 
       // 检查响应是否成功 - 后端返回 code: 0 表示成功
       if (response.status === 200 && response.data && response.data.code === 0) {
         const result = response.data.data as LR0AnalysisResult
 
-        console.log('Parsed result:', result)
-
         if (result && result.S) {
           originalData.value = result
-
-          // 添加后端数据调试日志
-          console.log('=== LR0 后端返回数据调试 ===')
-          console.log('后端返回的 actions:', result.actions)
-          console.log('后端返回的 gotos:', result.gotos)
-          console.log('actions 类型:', typeof result.actions)
-          console.log('gotos 类型:', typeof result.gotos)
-
-          if (result.actions) {
-            console.log('actions 键值示例:')
-            Object.entries(result.actions)
-              .slice(0, 5)
-              .forEach(([key, value]) => {
-                console.log(`  ${key} => ${value}`)
-              })
-          }
-
-          if (result.gotos) {
-            console.log('gotos 键值示例:')
-            Object.entries(result.gotos)
-              .slice(0, 5)
-              .forEach(([key, value]) => {
-                console.log(`  ${key} => ${value}`)
-              })
-          }
 
           // 更新相关状态
           actionTable.value = result.actions || {}
           gotoTable.value = result.gotos || {}
-          // dfaStates.value = result.all_dfa || []
           dfaStates.value = result.all_dfa.map((item) => {
             return {
               id: 'Item' + item.id,
@@ -401,8 +360,6 @@ export const useLR0Store = defineStore('lr0', () => {
           dotItems.value = result.dot_items || []
           isLR0Grammar.value = result.isLR0 ?? null
           dotString.value = result.LR0_dot_str || ''
-
-          console.log('dfaStates', dfaStates)
           // 检测冲突并设置警告
           if (!result.isLR0) {
             validationWarnings.value = [
@@ -419,7 +376,6 @@ export const useLR0Store = defineStore('lr0', () => {
 
           return true
         } else {
-          console.error('Invalid analysis result structure:', result)
           commonStore.setError('分析结果格式错误')
           return false
         }
@@ -427,12 +383,10 @@ export const useLR0Store = defineStore('lr0', () => {
         // 处理后端返回的错误
         const errorMsg =
           response.data?.message || response.data?.msg || `分析失败 (code: ${response.data?.code})`
-        console.error('LR0 Analysis failed:', errorMsg, response.data)
         commonStore.setError(errorMsg)
         return false
       }
     } catch (err) {
-      console.error('LR0 Analysis Error:', err)
       commonStore.setError(err instanceof Error ? err.message : 'LR0分析请求失败')
       return false
     } finally {
@@ -476,21 +430,7 @@ export const useLR0Store = defineStore('lr0', () => {
       // 处理输入字符串：移除用户输入的#，让后端自动添加
       const processedInput = inputString.value.trim().replace(/#/g, '')
 
-      // 打印发送给后端的数据
-      console.log('=== LR0输入串分析请求数据 ===')
-      console.log('产生式数组:', productions.value)
-      console.log('原始输入字符串:', inputString.value.trim())
-      console.log('处理后输入字符串:', processedInput)
-      console.log('请求参数:', { inpProductions: productions.value, inpStr: processedInput })
-
       const response = await LR0AnalyseInpStrAPI(productions.value, processedInput)
-
-      // 打印后端响应数据
-      console.log('=== LR0输入串分析响应数据 ===')
-      console.log('响应状态:', response.status)
-      console.log('响应数据:', response.data)
-      console.log('响应code:', response.data?.code)
-      console.log('响应message:', response.data?.message || response.data?.msg)
 
       // 后端返回 code: 0 表示成功
       if (
@@ -500,18 +440,12 @@ export const useLR0Store = defineStore('lr0', () => {
         response.data.data
       ) {
         inputAnalysisResult.value = response.data.data
-        console.log('===== LR0 输入串分析结果 =====')
-        console.log('输入串:', processedInput)
-        console.log('分析结果数据:', inputAnalysisResult.value)
-        console.log('=====================================')
 
         // 自动解析动画数据
         try {
           const animationStore = useLR0AnimationStore()
           await animationStore.parseAnimationData(response.data.data)
-          console.log('LR0动画数据解析成功')
-        } catch (animationError) {
-          console.warn('LR0动画数据解析失败:', animationError)
+        } catch {
           // 动画解析失败不影响主要的分析功能
         }
 
@@ -534,7 +468,6 @@ export const useLR0Store = defineStore('lr0', () => {
 
   const saveToHistory = () => {
     if (!productions.value.length || !originalData.value) {
-      console.warn('当前没有有效数据，无法保存')
       return
     }
 
@@ -563,7 +496,6 @@ export const useLR0Store = defineStore('lr0', () => {
 
         const updatedRecord = historyList.value.splice(index, 1)[0]
         historyList.value.unshift(updatedRecord)
-        console.log(`[LR0 Store] 更新历史记录: ${currentRecordId.value}`)
       } else {
         currentRecordId.value = null
         saveToHistory()
@@ -586,7 +518,6 @@ export const useLR0Store = defineStore('lr0', () => {
       if (historyList.value.length > maxHistoryRecords) {
         historyList.value = historyList.value.slice(0, maxHistoryRecords)
       }
-      console.log(`[LR0 Store] 新建历史记录: ${newId}`)
     }
   }
 
@@ -634,7 +565,6 @@ export const useLR0Store = defineStore('lr0', () => {
         await analyzeInputString()
       }
 
-      console.log(`[LR0 Store] 历史记录已成功复现: ${recordId}`)
       return true
     } else {
       commonStore.setError('无法复现：后端数据请求失败')
@@ -646,14 +576,12 @@ export const useLR0Store = defineStore('lr0', () => {
     historyList.value = historyList.value.filter(item => item.id !== recordId)
     if (currentRecordId.value === recordId) {
       resetAll()
-      console.log(`[LR0 Store] 当前记录已删除并重置状态`)
     }
   }
 
   const clearAllHistory = () => {
     historyList.value = []
     resetAll()
-    console.log(`[LR0 Store] 所有历史记录已清空并重置状态`)
   }
 
   // ------------------------------------------
@@ -766,7 +694,7 @@ export const useLR0Store = defineStore('lr0', () => {
     }
   }
 
-  const saveStep5Data = (userSteps: any) => {
+  const saveStep5Data = (userSteps: Array<{ stack: string; input: string; action: string }>) => {
     step5Data.value = {
       userSteps: JSON.parse(JSON.stringify(userSteps)),
       timestamp: new Date().toISOString()
@@ -789,7 +717,6 @@ export const useLR0Store = defineStore('lr0', () => {
         id: generateUniqueId(),
         timestamp: new Date().toLocaleString()
       })
-      console.log(`[LR0 Store] 记录错误: [${log.step}] ${JSON.stringify(log.location)} -> ${log.wrongValue}`)
     }
   }
 

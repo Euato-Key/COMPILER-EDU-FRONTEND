@@ -566,8 +566,6 @@ const proceedToNext = () => {
     const nodes = canvasRef.value?.getNodes() || []
     const edges = canvasRef.value?.getEdges() || []
 
-    console.log('Step 3 user data:', { nodes, edges })
-
     // 滚动到页面顶部
     window.scrollTo({ top: 0, behavior: 'smooth' })
 
