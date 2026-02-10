@@ -226,6 +226,18 @@ const addNode = () => {
 const checkItem = () => {
   if (next_step_open.value[0]) return
 
+  // 检查是否有未检验的Item
+  const uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
+  if (uncheckedNodes.length === 0) {
+    if (getNodes.value.length === 0) {
+      showModal('warning', '请先添加Item', '您还没有添加任何Item节点', '请先点击"添加节点"按钮添加Item，然后再进行校验。')
+    } else {
+      showModal('info', '所有Item已校验', '当前所有Item已经通过校验', '您可以继续添加新的Item或进行Goto连线校验。')
+    }
+    emit('validate-complete')
+    return
+  }
+
   // ------------------将 node.pros 与 item.pros 匹配----------------------
   for (const node of getNodes.value) { // ===============遍历node
     // 筛除已经校验过的 node
@@ -288,15 +300,30 @@ const checkItem = () => {
     return
   } else {
     showModal('error', 'Item校验失败', '无 Item 校验成功，请检查您的输入。')
-    // 记录错误日志
-    slr1Store.addErrorLog({
-      step: 'step3',
-      type: 'dfaState',
-      location: { fieldKey: 'item-check' },
-      wrongValue: 'Item校验失败',
-      correctValue: '所有Item正确',
-      hint: '无Item校验成功，请检查输入的项目集'
+    
+    // 为每个未校验的Item节点单独记录错误日志
+    const uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
+    uncheckedNodes.forEach((node, index) => {
+      const nodePros = node.data.pros
+        .filter((p: any) => p.text && p.text.trim())
+        .map((p: any) => p.text.trim())
+      
+      const wrongValue = nodePros.length > 0 ? nodePros.join('; ') : '未填写产生式'
+      
+      slr1Store.addErrorLog({
+        step: 'step3',
+        type: 'dfaState',
+        location: { 
+          fieldKey: 'checkItem',
+          row: index,
+          col: node.id
+        },
+        wrongValue: wrongValue,
+        correctValue: '项目集产生式正确',
+        hint: '请检查该项目集的产生式是否正确'
+      })
     })
+    
     emit('validate-complete')
     return
   }
@@ -304,6 +331,70 @@ const checkItem = () => {
 
 const checkGoto = () => {
   if (next_step_open.value[1]) return
+
+  // 检查是否有未检验的Item
+  const uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
+  if (uncheckedNodes.length > 0) {
+    const uncheckedNodeIds = uncheckedNodes.map(node => node.id).join(', ')
+    showModal('warning', '请先校验Item', `您还有未校验的Item节点: ${uncheckedNodeIds}`, '请先点击"校验Item"按钮完成所有Item的校验，再进行Goto连线校验。')
+    slr1Store.addErrorLog({
+      step: 'step3',
+      type: 'dfaState',
+      location: { fieldKey: 'checkGoto' },
+      wrongValue: '尝试校验Goto但存在未校验的Item',
+      correctValue: '应先完成所有Item的校验',
+      hint: `请先校验以下Item节点: ${uncheckedNodeIds}`
+    })
+    emit('validate-complete')
+    return
+  }
+
+  // 检查是否有未检验的Goto连线
+  const uncheckedEdges = getEdges.value.filter(edge => !checkRight_local_edge.includes(edge.id))
+  if (uncheckedEdges.length === 0) {
+    if (getEdges.value.length === 0) {
+      showModal('warning', '请先添加Goto连线', '您还没有添加任何Goto连线', '请先绘制Item之间的转移连线，然后再进行校验。')
+    } else {
+      showModal('info', '所有Goto已校验', '当前所有Goto连线已经通过校验', '您的DFA构造已经完成或可以继续添加新的Goto连线。')
+    }
+    emit('validate-complete')
+    return
+  }
+
+  // 检查是否存在连接未校验Item的连线（源节点或目标节点未通过校验）
+  const edgesWithUnvalidatedItems = uncheckedEdges.filter(edge => {
+    const sourceValidated = checkRight_local_node.includes(edge.source)
+    const targetValidated = checkRight_local_node.includes(edge.target)
+    return !sourceValidated || !targetValidated
+  })
+  
+  if (edgesWithUnvalidatedItems.length > 0) {
+    const invalidEdgeDetails = edgesWithUnvalidatedItems.map(edge => {
+      const sourceValidated = checkRight_local_node.includes(edge.source)
+      const targetValidated = checkRight_local_node.includes(edge.target)
+      const sourceLabel = nodeId_Map_ItemId[edge.source] || edge.source
+      const targetLabel = nodeId_Map_ItemId[edge.target] || edge.target
+      if (!sourceValidated && !targetValidated) {
+        return `${sourceLabel} → ${targetLabel}（源节点和目标节点都未校验）`
+      } else if (!sourceValidated) {
+        return `${sourceLabel} → ${targetLabel}（源节点未校验）`
+      } else {
+        return `${sourceLabel} → ${targetLabel}（目标节点未校验）`
+      }
+    }).join('; ')
+    
+    showModal('warning', '存在未校验Item的连线', `以下连线的Item节点尚未通过校验：${invalidEdgeDetails}`, '请先完成所有相关Item节点的校验，再进行Goto连线校验。')
+    slr1Store.addErrorLog({
+      step: 'step3',
+      type: 'gotoTransition',
+      location: { fieldKey: 'checkGoto' },
+      wrongValue: '存在连接未校验Item的Goto连线',
+      correctValue: '所有连线两端的Item都应通过校验',
+      hint: '请先校验所有参与Goto连线的Item节点'
+    })
+    emit('validate-complete')
+    return
+  }
 
   // 将 edge 与 item.next_ids 匹配
   let edgeMatchRight_cnt = 0
@@ -348,12 +439,26 @@ const checkGoto = () => {
     return
   } else {
     showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
+    // 收集所有Goto连线信息（起始Item编号、终点Item编号、符号、产生式）
+    const gotoInfos: string[] = []
+    getEdges.value.forEach(edge => {
+      const sourceNode = findNode(edge.source)
+      const targetNode = findNode(edge.target)
+      const symbol = edge.data?.text || ''
+      // 获取Item编号（如果已通过校验）
+      const sourceItemId = nodeId_Map_ItemId[edge.source] || '未校验'
+      const targetItemId = nodeId_Map_ItemId[edge.target] || '未校验'
+      const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+      const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+      gotoInfos.push(`${sourceItemId}[${sourcePros}] --${symbol}--> ${targetItemId}[${targetPros}]`)
+    })
+    const wrongGotoInfo = gotoInfos.join('; ') || '未绘制任何Goto连线'
     // 记录错误日志
     slr1Store.addErrorLog({
       step: 'step3',
-      type: 'dfaState',
+      type: 'gotoTransition',
       location: { fieldKey: 'goto-check' },
-      wrongValue: 'Goto校验失败',
+      wrongValue: wrongGotoInfo,
       correctValue: '所有Goto连线正确',
       hint: '无Goto连线校验成功，请检查输入的转移关系'
     })

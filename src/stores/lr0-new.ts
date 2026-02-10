@@ -22,7 +22,7 @@ const maxHistoryRecords = 50
 export interface LR0ErrorLog {
   id: string
   step: 'step2' | 'step3' | 'step4' | 'step5'
-  type: 'actionTable' | 'gotoTable' | 'dfaState' | 'analysisStep' | 'augmentedFormula'
+  type: 'actionTable' | 'gotoTable' | 'dfaState' | 'gotoTransition' | 'analysisStep' | 'augmentedFormula'
   location: {
     row?: string | number    // 行索引或状态
     col?: string             // 列名

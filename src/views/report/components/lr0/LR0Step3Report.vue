@@ -144,6 +144,118 @@
           </div>
         </div>
 
+        <!-- 历史错误记录 -->
+        <div v-if="itemHistoryErrors.length > 0 || gotoHistoryErrors.length > 0" class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <Icon icon="lucide:history" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div class="flex-1">
+              <p class="font-medium text-amber-800 mb-3">历史错误记录：</p>
+
+              <!-- Item校验错误 -->
+              <div v-if="itemHistoryErrors.length > 0" class="mb-4">
+                <p class="text-sm text-amber-700 font-medium mb-2">Item校验失败（{{ itemHistoryErrors.length }}个）：</p>
+                <div class="space-y-3">
+                  <div
+                    v-for="(err, idx) in itemHistoryErrors"
+                    :key="`item-${idx}`"
+                    class="bg-white/70 rounded-lg p-3 border border-amber-100"
+                  >
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-amber-700 font-mono text-xs">{{ err.timestamp }}</span>
+                    </div>
+                    <!-- Item产生式方块 -->
+                    <div class="flex-shrink-0 bg-red-50 border-2 border-red-200 rounded-lg p-2 min-w-[120px]">
+                      <div class="text-xs text-red-600 font-medium mb-1 border-b border-red-200 pb-1 flex items-center justify-between">
+                        <span>Item节点</span>
+                        <span class="bg-red-200 text-red-700 px-1.5 py-0.5 rounded text-[10px]">{{ err.nodeId }}</span>
+                      </div>
+                      <div class="space-y-0.5">
+                        <div
+                          v-for="(pro, pIdx) in err.productions"
+                          :key="`pro-${pIdx}`"
+                          class="text-xs font-mono text-red-800 whitespace-nowrap"
+                        >
+                          {{ pro }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Goto校验错误 -->
+              <div v-if="gotoHistoryErrors.length > 0">
+                <p class="text-sm text-amber-700 font-medium mb-2">Goto校验失败：</p>
+                <div class="space-y-4">
+                  <div
+                    v-for="(err, idx) in gotoHistoryErrors"
+                    :key="`goto-${idx}`"
+                    class="bg-white/70 rounded-lg p-3 border border-amber-100"
+                  >
+                    <div class="flex items-center gap-2 mb-3">
+                      <span class="text-amber-700 font-mono text-xs">{{ err.timestamp }}</span>
+                    </div>
+                    <!-- 解析并渲染Goto连线 -->
+                    <div class="space-y-3">
+                      <div
+                        v-for="(transition, tIdx) in parseGotoTransitions(err.wrongValue)"
+                        :key="`trans-${tIdx}`"
+                        class="flex items-center gap-3 overflow-x-auto pb-2"
+                      >
+                        <!-- 起始Item方块 -->
+                        <div class="flex-shrink-0 bg-blue-50 border-2 border-blue-200 rounded-lg p-2 min-w-[120px]">
+                          <div class="text-xs text-blue-600 font-medium mb-1 border-b border-blue-200 pb-1 flex items-center justify-between">
+                            <span>起始Item</span>
+                            <span class="bg-blue-200 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">{{ transition.sourceItemId }}</span>
+                          </div>
+                          <div class="space-y-0.5">
+                            <div
+                              v-for="(pro, pIdx) in transition.sourcePros"
+                              :key="`src-${pIdx}`"
+                              class="text-xs font-mono text-blue-800 whitespace-nowrap"
+                            >
+                              {{ pro }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- 连线和符号 -->
+                        <div class="flex-shrink-0 flex items-center">
+                          <div class="flex items-center">
+                            <div class="w-6 h-0.5 bg-amber-400"></div>
+                            <div class="bg-amber-100 text-amber-700 text-xs font-mono px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1">
+                              <span>{{ transition.symbol }}</span>
+                              <Icon icon="lucide:arrow-right" class="w-3 h-3 text-amber-600" />
+                            </div>
+                            <div class="w-6 h-0.5 bg-amber-400"></div>
+                          </div>
+                        </div>
+
+                        <!-- 终点Item方块 -->
+                        <div class="flex-shrink-0 bg-green-50 border-2 border-green-200 rounded-lg p-2 min-w-[120px]">
+                          <div class="text-xs text-green-600 font-medium mb-1 border-b border-green-200 pb-1 flex items-center justify-between">
+                            <span>终点Item</span>
+                            <span class="bg-green-200 text-green-700 px-1.5 py-0.5 rounded text-[10px]">{{ transition.targetItemId }}</span>
+                          </div>
+                          <div class="space-y-0.5">
+                            <div
+                              v-for="(pro, pIdx) in transition.targetPros"
+                              :key="`tgt-${pIdx}`"
+                              class="text-xs font-mono text-green-800 whitespace-nowrap"
+                            >
+                              {{ pro }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 构造提示 -->
         <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <div class="flex items-start gap-3">
@@ -313,6 +425,81 @@ watch(() => props.step3Data, () => {
 watch(() => props.originalData, () => {
   renderGraphs()
 }, { deep: true })
+
+// Item历史错误记录（从 errorLogs 中提取 step3 的 dfaState 类型错误）
+const itemHistoryErrors = computed(() => {
+  if (!props.errorLogs) return []
+
+  return props.errorLogs
+    .filter(log => log.step === 'step3' && log.type === 'dfaState')
+    .map(log => ({
+      timestamp: new Date(log.timestamp).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-'),
+      wrongValue: log.wrongValue,
+      hint: log.hint,
+      nodeId: log.location?.col || '未知节点',
+      productions: log.wrongValue ? log.wrongValue.split(';').map(p => p.trim()).filter(p => p) : []
+    }))
+})
+
+// Goto历史错误记录（从 errorLogs 中提取 step3 的 gotoTransition 类型错误）
+const gotoHistoryErrors = computed(() => {
+  if (!props.errorLogs) return []
+
+  return props.errorLogs
+    .filter(log => log.step === 'step3' && log.type === 'gotoTransition')
+    .map(log => ({
+      timestamp: new Date(log.timestamp).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-'),
+      wrongValue: log.wrongValue,
+      hint: log.hint
+    }))
+})
+
+// 解析Goto过渡字符串为结构化数据
+// 格式: Item0[产生式1, 产生式2] --符号--> Item1[产生式3, 产生式4]; [...]
+interface GotoTransition {
+  sourceItemId: string
+  targetItemId: string
+  sourcePros: string[]
+  targetPros: string[]
+  symbol: string
+}
+
+const parseGotoTransitions = (value: string): GotoTransition[] => {
+  if (!value || value === '未绘制任何Goto连线') return []
+
+  const transitions: GotoTransition[] = []
+  // 按分号分割多个过渡
+  const parts = value.split(';').map(p => p.trim()).filter(p => p)
+
+  for (const part of parts) {
+    // 匹配格式: ItemId[产生式列表] --符号--> ItemId[产生式列表]
+    const match = part.match(/(\w+)\[(.*?)\]\s*--(.*?)-->\s*(\w+)\[(.*?)\]/)
+    if (match) {
+      const sourceItemId = match[1]
+      const sourcePros = match[2].split(',').map(p => p.trim()).filter(p => p)
+      const symbol = match[3].trim()
+      const targetItemId = match[4]
+      const targetPros = match[5].split(',').map(p => p.trim()).filter(p => p)
+      transitions.push({ sourceItemId, targetItemId, sourcePros, targetPros, symbol })
+    }
+  }
+
+  return transitions
+}
 </script>
 
 <style scoped>

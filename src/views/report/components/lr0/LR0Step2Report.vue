@@ -67,12 +67,32 @@
               </div>
             </div>
 
-            <!-- 错误提示 -->
+            <!-- 历史错误记录 -->
+            <div v-if="historyErrors.length > 0" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div class="flex items-start gap-2">
+                <Icon icon="lucide:history" class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div class="text-sm text-amber-800 flex-1">
+                  <p class="font-medium mb-2">历史错误记录：</p>
+                  <div class="space-y-2">
+                    <div
+                      v-for="(err, idx) in historyErrors"
+                      :key="`hist-${idx}`"
+                      class="flex items-center gap-2 p-2 bg-white/60 rounded border border-amber-100"
+                    >
+                      <span class="text-amber-700 font-mono text-xs whitespace-nowrap">{{ err.timestamp }}</span>
+                      <span class="line-through decoration-red-400 text-red-600 font-mono">{{ err.wrongValue }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 当前错误提示 -->
             <div v-if="errorFormulas.length > 0" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <div class="flex items-start gap-2">
                 <Icon icon="lucide:alert-circle" class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                 <div class="text-sm text-red-700">
-                  <p class="font-medium mb-1">错误提示：</p>
+                  <p class="font-medium mb-1">当前错误：</p>
                   <ul class="space-y-1">
                     <li v-for="(err, idx) in errorFormulas" :key="`err-${idx}`">
                       第 {{ err.index + 1 }} 条：{{ err.formula }} 不正确
@@ -247,6 +267,26 @@ const accuracyClass = computed(() => {
   if (accuracy.value >= 80) return 'text-green-600'
   if (accuracy.value >= 60) return 'text-yellow-600'
   return 'text-red-600'
+})
+
+// 历史错误记录（从 errorLogs 中提取 step2 的 augmentedFormula 类型错误）
+const historyErrors = computed(() => {
+  if (!props.errorLogs) return []
+
+  return props.errorLogs
+    .filter(log => log.step === 'step2' && log.type === 'augmentedFormula')
+    .map(log => ({
+      timestamp: new Date(log.timestamp).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-'),
+      wrongValue: log.wrongValue,
+      hint: log.hint
+    }))
 })
 </script>
 
