@@ -224,9 +224,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useSLR1Store } from '@/stores/slr1'
+import { useSLR1StoreNew } from '@/stores'
 
 interface AugmentedFormula {
   id: string
@@ -240,7 +240,8 @@ const emit = defineEmits<{
   'prev-step': []
 }>()
 
-const slr1Store = useSLR1Store()
+// 使用新的 SLR1 Store
+const slr1Store = useSLR1StoreNew()
 
 // 响应式数据
 const augmentedFormulas = ref<AugmentedFormula[]>([])
@@ -251,10 +252,10 @@ const validationSuccess = ref(false)
 
 // 计算属性
 const startSymbol = computed(() => {
-  return slr1Store.analysisResult?.S || 'S'
+  return slr1Store.originalData?.S || 'S'
 })
 
-const grammarData = computed(() => slr1Store.analysisResult)
+const grammarData = computed(() => slr1Store.originalData)
 
 const originalGrammar = computed(() => {
   return slr1Store.productions || []
@@ -342,6 +343,9 @@ const validateFormulas = async () => {
     if (allCorrect && correctSet.size === 0 && userFormulas.length === correctFormulas.length) {
       validationSuccess.value = true
       validationMessage.value = '增广文法构造正确！'
+      
+      // 保存步骤数据到 store - 传递完整的公式对象数组
+      slr1Store.saveStep2Data(augmentedFormulas.value, true)
     } else {
       validationSuccess.value = false
       if (correctSet.size > 0) {
@@ -351,13 +355,29 @@ const validateFormulas = async () => {
       } else {
         validationMessage.value = '某些产生式不正确，请检查'
       }
+      
+      // 记录错误日志
+      for (const formula of augmentedFormulas.value) {
+        if (formula.status === 'error') {
+          slr1Store.addErrorLog({
+            step: 'step2',
+            type: 'augmentedFormula',
+            location: { row: formula.id, fieldKey: `formula-${formula.id}` },
+            wrongValue: formula.text,
+            correctValue: correctFormulas.join('\n'),
+            hint: '答案错误'
+          })
+        }
+      }
     }
   } catch (error) {
-    console.error('验证失败:', error)
+    console.error('[SLR1-STEP2] 验证失败:', error)
     validationSuccess.value = false
     validationMessage.value = '验证失败，请检查输入'
   } finally {
     isValidating.value = false
+    // 立即保存到历史记录
+    saveToHistoryImmediate()
   }
 }
 
@@ -382,6 +402,10 @@ const showAnswer = () => {
 
   validationMessage.value = '已显示标准答案'
   validationSuccess.value = true
+  
+  // 立即保存到历史记录
+  saveToHistoryImmediate()
+  console.log('[SLR1-STEP2] 显示答案，数据已保存')
 }
 
 // 下一步
@@ -391,6 +415,22 @@ const nextStep = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
   }
+}
+
+// 保存到 store（防抖）
+let saveTimer: any = null
+const saveToStore = () => {
+  slr1Store.saveStep2Data(augmentedFormulas.value, validationSuccess.value)
+}
+
+// 立即保存到历史记录
+const saveToHistoryImmediate = () => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  saveToStore()
+  slr1Store.saveToHistory()
 }
 
 // 初始化
@@ -406,12 +446,51 @@ const initializeFormulas = () => {
   }
 }
 
+// 尝试恢复步骤数据
+const restoreStepData = () => {
+  if (slr1Store.step2Data?.userAugmentedFormulas && slr1Store.step2Data.userAugmentedFormulas.length > 0) {
+    console.log('[SLR1-STEP2] 恢复步骤数据:', slr1Store.step2Data.userAugmentedFormulas)
+    
+    // 恢复产生式 - 使用深拷贝避免引用问题
+    augmentedFormulas.value = JSON.parse(JSON.stringify(slr1Store.step2Data.userAugmentedFormulas))
+    
+    // 恢复验证状态
+    if (slr1Store.step2Data?.validationSuccess) {
+      validationSuccess.value = true
+      validationMessage.value = '已恢复上次进度'
+    }
+    
+    // 更新计数器
+    formulaCounter.value = augmentedFormulas.value.length + 1
+  }
+}
+
+// 监听 augmentedFormulas 变化，自动保存
+watch(
+  [augmentedFormulas, validationSuccess],
+  () => {
+    saveToStore()
+    // 防抖保存到历史记录
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      slr1Store.saveToHistory()
+    }, 1000)
+  },
+  { deep: true }
+)
+
 // 监听store中的分析结果变化
 watch(
-  () => slr1Store.analysisResult,
+  () => slr1Store.originalData,
   (newValue) => {
-    if (newValue && augmentedFormulas.value.length === 0) {
-      initializeFormulas()
+    if (newValue) {
+      // 如果有步骤数据，恢复它
+      if (slr1Store.step2Data?.userAugmentedFormulas && slr1Store.step2Data.userAugmentedFormulas.length > 0) {
+        restoreStepData()
+      } else if (augmentedFormulas.value.length === 0) {
+        // 否则初始化
+        initializeFormulas()
+      }
     }
   },
   { immediate: true },
@@ -419,8 +498,21 @@ watch(
 
 // 组件挂载时初始化
 onMounted(() => {
-  if (slr1Store.analysisResult) {
-    initializeFormulas()
+  if (slr1Store.originalData) {
+    // 优先恢复步骤数据
+    if (slr1Store.step2Data?.userAugmentedFormulas && slr1Store.step2Data.userAugmentedFormulas.length > 0) {
+      restoreStepData()
+    } else {
+      initializeFormulas()
+    }
+  }
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
   }
 })
 </script>

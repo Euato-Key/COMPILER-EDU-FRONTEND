@@ -131,7 +131,15 @@
             </div>
             <!-- 用户画布 -->
             <div class="h-[700px] p-6">
-              <SLR1DrawDFA :check_DFA="slr1Store.dfaStates as any" @open_step4="onStep4Open" />
+              <SLR1DrawDFA
+                ref="canvasRef"
+                :check_DFA="slr1Store.dfaStates as any"
+                :saved-nodes="slr1Store.step3Data?.userDfaStates || []"
+                :saved-edges="slr1Store.step3Data?.userDotItems || []"
+                :saved-dfa-state="slr1Store.step3Data?.dfaState || null"
+                @open_step4="onStep4Open"
+                @validate-complete="handleValidateComplete"
+              />
             </div>
           </div>
 
@@ -330,10 +338,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, watch, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import SLR1DrawDFA from '@/components/lr/SLR1DrawDFA.vue'
-import { useSLR1Store } from '@/stores/slr1'
+import { useSLR1StoreNew } from '@/stores'
 import { instance } from '@viz-js/viz'
 
 const emit = defineEmits<{
@@ -342,27 +350,30 @@ const emit = defineEmits<{
   complete: [data: unknown]
 }>()
 
-const slr1Store = useSLR1Store()
+// 使用新的 SLR1 Store
+const slr1Store = useSLR1StoreNew()
 
 // 本地状态
 const showAnswerFlag = ref(false)
 const hasRendered = ref(false) // 防重复渲染
 const isStepComplete = ref(false)
+const isInitialized = ref(false) // 防止重复初始化
 
 // 画布相关
+const canvasRef = ref<InstanceType<typeof SLR1DrawDFA>>()
 const answerCanvasContainer = ref<HTMLElement>()
 
 // 计算属性
 const slr1DotString = computed(() => slr1Store.dotString)
-const hasDFAData = computed(() => slr1Store.analysisResult !== null && slr1Store.dotString !== '')
+const hasDFAData = computed(() => slr1Store.originalData !== null && slr1Store.dotString !== '')
 
 // 从store获取文法数据
 const grammarInfo = computed(() => {
-  if (slr1Store.analysisResult) {
+  if (slr1Store.originalData) {
     // 构造增广产生式
     const augmentedProductions = [
-      `S' -> ${slr1Store.analysisResult.S}`,
-      ...slr1Store.analysisResult.formulas_list,
+      `S' -> ${slr1Store.originalData.S}`,
+      ...slr1Store.originalData.formulas_list,
     ]
 
     return {
@@ -392,10 +403,44 @@ const answerData = computed(() => {
   return null
 })
 
+// 保存到 store（防抖）
+let saveTimer: any = null
+const saveToStore = () => {
+  // 获取用户绘制的 DFA 数据
+  const userDfaStates = canvasRef.value?.getNodes() || []
+  const userDotItems = canvasRef.value?.getEdges() || []
+  const dfaState = canvasRef.value?.getDfaState() || null
+  slr1Store.saveStep3Data(showAnswerFlag.value, userDfaStates, userDotItems, dfaState)
+}
+
+// 立即保存到历史记录
+const saveToHistoryImmediate = () => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  saveToStore()
+  slr1Store.saveToHistory()
+}
+
+// 处理验证完成事件
+const handleValidateComplete = () => {
+  // 防抖保存，避免频繁操作
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+  }
+  saveTimer = setTimeout(() => {
+    saveToHistoryImmediate()
+  }, 500)
+}
+
 // 处理步骤4开启事件
 const onStep4Open = () => {
-      isStepComplete.value = true
-  console.log('SLR1 DFA构造完成，可以进入下一步')
+  isStepComplete.value = true
+  
+  // 保存步骤数据到 store（包含用户绘制的数据）
+  saveToHistoryImmediate()
+  console.log('[SLR1-STEP3] DFA构造完成，数据已保存')
 }
 
 // 答案控制 - 参考LR0组件的SVG渲染实现
@@ -420,8 +465,12 @@ const toggleAnswer = async () => {
         svg.classList.add('slr1-dfa-svg')
         answerCanvasContainer.value.appendChild(svg)
         hasRendered.value = true
+        
+        // 保存查看答案的状态
+        slr1Store.saveStep3Data(true)
+        console.log('[SLR1-STEP3] 查看答案，数据已保存')
       } catch (error) {
-        console.error('SLR1 DFA render failed:', error)
+        console.error('[SLR1-STEP3] DFA render failed:', error)
         // 简单错误处理：在容器中显示错误信息
         if (answerCanvasContainer.value) {
           answerCanvasContainer.value.innerHTML = `
@@ -443,17 +492,66 @@ const toggleAnswer = async () => {
 
 // 是否构造完成 - 必须查看答案后才能进入下一步
 const isConstructionComplete = computed(() => {
-  return showAnswerFlag.value
+  return showAnswerFlag.value || slr1Store.step3Data?.userShowAnswer
 })
 
 // 进入下一步
 const proceedToNext = () => {
-  // 滚动到页面顶部
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if (isConstructionComplete.value) {
+    // 立即保存当前状态
+    saveToHistoryImmediate()
 
-  // 触发下一步事件
-  emit('next-step')
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    // 触发下一步事件
+    emit('next-step')
+  }
 }
+
+// 尝试恢复步骤数据
+const restoreStepData = () => {
+  if (slr1Store.step3Data?.userShowAnswer) {
+    console.log('[SLR1-STEP3] 恢复步骤数据')
+    
+    // 恢复查看状态
+    showAnswerFlag.value = true
+    // 延迟渲染答案
+    nextTick(() => {
+      toggleAnswer()
+    })
+    
+    isStepComplete.value = true
+  }
+}
+
+// 组件挂载时恢复数据
+onMounted(async () => {
+  // 延迟执行，确保 persistence 已经从 localStorage 加载数据
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  if (slr1Store.originalData) {
+    restoreStepData()
+  }
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+  }
+})
+
+// 监听store中的分析结果变化
+watch(
+  () => slr1Store.originalData,
+  (newValue) => {
+    if (newValue && slr1Store.step3Data?.userShowAnswer) {
+      restoreStepData()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>
@@ -505,4 +603,3 @@ const proceedToNext = () => {
   width: auto;
 }
 </style>
-

@@ -5,6 +5,7 @@ export { useLL1Store, useLL1Store as useLL1StoreNew } from './ll1-new'
 export { useLR0Store } from './lr0'
 export { useLR0Store as useLR0StoreNew } from './lr0-new'
 export { useSLR1Store } from './slr1'
+export { useSLR1Store as useSLR1StoreNew } from './slr1-new'
 export { useFAStore } from './fa'
 export { useFAStore as useFAStoreNew } from './fa-new'
 

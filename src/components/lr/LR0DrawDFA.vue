@@ -25,6 +25,21 @@ const props = defineProps({
     type: Array as PropType<any[]>,
     default: () => []
   },
+  savedDfaState: {
+    type: Object as PropType<{
+      addNodeLimit: number
+      addNodeRemainCnt: number
+      forEachEpochAllNum: number
+      checkRightItems: string[]
+      checkRightGotos: string[]
+      checkRightLocalNode: string[]
+      checkRightLocalEdge: string[]
+      nodeIdMapItemId: Record<string, string>
+      edgeIdMapGotosId: Record<string, string>
+      nextStepOpen: boolean[]
+    } | null>,
+    default: null
+  },
 })
 
 const answerItems = ref<any[]>([])
@@ -670,13 +685,29 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
 
 // 监听保存的数据，恢复用户绘制的 DFA
 watch(
-  [() => props.savedNodes, () => props.savedEdges],
-  ([newNodes, newEdges]) => {
+  [() => props.savedNodes, () => props.savedEdges, () => props.savedDfaState],
+  ([newNodes, newEdges, newDfaState]) => {
+    console.log('[LR0DrawDFA] watch触发:', { newNodesLength: newNodes?.length, newEdgesLength: newEdges?.length, hasDfaState: !!newDfaState })
     if (newNodes && newNodes.length > 0) {
       nodes.value = JSON.parse(JSON.stringify(newNodes))
     }
     if (newEdges && newEdges.length > 0) {
       edges.value = JSON.parse(JSON.stringify(newEdges))
+    }
+    
+    // 恢复DFA构造状态
+    if (newDfaState) {
+      addNodeLimit = newDfaState.addNodeLimit
+      addNode_remainCnt.value = newDfaState.addNodeRemainCnt
+      forEachEpoch_AllNum = newDfaState.forEachEpochAllNum
+      checkRight_Items = [...newDfaState.checkRightItems]
+      checkRIght_Gotos = [...newDfaState.checkRightGotos]
+      checkRight_local_node = [...newDfaState.checkRightLocalNode]
+      checkRight_local_edge = [...newDfaState.checkRightLocalEdge]
+      nodeId_Map_ItemId = { ...newDfaState.nodeIdMapItemId }
+      edgeId_Map_GotosId = { ...newDfaState.edgeIdMapGotosId }
+      next_step_open.value = [...newDfaState.nextStepOpen]
+      console.log('[LR0DrawDFA] DFA状态恢复完成:', { addNodeLimit, addNodeRemainCnt: addNode_remainCnt.value })
     }
   },
   { immediate: true }
@@ -685,7 +716,36 @@ watch(
 // 暴露方法给父组件
 defineExpose({
   getNodes: () => getNodes.value,
-  getEdges: () => getEdges.value
+  getEdges: () => getEdges.value,
+  getDfaState: (): {
+    addNodeLimit: number
+    addNodeRemainCnt: number
+    forEachEpochAllNum: number
+    checkRightItems: string[]
+    checkRightGotos: string[]
+    checkRightLocalNode: string[]
+    checkRightLocalEdge: string[]
+    nodeIdMapItemId: Record<string, string>
+    edgeIdMapGotosId: Record<string, string>
+    nextStepOpen: boolean[]
+  } | null => {
+    // 如果没有节点，返回null表示没有状态需要保存
+    if (getNodes.value.length === 0) {
+      return null
+    }
+    return {
+      addNodeLimit,
+      addNodeRemainCnt: addNode_remainCnt.value,
+      forEachEpochAllNum: forEachEpoch_AllNum,
+      checkRightItems: [...checkRight_Items],
+      checkRightGotos: [...checkRIght_Gotos],
+      checkRightLocalNode: [...checkRight_local_node],
+      checkRightLocalEdge: [...checkRight_local_edge],
+      nodeIdMapItemId: { ...nodeId_Map_ItemId },
+      edgeIdMapGotosId: { ...edgeId_Map_GotosId },
+      nextStepOpen: [...next_step_open.value],
+    }
+  }
 })
 </script>
 

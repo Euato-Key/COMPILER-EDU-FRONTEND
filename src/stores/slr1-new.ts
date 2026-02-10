@@ -1,16 +1,15 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { getLR0AnalyseAPI, LR0AnalyseInpStrAPI } from '@/api'
+import { getSLR1AnalyseAPI, SLR1AnalyseInpStrAPI } from '@/api'
 import type {
-  LR0AnalysisResult,
-  LR0ValidationItem,
+  SLR1AnalysisResult,
+  SLR1ValidationItem,
   AnalysisStepInfo,
   ValidationResult,
-  ProductionItem,
 } from '@/types'
 import { useCommonStore } from './common'
 import { usePersistence } from '@/composables/persistence'
-import { useLR0AnimationStore } from '@/animation/store'
+import { useSLR1AnimationStore } from '@/animation/store'
 
 const maxHistoryRecords = 50
 
@@ -19,7 +18,7 @@ const maxHistoryRecords = 50
 /**
  * 错误记录项：用于 PDF 导出对比和 AI 分析
  */
-export interface LR0ErrorLog {
+export interface SLR1ErrorLog {
   id: string
   step: 'step2' | 'step3' | 'step4' | 'step5'
   type: 'actionTable' | 'gotoTable' | 'dfaState' | 'analysisStep' | 'augmentedFormula'
@@ -43,9 +42,9 @@ export interface LR0ErrorLog {
 }
 
 /**
- * LR0 Store 用户正在操作的数据类型
+ * SLR1 Store 用户正在操作的数据类型
  */
-export interface LR0StoreData {
+export interface SLR1StoreData {
   productions: string[]
   inputString: string
   // 02页面：增广文法数据
@@ -90,25 +89,25 @@ export interface LR0StoreData {
 /**
  * 历史记录单条结构
  */
-export interface LR0HistoryRecord {
+export interface SLR1HistoryRecord {
   id: string                 // 唯一标识
   createdAt: string          // 创建时间
   timestamp: string          // 最后修改时间
   grammar: string            // 文法内容 (用于显示)
   productions: string[]      // 产生式列表
-  errorLogs: LR0ErrorLog[]   // 错误日志
+  errorLogs: SLR1ErrorLog[]  // 错误日志
   userData: {
     inputString: string
-    step2Data: LR0StoreData['step2Data']
-    step3Data: LR0StoreData['step3Data']
-    step4Data: LR0StoreData['step4Data']
-    step5Data: LR0StoreData['step5Data']
+    step2Data: SLR1StoreData['step2Data']
+    step3Data: SLR1StoreData['step3Data']
+    step4Data: SLR1StoreData['step4Data']
+    step5Data: SLR1StoreData['step5Data']
   }
 }
 
 // ================= Store 定义 =================
 
-export const useLR0Store = defineStore('lr0', () => {
+export const useSLR1Store = defineStore('slr1', () => {
   const commonStore = useCommonStore()
 
   // ------------------------------------------
@@ -121,37 +120,40 @@ export const useLR0Store = defineStore('lr0', () => {
   // === 当前激活的会话数据 (Active Session) ===
   const productions = ref<string[]>([])
   const inputString = ref('')
-  const originalData = ref<LR0AnalysisResult | null>(null) // 后端原始数据 (不持久化)
+  const originalData = ref<SLR1AnalysisResult | null>(null) // 后端原始数据 (不持久化)
   const inputAnalysisResult = ref<AnalysisStepInfo | null>(null) // 输入串分析结果 (不持久化)
 
   // 校验相关状态
   const validationErrors = ref<string[]>([])
   const validationWarnings = ref<string[]>([])
   const isValidGrammar = ref<boolean | null>(null)
-  const productionItems = ref<ProductionItem[]>([])
 
   // 校验数据 - 用于前端显示和交互
-  const validationData = ref<LR0ValidationItem[]>([])
+  const validationData = ref<SLR1ValidationItem[]>([])
   const actionTable = ref<Record<string, string>>({})
   const gotoTable = ref<Record<string, string>>({})
   const dfaStates = ref<any[]>([])
   const dotItems = ref<string[]>([])
-  const isLR0Grammar = ref<boolean | null>(null)
+  const isSLR1Grammar = ref<boolean | null>(null)
 
   // DOT字符串用于图形显示
   const dotString = ref('')
 
+  // FIRST和FOLLOW集
+  const firstSets = ref<Record<string, string[]>>({})
+  const followSets = ref<Record<string, string[]>>({})
+
   // 用户答题数据
-  const step2Data = ref<LR0StoreData['step2Data']>(undefined)
-  const step3Data = ref<LR0StoreData['step3Data']>(undefined)
-  const step4Data = ref<LR0StoreData['step4Data']>(undefined)
-  const step5Data = ref<LR0StoreData['step5Data']>(undefined)
+  const step2Data = ref<SLR1StoreData['step2Data']>(undefined)
+  const step3Data = ref<SLR1StoreData['step3Data']>(undefined)
+  const step4Data = ref<SLR1StoreData['step4Data']>(undefined)
+  const step5Data = ref<SLR1StoreData['step5Data']>(undefined)
 
   // === 错误日志状态 (Active Session Error Logs) ===
-  const errorLogs = ref<LR0ErrorLog[]>([])
+  const errorLogs = ref<SLR1ErrorLog[]>([])
 
   // === 历史记录列表 (History Archive) ===
-  const historyList = ref<LR0HistoryRecord[]>([])
+  const historyList = ref<SLR1HistoryRecord[]>([])
 
   // ------------------------------------------
   // 2. 计算属性 (Computed)
@@ -273,8 +275,8 @@ export const useLR0Store = defineStore('lr0', () => {
   }
 
   // 将后端数据转换为校验数据
-  const transformToValidationData = (result: LR0AnalysisResult): LR0ValidationItem[] => {
-    const items: LR0ValidationItem[] = []
+  const transformToValidationData = (result: SLR1AnalysisResult): SLR1ValidationItem[] => {
+    const items: SLR1ValidationItem[] = []
     let itemId = 0
 
     // 转换Action表项
@@ -307,7 +309,7 @@ export const useLR0Store = defineStore('lr0', () => {
         state: `I${index}`,
         check: true,
         coords: { x: index * 100, y: index * 80 },
-        data: dfa,
+        data: { dfa },
       })
     })
 
@@ -329,7 +331,7 @@ export const useLR0Store = defineStore('lr0', () => {
   // 4. API 交互 Actions
   // ------------------------------------------
 
-  const performLR0Analysis = async (isRestoring = false) => {
+  const performSLR1Analysis = async (isRestoring = false) => {
     if (productions.value.length === 0) {
       commonStore.setError('请至少输入一个产生式')
       return false
@@ -345,11 +347,11 @@ export const useLR0Store = defineStore('lr0', () => {
         currentRecordId.value = null
       }
 
-      const response = await getLR0AnalyseAPI(productions.value)
+      const response = await getSLR1AnalyseAPI(productions.value)
 
       // 检查响应是否成功 - 后端返回 code: 0 表示成功
       if (response.status === 200 && response.data && response.data.code === 0) {
-        const result = response.data.data as LR0AnalysisResult
+        const result = response.data.data as SLR1AnalysisResult
 
         if (result && result.S) {
           originalData.value = result
@@ -360,7 +362,7 @@ export const useLR0Store = defineStore('lr0', () => {
           dfaStates.value = result.all_dfa.map((item) => {
             return {
               id: 'Item' + item.id,
-              pros: item.pros.map((x: any, idx: any) => {
+              pros: item.pros.map((x: string, idx: number) => {
                 return {
                   id: 'Item' + item.id + '_pro' + idx,
                   text: x,
@@ -371,13 +373,18 @@ export const useLR0Store = defineStore('lr0', () => {
           })
 
           dotItems.value = result.dot_items || []
-          isLR0Grammar.value = result.isLR0 ?? null
-          dotString.value = result.LR0_dot_str || ''
+          isSLR1Grammar.value = result.isSLR1 ?? null
+          dotString.value = result.SLR1_dot_str || ''
+
+          // 更新FIRST和FOLLOW集
+          firstSets.value = result.first || {}
+          followSets.value = result.follow || {}
+
           // 检测冲突并设置警告
-          if (!result.isLR0) {
+          if (!result.isSLR1) {
             validationWarnings.value = [
               '检测到移进-规约冲突或规约-规约冲突',
-              '该文法不是LR0文法，后续功能可能无法正常使用',
+              '该文法不是SLR1文法，后续功能可能无法正常使用',
               '建议修改文法以消除冲突',
             ]
           } else {
@@ -400,7 +407,7 @@ export const useLR0Store = defineStore('lr0', () => {
         return false
       }
     } catch (err) {
-      commonStore.setError(err instanceof Error ? err.message : 'LR0分析请求失败')
+      commonStore.setError(err instanceof Error ? err.message : 'SLR1分析请求失败')
       return false
     } finally {
       commonStore.setLoading(false)
@@ -408,7 +415,7 @@ export const useLR0Store = defineStore('lr0', () => {
   }
 
   // 从原始文本分析
-  const performLR0AnalysisFromText = async (inputText: string) => {
+  const performSLR1AnalysisFromText = async (inputText: string) => {
     const { success, productions: validatedProductions } = validateAndFormatInput(inputText)
 
     if (!success) {
@@ -421,7 +428,7 @@ export const useLR0Store = defineStore('lr0', () => {
     productions.value = validatedProductions
 
     // 执行分析
-    return await performLR0Analysis()
+    return await performSLR1Analysis()
   }
 
   // 分析输入串
@@ -443,7 +450,7 @@ export const useLR0Store = defineStore('lr0', () => {
       // 处理输入字符串：移除用户输入的#，让后端自动添加
       const processedInput = inputString.value.trim().replace(/#/g, '')
 
-      const response = await LR0AnalyseInpStrAPI(productions.value, processedInput)
+      const response = await SLR1AnalyseInpStrAPI(productions.value, processedInput)
 
       // 后端返回 code: 0 表示成功
       if (
@@ -456,7 +463,7 @@ export const useLR0Store = defineStore('lr0', () => {
 
         // 自动解析动画数据
         try {
-          const animationStore = useLR0AnimationStore()
+          const animationStore = useSLR1AnimationStore()
           await animationStore.parseAnimationData(response.data.data)
         } catch {
           // 动画解析失败不影响主要的分析功能
@@ -515,7 +522,7 @@ export const useLR0Store = defineStore('lr0', () => {
       }
     } else {
       const newId = generateUniqueId()
-      const newRecord: LR0HistoryRecord = {
+      const newRecord: SLR1HistoryRecord = {
         id: newId,
         createdAt: nowTime,
         timestamp: nowTime,
@@ -544,7 +551,7 @@ export const useLR0Store = defineStore('lr0', () => {
     currentRecordId.value = recordId
     productions.value = JSON.parse(JSON.stringify(record.productions))
 
-    const isSuccess = await performLR0Analysis(true)
+    const isSuccess = await performSLR1Analysis(true)
 
     if (isSuccess) {
       inputString.value = record.userData.inputString || ''
@@ -641,13 +648,14 @@ export const useLR0Store = defineStore('lr0', () => {
     gotoTable.value = {}
     dfaStates.value = []
     dotItems.value = []
-    isLR0Grammar.value = null
+    isSLR1Grammar.value = null
     dotString.value = ''
+    firstSets.value = {}
+    followSets.value = {}
     // 清除校验状态
     validationErrors.value = []
     validationWarnings.value = []
     isValidGrammar.value = null
-    productionItems.value = []
   }
 
   const clearAllStepData = () => {
@@ -667,7 +675,7 @@ export const useLR0Store = defineStore('lr0', () => {
     currentRecordId.value = null
 
     // 清空动画数据
-    const animationStore = useLR0AnimationStore()
+    const animationStore = useSLR1AnimationStore()
     animationStore.clearAnimationData()
   }
 
@@ -678,7 +686,7 @@ export const useLR0Store = defineStore('lr0', () => {
     }
   }
 
-  const getValidationDataByCategory = (category: LR0ValidationItem['category']) => {
+  const getValidationDataByCategory = (category: SLR1ValidationItem['category']) => {
     return validationData.value.filter((item) => item.category === category)
   }
 
@@ -732,7 +740,7 @@ export const useLR0Store = defineStore('lr0', () => {
   }
 
   // 记录错误日志
-  const addErrorLog = (log: Omit<LR0ErrorLog, 'id' | 'timestamp'>) => {
+  const addErrorLog = (log: Omit<SLR1ErrorLog, 'id' | 'timestamp'>) => {
     // 避免在极短时间内重复记录完全相同的错误（与 FA 逻辑保持一致）
     const isDuplicate = errorLogs.value.some(item =>
       item.step === log.step &&
@@ -755,7 +763,7 @@ export const useLR0Store = defineStore('lr0', () => {
   // ------------------------------------------
 
   const persistenceConfig = {
-    key: 'lr0_store_v2',
+    key: 'slr1_store_v2',
     version: '2.0.0',
     include: [
       'currentRecordId',
@@ -800,8 +808,10 @@ export const useLR0Store = defineStore('lr0', () => {
     gotoTable,
     dfaStates,
     dotItems,
-    isLR0Grammar,
+    isSLR1Grammar,
     dotString,
+    firstSets,
+    followSets,
     step2Data,
     step3Data,
     step4Data,
@@ -813,7 +823,6 @@ export const useLR0Store = defineStore('lr0', () => {
     validationErrors,
     validationWarnings,
     isValidGrammar,
-    productionItems,
 
     // Computed
     grammar,
@@ -824,8 +833,8 @@ export const useLR0Store = defineStore('lr0', () => {
     removeProduction,
     clearProductions,
     setInputString,
-    performLR0Analysis,
-    performLR0AnalysisFromText,
+    performSLR1Analysis,
+    performSLR1AnalysisFromText,
     analyzeInputString,
     updateValidationItem,
     getValidationDataByCategory,
@@ -844,7 +853,7 @@ export const useLR0Store = defineStore('lr0', () => {
     addErrorLog,
 
     // 动画相关
-    getAnimationStore: () => useLR0AnimationStore(),
+    getAnimationStore: () => useSLR1AnimationStore(),
 
     // Persistence
     persistence: {

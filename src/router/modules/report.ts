@@ -27,6 +27,15 @@ const reportRoutes: RouteRecordRaw[] = [
       title: 'LR0答题报告',
       description: '查看LR0语法分析的详细答题报告'
     }
+  },
+  {
+    path: '/report/slr1/:id',
+    name: 'report-slr1',
+    component: () => import('../../views/report/slr1.vue'),
+    meta: {
+      title: 'SLR1答题报告',
+      description: '查看SLR1语法分析的详细答题报告'
+    }
   }
 ]
 

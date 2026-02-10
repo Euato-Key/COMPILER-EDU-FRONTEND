@@ -3,6 +3,7 @@ import { ref, type PropType, type Ref, computed, watch } from 'vue';
 import type { SLR1DataDfaType } from '@/types/slr1';
 import { VueFlow, Handle, Position, useVueFlow, MarkerType, type NodeChange } from "@vue-flow/core"
 import { Background } from '@vue-flow/background'
+import { useSLR1StoreNew } from '@/stores'
 const { onConnect, addEdges, addNodes, onNodeClick, onEdgeClick, findNode, findEdge, getNodes, getEdges,
   onNodesChange, onEdgesChange, applyNodeChanges, applyEdgeChanges, updateEdge, onEdgeUpdate, onPaneReady, setViewport, removeNodes } = useVueFlow()
 
@@ -10,10 +11,35 @@ import customEdge from '@/components/lr/custom-edge.vue';
 import customNode from '@/components/lr/custom-node.vue';
 import ModalDialog from '@/components/shared/ModalDialog.vue';
 
+const slr1Store = useSLR1StoreNew()
+
 const props = defineProps({
   check_DFA: {
     type: Array as PropType<SLR1DataDfaType[]>,
     required: true
+  },
+  savedNodes: {
+    type: Array as PropType<any[]>,
+    default: () => []
+  },
+  savedEdges: {
+    type: Array as PropType<any[]>,
+    default: () => []
+  },
+  savedDfaState: {
+    type: Object as PropType<{
+      addNodeLimit: number
+      addNodeRemainCnt: number
+      forEachEpochAllNum: number
+      checkRightItems: string[]
+      checkRightGotos: string[]
+      checkRightLocalNode: string[]
+      checkRightLocalEdge: string[]
+      nodeIdMapItemId: Record<string, string>
+      edgeIdMapGotosId: Record<string, string>
+      nextStepOpen: boolean[]
+    } | null>,
+    default: null
   },
 })
 
@@ -51,7 +77,7 @@ let nodeId_Map_ItemId = {}
 let edgeId_Map_GotosId = {}
 const next_step_open: Ref<boolean[]> = ref([false, false])
 let showAnswer_cnt = 3
-const emit = defineEmits(["open_step4"])
+const emit = defineEmits(["open_step4", "validate-complete"])
 
 // 弹窗状态
 const modalVisible = ref(false)
@@ -120,10 +146,42 @@ const getInitialNodes = () => {
 const nodes = ref(getInitialNodes())
 const edges = ref([])
 
-// 只在有数据时添加节点
+// 只在有数据时添加初始节点
 if (hasValidData.value && nodes.value.length > 0) {
   addNodes(nodes.value)
 }
+
+// 监听保存的数据，恢复用户绘制的 DFA
+watch(
+  [() => props.savedNodes, () => props.savedEdges, () => props.savedDfaState],
+  ([newNodes, newEdges, newDfaState]) => {
+    console.log('[SLR1DrawDFA] watch触发:', { newNodesLength: newNodes?.length, newEdgesLength: newEdges?.length, hasDfaState: !!newDfaState })
+    if (newNodes && newNodes.length > 0) {
+      // 直接修改 nodes 和 edges，VueFlow 会自动同步
+      nodes.value = JSON.parse(JSON.stringify(newNodes))
+      if (newEdges && newEdges.length > 0) {
+        edges.value = JSON.parse(JSON.stringify(newEdges))
+      }
+      console.log('[SLR1DrawDFA] 数据恢复完成，节点数:', nodes.value.length, '边数:', edges.value.length)
+    }
+    
+    // 恢复DFA构造状态
+    if (newDfaState) {
+      addNodeLimit = newDfaState.addNodeLimit
+      addNode_remainCnt.value = newDfaState.addNodeRemainCnt
+      forEachEpoch_AllNum = newDfaState.forEachEpochAllNum
+      checkRight_Items = [...newDfaState.checkRightItems]
+      checkRIght_Gotos = [...newDfaState.checkRightGotos]
+      checkRight_local_node = [...newDfaState.checkRightLocalNode]
+      checkRight_local_edge = [...newDfaState.checkRightLocalEdge]
+      nodeId_Map_ItemId = { ...newDfaState.nodeIdMapItemId }
+      edgeId_Map_GotosId = { ...newDfaState.edgeIdMapGotosId }
+      next_step_open.value = [...newDfaState.nextStepOpen]
+      console.log('[SLR1DrawDFA] DFA状态恢复完成:', { addNodeLimit, addNodeRemainCnt: addNode_remainCnt.value })
+    }
+  },
+  { immediate: true }
+)
 const initVar = () => {
   checkRight_Items = []
   checkRIght_Gotos = []
@@ -203,6 +261,7 @@ const checkItem = () => {
   if (checkRight_Items.length >= answerItem_totalNum.value) {
     showModal('success', 'Item校验成功', '恭喜！所有 Item 校验正确！', '您可以继续进行Goto连线的校验。')
     next_step_open.value[0] = true
+    emit('validate-complete')
     return
   }
 
@@ -219,14 +278,26 @@ const checkItem = () => {
     NodeMatchRight_cnt = 0
     everyEpooch_Items.clear()
     showModal('success', 'Item校验成功', `当前所有 Item 检测成功，可继续添加${addNodeLimit}个 Item`)
+    emit('validate-complete')
     return
   }
 
   if (NodeMatchRight_cnt > 0) {
     showModal('success', 'Item校验成功', `${NodeMatchRight_cnt}个 Item 校验成功！`)
+    emit('validate-complete')
     return
   } else {
     showModal('error', 'Item校验失败', '无 Item 校验成功，请检查您的输入。')
+    // 记录错误日志
+    slr1Store.addErrorLog({
+      step: 'step3',
+      type: 'dfaState',
+      location: { fieldKey: 'item-check' },
+      wrongValue: 'Item校验失败',
+      correctValue: '所有Item正确',
+      hint: '无Item校验成功，请检查输入的项目集'
+    })
+    emit('validate-complete')
     return
   }
 }
@@ -267,14 +338,26 @@ const checkGoto = () => {
   if (checkRIght_Gotos.length >= answerGotos_totalNum.value) {
     showModal('success', 'Goto校验成功', '恭喜！所有 Goto 连线校验正确！', '您的DFA构造已经完成。')
     next_step_open.value[1] = true
+    emit('validate-complete')
     return
   }
 
   if (edgeMatchRight_cnt > 0) {
     showModal('success', 'Goto校验成功', `${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
+    emit('validate-complete')
     return
   } else {
     showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
+    // 记录错误日志
+    slr1Store.addErrorLog({
+      step: 'step3',
+      type: 'dfaState',
+      location: { fieldKey: 'goto-check' },
+      wrongValue: 'Goto校验失败',
+      correctValue: '所有Goto连线正确',
+      hint: '无Goto连线校验成功，请检查输入的转移关系'
+    })
+    emit('validate-complete')
     return
   }
 }
@@ -493,6 +576,59 @@ onEdgeUpdate(params => { // 主要处理 更换edge 时的事件
     const edge = findEdge('vueflow__edge-' + params.connection.source + params.connection.sourceHandle + '-' + params.connection.target + params.connection.targetHandle)
     if (edge) {
       edge.data.check = 'normal'
+    }
+  }
+})
+
+// 暴露方法供父组件调用
+defineExpose({
+  getNodes: () => {
+    return getNodes.value.map(node => ({
+      id: node.id,
+      data: node.data,
+      position: node.position,
+      type: node.type,
+    }))
+  },
+  getEdges: () => {
+    return getEdges.value.map(edge => ({
+      id: edge.id,
+      source: edge.source,
+      sourceHandle: edge.sourceHandle,
+      target: edge.target,
+      targetHandle: edge.targetHandle,
+      type: edge.type,
+      markerEnd: edge.markerEnd,
+      data: edge.data,
+    }))
+  },
+  getDfaState: (): {
+    addNodeLimit: number
+    addNodeRemainCnt: number
+    forEachEpochAllNum: number
+    checkRightItems: string[]
+    checkRightGotos: string[]
+    checkRightLocalNode: string[]
+    checkRightLocalEdge: string[]
+    nodeIdMapItemId: Record<string, string>
+    edgeIdMapGotosId: Record<string, string>
+    nextStepOpen: boolean[]
+  } | null => {
+    // 如果没有节点，返回null表示没有状态需要保存
+    if (getNodes.value.length === 0) {
+      return null
+    }
+    return {
+      addNodeLimit,
+      addNodeRemainCnt: addNode_remainCnt.value,
+      forEachEpochAllNum: forEachEpoch_AllNum,
+      checkRightItems: [...checkRight_Items],
+      checkRightGotos: [...checkRIght_Gotos],
+      checkRightLocalNode: [...checkRight_local_node],
+      checkRightLocalEdge: [...checkRight_local_edge],
+      nodeIdMapItemId: { ...nodeId_Map_ItemId },
+      edgeIdMapGotosId: { ...edgeId_Map_GotosId },
+      nextStepOpen: [...next_step_open.value],
     }
   }
 })

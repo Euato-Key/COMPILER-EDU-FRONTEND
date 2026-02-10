@@ -1,22 +1,22 @@
 <template>
-  <div class="lr0-step5-report space-y-6">
+  <div class="slr1-step5-report space-y-6">
     <!-- 输入串分析表 -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 bg-orange-50 border-b border-orange-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-orange-900 flex items-center gap-2">
-          <Icon icon="lucide:play-circle" class="w-5 h-5 text-orange-600" />
+      <div class="px-6 py-4 bg-cyan-50 border-b border-cyan-100 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-cyan-900 flex items-center gap-2">
+          <Icon icon="lucide:play-circle" class="w-5 h-5 text-cyan-600" />
           输入串分析过程回顾
         </h3>
-        <span class="text-xs font-medium px-2 py-1 bg-white text-orange-600 rounded-lg border border-orange-100">Step 5</span>
+        <span class="text-xs font-medium px-2 py-1 bg-white text-cyan-600 rounded-lg border border-cyan-100">Step 5</span>
       </div>
 
       <div class="p-6">
         <!-- 输入串信息 -->
-        <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+        <div class="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
           <div class="flex items-center gap-2">
-            <Icon icon="lucide:file-text" class="w-5 h-5 text-orange-600" />
-            <span class="text-sm font-medium text-orange-800">输入串:</span>
-            <span class="text-lg font-mono font-bold text-orange-900">{{ inputString }}</span>
+            <Icon icon="lucide:file-text" class="w-5 h-5 text-cyan-600" />
+            <span class="text-sm font-medium text-cyan-800">输入串:</span>
+            <span class="text-lg font-mono font-bold text-cyan-900">{{ inputString }}</span>
           </div>
         </div>
 
@@ -336,12 +336,13 @@
           <div class="flex items-start gap-3">
             <Icon icon="lucide:lightbulb" class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
             <div class="text-sm text-indigo-700">
-              <p class="font-medium mb-2">LR0移进-规约分析规则：</p>
+              <p class="font-medium mb-2">SLR1移进-规约分析规则：</p>
               <ul class="space-y-1 text-xs">
                 <li>• <strong>移进(Si)：</strong>将输入符号压入符号栈，状态i压入状态栈</li>
                 <li>• <strong>规约(rj)：</strong>根据产生式j弹出栈中符号和状态，压入产生式左部符号</li>
                 <li>• <strong>接受(acc)：</strong>分析成功完成</li>
                 <li>• <strong>错误：</strong>无对应动作，分析失败</li>
+                <li>• <strong>SLR1特点：</strong>使用FOLLOW集解决规约-规约冲突，比LR0更强大</li>
               </ul>
             </div>
           </div>
@@ -354,26 +355,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
-import type { LR0ErrorLog } from '@/stores/lr0-new'
-
-// 定义输入串分析结果类型（与后端返回格式一致）
-interface InputAnalysisResult {
-  info_res: string
-  info_step: number[]
-  info_msg: string[]
-  info_state_stack: string[]
-  info_symbol_stack: string[]
-  info_str: string[]
-  info_action?: string[]
-}
+import type { SLR1ErrorLog } from '@/stores/slr1-new'
+import type { AnalysisStepInfo } from '@/types/common'
 
 interface Props {
   step5Data?: {
     userSteps: Array<{ stack: string; input: string; action: string }>
   }
-  inputAnalysisResult?: InputAnalysisResult
+  inputAnalysisResult?: AnalysisStepInfo
   inputString?: string
-  errorLogs?: LR0ErrorLog[]
+  errorLogs?: SLR1ErrorLog[]
 }
 
 const props = defineProps<Props>()
@@ -546,7 +537,7 @@ const rows = computed<RowData[]>(() => {
 </script>
 
 <style scoped>
-.lr0-step5-report {
+.slr1-step5-report {
   width: 100%;
 }
 </style>

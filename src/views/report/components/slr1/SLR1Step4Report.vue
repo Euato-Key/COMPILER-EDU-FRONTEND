@@ -1,11 +1,11 @@
 <template>
-  <div class="lr0-step4-report space-y-6">
-    <!-- LR0分析表 -->
+  <div class="slr1-step4-report space-y-6">
+    <!-- SLR1分析表 -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
       <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between">
         <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
           <Icon icon="lucide:table" class="w-5 h-5 text-pink-600" />
-          LR0 分析表
+          SLR1 分析表
         </h3>
         <span class="text-xs font-medium px-2 py-1 bg-white text-pink-600 rounded-lg border border-pink-100">Step 4</span>
       </div>
@@ -28,6 +28,37 @@
           <div class="bg-orange-50 rounded-lg border border-orange-200 p-4">
             <div class="text-2xl font-bold text-orange-600">{{ accuracy }}%</div>
             <div class="text-sm text-orange-700">正确率</div>
+          </div>
+        </div>
+
+        <!-- SLR1特性提示 -->
+        <div v-if="isSLR1Grammar === false" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <Icon icon="lucide:alert-triangle" class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+            <div class="text-sm text-red-700">
+              <p class="font-medium mb-1">⚠️ 该文法不是 SLR1 文法</p>
+              <p class="text-xs">检测到移进-规约冲突或规约-规约冲突，ACTION表中可能包含冲突标记。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOLLOW集展示 -->
+        <div v-if="followSets && Object.keys(followSets).length > 0" class="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <Icon icon="lucide:book-open" class="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0" />
+            <div class="flex-1">
+              <p class="font-medium text-cyan-800 mb-2">FOLLOW 集（用于 SLR1 规约动作）：</p>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div
+                  v-for="(followSet, nonTerminal) in followSets"
+                  :key="nonTerminal"
+                  class="text-xs bg-white border border-cyan-200 rounded p-2"
+                >
+                  <span class="font-mono font-bold text-cyan-700">FOLLOW({{ nonTerminal }})</span>
+                  <span class="text-cyan-600"> = {{ followSet.join(', ') }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -257,12 +288,13 @@
           <div class="flex items-start gap-3">
             <Icon icon="lucide:lightbulb" class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
             <div class="text-sm text-indigo-700">
-              <p class="font-medium mb-2">LR0分析表构造规则：</p>
+              <p class="font-medium mb-2">SLR1分析表构造规则：</p>
               <ul class="space-y-1 text-xs">
                 <li>• <strong>移进动作：</strong>A → α·aβ，则ACTION[i,a] = Sj（状态j包含A → αa·β）</li>
-                <li>• <strong>规约动作：</strong>A → α·，则对所有终结符a，ACTION[i,a] = rk（第k个产生式）</li>
+                <li>• <strong>规约动作：</strong>A → α·且a∈FOLLOW(A)，则ACTION[i,a] = rk（第k个产生式）</li>
                 <li>• <strong>接受动作：</strong>S' → S·，则ACTION[i,#] = acc</li>
                 <li>• <strong>GOTO函数：</strong>根据DFA的转移关系填写状态转移</li>
+                <li>• <strong>SLR1特点：</strong>仅对FOLLOW集中的终结符进行规约，解决LR0的冲突</li>
               </ul>
             </div>
           </div>
@@ -275,7 +307,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import type { LR0ErrorLog } from '@/stores/lr0-new'
+import type { SLR1ErrorLog } from '@/stores/slr1-new'
 
 interface Props {
   step4Data?: {
@@ -289,14 +321,18 @@ interface Props {
     all_dfa?: any[]
     actions?: Record<string, string>
     gotos?: Record<string, string>
+    isSLR1?: boolean
   }
-  errorLogs?: LR0ErrorLog[]
+  followSets?: Record<string, string[]>
+  errorLogs?: SLR1ErrorLog[]
 }
 
 const props = defineProps<Props>()
 
 // 计算属性
 const stateCount = computed(() => props.originalData?.all_dfa?.length || 0)
+const isSLR1Grammar = computed(() => props.originalData?.isSLR1)
+const followSets = computed(() => props.followSets || {})
 
 const terminals = computed(() => {
   if (!props.originalData?.Vt) return []
@@ -419,7 +455,7 @@ const accuracy = computed(() => {
 </script>
 
 <style scoped>
-.lr0-step4-report {
+.slr1-step4-report {
   width: 100%;
 }
 </style>

@@ -1116,7 +1116,7 @@ const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
 const saveUserSteps = () => {
   // 直接从 userAnswers 获取数据，不依赖 analysisSteps
   const stepCount = userAnswers.value.stateStack.length
-  const userSteps = []
+  const userSteps: Array<{ stack: string; input: string; action: string }> = []
   
   for (let i = 0; i < stepCount; i++) {
     userSteps.push({

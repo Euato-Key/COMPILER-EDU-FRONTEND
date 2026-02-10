@@ -136,6 +136,7 @@
                 :check_DFA="lr0Store.dfaStates"
                 :saved-nodes="lr0Store.step3Data?.userDfaStates || []"
                 :saved-edges="lr0Store.step3Data?.userDotItems || []"
+                :saved-dfa-state="lr0Store.step3Data?.dfaState || null"
                 @validate-complete="handleValidateComplete"
               ></LR0DrawDFA>
             </div>
@@ -456,7 +457,8 @@ const saveToStore = () => {
   // 获取用户绘制的 DFA 数据
   const userDfaStates = canvasRef.value?.getNodes() || []
   const userDotItems = canvasRef.value?.getEdges() || []
-  lr0Store.saveStep3Data(showAnswerFlag.value, userDfaStates, userDotItems)
+  const dfaState = canvasRef.value?.getDfaState() || null
+  lr0Store.saveStep3Data(showAnswerFlag.value, userDfaStates, userDotItems, dfaState)
 }
 
 // 立即保存到历史记录

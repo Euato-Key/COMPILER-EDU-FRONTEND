@@ -82,14 +82,7 @@
         </div>
       </div>
 
-      <!-- 检查前置条件 -->
-      <div v-if="!analysisData" class="text-center py-20">
-        <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成前面的步骤</h3>
-        <p class="text-gray-500">需要先完成文法分析和分析表构造才能进行字符串分析</p>
-      </div>
-
-      <div v-else class="space-y-8">
+      <div class="space-y-8">
         <!-- 输入字符串 -->
         <div class="bg-white border border-gray-200 rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">输入待分析字符串</h3>
@@ -750,9 +743,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useSLR1Store } from '@/stores/slr1'
+import { useSLR1StoreNew } from '@/stores'
 import { useCommonStore } from '@/stores/common'
 import { useHintModal } from '@/composables/useHintModal'
 import { useAnimationSpeed } from '@/composables/useAnimationSpeed'
@@ -765,8 +758,13 @@ const emit = defineEmits<{
   complete: [data: unknown]
 }>()
 
-const slr1Store = useSLR1Store()
+const slr1Store = useSLR1StoreNew()
 const commonStore = useCommonStore()
+
+// 初始化状态
+const isInitialized = ref(false)
+const isDataReady = ref(false)
+const skipSave = ref(false)
 
 // 组件状态
 const inputString = ref('')
@@ -834,10 +832,10 @@ const { hintModalVisible, hintModalConfig, showHintModal, closeHintModal } = use
 const { animationSpeed, animationSpeedStyle, increaseAnimationSpeed, decreaseAnimationSpeed, resetAnimationSpeed } = useAnimationSpeed()
 
 // 从store获取状态
-const analysisData = computed(() => slr1Store.analysisResult)
+const analysisData = computed(() => slr1Store.originalData)
 const isAnalyzing = computed(() => commonStore.loading)
 const analysisResult = computed(() => slr1Store.inputAnalysisResult)
-const grammarInfo = computed(() => slr1Store.analysisResult)
+const grammarInfo = computed(() => slr1Store.originalData)
 const analysisSteps = computed(() => {
   if (slr1Store.inputAnalysisResult) {
     // 构造分析步骤数据
@@ -1007,11 +1005,6 @@ const analyzeString = async () => {
     return
   }
 
-  if (!slr1Store.analysisResult) {
-    commonStore.setError('请先完成文法分析')
-    return
-  }
-
   try {
     // 更新store中的输入串
     slr1Store.setInputString(inputString.value.trim())
@@ -1021,7 +1014,6 @@ const analyzeString = async () => {
 
     if (success) {
       console.log('SLR1字符串分析完成！')
-      console.log('分析结果数据:', slr1Store.inputAnalysisResult)
     }
   } catch (error) {
     console.error('分析失败:', error)
@@ -1037,6 +1029,13 @@ const resetAnalysis = () => {
 
 // 完成分析
 const complete = () => {
+  // 立即保存当前状态
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  slr1Store.saveToHistory()
+  
   const completionData = {
     analysisSteps: analysisSteps.value,
     analysisResult: analysisResult.value,
@@ -1064,6 +1063,24 @@ const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
     validationStatus.value[field][index] = 'correct'
   } else {
     validationStatus.value[field][index] = 'error'
+    
+    // 记录错误日志
+    const fieldNames: Record<string, string> = {
+      stateStack: '状态栈',
+      symbolStack: '符号栈',
+      inputString: '输入串'
+    }
+    slr1Store.addErrorLog({
+      step: 'step5',
+      type: 'analysisStep',
+      location: { 
+        stepIndex: index, 
+        fieldKey: `${field}-${index}` 
+      },
+      wrongValue: userValue,
+      correctValue: correctValue,
+      hint: `第${index}步${fieldNames[field]}填写错误`
+    })
   }
 }
 
@@ -1138,11 +1155,27 @@ const clearAll = () => {
 // 监听分析步骤变化，初始化答题数组
 const initUserAnswers = () => {
   if (analysisSteps.value.length > 0) {
-    userAnswers.value = {
-      stateStack: new Array(analysisSteps.value.length).fill(''),
-      symbolStack: new Array(analysisSteps.value.length).fill(''),
-      inputString: new Array(analysisSteps.value.length).fill(''),
+    // 检查是否有保存的数据
+    const hasSavedData = slr1Store.step5Data?.userSteps && slr1Store.step5Data.userSteps.length > 0
+    const savedSteps = slr1Store.step5Data?.userSteps
+    
+    if (hasSavedData && savedSteps) {
+      // 恢复保存的数据
+      const stepCount = analysisSteps.value.length
+      userAnswers.value = {
+        stateStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.stack || ''),
+        symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.input || ''),
+        inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.action || ''),
+      }
+    } else {
+      // 初始化空数据
+      userAnswers.value = {
+        stateStack: new Array(analysisSteps.value.length).fill(''),
+        symbolStack: new Array(analysisSteps.value.length).fill(''),
+        inputString: new Array(analysisSteps.value.length).fill(''),
+      }
     }
+    
     validationStatus.value = {
       stateStack: {},
       symbolStack: {},
@@ -1151,6 +1184,40 @@ const initUserAnswers = () => {
     showAnswers.value = false
   }
 }
+
+// 保存用户填写的步骤数据
+let saveTimer: any = null
+const saveUserSteps = () => {
+  if (skipSave.value) return
+  
+  const stepCount = userAnswers.value.stateStack.length
+  const userSteps: Array<{ stack: string; input: string; action: string }> = []
+  
+  for (let i = 0; i < stepCount; i++) {
+    userSteps.push({
+      stack: userAnswers.value.stateStack[i] || '',
+      input: userAnswers.value.symbolStack[i] || '',
+      action: userAnswers.value.inputString[i] || '',
+    })
+  }
+  
+  slr1Store.saveStep5Data(userSteps)
+  
+  // 防抖保存到历史记录
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    slr1Store.saveToHistory()
+  }, 1000)
+}
+
+// 监听用户答案变化，自动保存
+watch(
+  userAnswers,
+  () => {
+    saveUserSteps()
+  },
+  { deep: true }
+)
 
 // 监听分析步骤变化
 watch(
@@ -2036,6 +2103,27 @@ function resetHint() {
 watch(analysisResult, () => {
   if (analysisResult.value) {
     resetHint()
+  }
+})
+
+// 组件挂载时初始化
+onMounted(async () => {
+  // 延迟执行，确保 persistence 已经从 localStorage 加载数据
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  // 如果有保存的输入串，恢复它
+  if (slr1Store.inputString) {
+    inputString.value = slr1Store.inputString
+  }
+  
+  isDataReady.value = true
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
   }
 })
 

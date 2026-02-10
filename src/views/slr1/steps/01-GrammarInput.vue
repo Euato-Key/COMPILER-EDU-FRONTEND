@@ -71,15 +71,29 @@
               v-model="grammarInput"
               placeholder="请输入文法产生式，例如：&#10;S -> E&#10;E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | i"
               class="w-full h-40 px-4 py-3 border-2 rounded-lg focus:ring-4 focus:ring-pink-100 focus:border-pink-400 resize-none font-mono text-base transition-all duration-200 bg-gradient-to-r from-gray-50 to-white"
+              :class="[inputErrors.length > 0 ? 'border-red-300' : 'border-gray-200']"
               @input="onInputChange"
             ></textarea>
+          </div>
+
+          <!-- 输入错误提示 -->
+          <div v-if="inputErrors.length > 0" class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-start gap-2">
+              <Icon icon="lucide:alert-circle" class="w-5 h-5 text-red-500 mt-0.5" />
+              <div>
+                <p class="font-medium text-red-800">输入格式错误</p>
+                <ul class="mt-1 space-y-1">
+                  <li v-for="error in inputErrors" :key="error" class="text-sm text-red-600">{{ error }}</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           <!-- 分析按钮 -->
           <div class="flex justify-center mt-4">
             <button
               @click="analyzeGrammar"
-              :disabled="!grammarInput.trim() || isAnalyzing"
+              :disabled="!canAnalyze"
               class="px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl hover:from-pink-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
             >
               <Icon
@@ -173,77 +187,23 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <div
+              v-for="example in EXAMPLE_GRAMMARS"
+              :key="example.id"
+              class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col"
+            >
               <div class="flex items-center gap-2 mb-3">
-                <div class="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
-                <h4 class="font-semibold text-gray-900">算术表达式</h4>
+                <div class="w-6 h-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  {{ example.id }}
+                </div>
+                <h4 class="font-semibold text-gray-900">{{ example.name }}</h4>
               </div>
               <div class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-sm font-mono text-pink-800 font-semibold">
-S -> E
-E -> E + T | T
-T -> T * F | F
-F -> ( E ) | i</pre>
+                <pre class="text-sm font-mono text-pink-800 font-semibold whitespace-pre-wrap">{{ example.grammar }}</pre>
               </div>
               <button
-                @click="loadExample(1)"
+                @click="loadExample(example.id)"
                 class="w-full text-xs px-3 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
-              >
-                使用此示例
-              </button>
-            </div>
-
-            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div class="flex items-center gap-2 mb-3">
-                <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
-                <h4 class="font-semibold text-gray-900">简单文法</h4>
-              </div>
-              <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-sm font-mono text-purple-800 font-semibold">
-S -> A a | b
-A -> c</pre>
-              </div>
-              <button
-                @click="loadExample(2)"
-                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm"
-              >
-                使用此示例
-              </button>
-            </div>
-
-            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div class="flex items-center gap-2 mb-3">
-                <div class="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
-                <h4 class="font-semibold text-gray-900">赋值语句</h4>
-              </div>
-              <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-sm font-mono text-indigo-800 font-semibold">
-S -> A
-A -> i = E | E
-E -> E + i | i | ( A )</pre>
-              </div>
-              <button
-                @click="loadExample(3)"
-                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 shadow-sm"
-              >
-                使用此示例
-              </button>
-            </div>
-
-            <div class="bg-white rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div class="flex items-center gap-2 mb-3">
-                <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
-                <h4 class="font-semibold text-gray-900">列表文法</h4>
-              </div>
-              <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded p-3 mb-3 flex-1">
-                <pre class="text-sm font-mono text-blue-800 font-semibold">
-S -> L
-L -> a
-L -> L , a</pre>
-              </div>
-              <button
-                @click="loadExample(4)"
-                class="w-full text-xs px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg hover:from-blue-600 hover:to-cyan-700 transition-all duration-200 shadow-sm"
               >
                 使用此示例
               </button>
@@ -275,80 +235,124 @@ L -> L , a</pre>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useSLR1Store } from '@/stores/slr1'
+import { useSLR1StoreNew } from '@/stores'
 import { useCommonStore } from '@/stores/common'
+import { validateOnInput, validateOnSubmit, EXAMPLE_GRAMMARS } from '../utils/validation'
 
 const emit = defineEmits<{
   'next-step': []
   'prev-step': []
 }>()
 
-const slr1Store = useSLR1Store()
+// 使用新的 SLR1 Store
+const slr1Store = useSLR1StoreNew()
 const commonStore = useCommonStore()
 
 // 组件状态
 const grammarInput = ref('')
-
-// 从store获取状态
+const inputErrors = ref<string[]>([])
 const isAnalyzing = computed(() => commonStore.loading)
+
+// 分析结果显示
 const analysisResult = computed(() => {
-  if (slr1Store.analysisResult) {
-    return {
-      success: true,
-      message: slr1Store.isSLR1Grammar
-        ? '文法分析完成，符合SLR1文法！'
-        : '文法存在冲突，不是SLR1文法',
-      data: slr1Store.analysisResult,
+  if (!slr1Store.originalData) {
+    if (commonStore.error) {
+      return {
+        success: false,
+        message: commonStore.error,
+        data: null,
+      }
     }
+    return null
   }
-  if (commonStore.error) {
-    return {
-      success: false,
-      message: commonStore.error,
-      data: null,
-    }
+  
+  return {
+    success: true,
+    message: slr1Store.isSLR1Grammar
+      ? '文法分析完成，符合SLR1文法！'
+      : '文法存在冲突，不是SLR1文法',
+    data: slr1Store.originalData,
   }
-  return null
+})
+
+// 是否可以分析
+const canAnalyze = computed(() => {
+  return grammarInput.value.trim().length > 0 && 
+         inputErrors.value.length === 0 && 
+         !isAnalyzing.value
 })
 
 // 步骤完成状态
-const isStepComplete = computed(() => slr1Store.analysisResult && slr1Store.isSLR1Grammar === true)
+const isStepComplete = computed(() => {
+  return slr1Store.originalData !== null && slr1Store.isSLR1Grammar === true
+})
+
+// === 核心逻辑：尝试恢复会话 ===
+const isRecovering = ref(false)
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+  
+  if (slr1Store.productions.length > 0 && !slr1Store.originalData) {
+    isRecovering.value = true
+    console.log('[SLR1-STEP1-RECOVERY] 检测到文法记录，正在静默恢复分析结果...', slr1Store.productions)
+    
+    try {
+      const success = await slr1Store.performSLR1Analysis(true)
+      if (success) {
+        console.log('[SLR1-STEP1-RECOVERY] 分析结果恢复成功')
+      }
+    } catch (err) {
+      console.error('[SLR1-STEP1-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+    }
+  }
+}
+
+// 监听持久化数据的异步加载
+watch(
+  () => slr1Store.grammar,
+  (newVal) => {
+    // 如果本地输入框为空，尝试从 store 同步
+    if (newVal && !grammarInput.value) {
+      grammarInput.value = newVal
+    }
+    // 只要有文法，就尝试执行分析恢复（以获取 originalData）
+    if (newVal) {
+      handleRecovery()
+    }
+  },
+  { immediate: true }
+)
 
 // 组件挂载时加载持久化数据
 onMounted(() => {
-  // 从store加载持久化的产生式
-  if (slr1Store.productions.length > 0) {
-    grammarInput.value = slr1Store.productions.join('\n')
+  // 确保挂载时同步一次
+  if (slr1Store.grammar && !grammarInput.value) {
+    grammarInput.value = slr1Store.grammar
   }
+  handleRecovery()
 })
 
 // 输入变化处理
 const onInputChange = () => {
+  inputErrors.value = validateOnInput(grammarInput.value)
   // 清除错误状态
   commonStore.clearError()
 }
 
 // 加载示例文法
 const loadExample = (exampleId: number) => {
-  const examples = {
-    1: `S -> E
-E -> E + T | T
-T -> T * F | F
-F -> ( E ) | i`,
-    2: `S -> A a | b
-A -> c`,
-    3: `S -> A
-A -> i = E | E
-E -> E + i | i | ( A )`,
-    4: `S -> L
-L -> a
-L -> L , a`,
+  const example = EXAMPLE_GRAMMARS.find(e => e.id === exampleId)
+  if (example) {
+    grammarInput.value = example.grammar
+    // 触发输入校验
+    onInputChange()
+    // 清除之前的分析结果
+    commonStore.clearError()
   }
-
-  grammarInput.value = examples[exampleId as keyof typeof examples] || ''
-  commonStore.clearError()
 }
 
 // 分析文法
@@ -356,27 +360,33 @@ const analyzeGrammar = async () => {
   if (!grammarInput.value.trim()) return
 
   try {
-    // 处理输入的产生式
-    const productions = grammarInput.value
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
+    // 深度校验
+    const validation = validateOnSubmit(grammarInput.value)
+    if (!validation.isValid) {
+      inputErrors.value = validation.errors
+      return
+    }
 
     // 更新store中的产生式
-    slr1Store.setProductions(productions)
+    slr1Store.setProductions(validation.processedLines)
 
     // 执行SLR1分析
     const success = await slr1Store.performSLR1Analysis()
 
-    if (!success) {
-      console.error('SLR1 analysis failed')
+    if (success) {
+      // 保存到历史记录
+      slr1Store.saveToHistory()
+      console.log('[SLR1-STEP1] 文法分析成功，已保存到历史记录')
+    } else {
+      console.error('[SLR1-STEP1] SLR1 analysis failed')
     }
   } catch (error: unknown) {
-    console.error('Grammar analysis error:', error)
+    console.error('[SLR1-STEP1] Grammar analysis error:', error)
     commonStore.setError(error instanceof Error ? error.message : '文法分析失败，请检查输入格式')
   }
 }
 
+// 处理下一步
 const nextStep = () => {
   if (isStepComplete.value) {
     // 滚动到页面顶部
@@ -384,6 +394,16 @@ const nextStep = () => {
     emit('next-step')
   }
 }
+
+// 监听grammarInput变化，同步到store（用于显示）
+watch(grammarInput, (newValue) => {
+  if (newValue.trim()) {
+    const lines = newValue.split('\n').filter(line => line.trim())
+    slr1Store.setProductions(lines)
+  } else {
+    slr1Store.setProductions([])
+  }
+})
 </script>
 
 <style scoped>
@@ -407,5 +427,21 @@ const nextStep = () => {
   padding: 1rem 2rem 2rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* 过渡动画 */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

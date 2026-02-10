@@ -13,14 +13,39 @@
             </router-link>
             <span class="text-gray-400">|</span>
             <h1 class="text-xl font-semibold text-gray-800">SLR1 语法分析</h1>
+            
+            <!-- 状态显示栏 -->
+            <div v-if="slr1Store.productions.length" class="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="text-gray-500">ID:</span>
+                <span v-if="slr1Store.currentRecordId" class="font-mono text-pink-600 font-bold">
+                  {{ slr1Store.currentRecordId }}
+                </span>
+                <span v-else class="text-green-600 font-bold">新会话</span>
+              </div>
+              <span class="text-gray-300">|</span>
+              <div class="flex items-center gap-1 max-w-[300px]">
+                <span class="text-gray-500">文法:</span>
+                <span class="font-mono text-gray-900 truncate" :title="slr1Store.grammar">
+                  {{ slr1Store.productions[0] }}{{ slr1Store.productions.length > 1 ? '...' : '' }}
+                </span>
+              </div>
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <ThemeSelector />
+            <router-link
+              to="/record/slr1"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <Icon icon="lucide:history" class="w-4 h-4" />
+              历史记录
+            </router-link>
             <button
               @click="resetProgress"
-              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
             >
-              重置进度
+              <span class="text-lg">+</span> 新建答题
             </button>
             <router-link
               to="/fa"
@@ -32,6 +57,20 @@
         </div>
       </div>
     </header>
+
+    <!-- 错误提示 -->
+    <div
+      v-if="error"
+      class="fixed top-20 right-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg z-50"
+    >
+      <div class="flex items-center gap-2">
+        <Icon icon="lucide:alert-circle" class="w-5 h-5" />
+        <span>{{ error }}</span>
+        <button @click="clearError" class="ml-2 hover:bg-red-100 rounded p-1">
+          <Icon icon="lucide:x" class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
 
     <!-- 主要内容区域 -->
     <main class="max-w-7xl mx-auto px-4 py-8">
@@ -77,19 +116,32 @@
 <script setup lang="ts">
 import { ref, computed, watch, defineAsyncComponent, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { Icon } from '@iconify/vue'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useSLR1Store } from '@/stores/slr1'
-import { useSLR1ChatStore } from '@/stores'
+import { useSLR1StoreNew, useCommonStore, useSLR1ChatStore } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
-const slr1Store = useSLR1Store()
+// 使用新的 SLR1 Store
+const slr1Store = useSLR1StoreNew()
+const commonStore = useCommonStore()
+
+// 解构响应式状态
+const { productions, inputString } = storeToRefs(slr1Store)
+const { error } = storeToRefs(commonStore)
 
 // 使用SLR1 AI聊天store
 const slr1ChatStore = useSLR1ChatStore()
+
+// 立即尝试加载持久化数据（在组件挂载前执行，确保数据可用）
+try {
+  slr1Store.persistence.load()
+} catch (err) {
+  console.warn('[SLR1] Failed to load persisted data:', err)
+}
 
 // 聊天上下文
 const chatContext = ref<ChatContext>({
@@ -218,6 +270,11 @@ const handleStepClick = (stepId: number) => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// 清除错误
+const clearError = () => {
+  commonStore.clearError()
+}
+
 // 更新聊天上下文
 const updateChatContext = () => {
   // 获取SLR1 store中的数据
@@ -233,7 +290,7 @@ const updateChatContext = () => {
     },
     backendData: {
       productions: slr1Data.productions || [],
-      analysisResult: slr1Data.analysisResult || null,
+      analysisResult: slr1Data.originalData || null,
       actionTable: slr1Data.actionTable || {},
       gotoTable: slr1Data.gotoTable || {},
       dfaStates: slr1Data.dfaStates || [],
@@ -256,18 +313,62 @@ const completeAnalysis = (data: any) => {
   updateChatContext()
 }
 
+// === 核心逻辑：尝试恢复会话 ===
+const isRecovering = ref(false)
+const handleRecovery = async () => {
+  if (isRecovering.value) return
+  
+  if (slr1Store.productions.length > 0 && !slr1Store.originalData) {
+    isRecovering.value = true
+    try {
+      console.log('[SLR1-RECOVERY] 检测到文法记录，正在静默恢复分析结果...', slr1Store.productions)
+      const success = await slr1Store.performSLR1Analysis(true)
+      if (success) {
+        console.log('[SLR1-RECOVERY] 分析结果恢复成功')
+        if (slr1Store.inputString) {
+          await slr1Store.analyzeInputString()
+        }
+      }
+    } catch (err) {
+      console.error('[SLR1-RECOVERY] 恢复失败:', err)
+    } finally {
+      isRecovering.value = false
+      updateChatContext()
+    }
+  }
+}
+
 const resetProgress = () => {
-  router.push('/slr1/1')
-  // 清空AI聊天上下文
-  slr1ChatStore.clearChat()
-  updateChatContext()
+  if (confirm('确定要新建答题吗？这将清空当前所有进度。')) {
+    slr1Store.resetAll()
+    router.push('/slr1/1')
+    // 清空AI聊天上下文
+    slr1ChatStore.clearChat()
+    updateChatContext()
+    console.log('[SLR1] Progress reset')
+  }
 }
 
 // 组件挂载时的初始化
-onMounted(() => {
+onMounted(async () => {
+  // 执行会话恢复
+  await handleRecovery()
+  
   // 初始化聊天上下文
   updateChatContext()
 })
+
+// 监听数据变化，自动保存和更新聊天上下文
+watch(
+  [productions, inputString],
+  () => {
+    // 防抖保存
+    slr1Store.persistence.save()
+    // 更新聊天上下文
+    updateChatContext()
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>

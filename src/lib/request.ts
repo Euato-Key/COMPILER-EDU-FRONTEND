@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const baseURL = 'http://127.0.0.1:5000' // 本地调试地址
+// 使用相对路径，让 Vite 代理处理跨域
+const baseURL = import.meta.env.DEV ? '' : 'http://127.0.0.1:5000'
 
 const instance = axios.create({
   baseURL,

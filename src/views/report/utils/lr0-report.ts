@@ -183,14 +183,33 @@ export function generateLR0Report(
     stats.step2.overall.completed = stats.step2.augmentedFormula.completed
 
     // Step 3: DFA状态集
-    // 基于后端返回的DFA状态数量
-    const dfaStatesCount = original.all_dfa?.length || 0
-    if (dfaStatesCount > 0 && userData.step3Data?.userDfaStates) {
-      const userStatesCount = userData.step3Data.userDfaStates.length
-      stats.step3.dfaStates.progress = Math.min(100, Math.round((userStatesCount / dfaStatesCount) * 100))
-      stats.step3.dfaStates.completed = stats.step3.dfaStates.progress === 100
+    // 基于 nextStepOpen 判断完成状态，与SLR1保持一致
+    const dfaStates = userData.step3Data?.userDfaStates || []
+    const dfaState = userData.step3Data?.dfaState
+    
+    // 根据 nextStepOpen 判断完成状态
+    // nextStepOpen[0] = Item校验完成, nextStepOpen[1] = Goto校验完成
+    const itemCheckComplete = dfaState?.nextStepOpen?.[0] || false
+    const gotoCheckComplete = dfaState?.nextStepOpen?.[1] || false
+    
+    // 计算进度：有DFA状态数据占30%，Item校验完成占35%，Goto校验完成占35%
+    let progress = 0
+    
+    if (dfaStates.length > 0) {
+      progress += 30 // 有DFA状态数据，基础30%
     }
-    stats.step3.overall.progress = stats.step3.dfaStates.progress
+    
+    if (itemCheckComplete) {
+      progress += 35 // Item校验完成，加35%
+    }
+    
+    if (gotoCheckComplete) {
+      progress += 35 // Goto校验完成，加35%
+    }
+    
+    stats.step3.dfaStates.progress = progress
+    stats.step3.dfaStates.completed = itemCheckComplete && gotoCheckComplete
+    stats.step3.overall.progress = progress
     stats.step3.overall.completed = stats.step3.dfaStates.completed
 
     // Step 4: Action/Goto表

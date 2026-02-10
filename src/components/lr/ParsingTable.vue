@@ -198,7 +198,7 @@
         <div v-if="!showAnswers && !hasValidationResults" class="p-8 text-center text-gray-500">
           <Icon icon="lucide:help-circle" class="w-12 h-12 mx-auto mb-3 text-gray-400" />
           <p class="text-lg font-medium">等待验证</p>
-          <p class="text-sm mt-1">点击"格检验"按钮或"显示答案"按钮查看结果</p>
+          <p class="text-sm mt-1">点击"表格检验"按钮查看验证结果</p>
         </div>
 
         <div v-else-if="showAnswers || hasValidationResults" class="p-6">
@@ -361,11 +361,6 @@ const validationStats = computed(() => {
 })
 
 const isTableComplete = computed(() => {
-  // 如果显示答案，直接返回true
-  if (showAnswers.value) {
-    return true
-  }
-
   const allResults = [
     ...Object.values(validationResults.actions),
     ...Object.values(validationResults.gotos),
@@ -535,31 +530,7 @@ const getCellStyle = (key: string, type: 'action' | 'goto'): string => {
 
 const toggleAnswerDisplay = () => {
   showAnswers.value = !showAnswers.value
-
-  // 当显示答案时，自动触发步骤完成状态
-  if (showAnswers.value) {
-    // 模拟验证所有单元格为正确状态
-    for (let stateIndex = 0; stateIndex < stateCount.value; stateIndex++) {
-      for (const terminal of [...props.terminals, '#']) {
-        const key = `${stateIndex},${terminal}`
-        validationResults.actions[key] = { type: 'correct' }
-      }
-      for (const nonterminal of props.nonterminals) {
-        const key = `${stateIndex},${nonterminal}`
-        validationResults.gotos[key] = { type: 'correct' }
-      }
-    }
-    hasValidationResults.value = true
-  } else {
-    // 隐藏答案时，清空验证结果
-    Object.keys(validationResults.actions).forEach((key) => {
-      delete validationResults.actions[key]
-    })
-    Object.keys(validationResults.gotos).forEach((key) => {
-      delete validationResults.gotos[key]
-    })
-    hasValidationResults.value = false
-  }
+  // 显示/隐藏答案只控制答案面板的显示状态，不影响验证结果
 }
 
 // 初始化用户输入数据结构

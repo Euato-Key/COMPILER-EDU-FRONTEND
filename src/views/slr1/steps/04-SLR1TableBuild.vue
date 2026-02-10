@@ -142,26 +142,24 @@
         </div>
       </div>
 
-      <!-- 从前面步骤获取数据 -->
-      <div v-if="!analysisData" class="text-center py-20">
-        <Icon icon="lucide:arrow-left" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-xl font-semibold text-gray-600 mb-2">请先完成前面的步骤</h3>
-        <p class="text-gray-500">需要先完成文法分析和DFA构造才能建立分析表</p>
-      </div>
-
-      <div v-else class="space-y-8">
+      <div class="space-y-8">
 
         <!-- 替换原有分析表区域为ParsingTable组件 -->
-        <div v-if="tableProps" class="mt-6">
+        <div v-if="tableProps && isDataReady" class="mt-6">
           <ParsingTable
             v-bind="tableProps"
             @validation-complete="handleValidation"
             @step-complete="handleStepComplete"
+            @cell-blur="handleCellBlur"
           />
+        </div>
+        <div v-else-if="!isDataReady && tableProps" class="text-center py-12">
+          <Icon icon="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-cyan-500" />
+          <p class="text-sm text-gray-500">正在恢复数据...</p>
         </div>
 
         <!-- 数据格式异常的后备显示 -->
-        <div v-else-if="!tableProps" class="text-center py-12">
+        <div v-if="!tableProps" class="text-center py-12">
           <Icon icon="lucide:alert-triangle" class="w-12 h-12 mx-auto mb-3 text-yellow-500" />
           <p class="text-lg font-medium text-gray-600">数据加载异常</p>
           <p class="text-sm text-gray-500 mt-1">请检查前面的步骤是否正确完成</p>
@@ -198,9 +196,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, watch, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { useSLR1Store } from '@/stores/slr1'
+import { useSLR1StoreNew } from '@/stores'
 import ParsingTable from '@/components/lr/ParsingTable.vue'
 import { instance } from '@viz-js/viz'
 
@@ -209,26 +207,35 @@ const emit = defineEmits<{
   'prev-step': []
 }>()
 
-const slr1Store = useSLR1Store()
+const slr1Store = useSLR1StoreNew()
 
 // 步骤完成状态
 const stepCompleteStatus = ref(false)
+const isInitialized = ref(false) // 防止重复初始化
+const isDataReady = ref(false) // 数据是否已恢复完成
+
+// 用户填写的表格数据（用于 watch 自动保存）
+const userActionTable = ref<Record<string, string>>({})
+const userGotoTable = ref<Record<string, string>>({})
+
+// 用于控制是否跳过保存的标志（避免初始化时触发保存）
+const skipSave = ref(false)
 
 // DFA图渲染相关
 const dfaSvg = ref('')
 const dfaRendered = ref(false)
 
 // 从store获取分析数据
-const analysisData = computed(() => slr1Store.analysisResult)
+const analysisData = computed(() => slr1Store.originalData)
 
 // 计算属性
-const hasDFAData = computed(() => slr1Store.analysisResult !== null && slr1Store.dotString !== '')
+const hasDFAData = computed(() => slr1Store.originalData !== null && slr1Store.dotString !== '')
 const slr1DotString = computed(() => slr1Store.dotString)
 
 // 带编号的产生式（去除S'->S）
 const numberedProductions = computed(() => {
-  if (!slr1Store.analysisResult?.formulas_list) return []
-  return slr1Store.analysisResult.formulas_list.filter((production) => {
+  if (!slr1Store.originalData?.formulas_list) return []
+  return slr1Store.originalData.formulas_list.filter((production) => {
     // 过滤掉S'->S的产生式
     return !production.includes("'") && !production.includes('S->S')
   })
@@ -260,11 +267,25 @@ const renderDFA = async () => {
   }
 }
 
-// 组件挂载时渲染DFA图
+// 组件挂载时初始化
 onMounted(async () => {
-  await nextTick()
+  // 延迟执行，确保 persistence 已经从 localStorage 加载数据
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  // 初始化状态（恢复保存的数据）
+  initializeState()
+  
+  // 渲染DFA图
   if (hasDFAData.value) {
     await renderDFA()
+  }
+})
+
+// 清理定时器
+onUnmounted(() => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
   }
 })
 
@@ -300,17 +321,10 @@ const convertSLR1CorrectAnswers = () => {
   const actions: Record<string, string> = {}
   const gotos: Record<string, string> = {}
 
-  console.log('=== SLR1 数据转换调试 ===')
-  console.log('原始 actions 数据:', analysisData.value.actions)
-  console.log('原始 gotos 数据:', analysisData.value.gotos)
-
   // 处理actions数据（SLR1 store中actions已经是Record<string, string>格式）
   if (analysisData.value.actions && typeof analysisData.value.actions === 'object') {
-    // 直接使用后端返回的数据，后端已经使用正确的格式（state|symbol）
     Object.entries(analysisData.value.actions).forEach(([key, value]) => {
-      // 后端返回的键值格式应该已经是 state|# 的形式
       actions[key] = value
-      console.log(`Action: ${key} = ${value}`)
     })
   }
 
@@ -318,12 +332,8 @@ const convertSLR1CorrectAnswers = () => {
   if (analysisData.value.gotos && typeof analysisData.value.gotos === 'object') {
     Object.entries(analysisData.value.gotos).forEach(([key, value]) => {
       gotos[key] = value
-      console.log(`Goto: ${key} = ${value}`)
     })
   }
-
-  console.log('转换后的 actions:', actions)
-  console.log('转换后的 gotos:', gotos)
 
   return { actions, gotos }
 }
@@ -341,20 +351,14 @@ const tableProps = computed(() => {
 
     const answers = convertSLR1CorrectAnswers()
 
-    console.log('=== SLR1TableBuild 传递给 ParsingTable 的数据 ===')
-    console.log('tableType: SLR1')
-    console.log('terminals:', terminals.value)
-    console.log('nonterminals:', nonterminals.value)
-    console.log('answers:', answers)
-    console.log('actions键值数量:', Object.keys(answers.actions).length)
-    console.log('gotos键值数量:', Object.keys(answers.gotos).length)
-
     return {
       tableType: 'SLR1' as const,
       analysisData: analysisData.value,
       terminals: terminals.value,
       nonterminals: nonterminals.value,
       correctAnswers: answers,
+      savedActionTable: userActionTable.value,
+      savedGotoTable: userGotoTable.value,
     }
   } catch (error) {
     console.error('准备表格数据时出错:', error)
@@ -367,10 +371,88 @@ const isStepComplete = computed(() => {
   return stepCompleteStatus.value && analysisData.value !== null
 })
 
+// 保存到 store（防抖）
+let saveTimer: any = null
+const saveToStore = (actionTable: any, gotoTable: any) => {
+  slr1Store.saveStep4Data(actionTable, gotoTable)
+}
+
+// 立即保存到历史记录
+const saveToHistoryImmediate = () => {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  slr1Store.saveToHistory()
+}
+
+// 核心初始化逻辑
+const initializeState = () => {
+  // 防止重复初始化
+  if (isInitialized.value) {
+    return
+  }
+
+  // 设置跳过保存标志，避免初始化时触发 watcher
+  skipSave.value = true
+
+  // 如果有保存的 step4Data，恢复数据到本地响应式数据
+  if (slr1Store.step4Data) {
+    if (slr1Store.step4Data.userActionTable) {
+      userActionTable.value = { ...slr1Store.step4Data.userActionTable }
+    }
+    if (slr1Store.step4Data.userGotoTable) {
+      userGotoTable.value = { ...slr1Store.step4Data.userGotoTable }
+    }
+  }
+
+  isInitialized.value = true
+
+  // 重置跳过保存标志，并标记数据已准备好
+  nextTick(() => {
+    skipSave.value = false
+    isDataReady.value = true
+  })
+}
+
 // 处理验证完成事件
-const handleValidation = (result: { isValid: boolean; errors: any[] }) => {
-  console.log('SLR1验证结果:', result)
-  // 可以在这里添加额外的验证逻辑
+const handleValidation = (result: { isValid: boolean; errors: any[]; userActionTable?: any; userGotoTable?: any }) => {
+  // 记录错误日志
+  if (!result.isValid && result.errors.length > 0) {
+    result.errors.forEach((error) => {
+      const [state, symbol] = error.key.split(',')
+      slr1Store.addErrorLog({
+        step: 'step4',
+        type: error.type === 'action' ? 'actionTable' : 'gotoTable',
+        location: { 
+          row: state, 
+          col: symbol, 
+          fieldKey: `${error.type}-${error.key}` 
+        },
+        wrongValue: error.userValue,
+        correctValue: error.correctValue,
+        hint: '答案错误'
+      })
+    })
+  }
+  
+  // 保存用户填写的表格数据
+  if (result.userActionTable && result.userGotoTable) {
+    saveToStore(result.userActionTable, result.userGotoTable)
+    
+    // 防抖保存到历史记录
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      saveToHistoryImmediate()
+    }, 1000)
+  }
+}
+
+// 处理单元格失焦事件 - 更新本地数据，由 watch 自动保存
+const handleCellBlur = (newActionTable: Record<string, string>, newGotoTable: Record<string, string>) => {
+  // 更新本地响应式数据，watch 会自动触发保存
+  userActionTable.value = { ...newActionTable }
+  userGotoTable.value = { ...newGotoTable }
 }
 
 // 处理步骤完成状态
@@ -378,9 +460,32 @@ const handleStepComplete = (isComplete: boolean) => {
   stepCompleteStatus.value = isComplete
 }
 
+// 监听用户答案变化，自动保存到 store
+watch(
+  [userActionTable, userGotoTable],
+  () => {
+    // 如果设置了跳过保存标志，则不执行保存
+    if (skipSave.value) {
+      return
+    }
+    // 保存到 store
+    saveToStore(userActionTable.value, userGotoTable.value)
+    
+    // 防抖保存到历史记录
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      saveToHistoryImmediate()
+    }, 1000)
+  },
+  { deep: true }
+)
+
 // 下一步
 const nextStep = () => {
   if (isStepComplete.value) {
+    // 立即保存当前状态
+    saveToHistoryImmediate()
+
     // 滚动到页面顶部
     window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('next-step')
