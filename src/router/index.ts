@@ -21,6 +21,15 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '首页',
       description: '编译原理可视化工具'
     }
+  },
+  {
+    path: '/admin/api',
+    name: 'admin-api',
+    component: () => import('../views/admin/ApiManage.vue'),
+    meta: {
+      title: 'API 管理',
+      description: 'DeepSeek API 密钥管理页面'
+    }
   }
 ]
 
