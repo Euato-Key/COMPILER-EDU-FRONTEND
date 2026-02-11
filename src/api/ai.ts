@@ -100,3 +100,44 @@ export const getApiKeyWithStoredPassword = async (): Promise<string | null> => {
     return null
   }
 }
+
+// 余额信息接口
+export interface BalanceInfo {
+  currency: string
+  total_balance: string
+  granted_balance: string
+  topped_up_balance: string
+}
+
+export interface BalanceResponse {
+  is_available: boolean
+  balance_infos: BalanceInfo[]
+}
+
+/**
+ * 查询 DeepSeek API 余额
+ * @param apiKey DeepSeek API 密钥
+ * @returns 余额信息
+ */
+export const queryDeepSeekBalance = async (apiKey: string): Promise<BalanceResponse | null> => {
+  try {
+    const response = await fetch('https://api.deepseek.com/user/balance', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      }
+    })
+
+    if (!response.ok) {
+      console.error('查询余额失败:', response.status, response.statusText)
+      return null
+    }
+
+    const data: BalanceResponse = await response.json()
+    return data
+  } catch (error) {
+    console.error('查询余额请求失败:', error)
+    return null
+  }
+}

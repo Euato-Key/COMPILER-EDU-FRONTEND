@@ -74,6 +74,88 @@
           </div>
         </div>
 
+        <!-- 余额查询 -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                <Icon icon="lucide:wallet" class="w-5 h-5 text-orange-600" />
+              </div>
+              <h2 class="text-lg font-semibold text-slate-800">账户余额</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <a
+                href="https://platform.deepseek.com/usage"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <Icon icon="lucide:credit-card" class="w-4 h-4" />
+                <span>充值</span>
+              </a>
+              <button
+                @click="queryBalance"
+                :disabled="isQueryingBalance || !currentApiKey"
+                class="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <Icon v-if="isQueryingBalance" icon="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                <Icon v-else icon="lucide:refresh-cw" class="w-4 h-4" />
+                <span>{{ isQueryingBalance ? '查询中...' : '刷新' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 余额信息 -->
+          <div v-if="balanceInfo" class="space-y-3">
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="px-2 py-1 rounded text-xs font-medium"
+                :class="balanceInfo.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+              >
+                {{ balanceInfo.is_available ? '账户可用' : '账户不可用' }}
+              </span>
+            </div>
+            <div
+              v-for="(info, idx) in balanceInfo.balance_infos"
+              :key="idx"
+              class="bg-slate-50 rounded-lg p-4"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-slate-500">货币</span>
+                <span class="text-sm font-medium text-slate-700">{{ info.currency }}</span>
+              </div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-slate-500">总余额</span>
+                <span class="text-lg font-bold text-orange-600">¥{{ info.total_balance }}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-200">
+                <div>
+                  <span class="text-xs text-slate-400 block">赠送余额</span>
+                  <span class="text-sm font-medium text-slate-600">¥{{ info.granted_balance }}</span>
+                </div>
+                <div>
+                  <span class="text-xs text-slate-400 block">充值余额</span>
+                  <span class="text-sm font-medium text-slate-600">¥{{ info.topped_up_balance }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 未查询状态 -->
+          <div v-else-if="!balanceError" class="text-center py-8 text-slate-400">
+            <Icon icon="lucide:wallet" class="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p class="text-sm">点击刷新按钮查询余额</p>
+          </div>
+
+          <!-- 错误提示 -->
+          <div v-if="balanceError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-600 text-sm flex items-center gap-2">
+              <Icon icon="lucide:alert-circle" class="w-4 h-4" />
+              {{ balanceError }}
+            </p>
+          </div>
+        </div>
+
         <!-- 更新 API 密钥 -->
         <div class="bg-white rounded-2xl shadow-lg p-6">
           <div class="flex items-center gap-3 mb-4">
@@ -193,7 +275,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import {
   getStoredPassword,
@@ -201,7 +283,9 @@ import {
   clearStoredPassword,
   getApiKey,
   updateApiKey,
-  updateAdminPassword
+  updateAdminPassword,
+  queryDeepSeekBalance,
+  type BalanceResponse
 } from '@/api/ai'
 
 // 状态
@@ -221,6 +305,11 @@ const confirmPassword = ref('')
 const errorMsg = ref('')
 const successMsg = ref('')
 
+// 余额查询状态
+const isQueryingBalance = ref(false)
+const balanceInfo = ref<BalanceResponse | null>(null)
+const balanceError = ref('')
+
 // 页面加载时检查是否已登录
 onMounted(() => {
   const storedPassword = getStoredPassword()
@@ -228,6 +317,16 @@ onMounted(() => {
     // 尝试自动登录
     password.value = storedPassword
     handleLogin()
+  }
+})
+
+// 监听认证状态，登录成功后自动查询余额
+watch(isAuthenticated, async (newVal) => {
+  if (newVal && currentApiKey.value) {
+    // 延迟一点时间确保页面渲染完成
+    setTimeout(() => {
+      queryBalance()
+    }, 100)
   }
 })
 
@@ -375,6 +474,31 @@ const handleUpdatePassword = async () => {
     console.error('修改密码失败:', error)
   } finally {
     isUpdatingPassword.value = false
+  }
+}
+
+// 查询余额
+const queryBalance = async () => {
+  if (!currentApiKey.value) {
+    balanceError.value = '请先配置 API 密钥'
+    return
+  }
+
+  isQueryingBalance.value = true
+  balanceError.value = ''
+
+  try {
+    const result = await queryDeepSeekBalance(currentApiKey.value)
+    if (result) {
+      balanceInfo.value = result
+    } else {
+      balanceError.value = '查询余额失败，请检查 API 密钥是否有效'
+    }
+  } catch (error) {
+    balanceError.value = '查询余额失败，请检查网络连接'
+    console.error('查询余额失败:', error)
+  } finally {
+    isQueryingBalance.value = false
   }
 }
 </script>
