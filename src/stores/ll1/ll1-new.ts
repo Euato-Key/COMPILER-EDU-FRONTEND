@@ -5,6 +5,8 @@ import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types/ll1'
 import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
 import { useLL1AnimationStore } from '@/animation/store'
+import { buildLL1Context } from './aiContextBuilder'
+import type { AIAnswerContext } from '@/types/ai-context'
 
 const maxHistoryRecords = 50
 
@@ -597,6 +599,24 @@ export const useLL1Store = defineStore('ll1', () => {
             save: persistence.save,
             load: persistence.load,
             clear: persistence.clear,
+        },
+
+        // AI 上下文构造
+        buildAIContext: (currentStep: number): AIAnswerContext => {
+            return buildLL1Context(
+                currentStep,
+                {
+                    productions: productions.value,
+                    inputString: inputString.value,
+                    step2Data: step2Data.value,
+                    step3Data: step3Data.value,
+                    step4Data: step4Data.value,
+                },
+                originalData.value,
+                inputAnalysisResult.value,
+                errorLogs.value,
+                currentRecordId.value,
+            )
         },
     }
 })

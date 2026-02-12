@@ -120,6 +120,16 @@ export function useAIChat() {
       prompt += `\n\n用户答题记录：${JSON.stringify(context.userAnswers, null, 2)}`
     }
 
+    if (context.correctAnswers) {
+      prompt += `\n\n正确答案参考：${JSON.stringify(context.correctAnswers, null, 2)}`
+      prompt += '\n请根据正确答案对比用户的答案，指出问题所在并给出指导。'
+    }
+
+    if (context.errorLogs && context.errorLogs.length > 0) {
+      prompt += `\n\n用户错误记录：${JSON.stringify(context.errorLogs, null, 2)}`
+      prompt += '\n请针对这些错误给出针对性的分析和建议，帮助用户理解错误原因。'
+    }
+
     prompt += '\n\n请根据以上信息，为用户提供有针对性的帮助和解释。回答要简洁明了，重点突出。'
 
     // 添加图表渲染功能说明

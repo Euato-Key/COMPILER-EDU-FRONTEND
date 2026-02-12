@@ -5,12 +5,27 @@ export interface Message {
   timestamp?: number
 }
 
+// 错误日志条目
+export interface ChatErrorLogEntry {
+  step: string
+  type: string
+  location: any
+  wrongValue: string
+  correctValue: string
+  timestamp?: number
+}
+
 export interface ChatContext {
   currentPage: string
   userInput?: Record<string, any>
   backendData?: Record<string, any>
   userAnswers?: Record<string, any>
+  correctAnswers?: Record<string, any>
+  errorLogs?: ChatErrorLogEntry[]
   pageContext?: string
+  recordId?: string | null
+  currentStep?: number
+  stepName?: string
 }
 
 export interface AIConfig {

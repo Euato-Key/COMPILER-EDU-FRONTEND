@@ -11,6 +11,8 @@ import type {
 import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
 import { useLR0AnimationStore } from '@/animation/store'
+import { buildLR0Context } from './aiContextBuilder'
+import type { AIAnswerContext } from '@/types/ai-context'
 
 const maxHistoryRecords = 50
 
@@ -851,6 +853,28 @@ export const useLR0Store = defineStore('lr0', () => {
       save: persistence.save,
       load: persistence.load,
       clear: persistence.clear,
+    },
+
+    // AI 上下文构造
+    buildAIContext: (currentStep: number): AIAnswerContext => {
+      return buildLR0Context(
+        currentStep,
+        {
+          productions: productions.value,
+          inputString: inputString.value,
+          step2Data: step2Data.value,
+          step3Data: step3Data.value,
+          step4Data: step4Data.value,
+          step5Data: step5Data.value,
+        },
+        originalData.value,
+        inputAnalysisResult.value,
+        actionTable.value,
+        gotoTable.value,
+        dfaStates.value,
+        errorLogs.value,
+        currentRecordId.value,
+      )
     },
   }
 })

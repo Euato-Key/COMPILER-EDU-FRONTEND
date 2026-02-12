@@ -4,6 +4,8 @@ import { getDFAM } from '@/api'
 import type { FAResult, DataFAType } from '@/types'
 import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
+import { buildFAContext } from './aiContextBuilder'
+import type { AIAnswerContext } from '@/types/ai-context'
 
 const maxHistoryRecords = 50
 
@@ -526,6 +528,8 @@ export const useFAStore = defineStore('fa', () => {
     originalData,
     validationData,
     canvasData,
+    step3Data,       // 暴露 step3Data
+    step5Data,       // 暴露 step5Data
     errorLogs, // 暴露错误日志
     historyList,
 
@@ -564,6 +568,22 @@ export const useFAStore = defineStore('fa', () => {
       save: persistence.save,
       load: persistence.load,
       clear: persistence.clear,
+    },
+
+    // AI 上下文构造
+    buildAIContext: (currentStep: number): AIAnswerContext => {
+      return buildFAContext(
+        currentStep,
+        {
+          inputRegex: inputRegex.value,
+          canvasData: canvasData.value,
+          step3Data: step3Data.value,
+          step5Data: step5Data.value,
+        },
+        originalData.value,
+        errorLogs.value,
+        currentRecordId.value,
+      )
     },
   }
 })

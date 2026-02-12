@@ -21,3 +21,9 @@ export { useLR0ChatStore } from './lr0/lr0Chat'
 export { useSLR1ChatStore } from './slr1/slr1Chat'
 export { useHomeChatStore } from './homeChat'
 
+// 导出AI上下文构造器
+export { buildFAContext, getCurrentStepUserAnswer as getFACurrentStepUserAnswer } from './fa/aiContextBuilder'
+export { buildLL1Context, getCurrentStepUserAnswer as getLL1CurrentStepUserAnswer } from './ll1/aiContextBuilder'
+export { buildLR0Context, getCurrentStepUserAnswer as getLR0CurrentStepUserAnswer } from './lr0/aiContextBuilder'
+export { buildSLR1Context, getCurrentStepUserAnswer as getSLR1CurrentStepUserAnswer } from './slr1/aiContextBuilder'
+

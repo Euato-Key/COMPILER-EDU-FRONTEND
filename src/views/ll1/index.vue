@@ -117,7 +117,7 @@ import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useLL1Store, useCommonStore, useLL1ChatStore } from '@/stores'
+import { useLL1Store, useCommonStore, useLL1ChatStore, buildLL1Context } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
 // 导入步骤组件
@@ -265,26 +265,25 @@ const handleStepClick = (stepId: number) => {
 
 // 更新聊天上下文
 const updateChatContext = () => {
-  // 获取LL1 store中的数据
-  const ll1Data = ll1Store
+  // 直接使用 Store 中的方法构建 AI 上下文
+  const aiContext = ll1Store.buildAIContext(currentStep.value)
 
-  // 更新聊天上下文
+  // 转换为 ChatContext 格式 - 完整传递所有上下文信息
   chatContext.value = {
     currentPage: 'll1',
+    recordId: aiContext.recordId,
+    currentStep: currentStep.value,
+    stepName: ll1Steps[currentStep.value - 1]?.name || '',
     userInput: {
-      grammar: ll1Data.grammar,
+      ...aiContext.userInput,
       currentStep: currentStep.value,
-      stepName: ll1Steps[currentStep.value - 1]?.name || ''
+      stepName: ll1Steps[currentStep.value - 1]?.name || '',
     },
-    backendData: {
-      productions: ll1Data.productions || [],
-      firstSets: ll1Data.firstSets || {},
-      followSets: ll1Data.followSets || {},
-      parsingTable: ll1Data.parseTable || {},
-      analysisResult: ll1Data.inputAnalysisResult || null
-    },
-    userAnswers: {},
-    pageContext: `LL1语法分析 - ${ll1Steps[currentStep.value - 1]?.name || ''}`
+    backendData: aiContext.backendData,
+    userAnswers: aiContext.userAnswers,
+    correctAnswers: aiContext.correctAnswers,
+    errorLogs: aiContext.errorLogs,
+    pageContext: `LL1语法分析 - ${ll1Steps[currentStep.value - 1]?.name || ''}`,
   }
 
   // 更新store中的上下文
@@ -363,17 +362,13 @@ watch(
   },
 )
 
-// 监听数据变化，自动保存和更新聊天上下文
-watch(
-  [productions, inputString],
-  () => {
-    // 防抖保存
-    ll1Store.persistence.save()
-    // 更新聊天上下文
-    updateChatContext()
-  },
-  { deep: true },
-)
+// 使用 $subscribe 监听 Pinia store 的所有变化
+ll1Store.$subscribe((mutation, state) => {
+  // 防抖保存
+  ll1Store.persistence.save()
+  // 更新聊天上下文
+  updateChatContext()
+})
 </script>
 
 <style scoped>

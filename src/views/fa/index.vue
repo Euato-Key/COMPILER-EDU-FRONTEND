@@ -98,12 +98,11 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 // 修改引入：使用新的 Store
-import { useFAStoreNew } from '@/stores'
+import { useFAStoreNew, useFAChatStore } from '@/stores'
 import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useFAChatStore } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
 // 导入步骤组件
@@ -242,34 +241,33 @@ const resetProgress = () => {
 
 // 更新聊天上下文
 const updateChatContext = () => {
-  const faData = faStore
+  // 直接使用 Store 中的方法构建 AI 上下文
+  const aiContext = faStore.buildAIContext(currentStep.value)
+
+  // 转换为 ChatContext 格式 - 完整传递所有上下文信息
   chatContext.value = {
     currentPage: 'fa',
+    recordId: aiContext.recordId,
+    currentStep: currentStep.value,
+    stepName: faSteps[currentStep.value - 1]?.name || '',
     userInput: {
-      regex: faData.inputRegex || '',
+      ...aiContext.userInput,
       currentStep: currentStep.value,
-      stepName: faSteps[currentStep.value - 1]?.name || ''
+      stepName: faSteps[currentStep.value - 1]?.name || '',
     },
-    backendData: {
-      originalData: faData.originalData || {},
-      validationData: faData.validationData || {},
-      nfaTable: faData.nfaTable || {},
-      dfaTable: faData.dfaTable || {},
-      minDfaTable: faData.minDfaTable || {},
-      nfaDotString: faData.nfaDotString || '',
-      dfaDotString: faData.dfaDotString || '',
-      minDfaDotString: faData.minDfaDotString || '',
-      partitions: faData.partitions || {},
-      partitionChanges: faData.partitionChanges || {}
-    },
-    userAnswers: {},
-    pageContext: `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`
+    backendData: aiContext.backendData,
+    userAnswers: aiContext.userAnswers,
+    correctAnswers: aiContext.correctAnswers,
+    errorLogs: aiContext.errorLogs,
+    pageContext: `有限自动机 - ${faSteps[currentStep.value - 1]?.name || ''}`,
   }
   faChatStore.updateContext(chatContext.value)
 }
 
-// 监听FA store变化
-watch(() => faStore.$state, updateChatContext, { deep: true })
+// 使用 $subscribe 监听 Pinia store 的所有变化
+faStore.$subscribe((mutation, state) => {
+  updateChatContext()
+})
 
 // 监听当前步骤变化
 watch(currentStep, () => {

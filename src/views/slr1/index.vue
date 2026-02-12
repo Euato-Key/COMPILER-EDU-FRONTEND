@@ -122,7 +122,7 @@ import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useSLR1StoreNew, useCommonStore, useSLR1ChatStore } from '@/stores'
+import { useSLR1StoreNew, useCommonStore, useSLR1ChatStore, buildSLR1Context } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
 // 使用新的 SLR1 Store
@@ -277,30 +277,25 @@ const clearError = () => {
 
 // 更新聊天上下文
 const updateChatContext = () => {
-  // 获取SLR1 store中的数据
-  const slr1Data = slr1Store
+  // 直接使用 Store 中的方法构建 AI 上下文
+  const aiContext = slr1Store.buildAIContext(currentStep.value)
 
-  // 更新聊天上下文
+  // 转换为 ChatContext 格式 - 完整传递所有上下文信息
   chatContext.value = {
     currentPage: 'slr1',
+    recordId: aiContext.recordId,
+    currentStep: currentStep.value,
+    stepName: slr1Steps[currentStep.value - 1]?.name || '',
     userInput: {
-      productions: slr1Data.productions || [],
+      ...aiContext.userInput,
       currentStep: currentStep.value,
-      stepName: slr1Steps[currentStep.value - 1]?.name || ''
+      stepName: slr1Steps[currentStep.value - 1]?.name || '',
     },
-    backendData: {
-      productions: slr1Data.productions || [],
-      analysisResult: slr1Data.originalData || null,
-      actionTable: slr1Data.actionTable || {},
-      gotoTable: slr1Data.gotoTable || {},
-      dfaStates: slr1Data.dfaStates || [],
-      dotItems: slr1Data.dotItems || [],
-      firstSets: slr1Data.firstSets || {},
-      followSets: slr1Data.followSets || {},
-      isSLR1Grammar: slr1Data.isSLR1Grammar || null
-    },
-    userAnswers: {},
-    pageContext: `SLR1语法分析 - ${slr1Steps[currentStep.value - 1]?.name || ''}`
+    backendData: aiContext.backendData,
+    userAnswers: aiContext.userAnswers,
+    correctAnswers: aiContext.correctAnswers,
+    errorLogs: aiContext.errorLogs,
+    pageContext: `SLR1语法分析 - ${slr1Steps[currentStep.value - 1]?.name || ''}`,
   }
 
   // 更新store中的上下文
@@ -358,17 +353,13 @@ onMounted(async () => {
   updateChatContext()
 })
 
-// 监听数据变化，自动保存和更新聊天上下文
-watch(
-  [productions, inputString],
-  () => {
-    // 防抖保存
-    slr1Store.persistence.save()
-    // 更新聊天上下文
-    updateChatContext()
-  },
-  { deep: true },
-)
+// 使用 $subscribe 监听 Pinia store 的所有变化
+slr1Store.$subscribe((mutation, state) => {
+  // 防抖保存
+  slr1Store.persistence.save()
+  // 更新聊天上下文
+  updateChatContext()
+})
 </script>
 
 <style scoped>

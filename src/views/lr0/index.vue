@@ -122,7 +122,7 @@ import StepFlowChart from '@/components/shared/StepFlowChart.vue'
 import ScrollToTop from '@/components/shared/ScrollToTop.vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import { AIChatWidget } from '@/components/ai'
-import { useLR0StoreNew, useCommonStore, useLR0ChatStore } from '@/stores'
+import { useLR0StoreNew, useCommonStore, useLR0ChatStore, buildLR0Context } from '@/stores'
 import type { ChatContext } from '@/components/ai/types'
 
 // 获取 Store 实例
@@ -272,27 +272,25 @@ const handleStepClick = (stepId: number) => {
 
 // 更新聊天上下文
 const updateChatContext = () => {
-  // 获取LR0 store中的数据
-  const lr0Data = lr0Store
+  // 直接使用 Store 中的方法构建 AI 上下文
+  const aiContext = lr0Store.buildAIContext(currentStep.value)
 
-  // 更新聊天上下文
+  // 转换为 ChatContext 格式 - 完整传递所有上下文信息
   chatContext.value = {
     currentPage: 'lr0',
+    recordId: aiContext.recordId,
+    currentStep: currentStep.value,
+    stepName: lr0Steps[currentStep.value - 1]?.name || '',
     userInput: {
-      grammar: lr0Data.grammar,
+      ...aiContext.userInput,
       currentStep: currentStep.value,
-      stepName: lr0Steps[currentStep.value - 1]?.name || ''
+      stepName: lr0Steps[currentStep.value - 1]?.name || '',
     },
-    backendData: {
-      productions: lr0Data.productions || [],
-      actionTable: lr0Data.actionTable || {},
-      gotoTable: lr0Data.gotoTable || {},
-      dfaStates: lr0Data.dfaStates || [],
-      dotItems: lr0Data.dotItems || [],
-      analysisResult: lr0Data.originalData || null
-    },
-    userAnswers: {},
-    pageContext: `LR0语法分析 - ${lr0Steps[currentStep.value - 1]?.name || ''}`
+    backendData: aiContext.backendData,
+    userAnswers: aiContext.userAnswers,
+    correctAnswers: aiContext.correctAnswers,
+    errorLogs: aiContext.errorLogs,
+    pageContext: `LR0语法分析 - ${lr0Steps[currentStep.value - 1]?.name || ''}`,
   }
 
   // 更新store中的上下文
@@ -355,17 +353,13 @@ onMounted(async () => {
   await handleRecovery()
 })
 
-// 监听数据变化，自动保存和更新聊天上下文
-watch(
-  [productions, () => lr0Store.inputString],
-  () => {
-    // 防抖保存
-    lr0Store.persistence.save()
-    // 更新聊天上下文
-    updateChatContext()
-  },
-  { deep: true },
-)
+// 使用 $subscribe 监听 Pinia store 的所有变化
+lr0Store.$subscribe((mutation, state) => {
+  // 防抖保存
+  lr0Store.persistence.save()
+  // 更新聊天上下文
+  updateChatContext()
+})
 </script>
 
 <style scoped>
