@@ -1,4 +1,4 @@
-import type { FAHistoryRecord } from '@/stores/fa-new'
+import type { FAHistoryRecord } from '@/stores'
 import type { DataFAType } from '@/types/fa'
 
 export interface FAReportStats {

@@ -1,4 +1,4 @@
-import type { LR0HistoryRecord } from '@/stores/lr0-new'
+import type { LR0HistoryRecord } from '@/stores'
 import type { LR0AnalysisResult } from '@/types/lr0'
 import type { AnalysisStepInfo } from '@/types'
 

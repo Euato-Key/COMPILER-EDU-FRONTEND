@@ -275,7 +275,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import type { LR0ErrorLog } from '@/stores/lr0-new'
+import type { LR0ErrorLog } from '@/stores'
 
 interface Props {
   step4Data?: {

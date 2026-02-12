@@ -248,7 +248,7 @@
 import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { AnalysisStepInfo } from '@/types/ll1'
-import type { LL1ErrorLog } from '@/stores/ll1-new'
+import type { LL1ErrorLog } from '@/stores'
 
 interface Props {
   step4Data?: {

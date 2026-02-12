@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { getDFAM } from '@/api'
 import type { FAResult, DataFAType } from '@/types'
-import { useCommonStore } from './common'
+import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
 
 const maxHistoryRecords = 50

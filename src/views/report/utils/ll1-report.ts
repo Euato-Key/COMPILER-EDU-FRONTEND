@@ -1,4 +1,4 @@
-import type { LL1HistoryRecord, LL1ErrorLog } from '@/stores/ll1-new'
+import type { LL1HistoryRecord, LL1ErrorLog } from '@/stores'
 import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types/ll1'
 
 export interface LL1ReportStats {

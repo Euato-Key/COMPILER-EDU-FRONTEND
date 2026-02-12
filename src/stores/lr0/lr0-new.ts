@@ -8,7 +8,7 @@ import type {
   ValidationResult,
   ProductionItem,
 } from '@/types'
-import { useCommonStore } from './common'
+import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
 import { useLR0AnimationStore } from '@/animation/store'
 

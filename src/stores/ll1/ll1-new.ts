@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { getLL1AnalyseAPI, LL1AnalyseInpStrAPI } from '@/api'
 import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types/ll1'
-import { useCommonStore } from './common'
+import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
 import { useLL1AnimationStore } from '@/animation/store'
 

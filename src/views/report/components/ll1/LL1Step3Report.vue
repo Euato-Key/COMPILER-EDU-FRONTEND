@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import type { LL1ErrorLog } from '@/stores/ll1-new'
+import type { LL1ErrorLog } from '@/stores'
 
 interface Props {
   step3Data?: {

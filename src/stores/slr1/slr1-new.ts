@@ -7,7 +7,7 @@ import type {
   AnalysisStepInfo,
   ValidationResult,
 } from '@/types'
-import { useCommonStore } from './common'
+import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
 import { useSLR1AnimationStore } from '@/animation/store'
 

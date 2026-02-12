@@ -1,4 +1,4 @@
-import type { SLR1HistoryRecord } from '@/stores/slr1-new'
+import type { SLR1HistoryRecord } from '@/stores'
 import type { SLR1AnalysisResult } from '@/types/slr1'
 import type { AnalysisStepInfo } from '@/types'
 

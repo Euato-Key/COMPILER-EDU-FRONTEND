@@ -171,7 +171,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import type { SLR1ErrorLog } from '@/stores/slr1-new'
+import type { SLR1ErrorLog } from '@/stores'
 
 interface AugmentedFormula {
   id: string

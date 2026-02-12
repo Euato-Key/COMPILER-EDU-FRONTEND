@@ -354,7 +354,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
-import type { LR0ErrorLog } from '@/stores/lr0-new'
+import type { LR0ErrorLog } from '@/stores'
 
 // 定义输入串分析结果类型（与后端返回格式一致）
 interface InputAnalysisResult {
