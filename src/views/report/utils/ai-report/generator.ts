@@ -17,8 +17,8 @@ import { getApiKeyWithStoredPassword } from '@/api'
 // DeepSeek API配置
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'
 const DEFAULT_MODEL = 'deepseek-chat'
-const DEFAULT_TEMPERATURE = 0.7
-const DEFAULT_MAX_TOKENS = 4000
+const DEFAULT_TEMPERATURE = 0.3
+const DEFAULT_MAX_TOKENS = 6000
 
 /**
  * 生成AI报告

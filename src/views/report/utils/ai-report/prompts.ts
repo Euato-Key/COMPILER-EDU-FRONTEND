@@ -8,7 +8,7 @@ import type { PromptTemplateVariables } from './types'
 // 基础报告生成Prompt模板
 export const BASE_REPORT_PROMPT_TEMPLATE = `你是一位专业的编译原理教学助手，擅长分析学生的学习情况并给出个性化的学习建议。
 
-请基于以下学生的答题数据，生成一份详细的学习报告总结。
+请基于以下学生的答题数据，生成一份详细的学习报告总，注意需要基于真实的数据，严谨比对学生的答题数据与正确的答案，进而判断完成进度。
 
 ## 模块信息
 - 模块名称：{moduleName}
@@ -27,7 +27,7 @@ export const BASE_REPORT_PROMPT_TEMPLATE = `你是一位专业的编译原理教
 
 请生成一份结构化的JSON格式报告，包含以下内容：
 
-1. **overallEvaluation**: 总体评价（200字以内），包括对学生整体表现的评价
+1. **overallEvaluation**: 总体评价，包括对学生整体表现的评价
 2. **strengths**: 优点数组（3-5条），列出学生掌握较好的方面
 3. **weaknesses**: 不足数组（3-5条），列出需要改进的方面
 4. **suggestions**: 建议数组，每条建议包含：
@@ -36,14 +36,14 @@ export const BASE_REPORT_PROMPT_TEMPLATE = `你是一位专业的编译原理教
    - description: 详细描述
    - priority: 优先级（high/medium/low）
    - relatedStep: 相关步骤（可选）
-5. **knowledgeMastery**: 知识点掌握情况数组，每项包含：
+5. **knowledgeMastery**: 知识点掌握情况数组，具体描述详细点，每项包含：
    - knowledgePoint: 知识点名称
    - masteryLevel: 掌握程度（excellent/good/average/poor）
    - description: 具体描述
 6. **learningPath**: 学习路径建议（可选，300字以内）
 
 要求：
-- 评价要客观、具体，结合学生的实际错误
+- 评价要严谨、客观、具体，基于真实的数据、结合学生的实际错误
 - 建议要有可操作性，帮助学生改进
 - 语气要鼓励性，避免打击学生积极性
 - 必须返回有效的JSON格式
@@ -79,7 +79,7 @@ export const FA_MODULE_PROMPT_SUPPLEMENT = `
 在分析FA（有限自动机）模块时，请关注以下知识点：
 
 1. **正则表达式理解**：学生是否正确理解正则表达式的语法和含义
-2. **NFA构造**：是否正确使用Thompson构造法将正则表达式转换为NFA
+2. **NFA构造**：是否正确将正则表达式转换为NFA
 3. **子集构造法**：是否正确理解和应用子集构造法进行NFA到DFA的转换
 4. **ε-闭包计算**：是否正确计算ε-闭包
 5. **DFA最小化**：是否正确应用Hopcroft算法或分割法进行DFA最小化

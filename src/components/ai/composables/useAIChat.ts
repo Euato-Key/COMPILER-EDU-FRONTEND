@@ -10,7 +10,7 @@ export function useAIChat() {
     apiKey: '',
     baseURL: 'https://api.deepseek.com',
     model: 'deepseek-chat',
-    temperature: 1.0,
+    temperature: 0.3,
     maxTokens: 2048,
     stream: true
   })
