@@ -260,6 +260,19 @@
             }"
           />
         </div>
+
+        <!-- AI 智能学习报告 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <AIReportSection
+            :context="aiReportContext"
+            :initial-content="cachedAIReport?.content"
+            :is-cached="!!cachedAIReport"
+            :generated-at="cachedAIReport?.generatedAt"
+            :generate-fn="generateAIReportFn"
+            @generate="handleAIReportGenerated"
+            @regenerate="handleAIReportRegenerated"
+          />
+        </div>
       </div>
     </div>
 
@@ -287,7 +300,19 @@ import StudentInfoModal from './components/StudentInfoModal.vue'
 import FACanvasReport from './components/fa/FACanvasReport.vue'
 import FAStep3DetailedReport from './components/fa/FAStep3DetailedReport.vue'
 import FAStep5DetailedReport from './components/fa/FAStep5DetailedReport.vue'
+import AIReportSection from './components/AIReportSection.vue'
 import { formatDate } from '@/utils/date'
+
+// AI报告相关导入
+import {
+  generateAIReport,
+  regenerateAIReport,
+  loadAIReport,
+  type AIReportContext,
+  type AIReportData,
+  type AIReportGenerateResult,
+} from './utils/ai-report'
+import { buildFAReportContext } from './utils/fa-ai-report'
 
 const route = useRoute()
 const router = useRouter()
@@ -298,6 +323,10 @@ const reportData = ref<FAReportStats | null>(null)
 const currentRecord = ref<any>(null)
 const studentInfoModalVisible = ref(false)
 const currentAction = ref<'html' | null>(null)
+
+// AI报告相关状态
+const aiReportContext = ref<AIReportContext | null>(null)
+const cachedAIReport = ref<AIReportData | null>(null)
 
 const errorSummary = computed(() => {
   if (!reportData.value) return null
@@ -338,6 +367,35 @@ async function handleStudentInfoConfirm(studentInfo: {
   }
 }
 
+// AI报告生成函数
+async function generateAIReportFn(context: AIReportContext, forceRegenerate = false): Promise<AIReportGenerateResult> {
+  if (forceRegenerate) {
+    return regenerateAIReport(context)
+  }
+  return generateAIReport(context)
+}
+
+// AI报告生成完成回调
+function handleAIReportGenerated(result: AIReportGenerateResult) {
+  if (result.success) {
+    console.log('[FA Report] AI报告生成成功')
+  } else {
+    console.error('[FA Report] AI报告生成失败:', result.error)
+  }
+}
+
+// AI报告重新生成完成回调
+function handleAIReportRegenerated(result: AIReportGenerateResult) {
+  if (result.success) {
+    console.log('[FA Report] AI报告重新生成成功')
+    // 更新缓存引用
+    const recordId = route.params.id as string
+    cachedAIReport.value = loadAIReport(recordId, 'fa')
+  } else {
+    console.error('[FA Report] AI报告重新生成失败:', result.error)
+  }
+}
+
 onMounted(async () => {
   const recordId = route.params.id as string
   
@@ -355,6 +413,9 @@ onMounted(async () => {
 
   currentRecord.value = record
 
+  // 尝试加载缓存的AI报告
+  cachedAIReport.value = loadAIReport(recordId, 'fa')
+
   // 重新获取后端数据以生成验证数据
   try {
     // 设置正则表达式
@@ -364,10 +425,20 @@ onMounted(async () => {
     
     // 使用后端数据生成报告
     reportData.value = generateFAReport(record, faStore.validationData || undefined)
+    
+    // 构建AI报告上下文
+    aiReportContext.value = buildFAReportContext(
+      record,
+      faStore.validationData || undefined,
+      faStore.originalData
+    )
   } catch (error) {
     console.error('获取后端数据失败:', error)
     // 失败时使用默认方式生成报告
     reportData.value = generateFAReport(record)
+    
+    // 仍然尝试构建AI报告上下文
+    aiReportContext.value = buildFAReportContext(record)
   } finally {
     loading.value = false
   }

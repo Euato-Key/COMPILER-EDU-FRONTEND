@@ -300,6 +300,19 @@
             }"
           />
         </div>
+
+        <!-- AI 智能学习报告 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <AIReportSection
+            :context="aiReportContext"
+            :initial-content="cachedAIReport?.content"
+            :is-cached="!!cachedAIReport"
+            :generated-at="cachedAIReport?.generatedAt"
+            :generate-fn="generateAIReportFn"
+            @generate="handleAIReportGenerated"
+            @regenerate="handleAIReportRegenerated"
+          />
+        </div>
       </div>
     </div>
 
@@ -330,7 +343,19 @@ import LR0Step2Report from './components/lr0/LR0Step2Report.vue'
 import LR0Step3Report from './components/lr0/LR0Step3Report.vue'
 import LR0Step4Report from './components/lr0/LR0Step4Report.vue'
 import LR0Step5Report from './components/lr0/LR0Step5Report.vue'
+import AIReportSection from './components/AIReportSection.vue'
 import { formatDate } from '@/utils/date'
+
+// AI报告相关导入
+import {
+  generateAIReport,
+  regenerateAIReport,
+  loadAIReport,
+  type AIReportContext,
+  type AIReportData,
+  type AIReportGenerateResult,
+} from './utils/ai-report'
+import { buildLR0ReportContext } from './utils/lr0-ai-report'
 
 const route = useRoute()
 const router = useRouter()
@@ -342,6 +367,10 @@ const currentRecord = ref<any>(null)
 const studentInfoModalVisible = ref(false)
 const currentAction = ref<'html' | null>(null)
 const backendError = ref<string | null>(null)
+
+// AI报告相关状态
+const aiReportContext = ref<AIReportContext | null>(null)
+const cachedAIReport = ref<AIReportData | null>(null)
 
 const errorSummary = computed(() => {
   if (!reportData.value) return null
@@ -382,6 +411,35 @@ async function handleStudentInfoConfirm(studentInfo: {
   }
 }
 
+// AI报告生成函数
+async function generateAIReportFn(context: AIReportContext, forceRegenerate = false): Promise<AIReportGenerateResult> {
+  if (forceRegenerate) {
+    return regenerateAIReport(context)
+  }
+  return generateAIReport(context)
+}
+
+// AI报告生成完成回调
+function handleAIReportGenerated(result: AIReportGenerateResult) {
+  if (result.success) {
+    console.log('[LR0 Report] AI报告生成成功')
+  } else {
+    console.error('[LR0 Report] AI报告生成失败:', result.error)
+  }
+}
+
+// AI报告重新生成完成回调
+function handleAIReportRegenerated(result: AIReportGenerateResult) {
+  if (result.success) {
+    console.log('[LR0 Report] AI报告重新生成成功')
+    // 更新缓存引用
+    const recordId = route.params.id as string
+    cachedAIReport.value = loadAIReport(recordId, 'lr0')
+  } else {
+    console.error('[LR0 Report] AI报告重新生成失败:', result.error)
+  }
+}
+
 onMounted(async () => {
   const recordId = route.params.id as string
 
@@ -398,6 +456,9 @@ onMounted(async () => {
   }
 
   currentRecord.value = record
+
+  // 尝试加载缓存的AI报告
+  cachedAIReport.value = loadAIReport(recordId, 'lr0')
 
   try {
     // 复现历史记录数据，触发后端计算以获得验证数据
@@ -416,11 +477,21 @@ onMounted(async () => {
       originalData: lr0Store.originalData,
       inputAnalysisResult: lr0Store.inputAnalysisResult
     })
+
+    // 构建AI报告上下文
+    aiReportContext.value = buildLR0ReportContext(
+      record,
+      lr0Store.originalData,
+      lr0Store.inputAnalysisResult || undefined
+    )
   } catch (error) {
     console.error('获取后端验证数据失败:', error)
     backendError.value = '后端验证数据获取失败，报告可能缺少部分验证信息'
     // Fallback: 仅使用记录数据，无验证数据（进度可能不准）
     reportData.value = generateLR0Report(record)
+
+    // 仍然尝试构建AI报告上下文
+    aiReportContext.value = buildLR0ReportContext(record)
   } finally {
     loading.value = false
   }
