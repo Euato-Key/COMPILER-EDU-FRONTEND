@@ -32,7 +32,7 @@
                 <th 
                   v-for="vt in colHeaders" 
                   :key="vt" 
-                  class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border"
+                  class="px-3 py-3 text-center text-xs font-medium text-gray-500 tracking-wider border"
                 >
                   {{ vt }}
                 </th>
