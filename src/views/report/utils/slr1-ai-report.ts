@@ -89,6 +89,7 @@ function buildSLR1AnswerData(record: SLR1HistoryRecord): Record<string, any> {
 
   // Step 3: DFA状态集
   if (userData.step3Data) {
+    const dfaState = userData.step3Data.dfaState
     data.step3 = {
       stepNumber: 3,
       stepName: 'DFA状态集构造',
@@ -102,6 +103,29 @@ function buildSLR1AnswerData(record: SLR1HistoryRecord): Record<string, any> {
         })),
         stateCount: userData.step3Data.userDfaStates?.length || 0,
       },
+      dotItems: {
+        name: 'LR(0)项目',
+        description: '学生绘制的LR(0)项目（图中的节点）',
+        items: userData.step3Data.userDotItems || [],
+        itemCount: userData.step3Data.userDotItems?.length || 0,
+      },
+      drawingState: dfaState
+        ? {
+            name: '绘图状态',
+            description: 'DFA绘图过程中的状态信息，包括节点和边的映射关系',
+            addNodeLimit: dfaState.addNodeLimit,
+            addNodeRemainCnt: dfaState.addNodeRemainCnt,
+            forEachEpochAllNum: dfaState.forEachEpochAllNum,
+            checkRightItems: dfaState.checkRightItems || [],
+            checkRightGotos: dfaState.checkRightGotos || [],
+            checkRightLocalNode: dfaState.checkRightLocalNode || [],
+            checkRightLocalEdge: dfaState.checkRightLocalEdge || [],
+            nodeIdMapItemId: dfaState.nodeIdMapItemId || {},
+            edgeIdMapGotosId: dfaState.edgeIdMapGotosId || {},
+            nextStepOpen: dfaState.nextStepOpen || [],
+          }
+        : null,
+      showAnswer: userData.step3Data.userShowAnswer,
       timestamp: userData.step3Data.timestamp,
       completed: true,
     }
@@ -228,7 +252,7 @@ function buildSLR1CorrectData(
         description: '每个状态包含一组LR(0)项目',
         states: originalData.all_dfa?.map((state, index) => ({
           stateNumber: index,
-          items: state.items || [],
+          items: state.pros || [],
         })),
         stateCount: originalData.all_dfa?.length || 0,
       },
