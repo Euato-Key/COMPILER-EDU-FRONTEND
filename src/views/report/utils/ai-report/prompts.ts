@@ -48,6 +48,8 @@ export const BASE_REPORT_PROMPT_TEMPLATE = `你是一位专业的编译原理教
 - 语气要鼓励性，避免打击学生积极性
 - 必须返回有效的JSON格式
 
+备注：学生的答题数据是前端重新设置的，不必在乎格式不一致的问题。
+
 JSON格式示例：
 {
   "overallEvaluation": "总体评价内容...",

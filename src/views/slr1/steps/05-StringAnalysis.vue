@@ -696,19 +696,29 @@
 
         <div class="text-sm text-gray-500 font-medium">步骤 5 / 5</div>
 
-        <button
-          @click="complete"
-          :disabled="!isStepComplete"
-          :class="[
-            'px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold',
-            isStepComplete
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
-              : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed',
-          ]"
-        >
-          完成分析
-          <Icon icon="lucide:check" class="w-5 h-5" />
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            v-if="slr1Store.currentRecordId"
+            @click="viewReport"
+            class="px-5 py-3 bg-purple-50 text-purple-600 border border-purple-200 rounded-xl hover:bg-purple-100 transition-all duration-300 flex items-center gap-2 font-semibold"
+          >
+            <Icon icon="lucide:file-text" class="w-5 h-5" />
+            查看报告
+          </button>
+          <button
+            @click="complete"
+            :disabled="!isStepComplete"
+            :class="[
+              'px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md flex items-center gap-2 font-semibold',
+              isStepComplete
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
+                : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed',
+            ]"
+          >
+            完成分析
+            <Icon icon="lucide:check" class="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -744,6 +754,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { useSLR1StoreNew } from '@/stores'
 import { useCommonStore } from '@/stores/common'
@@ -758,6 +769,7 @@ const emit = defineEmits<{
   complete: [data: unknown]
 }>()
 
+const router = useRouter()
 const slr1Store = useSLR1StoreNew()
 const commonStore = useCommonStore()
 
@@ -1025,6 +1037,14 @@ const analyzeString = async () => {
 const resetAnalysis = () => {
   slr1Store.setInputString('')
   commonStore.clearError()
+}
+
+// 查看报告
+const viewReport = () => {
+  slr1Store.saveToHistory()
+  if (slr1Store.currentRecordId) {
+    router.push(`/report/slr1/${slr1Store.currentRecordId}`)
+  }
 }
 
 // 完成分析

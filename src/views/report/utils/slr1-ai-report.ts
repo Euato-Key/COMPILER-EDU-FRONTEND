@@ -99,7 +99,9 @@ function buildSLR1AnswerData(record: SLR1HistoryRecord): Record<string, any> {
         description: '学生构造的DFA状态，每个状态包含一组LR(0)项目',
         states: userData.step3Data.userDfaStates?.map((state, index) => ({
           stateNumber: index,
-          items: state.items || [],
+          nodeId: state.id,
+          position: state.position,
+          items: state.data?.pros || [],
         })),
         stateCount: userData.step3Data.userDfaStates?.length || 0,
       },
