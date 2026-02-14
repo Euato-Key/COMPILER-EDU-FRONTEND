@@ -266,10 +266,22 @@ const getUserMatrixValue = (col: string, row: number) => {
   return cell?.value || ''
 }
 
+// 检查值是否表示空/无转换（"-"或空字符串）
+const isEmptyValue = (val: string): boolean => {
+  return !val || val.trim() === '' || val.trim() === '-'
+}
+
 const getUserMatrixStatus = (col: string, rowIdx: number) => {
   const userVal = getUserMatrixValue(col, rowIdx)
   const stdVal = getStandardValue(col, rowIdx)
-  if (!userVal) return 'none'
+
+  // 如果标准答案是"-"（表示无转换），用户填"-"或留空都算正确
+  if (isEmptyValue(stdVal)) {
+    return isEmptyValue(userVal) ? 'correct' : 'wrong'
+  }
+
+  // 如果标准答案有值，用户留空算未填写
+  if (!userVal || userVal.trim() === '') return 'none'
   return userVal.trim() === stdVal.trim() ? 'correct' : 'wrong'
 }
 

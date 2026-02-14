@@ -1,5 +1,6 @@
 import type { FAHistoryRecord } from '@/stores'
 import type { DataFAType } from '@/types/fa'
+import type { FAResult } from '@/types'
 
 export interface FAReportStats {
   recordId: string
@@ -64,7 +65,7 @@ export interface FAReportStats {
   }
 }
 
-export function generateFAReport(record: FAHistoryRecord, validationData?: DataFAType): FAReportStats {
+export function generateFAReport(record: FAHistoryRecord, validationData?: DataFAType, originalData?: FAResult | null): FAReportStats {
   const { id, regex, createdAt, timestamp, errorLogs, userData } = record
 
   const stats: FAReportStats = {
@@ -222,10 +223,30 @@ export function generateFAReport(record: FAHistoryRecord, validationData?: DataF
     if (s5Data?.userMinimizedMatrix) {
       minimizedMatrixFilledCount = s5Data.userMinimizedMatrix.filter(cell => {
         const isNotReadonly = cell.category !== 'onlyRead'
+        if (!isNotReadonly) return false
+        
         // 判定已填：check 状态不是 empty，或者 value 有实际内容
         const hasInteraction = cell.check && cell.check !== 'empty' 
         const hasValue = cell.value !== undefined && cell.value !== null && cell.value.trim() !== ''
-        return isNotReadonly && (hasInteraction || hasValue)
+        
+        // 如果用户有填写内容，视为已填
+        if (hasInteraction || hasValue) return true
+        
+        // 如果标准答案中该单元格为空（表示无转换），也视为已填（用户可以不填或填"-"）
+        if (originalData?.table_to_num_min) {
+          // 根据 colIndex 获取对应的列名（跳过 S 列，因为 S 列是第 0 列且是 onlyRead）
+          const columns = Object.keys(originalData.table_to_num_min).filter(k => k !== 'S')
+          const colName = columns[cell.colIndex - 1] // colIndex 从 0 开始，但 S 列是第 0 列
+          if (colName) {
+            const correctValue = originalData.table_to_num_min[colName]?.[cell.rowIndex]
+            // 标准答案为空、"-"或undefined，表示该单元格不需要填写
+            if (!correctValue || correctValue === '-' || correctValue === '') {
+              return true
+            }
+          }
+        }
+        
+        return false
       }).length
     }
     

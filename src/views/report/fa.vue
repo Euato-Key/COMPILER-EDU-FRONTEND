@@ -424,7 +424,7 @@ onMounted(async () => {
     await faStore.performFAAnalysis(true)
     
     // 使用后端数据生成报告
-    reportData.value = generateFAReport(record, faStore.validationData || undefined)
+    reportData.value = generateFAReport(record, faStore.validationData || undefined, faStore.originalData)
     
     // 构建AI报告上下文
     aiReportContext.value = buildFAReportContext(
@@ -435,8 +435,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('获取后端数据失败:', error)
     // 失败时使用默认方式生成报告
-    reportData.value = generateFAReport(record)
-    
+    reportData.value = generateFAReport(record, undefined, faStore.originalData)
+
     // 仍然尝试构建AI报告上下文
     aiReportContext.value = buildFAReportContext(record)
   } finally {

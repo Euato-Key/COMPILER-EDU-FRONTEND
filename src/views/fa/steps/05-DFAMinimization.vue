@@ -762,8 +762,21 @@ onMounted(() => {
 
           if (savedMatrix.length === expectedCells) {
             // 数据结构正确，使用保存的数据
+            // 修复：确保S列有值（兼容旧数据，之前S列可能保存为空字符串）
+            const tableToNumMin = faStore.originalData?.table_to_num_min
+            if (tableToNumMin) {
+              savedMatrix.forEach((cell: MatrixCell) => {
+                if (cell.category === 'onlyRead' && cell.colIndex === 0) {
+                  const stateName = matrixStateColumns.value[cell.colIndex]
+                  const correctValue = String(tableToNumMin[stateName]?.[cell.rowIndex] ?? cell.rowIndex)
+                  if (!cell.value || cell.value.trim() === '') {
+                    cell.value = correctValue
+                  }
+                }
+              })
+            }
             minimizedMatrix.value = savedMatrix
-            console.log('使用保存的矩阵数据')
+            console.log('使用保存的矩阵数据（已修复S列）')
           } else {
             // 数据结构不正确，重新初始化
             console.log('保存的矩阵数据结构不正确，重新初始化')
@@ -1151,11 +1164,16 @@ const initMinimizedMatrix = () => {
       // 确定单元格类别：S列是只读的，其他列可以填写
       const category = stateName === 'S' ? 'onlyRead' : 'blank'
 
+      // S列的值从后端数据获取，其他列初始为空
+      const initialValue = stateName === 'S'
+        ? String(tableToNumMin[stateName]?.[row] ?? row)
+        : ''
+
       minimizedMatrix.value.push({
         id: cellId,
         category: category,
         check: ValidationState.EMPTY,
-        value: '',
+        value: initialValue,
         rowIndex: row,
         colIndex: col,
         isRowHeader: false,
