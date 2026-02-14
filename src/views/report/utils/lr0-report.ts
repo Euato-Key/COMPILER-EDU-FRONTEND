@@ -253,7 +253,7 @@ export function generateLR0Report(
           filledSteps++
         } else {
           // 检查该步骤是否有用户填写的内容
-          const hasContent = step.stack?.trim() || step.input?.trim() || step.action?.trim()
+          const hasContent = step.stateStack?.trim() || step.symbolStack?.trim() || step.inputString?.trim()
           if (hasContent) {
             filledSteps++
           }
