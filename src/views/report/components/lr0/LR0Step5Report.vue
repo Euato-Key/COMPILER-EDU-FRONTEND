@@ -369,7 +369,7 @@ interface InputAnalysisResult {
 
 interface Props {
   step5Data?: {
-    userSteps: Array<{ stack: string; input: string; action: string }>
+    userSteps: Array<{ stateStack: string; symbolStack: string; inputString: string }>
   }
   inputAnalysisResult?: InputAnalysisResult
   inputString?: string
@@ -448,9 +448,9 @@ const rows = computed<RowData[]>(() => {
 
     // 从 userSteps 获取用户答案
     if (i < userSteps.length) {
-      userStateStack = userSteps[i].stack || ''
-      userSymbolStack = userSteps[i].input || ''
-      userInputString = userSteps[i].action || ''
+      userStateStack = userSteps[i].stateStack || ''
+      userSymbolStack = userSteps[i].symbolStack || ''
+      userInputString = userSteps[i].inputString || ''
       hasUserAction = true
     }
 

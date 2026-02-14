@@ -177,12 +177,13 @@ function buildSLR1AnswerData(record: SLR1HistoryRecord): Record<string, any> {
       inputString: userData.inputString,
       analysis: {
         name: '分析步骤',
-        description: 'SLR分析过程的每一步，包括栈状态、剩余输入和动作',
+        description: 'SLR分析过程的每一步，包括状态栈、符号栈和剩余输入',
         steps: userData.step5Data.userSteps?.map((step, index) => ({
           stepNumber: index + 1,
-          stack: step.stack,
-          input: step.input,
-          action: step.action,
+          stateStack: step.stateStack,
+          symbolStack: step.symbolStack,
+          inputString: step.inputString,
+          isInitialState: step.isInitialState || false,
         })),
         stepCount: userData.step5Data.userSteps?.length || 0,
       },

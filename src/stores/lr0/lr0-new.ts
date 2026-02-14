@@ -84,7 +84,12 @@ export interface LR0StoreData {
   }
   // 05页面：输入串分析步骤数据
   step5Data?: {
-    userSteps: Array<{ stack: string; input: string; action: string }>
+    userSteps: Array<{
+      stateStack: string      // 状态栈
+      symbolStack: string     // 符号栈
+      inputString: string     // 输入串
+      isInitialState?: boolean // 是否为系统预填的初始状态
+    }>
     timestamp: string
   }
 }
@@ -726,9 +731,14 @@ export const useLR0Store = defineStore('lr0', () => {
     }
   }
 
-  const saveStep5Data = (userSteps: Array<{ stack: string; input: string; action: string }>) => {
+  const saveStep5Data = (userSteps: Array<{ stateStack: string; symbolStack: string; inputString: string }>) => {
+    // 为第一行（初始状态）添加 isInitialState 标记
+    const processedSteps = userSteps.map((step, index) => ({
+      ...step,
+      isInitialState: index === 0 // 第一行是系统预填的初始状态
+    }))
     step5Data.value = {
-      userSteps: JSON.parse(JSON.stringify(userSteps)),
+      userSteps: JSON.parse(JSON.stringify(processedSteps)),
       timestamp: new Date().toISOString()
     }
   }

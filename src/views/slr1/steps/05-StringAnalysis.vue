@@ -1183,9 +1183,9 @@ const initUserAnswers = () => {
       // 恢复保存的数据
       const stepCount = analysisSteps.value.length
       userAnswers.value = {
-        stateStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.stack || ''),
-        symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.input || ''),
-        inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.action || ''),
+        stateStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.stateStack || ''),
+        symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.symbolStack || ''),
+        inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.inputString || ''),
       }
     } else {
       // 初始化空数据
@@ -1209,18 +1209,18 @@ const initUserAnswers = () => {
 let saveTimer: any = null
 const saveUserSteps = () => {
   if (skipSave.value) return
-  
+
   const stepCount = userAnswers.value.stateStack.length
-  const userSteps: Array<{ stack: string; input: string; action: string }> = []
-  
+  const userSteps: Array<{ stateStack: string; symbolStack: string; inputString: string }> = []
+
   for (let i = 0; i < stepCount; i++) {
     userSteps.push({
-      stack: userAnswers.value.stateStack[i] || '',
-      input: userAnswers.value.symbolStack[i] || '',
-      action: userAnswers.value.inputString[i] || '',
+      stateStack: userAnswers.value.stateStack[i] || '',
+      symbolStack: userAnswers.value.symbolStack[i] || '',
+      inputString: userAnswers.value.inputString[i] || '',
     })
   }
-  
+
   slr1Store.saveStep5Data(userSteps)
   
   // 防抖保存到历史记录

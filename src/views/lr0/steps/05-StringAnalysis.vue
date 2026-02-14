@@ -1116,16 +1116,16 @@ const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
 const saveUserSteps = () => {
   // 直接从 userAnswers 获取数据，不依赖 analysisSteps
   const stepCount = userAnswers.value.stateStack.length
-  const userSteps: Array<{ stack: string; input: string; action: string }> = []
-  
+  const userSteps: Array<{ stateStack: string; symbolStack: string; inputString: string }> = []
+
   for (let i = 0; i < stepCount; i++) {
     userSteps.push({
-      stack: userAnswers.value.stateStack[i] || '',
-      input: userAnswers.value.symbolStack[i] || '',
-      action: userAnswers.value.inputString[i] || '',
+      stateStack: userAnswers.value.stateStack[i] || '',
+      symbolStack: userAnswers.value.symbolStack[i] || '',
+      inputString: userAnswers.value.inputString[i] || '',
     })
   }
-  
+
   lr0Store.saveStep5Data(userSteps)
   
   // 防抖保存到历史记录
@@ -1222,9 +1222,9 @@ const initUserAnswers = () => {
       // 确保保存的数据长度与当前分析步骤长度匹配
       const stepCount = analysisSteps.value.length
       userAnswers.value = {
-        stateStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.stack || ''),
-        symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.input || ''),
-        inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.action || ''),
+        stateStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.stateStack || ''),
+        symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.symbolStack || ''),
+        inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.inputString || ''),
       }
       console.log('恢复 step5Data:', lr0Store.step5Data)
       console.log('恢复后的 userAnswers:', userAnswers.value)
