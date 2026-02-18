@@ -401,3 +401,8 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+/* 打印时保留背景颜色 - 使用全局样式 */
+@import '../styles/print-colors.css';
+</style>

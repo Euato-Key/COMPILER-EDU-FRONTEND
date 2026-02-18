@@ -26,9 +26,14 @@ export async function exportHTML(options: HTMLExportOptions): Promise<void> {
     studentInfo,
     reportTitle,
     modelName,
-    recordId,
-    filename = `${studentInfo.studentId}-${studentInfo.className}-${studentInfo.name}-${modelName}-${recordId}.html`
+    recordId
   } = options
+
+  // 规范化文件名：学号-班别-姓名-模型-记录ID-日期时间
+  const now = new Date()
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+  const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '')
+  const filename = `${studentInfo.studentId}-${studentInfo.className}-${studentInfo.name}-${modelName}-${recordId}-${dateStr}_${timeStr}.html`
 
   const container = document.getElementById(containerId)
   if (!container) {

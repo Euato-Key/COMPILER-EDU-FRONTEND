@@ -4,7 +4,8 @@
       title="FA 答题报告"
       subtitle="查看详细的答题进度和错误分析"
       back-link="/record/fa"
-      @export="showStudentInfoModal('html')"
+      @export-html="showStudentInfoModal('html')"
+      @export-pdf="showStudentInfoModal('pdf')"
     />
 
     <div v-if="loading" class="flex items-center justify-center py-20">
@@ -174,19 +175,16 @@
           </div>
         </div>
 
-        <!-- 绘图对比详情 -->
-        <div v-if="currentRecord && currentRecord.userData" class="space-y-6">
+        <!-- 步骤 2：NFA 构造 -->
+        <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.canvasData" class="space-y-6">
           <FACanvasReport
-            :user-data="currentRecord.userData.canvasData"
-            :answer-data="{
-              nfaDot: faStore.nfaDotString,
-              dfaDot: faStore.dfaDotString,
-              minDfaDot: faStore.minDfaDotString
-            }"
+            :step="2"
+            :user-data="currentRecord.userData.canvasData.step2"
+            :answer-data="faStore.nfaDotString"
           />
         </div>
 
-        <!-- 答题表格详情 (步骤 3) -->
+        <!-- 步骤 3：子集构造法 - 答题表格详情 -->
         <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.step3Data && faStore.originalData" class="space-y-6">
           <FAStep3DetailedReport
             :standard-data="{
@@ -198,7 +196,16 @@
           />
         </div>
 
-        <!-- 答题表格详情 (步骤 5) -->
+        <!-- 步骤 4：子集构造法转化 DFA -->
+        <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.canvasData" class="space-y-6">
+          <FACanvasReport
+            :step="4"
+            :user-data="currentRecord.userData.canvasData.step4"
+            :answer-data="faStore.dfaDotString"
+          />
+        </div>
+
+        <!-- 步骤 5：DFA 最小化 - 答题表格详情 -->
         <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.step5Data && faStore.originalData" class="space-y-6">
           <FAStep5DetailedReport
             :standard-data="{
@@ -207,6 +214,15 @@
             }"
             :user-data="currentRecord.userData.step5Data"
             :error-logs="currentRecord.errorLogs || []"
+          />
+        </div>
+
+        <!-- 步骤 6：DFA 最小化 -->
+        <div v-if="currentRecord && currentRecord.userData && currentRecord.userData.canvasData" class="space-y-6">
+          <FACanvasReport
+            :step="6"
+            :user-data="currentRecord.userData.canvasData.step6"
+            :answer-data="faStore.minDfaDotString"
           />
         </div>
 
@@ -279,6 +295,7 @@
     <!-- 学生信息填写弹窗 -->
     <StudentInfoModal
       :visible="studentInfoModalVisible"
+      :export-type="currentAction || 'html'"
       @close="studentInfoModalVisible = false"
       @confirm="handleStudentInfoConfirm"
     />
@@ -292,6 +309,7 @@ import { Icon } from '@iconify/vue'
 import { useFAStoreNew } from '@/stores'
 import { generateFAReport, getErrorSummary, type FAReportStats } from './utils/fa-report'
 import { exportHTML } from './utils/html-export'
+import { exportPDF } from './utils/pdf-export'
 import { getOverallProgressBarClass } from './utils/report-helpers'
 import ReportHeader from './components/ReportHeader.vue'
 import ReportProgressCard from './components/ReportProgressCard.vue'
@@ -322,7 +340,7 @@ const loading = ref(true)
 const reportData = ref<FAReportStats | null>(null)
 const currentRecord = ref<any>(null)
 const studentInfoModalVisible = ref(false)
-const currentAction = ref<'html' | null>(null)
+const currentAction = ref<'html' | 'pdf' | null>(null)
 
 // AI报告相关状态
 const aiReportContext = ref<AIReportContext | null>(null)
@@ -339,7 +357,7 @@ const errorSummary = computed(() => {
   return getErrorSummary(record.errorLogs)
 })
 
-function showStudentInfoModal(action: 'html') {
+function showStudentInfoModal(action: 'html' | 'pdf') {
   currentAction.value = action
   studentInfoModalVisible.value = true
 }
@@ -350,15 +368,25 @@ async function handleStudentInfoConfirm(studentInfo: {
   className: string
 }) {
   studentInfoModalVisible.value = false
-  
+
   try {
-    await exportHTML({
-      containerId: 'report-content',
-      studentInfo,
-      reportTitle: 'FA 答题报告',
-      modelName: 'FA',
-      recordId: route.params.id as string
-    })
+    if (currentAction.value === 'html') {
+      await exportHTML({
+        containerId: 'report-content',
+        studentInfo,
+        reportTitle: 'FA 答题报告',
+        modelName: 'FA',
+        recordId: route.params.id as string
+      })
+    } else if (currentAction.value === 'pdf') {
+      await exportPDF({
+        containerId: 'report-content',
+        studentInfo,
+        reportTitle: 'FA 答题报告',
+        modelName: 'FA',
+        recordId: route.params.id as string
+      })
+    }
   } catch (error) {
     console.error('操作失败:', error)
     alert('操作失败，请稍后重试')
@@ -444,3 +472,8 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style>
+/* 打印时保留背景颜色 - 使用全局样式 */
+@import './styles/print-colors.css';
+</style>

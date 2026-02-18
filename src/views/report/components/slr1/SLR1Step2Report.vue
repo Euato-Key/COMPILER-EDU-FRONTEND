@@ -291,5 +291,6 @@ const historyErrors = computed(() => {
 </script>
 
 <style scoped>
-/* Scoped styles if needed */
+/* 打印时保留背景颜色 - 使用全局样式 */
+@import '../../styles/print-colors.css';
 </style>

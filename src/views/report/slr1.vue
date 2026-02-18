@@ -4,7 +4,8 @@
       title="SLR1 答题报告"
       subtitle="查看详细的答题进度和错误分析"
       back-link="/record/slr1"
-      @export="showStudentInfoModal('html')"
+      @export-html="showStudentInfoModal('html')"
+      @export-pdf="showStudentInfoModal('pdf')"
     />
 
     <div v-if="loading" class="flex items-center justify-center py-20">
@@ -321,6 +322,7 @@
     <!-- 学生信息填写弹窗 -->
     <StudentInfoModal
       :visible="studentInfoModalVisible"
+      :export-type="currentAction || 'html'"
       @close="studentInfoModalVisible = false"
       @confirm="handleStudentInfoConfirm"
     />
@@ -336,6 +338,7 @@ import { generateSLR1Report, getSLR1ErrorSummary, type SLR1ReportStats } from '.
 import type { SLR1AnalysisResult } from '@/types/slr1'
 import type { AnalysisStepInfo } from '@/types'
 import { exportHTML } from './utils/html-export'
+import { exportPDF } from './utils/pdf-export'
 import { getOverallProgressBarClass } from './utils/report-helpers'
 import ReportHeader from './components/ReportHeader.vue'
 import ReportProgressCard from './components/ReportProgressCard.vue'
@@ -367,7 +370,7 @@ const loading = ref(true)
 const reportData = ref<SLR1ReportStats | null>(null)
 const currentRecord = ref<any>(null)
 const studentInfoModalVisible = ref(false)
-const currentAction = ref<'html' | null>(null)
+const currentAction = ref<'html' | 'pdf' | null>(null)
 const backendError = ref<string | null>(null)
 
 // AI报告相关状态
@@ -385,7 +388,7 @@ const errorSummary = computed(() => {
   return getSLR1ErrorSummary(record.errorLogs)
 })
 
-function showStudentInfoModal(action: 'html') {
+function showStudentInfoModal(action: 'html' | 'pdf') {
   currentAction.value = action
   studentInfoModalVisible.value = true
 }
@@ -427,13 +430,23 @@ async function handleStudentInfoConfirm(studentInfo: {
   studentInfoModalVisible.value = false
 
   try {
-    await exportHTML({
-      containerId: 'report-content',
-      studentInfo,
-      reportTitle: 'SLR1 答题报告',
-      modelName: 'SLR1',
-      recordId: route.params.id as string
-    })
+    if (currentAction.value === 'html') {
+      await exportHTML({
+        containerId: 'report-content',
+        studentInfo,
+        reportTitle: 'SLR1 答题报告',
+        modelName: 'SLR1',
+        recordId: route.params.id as string
+      })
+    } else if (currentAction.value === 'pdf') {
+      await exportPDF({
+        containerId: 'report-content',
+        studentInfo,
+        reportTitle: 'SLR1 答题报告',
+        modelName: 'SLR1',
+        recordId: route.params.id as string
+      })
+    }
   } catch (error) {
     console.error('操作失败:', error)
     alert('操作失败，请稍后重试')
@@ -499,3 +512,8 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style>
+/* 打印时保留背景颜色 - 使用全局样式 */
+@import './styles/print-colors.css';
+</style>

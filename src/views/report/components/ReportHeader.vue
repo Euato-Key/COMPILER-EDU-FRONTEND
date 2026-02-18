@@ -16,11 +16,18 @@
         </div>
         <div class="flex items-center gap-3">
           <button
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            @click="$emit('export-pdf')"
+          >
+            <Icon icon="lucide:file-text" class="w-4 h-4" />
+            导出 PDF
+          </button>
+          <button
             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-            @click="$emit('export')"
+            @click="$emit('export-html')"
           >
             <Icon icon="lucide:download" class="w-4 h-4" />
-            导出报告
+            导出 HTML
           </button>
         </div>
       </div>
@@ -40,6 +47,12 @@ interface Props {
 defineProps<Props>()
 
 defineEmits<{
-  export: []
+  'export-html': []
+  'export-pdf': []
 }>()
 </script>
+
+<style scoped>
+/* 打印时保留背景颜色 - 使用全局样式 */
+@import '../styles/print-colors.css';
+</style>

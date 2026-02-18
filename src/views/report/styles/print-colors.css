@@ -1,0 +1,60 @@
+/* 全局打印背景颜色保留样式 */
+/* 在所有报告组件中引入此文件即可 */
+
+@media print {
+  /* 通用保留背景色类 */
+  .print-keep-colors,
+  .fa-report-page,
+  .ll1-report-page,
+  .lr0-report-page,
+  .slr1-report-page,
+  .fa-step3-detailed-report,
+  .fa-step5-detailed-report,
+  .fa-table-report,
+  .fa-canvas-report,
+  .ll1-step2-report,
+  .ll1-step3-report,
+  .ll1-step4-report,
+  .lr0-step2-report,
+  .lr0-step3-report,
+  .lr0-step4-report,
+  .lr0-step5-report,
+  .slr1-step2-report,
+  .slr1-step3-report,
+  .slr1-step4-report,
+  .slr1-step5-report,
+  .ai-report-section,
+  .report-error-list,
+  .report-progress-card {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 所有子元素也保留背景色 */
+  .print-keep-colors *,
+  .fa-report-page *,
+  .ll1-report-page *,
+  .lr0-report-page *,
+  .slr1-report-page *,
+  .fa-step3-detailed-report *,
+  .fa-step5-detailed-report *,
+  .fa-table-report *,
+  .fa-canvas-report *,
+  .ll1-step2-report *,
+  .ll1-step3-report *,
+  .ll1-step4-report *,
+  .lr0-step2-report *,
+  .lr0-step3-report *,
+  .lr0-step4-report *,
+  .lr0-step5-report *,
+  .slr1-step2-report *,
+  .slr1-step3-report *,
+  .slr1-step4-report *,
+  .slr1-step5-report *,
+  .ai-report-section *,
+  .report-error-list *,
+  .report-progress-card * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

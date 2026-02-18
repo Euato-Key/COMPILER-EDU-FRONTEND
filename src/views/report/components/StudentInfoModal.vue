@@ -2,7 +2,9 @@
   <div v-if="visible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
       <div class="p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">填写学生信息</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">
+          {{ exportType === 'pdf' ? '导出 PDF 报告' : '导出 HTML 报告' }}
+        </h3>
         <p class="text-sm text-gray-500 mb-6">请填写以下信息，将显示在导出的报告中</p>
         
         <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -71,6 +73,7 @@ import { reactive, watch } from 'vue'
 
 const props = defineProps<{
   visible: boolean
+  exportType?: 'html' | 'pdf'
 }>()
 
 const emit = defineEmits<{
