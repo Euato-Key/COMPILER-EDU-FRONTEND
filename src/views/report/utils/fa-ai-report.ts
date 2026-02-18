@@ -71,7 +71,7 @@ function buildFAAnswerData(record: FAHistoryRecord): Record<string, any> {
     data.step2 = {
       stepNumber: 2,
       stepName: 'NFA构造',
-      description: '使用NFA的造方法将正则表达式转换为非确定有限自动机(NFA)。学生需要在画布上绘制NFA状态转换图，包括：初始状态、接受状态、中间状态，以及标记有输入符号（包括ε）的转换边。Thompson构造法的核心是为每个基本正则表达式符号创建对应的状态和转换，然后通过组合规则处理连接、选择和闭包操作。',
+      description: '使用Thompson构造法将正则表达式转换为非确定有限自动机(NFA)。学生需要在画布上绘制NFA状态转换图，包括：初始状态、接受状态、中间状态，以及标记有输入符号（包括ε，表示空串）的转换边。Thompson构造法的核心是为每个基本正则表达式符号（字符、ε、∅）创建对应的基本自动机，然后通过组合规则处理连接、选择(|)、闭包(*)和正闭包(+)操作。',
       canvasData: {
         nodeCount: nodes.length,
         edgeCount: edges.length,
@@ -228,11 +228,12 @@ function buildFAAnswerData(record: FAHistoryRecord): Record<string, any> {
       timestamp: userData.step5Data.timestamp,
       completed: true,
       minimizationAlgorithm: [
-        '初始划分：将状态分为接受状态集和非接受状态集',
-        '迭代细分：对于每个划分块，检查其中状态在各输入符号下的转移是否落在同一划分块',
-        '如果转移落在不同划分块，则将该块进一步细分',
-        '重复直到没有新的细分产生',
-        '每个最终的划分块对应最小化DFA的一个状态',
+        '初始划分：将状态划分为两个集合——接受状态集(F)和非接受状态集(Q-F)',
+        '迭代细分：对于当前划分中的每个状态子集（划分块），检查其中所有状态在各输入符号下的转移是否都落在同一划分块中',
+        '可区分性判定：如果两个状态在某个输入符号下的转移落在不同划分块，则这两个状态可区分，需要分离到不同子集',
+        '重复细分：持续进行步骤2-3，直到所有划分块都不可再分（即每个块内状态都是等价的）',
+        '构造最小化DFA：每个最终的划分块对应最小化DFA的一个状态，转移关系由原DFA诱导得到',
+        '最小化DFA在同构意义下唯一（状态数最少且识别相同语言）',
       ],
     }
   } else {
