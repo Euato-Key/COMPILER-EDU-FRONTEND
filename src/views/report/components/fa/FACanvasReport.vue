@@ -19,12 +19,12 @@
       <div class="p-6">
         <div v-if="hasUserData || hasAnswerData" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- 用户答案 -->
-          <div class="space-y-3">
+          <div class="space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">我的绘图</span>
               <span v-if="!hasUserData" class="text-xs text-red-500 font-medium italic">未提交绘图数据</span>
             </div>
-            <div class="graph-container p-4 bg-gray-50 rounded-lg border border-gray-100 min-h-[300px] flex items-center justify-center relative overflow-hidden">
+            <div class="graph-container p-2 bg-gray-50 rounded-lg border border-gray-100 min-h-[200px] flex items-center justify-center relative overflow-hidden">
               <div v-if="!hasUserData" class="text-gray-300 flex flex-col items-center">
                 <Icon icon="lucide:image-off" class="w-12 h-12 mb-2" />
                 <p>暂无绘图</p>
@@ -42,12 +42,12 @@
           </div>
 
           <!-- 标准答案 -->
-          <div class="space-y-3">
+          <div class="space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">标准参考答案</span>
               <span v-if="!hasAnswerData" class="text-xs text-orange-500 font-medium italic">标准流程尚未生成</span>
             </div>
-            <div class="graph-container p-4 bg-blue-50/30 rounded-lg border border-blue-100 min-h-[300px] flex items-center justify-center relative overflow-hidden">
+            <div class="graph-container p-2 bg-blue-50/30 rounded-lg border border-blue-100 min-h-[200px] flex items-center justify-center relative overflow-hidden">
               <div v-if="!hasAnswerData" class="text-gray-300 flex flex-col items-center">
                 <Icon icon="lucide:help-circle" class="w-12 h-12 mb-2" />
                 <p>暂无参考答案</p>
@@ -125,8 +125,12 @@ const renderGraphs = async () => {
     try {
       const dot = faToDot(props.userData!.nodes, props.userData!.edges)
       const svgElement = await vizInstance.renderSVGElement(dot)
+      // 优化 SVG 显示：填充容器但保持比例
+      svgElement.style.width = '100%'
+      svgElement.style.height = '100%'
       svgElement.style.maxWidth = '100%'
-      svgElement.style.height = 'auto'
+      svgElement.style.maxHeight = '400px'
+      svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet')
       renderedUserSvg.value = svgElement.outerHTML
     } catch (e) {
       console.error(`[FACanvasReport] Failed to render user graph for step ${props.step}:`, e)
@@ -141,8 +145,12 @@ const renderGraphs = async () => {
     try {
       const enhancedDot = enhanceDotString(props.answerData!)
       const svgElement = await vizInstance.renderSVGElement(enhancedDot)
+      // 优化 SVG 显示：填充容器但保持比例
+      svgElement.style.width = '100%'
+      svgElement.style.height = '100%'
       svgElement.style.maxWidth = '100%'
-      svgElement.style.height = 'auto'
+      svgElement.style.maxHeight = '400px'
+      svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet')
       renderedAnswerSvg.value = svgElement.outerHTML
     } catch (e) {
       console.error(`[FACanvasReport] Failed to render answer graph for step ${props.step}:`, e)
@@ -174,13 +182,64 @@ watch(() => props.answerData, () => {
   width: 100%;
 }
 
+/* 优化 SVG 容器，提高空间利用率 */
+.graph-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* SVG 渲染容器样式 */
+.viz-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.rendered-svg-container) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 :deep(.rendered-svg-container) svg {
+  width: 100% !important;
+  height: 100% !important;
   max-width: 100%;
-  height: auto;
-  filter: drop-shadow(0 4px 6px -1px rgb(0 0 0 / 0.1));
+  max-height: 400px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px -1px rgb(0 0 0 / 0.1));
 }
 
 .canvas-step-card {
   transition: all 0.3s ease;
+}
+
+/* 打印时强制左右布局 */
+@media print {
+  .fa-canvas-report :deep(.grid) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+
+  .fa-canvas-report :deep(.grid > div) {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .fa-canvas-report :deep(.graph-container) {
+    min-height: 180px !important;
+    padding: 0.5rem !important;
+  }
+
+  :deep(.rendered-svg-container) svg {
+    max-height: 300px !important;
+  }
 }
 </style>

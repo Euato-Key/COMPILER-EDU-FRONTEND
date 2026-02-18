@@ -57,4 +57,41 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  /* 打印时强制双列布局（用于绘图对比） */
+  .fa-canvas-report .grid,
+  .fa-canvas-report :deep(.grid) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  /* 确保绘图容器在打印时不被截断 */
+  .fa-canvas-report .grid > div,
+  .fa-canvas-report :deep(.grid > div) {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 调整绘图容器样式，提高空间利用率 */
+  .fa-canvas-report .graph-container,
+  .fa-canvas-report :deep(.graph-container) {
+    min-height: 150px !important;
+    padding: 0.25rem !important;
+    width: 100% !important;
+  }
+
+  /* SVG 图表最大化利用空间 */
+  .fa-canvas-report :deep(.rendered-svg-container),
+  .fa-canvas-report :deep(.viz-wrapper) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .fa-canvas-report :deep(.rendered-svg-container svg) {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 280px !important;
+    object-fit: contain !important;
+  }
 }
