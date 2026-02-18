@@ -607,6 +607,9 @@ const onValidate = () => {
   //  If they submit incomplete work as "Check", maybe just recording *wrong* values is enough.)
   //  I will stick to recording explicit mismatches.
 
+  // 保存错误日志到历史记录（确保错误被持久化）
+  ll1Store.saveToHistory()
+
   const result = validateUserAnalysis(userSteps.value, inputAnalysisResult.value)
   
   if (result.valid) {

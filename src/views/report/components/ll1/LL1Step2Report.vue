@@ -6,6 +6,22 @@
       <h2 class="text-xl font-bold text-gray-900">步骤 2：求First集和Follow集</h2>
     </div>
 
+    <!-- 全局Tooltip - 固定在body层级避免被遮挡 -->
+    <Teleport to="body">
+      <div
+        v-if="tooltipVisible && tooltipContent"
+        class="fixed z-[9999] w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-2xl pointer-events-none"
+        :style="{ left: tooltipX + 'px', top: tooltipY + 'px' }"
+      >
+        <div class="font-bold mb-1 border-b border-gray-600 pb-1 flex items-center gap-1">
+          <Icon icon="lucide:alert-circle" class="w-3 h-3" />
+          错误提示
+        </div>
+        <div class="whitespace-pre-wrap leading-relaxed">{{ tooltipContent }}</div>
+        <div class="absolute top-2 -left-1.5 border-4 border-transparent border-r-gray-800"></div>
+      </div>
+    </Teleport>
+
     <!-- 左右布局的表格 -->
     <div class="grid grid-cols-1 xl:grid-cols-2 print:grid-cols-2 gap-4 print:gap-2">
       <!-- 1. First集合 -->
@@ -65,8 +81,9 @@
                       <span
                         v-for="(err, eIdx) in getErrorHistory(vn, 'firstSet')"
                         :key="eIdx"
-                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200"
-                        :title="err.hint || `历史错误 ${eIdx + 1}`"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        @mouseenter="showTooltip($event, err.hint)"
+                        @mouseleave="hideTooltip"
                       >
                         {{ formatAsSet(err.value) }}
                       </span>
@@ -143,8 +160,9 @@
                       <span
                         v-for="(err, eIdx) in getErrorHistory(vn, 'followSet')"
                         :key="eIdx"
-                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200"
-                        :title="err.hint || `历史错误 ${eIdx + 1}`"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        @mouseenter="showTooltip($event, err.hint)"
+                        @mouseleave="hideTooltip"
                       >
                         {{ formatAsSet(err.value) }}
                       </span>
@@ -168,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { LL1ErrorLog } from '@/stores'
 
@@ -186,6 +204,29 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Tooltip 状态
+const tooltipVisible = ref(false)
+const tooltipContent = ref('')
+const tooltipX = ref(0)
+const tooltipY = ref(0)
+
+// 显示 Tooltip
+function showTooltip(event: MouseEvent, hint: string | undefined) {
+  if (!hint) return
+  tooltipContent.value = hint
+  tooltipVisible.value = true
+  // 计算位置：在元素右侧显示
+  const rect = (event.target as HTMLElement).getBoundingClientRect()
+  tooltipX.value = rect.right + 8
+  tooltipY.value = rect.top
+}
+
+// 隐藏 Tooltip
+function hideTooltip() {
+  tooltipVisible.value = false
+  tooltipContent.value = ''
+}
 
 const nonTerminals = computed(() => props.originalData?.Vn || [])
 

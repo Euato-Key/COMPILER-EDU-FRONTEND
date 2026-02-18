@@ -6,6 +6,22 @@
       <h2 class="text-xl font-bold text-gray-900">步骤 3：构造LL1预测分析表</h2>
     </div>
 
+    <!-- 全局Tooltip - 固定在body层级避免被遮挡 -->
+    <Teleport to="body">
+      <div
+        v-if="tooltipVisible && tooltipContent"
+        class="fixed z-[9999] w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-2xl pointer-events-none"
+        :style="{ left: tooltipX + 'px', top: tooltipY + 'px' }"
+      >
+        <div class="font-bold mb-1 border-b border-gray-600 pb-1 flex items-center gap-1">
+          <Icon icon="lucide:alert-circle" class="w-3 h-3" />
+          错误提示
+        </div>
+        <div class="whitespace-pre-wrap leading-relaxed">{{ tooltipContent }}</div>
+        <div class="absolute top-2 -left-1.5 border-4 border-transparent border-r-gray-800"></div>
+      </div>
+    </Teleport>
+
     <!-- 预测分析表卡片 -->
     <div class="result-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:shadow-none print:border print:border-gray-300">
       <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 print:px-2 print:py-1 print:bg-gray-100">
@@ -51,12 +67,13 @@
                 >
                   <div class="flex flex-col gap-1.5">
                     <!-- 历史错误记录 -->
-                    <div v-if="getErrorHistory(vn, vt).length > 0" class="flex flex-wrap gap-1">
+                    <div v-if="getErrorHistory(vn, vt).length > 0" class="flex flex-wrap gap-1 relative">
                       <span
                         v-for="(err, eIdx) in getErrorHistory(vn, vt)"
                         :key="eIdx"
-                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200"
-                        :title="err.hint || `历史错误 ${eIdx + 1}`"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        @mouseenter="showTooltip($event, err.hint)"
+                        @mouseleave="hideTooltip"
                       >
                         {{ formatProduction(vn, err.value) }}
                       </span>
@@ -117,11 +134,7 @@
                     </template>
                   </div>
 
-                  <!-- 错误提示 -->
-                  <div v-if="getHint(vn, vt)" class="mt-1 text-xs text-red-500 bg-red-50 px-2 py-1 rounded border border-red-100">
-                    <Icon icon="lucide:alert-triangle" class="w-3 h-3 inline mr-1" />
-                    {{ getHint(vn, vt) }}
-                  </div>
+
                 </td>
               </tr>
             </tbody>
@@ -142,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { LL1ErrorLog } from '@/stores'
 
@@ -159,6 +172,29 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Tooltip 状态
+const tooltipVisible = ref(false)
+const tooltipContent = ref('')
+const tooltipX = ref(0)
+const tooltipY = ref(0)
+
+// 显示 Tooltip
+function showTooltip(event: MouseEvent, hint: string | undefined) {
+  if (!hint) return
+  tooltipContent.value = hint
+  tooltipVisible.value = true
+  // 计算位置：在元素右侧显示
+  const rect = (event.target as HTMLElement).getBoundingClientRect()
+  tooltipX.value = rect.right + 8
+  tooltipY.value = rect.top
+}
+
+// 隐藏 Tooltip
+function hideTooltip() {
+  tooltipVisible.value = false
+  tooltipContent.value = ''
+}
 
 // 检查是否有数据
 const hasData = computed(() => {
