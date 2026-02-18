@@ -41,32 +41,42 @@
         </div>
 
         <!-- 基础信息卡片 -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-xl shadow-md border border-gray-300 p-6">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="col-span-2">
-              <h2 class="text-sm font-semibold text-gray-500 mb-2">文法产生式</h2>
-              <div class="p-3 bg-gray-50 rounded-lg font-mono text-sm text-gray-900 whitespace-pre-wrap max-h-40 overflow-y-auto">
+            <div>
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:file-code" class="w-5 h-5" />
+                文法产生式
+              </h2>
+              <div class="p-4 bg-indigo-100 rounded-lg font-mono text-base text-indigo-900 whitespace-pre-wrap max-h-40 overflow-y-auto border border-indigo-200">
                 {{ reportData.grammar }}
               </div>
             </div>
             <div>
-              <h2 class="text-sm font-semibold text-gray-500 mb-2">记录 ID</h2>
-              <div class="p-3 bg-blue-50 rounded-lg font-mono text-xs text-blue-800 break-all">
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:id-card" class="w-5 h-5" />
+                记录 ID
+              </h2>
+              <div class="p-4 bg-blue-100 rounded-lg font-mono text-base text-blue-900 break-all border border-blue-200">
                 {{ reportData.recordId }}
               </div>
             </div>
-            <div class="space-y-4">
-              <div>
-                <h2 class="text-sm font-semibold text-gray-500 mb-2">创建时间</h2>
-                <div class="p-3 bg-gray-50 rounded-lg text-xs text-gray-700">
-                  {{ formatDate(reportData.createdAt) }}
-                </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:calendar-plus" class="w-5 h-5" />
+                创建时间
+              </h2>
+              <div class="p-4 bg-emerald-100 rounded-lg text-base text-emerald-900 border border-emerald-200">
+                {{ formatDate(reportData.createdAt) }}
               </div>
-              <div>
-                <h2 class="text-sm font-semibold text-gray-500 mb-2">最后修改</h2>
-                <div class="p-3 bg-gray-50 rounded-lg text-xs text-gray-700">
-                  {{ formatDate(reportData.lastModified) }}
-                </div>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:calendar-clock" class="w-5 h-5" />
+                最后修改
+              </h2>
+              <div class="p-4 bg-amber-100 rounded-lg text-base text-amber-900 border border-amber-200">
+                {{ formatDate(reportData.lastModified) }}
               </div>
             </div>
           </div>

@@ -30,29 +30,41 @@
 
     <div v-else id="report-content" class="max-w-7xl mx-auto px-4 py-8">
       <div class="space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-xl shadow-md border border-gray-300 p-6">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
-              <h2 class="text-sm font-semibold text-gray-500 mb-2">正则表达式</h2>
-              <div class="p-3 bg-gray-50 rounded-lg font-mono text-sm text-gray-900 break-all">
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:regex" class="w-5 h-5" />
+                正则表达式
+              </h2>
+              <div class="p-4 bg-indigo-100 rounded-lg font-mono text-lg text-indigo-900 break-all border border-indigo-200">
                 {{ reportData.regex }}
               </div>
             </div>
             <div>
-              <h2 class="text-sm font-semibold text-gray-500 mb-2">记录 ID</h2>
-              <div class="p-3 bg-blue-50 rounded-lg font-mono text-xs text-blue-800 break-all">
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:id-card" class="w-5 h-5" />
+                记录 ID
+              </h2>
+              <div class="p-4 bg-blue-100 rounded-lg font-mono text-base text-blue-900 break-all border border-blue-200">
                 {{ reportData.recordId }}
               </div>
             </div>
             <div>
-              <h2 class="text-sm font-semibold text-gray-500 mb-2">创建时间</h2>
-              <div class="p-3 bg-gray-50 rounded-lg text-xs text-gray-700">
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:calendar-plus" class="w-5 h-5" />
+                创建时间
+              </h2>
+              <div class="p-4 bg-emerald-100 rounded-lg text-base text-emerald-900 border border-emerald-200">
                 {{ formatDate(reportData.createdAt) }}
               </div>
             </div>
             <div>
-              <h2 class="text-sm font-semibold text-gray-500 mb-2">最后修改</h2>
-              <div class="p-3 bg-gray-50 rounded-lg text-xs text-gray-700">
+              <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Icon icon="lucide:calendar-clock" class="w-5 h-5" />
+                最后修改
+              </h2>
+              <div class="p-4 bg-amber-100 rounded-lg text-base text-amber-900 border border-amber-200">
                 {{ formatDate(reportData.lastModified) }}
               </div>
             </div>
@@ -260,6 +272,7 @@
               '转换表': '转换表',
               '状态转换矩阵': '状态转换矩阵'
             }"
+            :set-format-sections="['转换表']"
           />
 
           <ReportErrorList
@@ -274,6 +287,7 @@
               '化简 DFA 状态子集': '化简 DFA 状态子集',
               '最小化状态转换矩阵': '最小化状态转换矩阵'
             }"
+            :set-format-sections="['化简 DFA 状态子集']"
           />
         </div>
 

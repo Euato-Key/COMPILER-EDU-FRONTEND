@@ -43,13 +43,13 @@
                 <div>
                   <div class="text-xs text-gray-500 mb-1">错误答案</div>
                   <div class="px-2 py-1 bg-red-100 text-red-800 rounded font-mono text-xs">
-                    {{ error.wrongValue || '(空)' }}
+                    {{ formatValue(error.wrongValue || '(空)', section) }}
                   </div>
                 </div>
                 <div>
                   <div class="text-xs text-gray-500 mb-1">正确答案</div>
                   <div class="px-2 py-1 bg-green-100 text-green-800 rounded font-mono text-xs">
-                    {{ error.correctValue }}
+                    {{ formatValue(error.correctValue, section) }}
                   </div>
                 </div>
               </div>
@@ -128,6 +128,8 @@ interface Props {
   errorSections: ErrorSections
   totalCount: number
   sectionLabels: Record<string, string>
+  // 哪些部分需要使用集合格式显示（如 ['转换表', '化简 DFA 状态子集']）
+  setFormatSections?: string[]
 }
 
 const props = defineProps<Props>()
@@ -136,6 +138,32 @@ const isExpanded = ref(true)
 
 function toggleExpand() {
   isExpanded.value = !isExpanded.value
+}
+
+// 将值格式化为集合形式 {a,b,c}
+function formatAsSet(val: string): string {
+  if (!val || val === '-' || val === '(空)') return val
+  const str = val.trim()
+  if (str === '' || str === '-') return str
+  // 如果已经是集合格式，直接返回
+  if (str.startsWith('{') && str.endsWith('}')) return str
+  const parts = str.split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return str
+  return `{${parts.join(',')}}`
+}
+
+// 判断是否需要使用集合格式
+function shouldUseSetFormat(section: string): boolean {
+  if (!props.setFormatSections) return false
+  return props.setFormatSections.includes(section)
+}
+
+// 格式化显示值
+function formatValue(value: string, section: string): string {
+  if (shouldUseSetFormat(section)) {
+    return formatAsSet(value)
+  }
+  return value
 }
 </script>
 

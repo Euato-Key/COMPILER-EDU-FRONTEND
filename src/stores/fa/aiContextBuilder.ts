@@ -13,6 +13,7 @@ import type {
 } from '@/types/ai-context'
 import type { FAStoreData, FAErrorLog } from './fa-new'
 import type { FAResult } from '@/types'
+import { faToDot } from '@/utils/fa-to-dot'
 
 // FA 步骤名称映射
 const FA_STEP_NAMES: Record<number, string> = {
@@ -91,9 +92,25 @@ function getFAUserAnswers(
 
   // Step 2: NFA 画布
   if (storeData.canvasData.step2) {
+    const nodes = storeData.canvasData.step2.nodes || []
+    const edges = storeData.canvasData.step2.edges || []
+    const dotString = nodes.length > 0 ? faToDot(nodes, edges) : ''
     answers.nfaDraw = {
-      nodes: storeData.canvasData.step2.nodes,
-      edges: storeData.canvasData.step2.edges,
+      nodes: nodes.map((n: any) => ({
+        id: n.id,
+        label: n.label,
+        type: n.type,
+        isInitial: n.data?.isInitial,
+        isFinal: n.data?.isFinal,
+      })),
+      edges: edges.map((e: any) => ({
+        source: e.source,
+        target: e.target,
+        label: e.data?.text || e.label,
+      })),
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+      dotRepresentation: dotString,
       timestamp: storeData.canvasData.step2.timestamp,
     }
   }
@@ -109,9 +126,25 @@ function getFAUserAnswers(
 
   // Step 4: DFA 画布
   if (storeData.canvasData.step4) {
+    const nodes = storeData.canvasData.step4.nodes || []
+    const edges = storeData.canvasData.step4.edges || []
+    const dotString = nodes.length > 0 ? faToDot(nodes, edges) : ''
     answers.dfaDraw = {
-      nodes: storeData.canvasData.step4.nodes,
-      edges: storeData.canvasData.step4.edges,
+      nodes: nodes.map((n: any) => ({
+        id: n.id,
+        label: n.label,
+        type: n.type,
+        isInitial: n.data?.isInitial,
+        isFinal: n.data?.isFinal,
+      })),
+      edges: edges.map((e: any) => ({
+        source: e.source,
+        target: e.target,
+        label: e.data?.text || e.label,
+      })),
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+      dotRepresentation: dotString,
       timestamp: storeData.canvasData.step4.timestamp,
     }
   }
@@ -126,9 +159,25 @@ function getFAUserAnswers(
 
   // Step 6: 最小化 DFA 画布
   if (storeData.canvasData.step6) {
+    const nodes = storeData.canvasData.step6.nodes || []
+    const edges = storeData.canvasData.step6.edges || []
+    const dotString = nodes.length > 0 ? faToDot(nodes, edges) : ''
     answers.minimizedDfaDraw = {
-      nodes: storeData.canvasData.step6.nodes,
-      edges: storeData.canvasData.step6.edges,
+      nodes: nodes.map((n: any) => ({
+        id: n.id,
+        label: n.label,
+        type: n.type,
+        isInitial: n.data?.isInitial,
+        isFinal: n.data?.isFinal,
+      })),
+      edges: edges.map((e: any) => ({
+        source: e.source,
+        target: e.target,
+        label: e.data?.text || e.label,
+      })),
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+      dotRepresentation: dotString,
       timestamp: storeData.canvasData.step6.timestamp,
     }
   }

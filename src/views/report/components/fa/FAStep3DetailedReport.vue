@@ -37,7 +37,7 @@
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-gray-50 border-gray-100')"
                     >
-                      <div class="text-xs font-mono font-bold truncate" :class="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
+                      <div class="text-sm font-mono font-bold truncate" :class="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
                         {{ formatAsSet(getFinalUserValue('conversionTable', col, rowIdx - 1)) }}
                       </div>
                       <Icon
@@ -55,7 +55,7 @@
                     <!-- 标准答案（仅当用户答错时显示） -->
                     <div v-if="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong'" class="answer-item px-1.5 py-1 bg-blue-50 border border-blue-100 rounded flex items-center gap-1">
                       <Icon icon="lucide:book-open" class="w-3 h-3 text-blue-500 flex-shrink-0" />
-                      <div class="text-xs font-mono font-bold text-blue-900 truncate">{{ getStandardValue('conversionTable', col, rowIdx - 1) }}</div>
+                      <div class="text-sm font-mono font-bold text-blue-900 truncate">{{ getStandardValue('conversionTable', col, rowIdx - 1) }}</div>
                     </div>
 
                     <!-- 历史错误记录 -->
@@ -63,7 +63,7 @@
                       <span
                         v-for="(attempt, aIdx) in getWrongAttempts('conversionTable', col, rowIdx - 1)"
                         :key="aIdx"
-                        class="px-1 py-0.5 bg-red-50 text-red-500 rounded text-[9px] font-mono line-through opacity-70 border border-red-200"
+                        class="px-1 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200"
                         :title="`次数: ${aIdx + 1}`"
                       >
                         {{ formatAsSet(attempt) }}
@@ -113,7 +113,7 @@
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : (getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong' ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-gray-50 border-gray-100')"
                     >
-                      <div class="text-xs font-mono font-bold truncate" :class="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
+                      <div class="text-sm font-mono font-bold truncate" :class="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
                         {{ getFinalUserValue('transitionMatrix', col, rowIdx - 1) || '-' }}
                       </div>
                       <Icon
@@ -131,7 +131,7 @@
                     <!-- 标准答案（仅当用户答错时显示） -->
                     <div v-if="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong'" class="answer-item px-1.5 py-1 bg-blue-50 border border-blue-100 rounded flex items-center gap-1">
                       <Icon icon="lucide:book-open" class="w-3 h-3 text-blue-500 flex-shrink-0" />
-                      <div class="text-xs font-mono font-bold text-blue-900 truncate">{{ getStandardValue('transitionMatrix', col, rowIdx - 1) }}</div>
+                      <div class="text-sm font-mono font-bold text-blue-900 truncate">{{ getStandardValue('transitionMatrix', col, rowIdx - 1) }}</div>
                     </div>
 
                     <!-- 历史错误记录 -->
@@ -139,7 +139,7 @@
                       <span
                         v-for="(attempt, aIdx) in getWrongAttempts('transitionMatrix', col, rowIdx - 1)"
                         :key="aIdx"
-                        class="px-1 py-0.5 bg-red-50 text-red-500 rounded text-[9px] font-mono line-through opacity-70 border border-red-200"
+                        class="px-1 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200"
                       >
                         {{ attempt }}
                       </span>

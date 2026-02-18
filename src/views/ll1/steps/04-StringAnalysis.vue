@@ -204,6 +204,8 @@ const emit = defineEmits<{ 'next-step': []; 'prev-step': []; complete: [data: an
 const router = useRouter()
 
 const viewReport = () => {
+    // 先确保当前步骤数据已保存到 store，再保存到历史记录
+    ll1Store.saveStep4Data(userSteps.value)
     ll1Store.saveToHistory()
     if (ll1Store.currentRecordId) {
         router.push(`/report/ll1/${ll1Store.currentRecordId}`)
@@ -321,6 +323,9 @@ const analyzeString = async () => {
     const success = await ll1Store.analyzeInputString()
     if (success) {
       handleInitUserSteps()
+      // 保存到历史记录，确保输入串和步骤数据被持久化
+      ll1Store.saveStep4Data(userSteps.value)
+      ll1Store.saveToHistory()
     }
   } catch (error) {
     console.error('分析失败:', error)
@@ -379,7 +384,8 @@ const onLL1CellDblClick = (row: string, col: string) => {
       showMessage('分析完成！', 'success')
     }
     
-    // 每次动作成功都保存一次进度
+    // 每次动作成功都保存一次进度（先同步保存步骤数据，再保存到历史记录）
+    ll1Store.saveStep4Data(userSteps.value)
     ll1Store.saveToHistory()
   } catch (error: any) {
     showHintModal(
@@ -426,7 +432,8 @@ const onMatch = () => {
       showMessage('分析完成！', 'success')
     }
     
-    // 每次动作成功都保存一次进度
+    // 每次动作成功都保存一次进度（先同步保存步骤数据，再保存到历史记录）
+    ll1Store.saveStep4Data(userSteps.value)
     ll1Store.saveToHistory()
   } else {
     const stackArr = last.stack.split('')
@@ -450,7 +457,8 @@ const onUndo = () => {
   if (userSteps.value.length > 1) {
     userSteps.value.pop()
     showHintModal('info', '操作回退', '已回退到上一步操作。', '您可以重新执行正确的操作。', '回退操作完成', 2000, 'center')
-    // 回退也保存一次
+    // 回退也保存一次（先同步保存步骤数据，再保存到历史记录）
+    ll1Store.saveStep4Data(userSteps.value)
     ll1Store.saveToHistory()
   } else {
     showHintModal('warning', '无法回退', '当前已是第一步，无法继续回退。', '请继续进行分析操作。', '无法回退', 2000, 'center')

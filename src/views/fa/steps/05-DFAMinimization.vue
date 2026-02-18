@@ -1280,7 +1280,7 @@ const validateMatrix = () => {
       return
     }
 
-    validateMatrixField(cell)
+    validateMatrixField(cell, true)
   })
 
   // 检查是否所有答案都正确
@@ -1319,7 +1319,7 @@ const proceedToNext = () => {
 
 
 
-const validateMatrixField = (cell: MatrixCell | undefined) => {
+const validateMatrixField = (cell: MatrixCell | undefined, isBatchValidation = false) => {
   if (!cell) return
 
   const fieldKey = `matrix-${cell.rowIndex}-${cell.colIndex}`
@@ -1327,10 +1327,22 @@ const validateMatrixField = (cell: MatrixCell | undefined) => {
 
   const fieldValue = cell.value.trim()
 
-  console.log('Validating matrix field:', { fieldKey, fieldValue, rowIndex: cell.rowIndex, colIndex: cell.colIndex })
+  console.log('Validating matrix field:', { fieldKey, fieldValue, rowIndex: cell.rowIndex, colIndex: cell.colIndex, isBatchValidation })
 
-  // 1. 检查是否为空（留空和填写"-"都视为有效输入，不需要检查空值）
-  // 移除空值检查，因为留空和填写"-"都是有效的
+  // 1. 检查是否为空
+  // 实时检验时，留空不检验、不记录错误
+  if (fieldValue === '') {
+    if (!isBatchValidation) {
+      // 实时检验时，留空直接清除错误状态并返回
+      delete matrixValidationErrors.value[fieldKey]
+      matrixFieldValidation.value[fieldKey] = 'normal'
+      if (Object.keys(matrixValidationErrors.value).length === 0) {
+        showMatrixErrors.value = false
+      }
+      return
+    }
+    // 批量检验时，空值继续检验（会与标准答案比较）
+  }
 
   // 2. 检查答案正确性
   if (faStore.originalData?.table_to_num_min) {

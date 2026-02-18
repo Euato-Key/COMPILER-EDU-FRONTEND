@@ -32,22 +32,22 @@
           <div v-for="item in analyzedPSets.matched" :key="item.id" class="p-1.5 border rounded transition-all" :class="item.matches.length > 0 ? 'border-green-100 bg-green-50/20' : 'border-gray-200 bg-gray-50/50'">
             <!-- 第一行：SET标签 + 用户答案（正确时显示绿色，错误时显示红色） -->
             <div v-if="item.matches.length > 0" class="flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
-              <div class="flex-1 px-2 py-1 bg-green-50 border border-green-200 rounded text-sm font-mono font-bold text-green-900 flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-xs font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-green-50 border border-green-200 rounded text-base font-mono font-bold text-green-900 flex items-center gap-1.5">
                 <Icon icon="lucide:check-circle" class="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
                 {{ formatAsSet(item.matches[0].text) }}
               </div>
             </div>
             <div v-else-if="getWrongMatchForSet(item.id)" class="flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
-              <div class="flex-1 px-2 py-1 bg-red-50 border border-red-200 rounded text-sm font-mono font-bold text-red-900 flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-xs font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-red-50 border border-red-200 rounded text-base font-mono font-bold text-red-900 flex items-center gap-1.5">
                 <Icon icon="lucide:x-circle" class="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
-                {{ formatAsSet(getWrongMatchForSet(item.id).text) }}
+                {{ formatAsSet(getWrongMatchForSet(item.id)?.text) }}
               </div>
             </div>
             <div v-else class="flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
-              <div class="flex-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded text-sm font-mono font-bold text-gray-400 flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-xs font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded text-base font-mono font-bold text-gray-400 flex items-center gap-1.5">
                 <Icon icon="lucide:minus" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                 未填写
               </div>
@@ -55,8 +55,8 @@
 
             <!-- 标准答案（仅当用户答错或未匹配时显示） -->
             <div v-if="item.matches.length === 0" class="flex items-center gap-1.5 mt-1">
-              <span class="px-1.5 py-0.5 bg-transparent text-transparent text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
-              <div class="flex-1 px-2 py-1 bg-blue-50 border border-blue-100 rounded text-sm font-mono font-bold text-blue-900 flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-transparent text-transparent text-xs font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-blue-50 border border-blue-100 rounded text-base font-mono font-bold text-blue-900 flex items-center gap-1.5">
                 <Icon icon="lucide:book-open" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
                 {{ formatAsSet(item.original) }}
               </div>
@@ -71,8 +71,8 @@
             </h4>
             <div class="space-y-2">
               <div v-for="wrong in getExtraWrongInputs()" :key="wrong.id" class="p-2 bg-red-50 border border-red-200 rounded flex items-center justify-between">
-                <div class="text-sm font-mono font-bold text-red-900">{{ formatAsSet(wrong.text) }}</div>
-                <div class="text-[10px] font-bold text-red-500 uppercase px-2 py-0.5 bg-red-100/50 rounded">
+                <div class="text-base font-mono font-bold text-red-900">{{ formatAsSet(wrong.text) }}</div>
+                <div class="text-xs font-bold text-red-500 uppercase px-2 py-0.5 bg-red-100/50 rounded">
                   无效
                 </div>
               </div>
@@ -89,7 +89,7 @@
               <span
                 v-for="(err, idx) in pSetHistoryErrors"
                 :key="idx"
-                class="px-2 py-1 bg-white border border-gray-200 text-gray-400 rounded text-[10px] font-mono line-through"
+                class="px-2 py-1 bg-white border border-gray-200 text-gray-400 rounded text-xs font-mono line-through"
               >
                 {{ formatAsSet(err) }}
               </span>
@@ -127,7 +127,7 @@
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : (getUserMatrixStatus(col, rowIdx - 1) === 'wrong' ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-gray-50 border-gray-100')"
                     >
-                      <div class="text-xs font-mono font-bold truncate" :class="getUserMatrixStatus(col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserMatrixStatus(col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
+                      <div class="text-sm font-mono font-bold truncate" :class="getUserMatrixStatus(col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserMatrixStatus(col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
                         {{ getUserMatrixValue(col, rowIdx - 1) || '-' }}
                       </div>
                       <Icon
@@ -145,7 +145,7 @@
                     <!-- 标准答案（仅当用户答错时显示） -->
                     <div v-if="getUserMatrixStatus(col, rowIdx - 1) === 'wrong'" class="answer-item px-1.5 py-1 bg-blue-50 border border-blue-100 rounded flex items-center gap-1">
                       <Icon icon="lucide:book-open" class="w-3 h-3 text-blue-500 flex-shrink-0" />
-                      <div class="text-xs font-mono font-bold text-blue-900 truncate">{{ getStandardValue(col, rowIdx - 1) }}</div>
+                      <div class="text-sm font-mono font-bold text-blue-900 truncate">{{ getStandardValue(col, rowIdx - 1) }}</div>
                     </div>
 
                     <!-- 历史错误记录 -->
@@ -248,7 +248,7 @@ const pSetHistoryErrors = computed(() => {
 })
 
 // 获取某个标准分区的错误匹配（用于显示用户答错的答案）
-const getWrongMatchForSet = (setId: number) => {
+const getWrongMatchForSet = (setId: number): { text: string } | null => {
   const standardItem = analyzedPSets.value.matched.find(s => s.id === setId)
   if (!standardItem) return null
 

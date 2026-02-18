@@ -944,7 +944,7 @@ const validateTransition = (rowIndex: number, field: string, userValue: string, 
   }
 }
 
-const validateField = (value: string | undefined, rowIndex: number, field: string, tableType: 'table' | 'matrix') => {
+const validateField = (value: string | undefined, rowIndex: number, field: string, tableType: 'table' | 'matrix', isBatchValidation = false) => {
   const fieldKey = `${tableType}-${rowIndex}-${field}`
   const errors: string[] = []
   const fieldValue = value || ''
@@ -952,8 +952,21 @@ const validateField = (value: string | undefined, rowIndex: number, field: strin
   const validationRef = tableType === 'table' ? tableValidationErrors : matrixValidationErrors
   const fieldValidationRef = tableType === 'table' ? tableFieldValidation : matrixFieldValidation
 
+  // 实时检验时，留空不检验、不记录错误
   if (!fieldValue || fieldValue.trim() === '') {
-    errors.push(field === 'state' ? '状态名称不能为空' : '转换关系不能为空')
+    if (isBatchValidation) {
+      // 批量检验（点击检验答案按钮）时，空值也要检验
+      errors.push(field === 'state' ? '状态名称不能为空' : '转换关系不能为空')
+    } else {
+      // 实时检验时，留空直接清除错误状态并返回
+      delete validationRef.value[fieldKey]
+      fieldValidationRef.value[fieldKey] = 'normal'
+      if (Object.keys(validationRef.value).length === 0) {
+        if (tableType === 'table') showTableErrors.value = false
+        else showMatrixErrors.value = false
+      }
+      return
+    }
   }
 
   if (tableType === 'table' && fieldValue && fieldValue.trim() !== '') {
@@ -1010,14 +1023,14 @@ const validateTable = (tableType: 'table' | 'matrix') => {
   if (tableType === 'table') {
     for (let rowIndex = 0; rowIndex < conversionTableRowCount.value; rowIndex++) {
       conversionTableColumns.value.forEach((column) => {
-        validateField(userConversionTable.value[column]?.[rowIndex] || '', rowIndex, column, tableType)
+        validateField(userConversionTable.value[column]?.[rowIndex] || '', rowIndex, column, tableType, true)
       })
     }
     showTableErrors.value = Object.keys(tableValidationErrors.value).length > 0
   } else {
     Object.keys(userTransitionMatrix.value).forEach((rowKey) => {
       matrixStateColumns.value.forEach((state) => {
-        validateField(userTransitionMatrix.value[rowKey]?.[state] || '', Number(rowKey), state, tableType)
+        validateField(userTransitionMatrix.value[rowKey]?.[state] || '', Number(rowKey), state, tableType, true)
       })
     })
     showMatrixErrors.value = Object.keys(matrixValidationErrors.value).length > 0
