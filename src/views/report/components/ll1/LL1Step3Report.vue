@@ -1,135 +1,140 @@
 <template>
-  <div class="ll1-step3-report">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
-          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600" />
-          LL1 预测分析表构造分析
+  <div class="ll1-step3-report space-y-8">
+    <!-- 步骤3标题 -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold">3</div>
+      <h2 class="text-xl font-bold text-gray-900">步骤 3：构造LL1预测分析表</h2>
+    </div>
+
+    <!-- 预测分析表卡片 -->
+    <div class="result-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:shadow-none print:border print:border-gray-300">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 print:px-2 print:py-1 print:bg-gray-100">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 print:text-sm">
+          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600 print:w-4 print:h-4" />
+          LL1 预测分析表
         </h3>
-        <span class="text-xs font-medium px-2 py-1 bg-white text-pink-600 rounded-lg border border-pink-100">Step 3</span>
+        <p class="text-xs text-gray-500 mt-1 print:hidden">根据First集和Follow集构造预测分析表</p>
       </div>
 
-      <div class="p-6">
-        <!-- 调试信息（开发时可用） -->
-        <!-- <div class="mb-4 p-2 bg-gray-100 text-xs">
-          <div>step3Data: {{ step3Data }}</div>
-          <div>originalData.table: {{ originalData?.table }}</div>
-          <div>errorLogs: {{ errorLogs?.length }}</div>
-        </div> -->
-
+      <div class="p-4 overflow-x-auto print:p-1">
         <div v-if="!hasData" class="text-center py-8 text-gray-400">
-           <Icon icon="lucide:alert-circle" class="w-12 h-12 mx-auto mb-4" />
-           <p class="text-lg">数据不足，无法展示分析表</p>
-           <p class="text-sm mt-2">请确保已完成步骤3的答题</p>
+          <Icon icon="lucide:alert-circle" class="w-12 h-12 mx-auto mb-4" />
+          <p class="text-lg">数据不足，无法展示分析表</p>
+          <p class="text-sm mt-2">请确保已完成步骤3的答题</p>
         </div>
+
         <div v-else>
-          <table class="w-full divide-y divide-gray-200 border">
+          <table class="min-w-full border-collapse border-2 border-gray-400">
             <thead>
-              <tr class="bg-gray-50">
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border bg-gray-50 sticky left-0 z-10 w-24">
+              <tr class="bg-gray-100">
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-24 sticky left-0 z-10 bg-gray-100">
                   VN \ VT
                 </th>
-                <th 
-                  v-for="vt in colHeaders" 
-                  :key="vt" 
-                  class="px-3 py-3 text-center text-xs font-medium text-gray-500 tracking-wider border"
+                <th
+                  v-for="vt in colHeaders"
+                  :key="vt"
+                  class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center"
                 >
                   {{ vt }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="vn in rowHeaders" :key="vn">
-                <td class="px-4 py-3 whitespace-nowrap font-mono font-bold text-gray-900 border bg-gray-50 sticky left-0 z-10">
+            <tbody class="bg-white">
+              <tr v-for="vn in rowHeaders" :key="vn" :class="(rowHeaders.indexOf(vn) % 2 === 0) ? 'bg-white' : 'bg-gray-50/50'">
+                <td class="border border-gray-400 px-3 py-2 text-center font-mono font-bold text-gray-900 sticky left-0 z-10 bg-inherit">
                   {{ vn }}
                 </td>
-                <td 
-                  v-for="vt in colHeaders" 
-                  :key="`${vn}|${vt}`" 
-                  class="px-3 py-3 text-center border relative group"
-                  :class="getCellClass(vn, vt)"
+                <td
+                  v-for="vt in colHeaders"
+                  :key="`${vn}|${vt}`"
+                  class="border border-gray-400 p-2 align-top"
                 >
-                  <div class="flex flex-col items-center gap-1 text-xs">
-                     <!-- Historical Errors with Hints -->
-                     <template v-if="getErrorHistory(vn, vt).length > 0">
-                         <div 
-                           v-for="(err, eIdx) in getErrorHistory(vn, vt)" 
-                           :key="`err-${eIdx}`" 
-                           class="relative group/err mb-0.5"
-                         >
-                            <span class="text-red-400 bg-red-50/50 px-2 py-0.5 rounded text-[10px] line-through decoration-red-300 border border-red-100 cursor-help block">
-                                {{ err.value }}
-                            </span>
-                            <!-- Historical Hint Tooltip -->
-                            <div v-if="err.hint" class="absolute z-30 top-full left-1/2 transform -translate-x-1/2 mt-1 w-48 p-2 bg-gray-700 text-white text-[10px] rounded shadow-xl opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left">
-                                <div class="font-bold mb-1 border-b border-gray-500 pb-0.5">历史错误提示</div>
-                                <div class="whitespace-pre-wrap">{{ err.hint }}</div>
-                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-700"></div>
-                            </div>
-                         </div>
-                     </template>
+                  <div class="flex flex-col gap-1.5">
+                    <!-- 历史错误记录 -->
+                    <div v-if="getErrorHistory(vn, vt).length > 0" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="(err, eIdx) in getErrorHistory(vn, vt)"
+                        :key="eIdx"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200"
+                        :title="err.hint || `历史错误 ${eIdx + 1}`"
+                      >
+                        {{ formatProduction(vn, err.value) }}
+                      </span>
+                    </div>
 
-                     <!-- Cell Content -->
-                     <template v-if="shouldBeEmpty(vn, vt)">
-                         <!-- Should be empty -->
-                         <span v-if="getUserValue(vn, vt)" class="text-red-600 bg-red-50 px-2 py-0.5 rounded cursor-help border border-red-200">
-                             {{ formatProduction(vn, getUserValue(vn, vt)) }} <span class="text-[10px]">(多余)</span>
-                         </span>
-                         <span v-else class="text-gray-300">-</span>
-                     </template>
-                     <template v-else>
-                         <!-- Should be filled -->
-                         <!-- User correct -->
-                         <div v-if="isCorrect(vn, vt)" 
-                              class="relative w-full overflow-visible"
-                              :class="getErrorHistory(vn, vt).length > 0 ? 'mt-1' : ''"
-                         >
-                            <div class="text-green-700 bg-green-50 px-2 py-1 rounded w-full font-mono border border-green-200 flex flex-col items-center">
-                                {{ formatProduction(vn, getUserValue(vn, vt)) }}
-                                <span v-if="getErrorHistory(vn, vt).length > 0" class="text-[8px] bg-green-100 px-1 rounded mt-0.5 text-green-600">已修正</span>
-                            </div>
-                         </div>
-                         <div v-else class="w-full flex flex-col gap-1 cursor-help">
-                             <!-- User wrong or empty -->
-                             <div v-if="getUserValue(vn, vt)" class="text-red-700 bg-red-50 px-2 py-1 rounded w-full font-mono line-through decoration-red-400 border border-red-200">
-                                 {{ formatProduction(vn, getUserValue(vn, vt)) }}
-                             </div>
-                             <div v-else class="text-red-400 text-xs italic py-1">
-                                 (未填写)
-                             </div>
-                             <!-- Correct Answer (shown when wrong or empty) -->
-                             <div class="text-green-600 font-mono text-[10px] border border-green-200 bg-green-50/30 rounded px-1 py-0.5">
-                                 标准答案: {{ formatProduction(vn, getCorrectValue(vn, vt)) }}
-                             </div>
-                         </div>
-                     </template>
+                    <!-- 单元格内容 -->
+                    <template v-if="shouldBeEmpty(vn, vt)">
+                      <!-- 应该为空 -->
+                      <div
+                        v-if="getUserValue(vn, vt)"
+                        class="answer-item px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                      >
+                        <div class="text-sm font-mono font-bold text-red-900">
+                          {{ formatProduction(vn, getUserValue(vn, vt)) }}
+                        </div>
+                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                      </div>
+                      <div v-else class="text-gray-300 text-center py-2">-</div>
+                    </template>
+
+                    <template v-else>
+                      <!-- 应该填写 -->
+                      <!-- 用户回答正确 -->
+                      <div
+                        v-if="isCorrect(vn, vt)"
+                        class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2"
+                      >
+                        <div class="text-sm font-mono font-bold text-green-900">
+                          {{ formatProduction(vn, getUserValue(vn, vt)) }}
+                        </div>
+                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                      </div>
+
+                      <!-- 用户回答错误或未填写 -->
+                      <div v-else class="flex flex-col gap-1.5">
+                        <!-- 用户答案（错误时显示） -->
+                        <div
+                          v-if="getUserValue(vn, vt)"
+                          class="answer-item px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                        >
+                          <div class="text-sm font-mono font-bold text-red-900 line-through">
+                            {{ formatProduction(vn, getUserValue(vn, vt)) }}
+                          </div>
+                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                        </div>
+
+                        <!-- 未填写提示 -->
+                        <div v-else class="text-red-400 text-xs italic py-1 text-center">(未填写)</div>
+
+                        <!-- 标准答案 -->
+                        <div class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
+                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          <div class="text-sm font-mono font-bold text-blue-900">
+                            {{ formatProduction(vn, getCorrectValue(vn, vt)) }}
+                          </div>
+                        </div>
+                      </div>
+                    </template>
                   </div>
-                  
-                  <!-- Hint Tooltip -->
-                  <div v-if="getHint(vn, vt)" class="absolute z-20 top-full left-1/2 transform -translate-x-1/2 mt-2 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none text-left">
-                     <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                     <div class="whitespace-pre-wrap">{{ getHint(vn, vt) }}</div>
-                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-800"></div>
+
+                  <!-- 错误提示 -->
+                  <div v-if="getHint(vn, vt)" class="mt-1 text-xs text-red-500 bg-red-50 px-2 py-1 rounded border border-red-100">
+                    <Icon icon="lucide:alert-triangle" class="w-3 h-3 inline mr-1" />
+                    {{ getHint(vn, vt) }}
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        
-        <div class="mt-4 flex items-center gap-6 text-sm text-gray-500 justify-end">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 bg-green-50 border border-green-200 rounded"></span>
-                <span>回答正确</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 bg-red-50 border border-red-200 rounded"></span>
-                <span>回答错误</span>
-            </div>
-             <div class="flex items-center gap-2">
-                <span class="w-3 h-3 border border-gray-200 bg-white rounded flex items-center justify-center text-[8px] text-gray-300">-</span>
-                <span>无需填写</span>
-            </div>
+
+        <!-- 颜色说明 -->
+        <div class="mt-4 flex gap-4 text-xs print:mt-2 print:gap-2 print:text-[10px]">
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full print:w-2 print:h-2"></span> 回答正确</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full print:w-2 print:h-2"></span> 回答错误</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full print:w-2 print:h-2"></span> 标准答案</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-300 rounded-full print:w-2 print:h-2"></span> 历史错误</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-gray-300 rounded-full print:w-2 print:h-2"></span> 无需填写</div>
         </div>
       </div>
     </div>
@@ -221,31 +226,18 @@ function isCorrect(vn: string, vt: string): boolean {
   return userVal === correctVal
 }
 
-// 获取单元格样式类
-function getCellClass(vn: string, vt: string): string {
-  if (shouldBeEmpty(vn, vt)) {
-    return getUserValue(vn, vt) ? 'bg-red-50/30' : ''
-  }
-  
-  if (isCorrect(vn, vt)) {
-    return 'bg-green-50/30'
-  }
-  
-  return 'bg-red-50/30'
-}
-
 // 获取错误提示
 function getHint(vn: string, vt: string): string | null {
   if (!props.errorLogs) return null
-  
-  const logs = props.errorLogs.filter(log => 
-    log.step === 'step3' && 
-    log.type === 'parsingTable' && 
+
+  const logs = props.errorLogs.filter(log =>
+    log.step === 'step3' &&
+    log.type === 'parsingTable' &&
     log.location?.row === vn &&
     log.location?.col === vt &&
     log.hint
   )
-  
+
   if (logs.length === 0) return null
   return logs[logs.length - 1].hint ?? null
 }
@@ -253,18 +245,18 @@ function getHint(vn: string, vt: string): string | null {
 // 获取错误历史
 function getErrorHistory(vn: string, vt: string): { value: string, hint: string | undefined }[] {
   if (!props.errorLogs) return []
-  
-  const logs = props.errorLogs.filter(log => 
-    log.step === 'step3' && 
-    log.type === 'parsingTable' && 
-    log.location?.row === vn && 
+
+  const logs = props.errorLogs.filter(log =>
+    log.step === 'step3' &&
+    log.type === 'parsingTable' &&
+    log.location?.row === vn &&
     log.location?.col === vt
   )
-  
+
   // 结果数组，保留顺序
   const history: { value: string, hint: string | undefined }[] = []
   const valuesSeen = new Set<string>()
-  
+
   // 日志按时间顺序排列
   logs.forEach(log => {
     const val = log.wrongValue?.trim() || ''
@@ -276,12 +268,16 @@ function getErrorHistory(vn: string, vt: string): { value: string, hint: string 
       })
     }
   })
-  
+
   return history
 }
 </script>
 
 <style scoped>
-/* 打印时保留背景颜色 - 使用全局样式 */
-@import '../../styles/print-colors.css';
+.answer-item {
+  transition: all 0.2s ease;
+}
+.ll1-step3-report :deep(table) {
+  table-layout: fixed;
+}
 </style>
