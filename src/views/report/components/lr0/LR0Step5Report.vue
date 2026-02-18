@@ -74,14 +74,7 @@
                   <div v-if="row.hasUserAction" class="flex flex-col gap-1">
                     <!-- 历史错误记录 -->
                     <div v-if="row.stateStackHistory && row.stateStackHistory.length > 0" class="mb-1">
-                      <button 
-                        @click="toggleHistory(idx, 'stateStack')"
-                        class="text-[10px] text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-1"
-                      >
-                        <Icon :icon="isHistoryExpanded(idx, 'stateStack') ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="w-3 h-3" />
-                        历史错误 ({{ row.stateStackHistory.length }})
-                      </button>
-                      <div v-if="isHistoryExpanded(idx, 'stateStack')" class="flex flex-col gap-1">
+                      <div class="flex flex-col gap-1">
                         <div 
                           v-for="(h, hi) in row.stateStackHistory" 
                           :key="hi"
@@ -136,14 +129,8 @@
                   <div v-if="row.hasUserAction" class="flex flex-col gap-1">
                     <!-- 历史错误记录 -->
                     <div v-if="row.symbolStackHistory && row.symbolStackHistory.length > 0" class="mb-1">
-                      <button 
-                        @click="toggleHistory(idx, 'symbolStack')"
-                        class="text-[10px] text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-1"
-                      >
-                        <Icon :icon="isHistoryExpanded(idx, 'symbolStack') ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="w-3 h-3" />
-                        历史错误 ({{ row.symbolStackHistory.length }})
-                      </button>
-                      <div v-if="isHistoryExpanded(idx, 'symbolStack')" class="flex flex-col gap-1">
+                      <div class="text-[10px] text-gray-500 mb-1">历史错误 ({{ row.symbolStackHistory.length }}):</div>
+                      <div class="flex flex-col gap-1">
                         <div 
                           v-for="(h, hi) in row.symbolStackHistory" 
                           :key="hi"
@@ -198,14 +185,7 @@
                   <div v-if="row.hasUserAction" class="flex flex-col gap-1">
                     <!-- 历史错误记录 -->
                     <div v-if="row.inputStringHistory && row.inputStringHistory.length > 0" class="mb-1">
-                      <button 
-                        @click="toggleHistory(idx, 'inputString')"
-                        class="text-[10px] text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-1"
-                      >
-                        <Icon :icon="isHistoryExpanded(idx, 'inputString') ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="w-3 h-3" />
-                        历史错误 ({{ row.inputStringHistory.length }})
-                      </button>
-                      <div v-if="isHistoryExpanded(idx, 'inputString')" class="flex flex-col gap-1">
+                      <div class="flex flex-col gap-1">
                         <div 
                           v-for="(h, hi) in row.inputStringHistory" 
                           :key="hi"
@@ -479,37 +459,51 @@ const rows = computed<RowData[]>(() => {
           // 解析 wrongValue 格式
           const wrongValue = log.wrongValue?.trim() || ''
           if (wrongValue) {
-            // 尝试解析不同格式的错误值
-            const stateMatch = wrongValue.match(/状态栈:\s*([^,]+)/i)
-            const symbolMatch = wrongValue.match(/符号栈:\s*([^,]+)/i)
-            const inputMatch = wrongValue.match(/输入串:\s*([^,]+)/i)
+            // 根据 fieldKey 判断是哪个字段的错误
+            const fieldKey = log.location.fieldKey || ''
 
-            const wrongStateStack = stateMatch ? stateMatch[1].trim() : ''
-            const wrongSymbolStack = symbolMatch ? symbolMatch[1].trim() : ''
-            const wrongInputString = inputMatch ? inputMatch[1].trim() : ''
+            if (fieldKey.startsWith('stateStack-')) {
+              // 状态栈错误
+              if (!seenStateStack.has(wrongValue) && wrongValue !== correctStateStack) {
+                stateStackHistory.push({ value: wrongValue, hint: log.hint })
+                seenStateStack.add(wrongValue)
+              }
+            } else if (fieldKey.startsWith('symbolStack-')) {
+              // 符号栈错误
+              if (!seenSymbolStack.has(wrongValue) && wrongValue !== correctSymbolStack) {
+                symbolStackHistory.push({ value: wrongValue, hint: log.hint })
+                seenSymbolStack.add(wrongValue)
+              }
+            } else if (fieldKey.startsWith('inputString-')) {
+              // 输入串错误
+              if (!seenInputString.has(wrongValue) && wrongValue !== correctInputString) {
+                inputStringHistory.push({ value: wrongValue, hint: log.hint })
+                seenInputString.add(wrongValue)
+              }
+            } else {
+              // 兼容旧格式：尝试解析组合格式 "状态栈: xxx, 符号栈: xxx, 输入串: xxx"
+              const stateMatch = wrongValue.match(/状态栈:\s*([^,]+)/i)
+              const symbolMatch = wrongValue.match(/符号栈:\s*([^,]+)/i)
+              const inputMatch = wrongValue.match(/输入串:\s*([^,]+)/i)
 
-            // 如果没有 userSteps 数据，使用错误日志中的值
-            if (!hasUserAction) {
-              if (wrongStateStack) userStateStack = wrongStateStack
-              if (wrongSymbolStack) userSymbolStack = wrongSymbolStack
-              if (wrongInputString) userInputString = wrongInputString
-              hasUserAction = true
-            }
+              const wrongStateStack = stateMatch ? stateMatch[1].trim() : ''
+              const wrongSymbolStack = symbolMatch ? symbolMatch[1].trim() : ''
+              const wrongInputString = inputMatch ? inputMatch[1].trim() : ''
 
-            // 添加到历史记录
-            if (wrongStateStack && !seenStateStack.has(wrongStateStack) && wrongStateStack !== correctStateStack) {
-              stateStackHistory.push({ value: wrongStateStack, hint: log.hint })
-              seenStateStack.add(wrongStateStack)
-            }
+              if (wrongStateStack && !seenStateStack.has(wrongStateStack) && wrongStateStack !== correctStateStack) {
+                stateStackHistory.push({ value: wrongStateStack, hint: log.hint })
+                seenStateStack.add(wrongStateStack)
+              }
 
-            if (wrongSymbolStack && !seenSymbolStack.has(wrongSymbolStack) && wrongSymbolStack !== correctSymbolStack) {
-              symbolStackHistory.push({ value: wrongSymbolStack, hint: log.hint })
-              seenSymbolStack.add(wrongSymbolStack)
-            }
+              if (wrongSymbolStack && !seenSymbolStack.has(wrongSymbolStack) && wrongSymbolStack !== correctSymbolStack) {
+                symbolStackHistory.push({ value: wrongSymbolStack, hint: log.hint })
+                seenSymbolStack.add(wrongSymbolStack)
+              }
 
-            if (wrongInputString && !seenInputString.has(wrongInputString) && wrongInputString !== correctInputString) {
-              inputStringHistory.push({ value: wrongInputString, hint: log.hint })
-              seenInputString.add(wrongInputString)
+              if (wrongInputString && !seenInputString.has(wrongInputString) && wrongInputString !== correctInputString) {
+                inputStringHistory.push({ value: wrongInputString, hint: log.hint })
+                seenInputString.add(wrongInputString)
+              }
             }
           }
         }

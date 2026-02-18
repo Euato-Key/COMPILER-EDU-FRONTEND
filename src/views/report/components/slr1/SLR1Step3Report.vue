@@ -131,27 +131,6 @@
               </div>
             </div>
 
-            <!-- 答案数据详情 -->
-            <div v-if="hasAnswerData && answerItems.length > 0" class="bg-green-50 rounded-lg p-4 border border-green-200">
-              <h5 class="text-sm font-semibold text-green-800 mb-3">项目集详情</h5>
-              <div class="space-y-2 max-h-40 overflow-y-auto">
-                <div
-                  v-for="(item, index) in answerItems.slice(0, 5)"
-                  :key="`answer-${index}`"
-                  class="flex items-center gap-2 text-sm"
-                >
-                  <span class="w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0">
-                    {{ index }}
-                  </span>
-                  <span class="font-mono text-green-700">{{ item.id }}</span>
-                  <span class="text-green-600">-</span>
-                  <span class="text-green-600 truncate">{{ item.pros?.length || 0 }} 个项目</span>
-                </div>
-                <div v-if="answerItems.length > 5" class="text-xs text-green-600 text-center">
-                  还有 {{ answerItems.length - 5 }} 个项目集...
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
