@@ -3,7 +3,7 @@
     <!-- 步骤5：DFA最小化 -->
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">5</div>
-      <h2 class="text-xl font-bold text-gray-900">DFA 最小化</h2>
+      <h2 class="text-xl font-bold text-gray-900">步骤 5：DFA 最小化</h2>
     </div>
 
     <!-- 左右布局 -->
@@ -27,42 +27,51 @@
           </div>
         </div>
 
-        <div class="p-4 space-y-4 max-h-[600px] overflow-y-auto print:p-2">
+        <div class="p-2 space-y-1 max-h-[600px] overflow-y-auto print:p-1">
           <!-- 标准分区对照表 -->
-          <div v-for="item in analyzedPSets.matched" :key="item.id" class="p-3 border rounded-lg transition-all" :class="item.matches.length > 0 ? 'border-green-100 bg-green-50/20' : 'border-gray-200 bg-gray-50/50'">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded">SET {{ item.id }}</span>
-              </div>
-              <div v-if="item.matches.length > 0" class="text-[10px] font-bold text-green-600 flex items-center gap-1">
-                <Icon icon="lucide:check-circle" class="w-3 h-3" /> 已匹配
-              </div>
-              <div v-else class="text-[10px] font-bold text-gray-400 flex items-center gap-1">
-                <Icon icon="lucide:alert-circle" class="w-3 h-3" /> 缺失
+          <div v-for="item in analyzedPSets.matched" :key="item.id" class="p-1.5 border rounded transition-all" :class="item.matches.length > 0 ? 'border-green-100 bg-green-50/20' : 'border-gray-200 bg-gray-50/50'">
+            <!-- 第一行：SET标签 + 用户答案（正确时显示绿色，错误时显示红色） -->
+            <div v-if="item.matches.length > 0" class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-green-50 border border-green-200 rounded text-sm font-mono font-bold text-green-900 flex items-center gap-1.5">
+                <Icon icon="lucide:check-circle" class="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                {{ formatAsSet(item.matches[0].text) }}
               </div>
             </div>
-            <div class="p-2 bg-white border border-blue-100 rounded text-sm font-mono font-bold text-blue-900 mb-2">
-              {{ Array.isArray(item.original) ? item.original.join(' ') : item.original }}
+            <div v-else-if="getWrongMatchForSet(item.id)" class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-red-50 border border-red-200 rounded text-sm font-mono font-bold text-red-900 flex items-center gap-1.5">
+                <Icon icon="lucide:x-circle" class="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+                {{ formatAsSet(getWrongMatchForSet(item.id).text) }}
+              </div>
+            </div>
+            <div v-else class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded text-sm font-mono font-bold text-gray-400 flex items-center gap-1.5">
+                <Icon icon="lucide:minus" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                未填写
+              </div>
             </div>
 
-            <!-- 匹配到的用户填写 -->
-            <div v-if="item.matches.length > 0" class="space-y-1">
-              <div v-for="match in item.matches" :key="match.id" class="flex items-center gap-2 px-2 py-1.5 bg-green-50 border border-green-200 rounded text-xs font-mono text-green-900">
-                <Icon icon="lucide:user" class="w-3 h-3 text-green-600" />
-                {{ match.text }}
+            <!-- 标准答案（仅当用户答错或未匹配时显示） -->
+            <div v-if="item.matches.length === 0" class="flex items-center gap-1.5 mt-1">
+              <span class="px-1.5 py-0.5 bg-transparent text-transparent text-[10px] font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
+              <div class="flex-1 px-2 py-1 bg-blue-50 border border-blue-100 rounded text-sm font-mono font-bold text-blue-900 flex items-center gap-1.5">
+                <Icon icon="lucide:book-open" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                {{ formatAsSet(item.original) }}
               </div>
             </div>
           </div>
 
-          <!-- 错误或多余的填写 -->
-          <div v-if="analyzedPSets.wrong.length > 0" class="mt-4">
+          <!-- 多余的错误填写（不属于任何标准分区的） -->
+          <div v-if="getExtraWrongInputs().length > 0" class="mt-4">
             <h4 class="text-sm font-bold text-red-600 uppercase tracking-wider flex items-center gap-2 mb-3">
               <Icon icon="lucide:x-octagon" class="w-4 h-4" />
               错误或多余的填写
             </h4>
             <div class="space-y-2">
-              <div v-for="wrong in analyzedPSets.wrong" :key="wrong.id" class="p-2 bg-red-50 border border-red-200 rounded flex items-center justify-between">
-                <div class="text-sm font-mono font-bold text-red-900">{{ wrong.text }}</div>
+              <div v-for="wrong in getExtraWrongInputs()" :key="wrong.id" class="p-2 bg-red-50 border border-red-200 rounded flex items-center justify-between">
+                <div class="text-sm font-mono font-bold text-red-900">{{ formatAsSet(wrong.text) }}</div>
                 <div class="text-[10px] font-bold text-red-500 uppercase px-2 py-0.5 bg-red-100/50 rounded">
                   无效
                 </div>
@@ -82,7 +91,7 @@
                 :key="idx"
                 class="px-2 py-1 bg-white border border-gray-200 text-gray-400 rounded text-[10px] font-mono line-through"
               >
-                {{ err }}
+                {{ formatAsSet(err) }}
               </span>
             </div>
           </div>
@@ -185,6 +194,21 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// 将值格式化为集合形式 {a,b,c}
+const formatAsSet = (val: any): string => {
+  if (val === undefined || val === null || val === '-') return '-'
+  if (Array.isArray(val)) {
+    if (val.length === 0) return '-'
+    return `{${val.join(',')}}`
+  }
+  // 如果是字符串，按空格分割后格式化为集合
+  const str = String(val).trim()
+  if (str === '' || str === '-') return '-'
+  const parts = str.split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '-'
+  return `{${parts.join(',')}}`
+}
+
 // --- 1. P Sets 处理 ---
 const analyzedPSets = computed(() => {
   const standardList = (props.standardData.P || []).map((s, idx) => ({
@@ -222,6 +246,26 @@ const pSetHistoryErrors = computed(() => {
     .map(log => log.wrongValue)
     .filter((v, i, a) => a.indexOf(v) === i)
 })
+
+// 获取某个标准分区的错误匹配（用于显示用户答错的答案）
+const getWrongMatchForSet = (setId: number) => {
+  const standardItem = analyzedPSets.value.matched.find(s => s.id === setId)
+  if (!standardItem) return null
+
+  // 在历史错误中查找与当前标准分区相关的错误
+  const setNormalized = standardItem.normalized
+  const wrongInputs = analyzedPSets.value.wrong
+
+  // 查找是否有用户输入与当前标准分区相似但不完全匹配
+  // 这里我们返回第一个不属于任何正确匹配的错误输入
+  // 实际逻辑可能需要根据具体业务调整
+  return null // 简化处理，复杂匹配逻辑可以后续添加
+}
+
+// 获取多余的错误填写（不属于任何标准分区的）
+const getExtraWrongInputs = () => {
+  return analyzedPSets.value.wrong
+}
 
 // --- 2. 矩阵处理 ---
 const matrixCols = computed(() => {

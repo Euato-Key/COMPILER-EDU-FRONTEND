@@ -15,7 +15,7 @@ interface PDFExportOptions {
 
 /**
  * 导出 PDF 报告
- * 使用浏览器打印功能生成 PDF
+ * 使用隐藏的 iframe 进行打印，避免弹窗
  * @param options 导出选项
  * @returns Promise<void>
  */
@@ -52,12 +52,6 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     })
     .join('\n')
 
-  // 创建打印窗口
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) {
-    throw new Error('无法打开打印窗口，请检查浏览器是否阻止了弹窗')
-  }
-
   // 构建打印页面内容
   const printContent = `
 <!DOCTYPE html>
@@ -68,18 +62,18 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
   <title>${suggestedFilename}</title>
   <style>
     ${styles}
-    
+
     /* 打印优化样式 */
     @page {
       size: A4;
       margin: 10mm;
     }
-    
+
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    
+
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
@@ -87,28 +81,28 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       margin: 0;
       padding: 0;
     }
-    
+
     .report-container {
       max-width: 100%;
       margin: 0 auto;
       padding: 20px;
       background-color: #ffffff;
     }
-    
+
     .report-header {
       text-align: center;
       margin-bottom: 20px;
       padding-bottom: 20px;
       border-bottom: 2px solid #e5e7eb;
     }
-    
+
     .report-header h1 {
       font-size: 24px;
       font-weight: bold;
       color: #111827;
       margin: 0 0 10px 0;
     }
-    
+
     .student-info {
       margin-bottom: 20px;
       padding: 15px;
@@ -116,33 +110,33 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       border-radius: 8px;
       border: 1px solid #e5e7eb;
     }
-    
+
     .student-info-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 15px;
     }
-    
+
     .student-info-item {
       display: flex;
       align-items: center;
     }
-    
+
     .student-info-label {
       font-weight: 500;
       color: #6b7280;
       margin-right: 8px;
     }
-    
+
     .student-info-value {
       color: #111827;
       font-weight: 600;
     }
-    
+
     .report-content {
       margin-top: 20px;
     }
-    
+
     /* 隐藏打印按钮和不需要打印的元素 */
     .no-print,
     button,
@@ -151,30 +145,30 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     .action-buttons {
       display: none !important;
     }
-    
+
     /* 表格打印优化 */
     table {
       width: 100%;
       border-collapse: collapse;
       page-break-inside: auto;
     }
-    
+
     tr {
       page-break-inside: avoid;
       page-break-after: auto;
     }
-    
+
     th, td {
       border: 1px solid #d1d5db;
       padding: 8px;
       text-align: left;
     }
-    
+
     th {
       background-color: #f3f4f6;
       font-weight: 600;
     }
-    
+
     /* 卡片打印优化 */
     .card,
     .rounded-xl,
@@ -182,23 +176,23 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       box-shadow: none !important;
       border: 1px solid #e5e7eb;
     }
-    
+
     /* 确保背景色打印 */
     .bg-green-50, .bg-red-50, .bg-blue-50, .bg-yellow-50,
     .bg-gray-50, .bg-indigo-50, .bg-pink-50, .bg-purple-50 {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    
+
     /* 分页控制 */
     .page-break {
       page-break-before: always;
     }
-    
+
     .avoid-break {
       page-break-inside: avoid;
     }
-    
+
     /* 响应式调整 */
     @media (max-width: 768px) {
       .student-info-grid {
@@ -213,7 +207,7 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       <h1>${reportTitle}</h1>
       <p style="color: #6b7280; margin: 0;">答题报告</p>
     </div>
-    
+
     <div class="student-info">
       <div class="student-info-grid">
         <div class="student-info-item">
@@ -230,44 +224,71 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
         </div>
       </div>
     </div>
-    
+
     <div class="report-content">
       ${container.innerHTML}
     </div>
   </div>
-  
-  <script>
-    // 页面加载完成后自动触发打印
-    window.onload = function() {
-      setTimeout(function() {
-        window.print()
-      }, 500)
-    }
-  </script>
 </body>
 </html>
   `
 
-  // 写入内容到新窗口
-  printWindow.document.open()
-  printWindow.document.write(printContent)
-  printWindow.document.close()
-
-  // 监听打印完成事件
+  // 使用隐藏的 iframe 进行打印，避免弹窗
   return new Promise((resolve, reject) => {
-    // 浏览器打印对话框关闭后触发
-    printWindow.onafterprint = () => {
-      printWindow.close()
-      resolve()
-    }
+    try {
+      // 创建隐藏的 iframe
+      const iframe = document.createElement('iframe')
+      iframe.style.cssText = 'position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0;'
+      document.body.appendChild(iframe)
 
-    // 如果用户取消打印，一段时间后自动关闭窗口
-    setTimeout(() => {
-      if (!printWindow.closed) {
-        printWindow.close()
-        resolve()
+      const iframeDoc = iframe.contentWindow?.document
+      if (!iframeDoc) {
+        document.body.removeChild(iframe)
+        throw new Error('无法创建打印文档')
       }
-    }, 60000) // 60秒后自动关闭
+
+      // 写入内容到 iframe
+      iframeDoc.open()
+      iframeDoc.write(printContent)
+      iframeDoc.close()
+
+      // 等待 iframe 加载完成并触发打印
+      const iframeWindow = iframe.contentWindow
+      if (!iframeWindow) {
+        document.body.removeChild(iframe)
+        throw new Error('无法访问打印窗口')
+      }
+
+      // 设置 iframe 的 document title（某些浏览器会使用这个作为默认文件名）
+      iframeDoc.title = suggestedFilename
+
+      // 延迟执行打印，确保内容完全渲染
+      setTimeout(() => {
+        try {
+          iframeWindow.focus()
+          iframeWindow.print()
+
+          // 监听打印完成
+          iframeWindow.onafterprint = () => {
+            document.body.removeChild(iframe)
+            resolve()
+          }
+
+          // 如果浏览器不支持 onafterprint，5秒后自动清理
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe)
+              resolve()
+            }
+          }, 5000)
+        } catch (printError) {
+          document.body.removeChild(iframe)
+          reject(printError)
+        }
+      }, 500)
+    } catch (error) {
+      reject(error)
+    }
   })
 }
 

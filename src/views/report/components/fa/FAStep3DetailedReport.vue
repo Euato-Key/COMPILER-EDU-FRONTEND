@@ -1,9 +1,9 @@
 <template>
   <div class="fa-step3-detailed-report space-y-8">
-    <!-- 步骤2：子集构造法 -->
+    <!-- 步骤3：子集构造法 -->
     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
-      <h2 class="text-xl font-bold text-gray-900">子集构造法</h2>
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
+      <h2 class="text-xl font-bold text-gray-900">步骤 3：子集构造法</h2>
     </div>
 
     <!-- 左右布局的表格 -->
@@ -38,7 +38,7 @@
                         : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-gray-50 border-gray-100')"
                     >
                       <div class="text-xs font-mono font-bold truncate" :class="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
-                        {{ getFinalUserValue('conversionTable', col, rowIdx - 1) || '-' }}
+                        {{ formatAsSet(getFinalUserValue('conversionTable', col, rowIdx - 1)) }}
                       </div>
                       <Icon
                         v-if="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct'"
@@ -66,7 +66,7 @@
                         class="px-1 py-0.5 bg-red-50 text-red-500 rounded text-[9px] font-mono line-through opacity-70 border border-red-200"
                         :title="`次数: ${aIdx + 1}`"
                       >
-                        {{ attempt }}
+                        {{ formatAsSet(attempt) }}
                       </span>
                     </div>
                   </div>
@@ -220,11 +220,37 @@ const matrixMaxRows = computed(() => {
 
 // --- 通用工具函数 ---
 
-// 获取标准答案值
-const getStandardValue = (type: 'conversionTable' | 'transitionMatrix', col: string, row: number) => {
+// 将值格式化为集合形式 {a,b,c}
+const formatAsSet = (val: any): string => {
+  if (val === undefined || val === null || val === '-') return '-'
+  if (Array.isArray(val)) {
+    if (val.length === 0) return '-'
+    return `{${val.join(',')}}`
+  }
+  // 如果是字符串，按空格分割后格式化为集合
+  const str = String(val).trim()
+  if (str === '' || str === '-') return '-'
+  const parts = str.split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '-'
+  return `{${parts.join(',')}}`
+}
+
+// 获取标准答案原始值（用于比较）
+const getStandardRawValue = (type: 'conversionTable' | 'transitionMatrix', col: string, row: number) => {
   if (type === 'conversionTable') {
     const val = props.standardData.table[col]?.[row]
     return Array.isArray(val) ? val.join(' ') : String(val || '-')
+  } else {
+    const val = props.standardData.table_to_num[col]?.[row]
+    return val === undefined ? '-' : String(val)
+  }
+}
+
+// 获取标准答案显示值（格式化后的集合形式）
+const getStandardValue = (type: 'conversionTable' | 'transitionMatrix', col: string, row: number) => {
+  if (type === 'conversionTable') {
+    const val = props.standardData.table[col]?.[row]
+    return formatAsSet(val)
   } else {
     const val = props.standardData.table_to_num[col]?.[row]
     return val === undefined ? '-' : String(val)
@@ -257,10 +283,11 @@ const isEmptyValue = (val: string): boolean => {
 // 判断用户回答状态
 const getUserAnswerStatus = (type: 'conversionTable' | 'transitionMatrix', col: string, row: number) => {
   const userVal = getFinalUserValue(type, col, row)
-  const stdVal = getStandardValue(type, col, row)
+  // 使用原始值进行比较，而不是格式化后的值
+  const stdValRaw = getStandardRawValue(type, col, row)
 
   // 如果标准答案是"-"（表示无转换），用户填"-"或留空都算正确
-  if (isEmptyValue(stdVal)) {
+  if (isEmptyValue(stdValRaw)) {
     return isEmptyValue(userVal) ? 'correct' : 'wrong'
   }
 
@@ -268,9 +295,9 @@ const getUserAnswerStatus = (type: 'conversionTable' | 'transitionMatrix', col: 
   if (!userVal || userVal.trim() === '') return 'none'
 
   if (type === 'conversionTable') {
-    return isStateSetMatch(userVal, stdVal) ? 'correct' : 'wrong'
+    return isStateSetMatch(userVal, stdValRaw) ? 'correct' : 'wrong'
   } else {
-    return userVal.trim() === stdVal.trim() ? 'correct' : 'wrong'
+    return userVal.trim() === stdValRaw.trim() ? 'correct' : 'wrong'
   }
 }
 
