@@ -158,29 +158,29 @@ function getLR0CorrectAnswers(
 
   // Step 2: 增广文法
   answers.augmentedGrammar = {
-    augmentedStart: originalData.augmented_start,
-    formulas: originalData.formulas,
+    augmentedStart: originalData.S,
+    formulas: originalData.formulas_list,
   }
 
   // Step 3: DFA 构造
   answers.dfaConstruction = {
-    dfaStates: originalData.dfa_states,
+    dfaStates: originalData.all_dfa,
     dotItems: originalData.dot_items,
-    dotString: originalData.dot_string,
+    dotString: originalData.LR0_dot_str,
   }
 
   // Step 4: LR0 分析表
   answers.lr0Table = {
     actionTable,
     gotoTable,
-    isLR0: originalData.is_lr0,
+    isLR0: originalData.isLR0,
   }
 
   // Step 5: 字符串分析
   answers.stringAnalysis = {
-    analysisSteps: inputAnalysisResult?.steps || [],
-    isSuccess: inputAnalysisResult?.isSuccess ?? null,
-    result: inputAnalysisResult?.result || null,
+    analysisSteps: inputAnalysisResult?.info_step || [],
+    isSuccess: inputAnalysisResult?.info_res ?? null,
+    result: inputAnalysisResult?.info_res || null,
   }
 
   return answers
@@ -216,30 +216,30 @@ function getLR0BackendData(
   return {
     // 文法信息
     grammar: {
-      productions: originalData.formulas_dict,
+      productions: originalData.formulas_list,
       nonTerminals: originalData.Vn,
       terminals: originalData.Vt,
       startSymbol: originalData.S,
-      augmentedStart: originalData.augmented_start,
+      augmentedStart: originalData.S,
     },
     // DFA 信息
     dfa: {
       states: dfaStates,
       dotItems: originalData.dot_items,
-      dotString: originalData.dot_string,
+      dotString: originalData.LR0_dot_str,
     },
     // 分析表
     parsingTable: {
-      actionTable: originalData.action_table,
-      gotoTable: originalData.goto_table,
-      isLR0: originalData.is_lr0,
+      actionTable: originalData.actions,
+      gotoTable: originalData.gotos,
+      isLR0: originalData.isLR0,
     },
     // 输入串分析结果
     inputAnalysis: inputAnalysisResult
       ? {
-          steps: inputAnalysisResult.steps,
-          isSuccess: inputAnalysisResult.isSuccess,
-          result: inputAnalysisResult.result,
+          steps: inputAnalysisResult.info_step,
+          isSuccess: inputAnalysisResult.info_res,
+          result: inputAnalysisResult.info_res,
         }
       : null,
   }

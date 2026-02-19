@@ -162,29 +162,29 @@ function getSLR1CorrectAnswers(
 
   // Step 2: 增广文法
   answers.augmentedGrammar = {
-    augmentedStart: originalData.augmented_start,
-    formulas: originalData.formulas,
+    augmentedStart: originalData.S,
+    formulas: originalData.formulas_list,
   }
 
   // Step 3: DFA 构造
   answers.dfaConstruction = {
-    dfaStates: originalData.dfa_states,
+    dfaStates: originalData.all_dfa,
     dotItems: originalData.dot_items,
-    dotString: originalData.dot_string,
+    dotString: originalData.SLR1_dot_str,
   }
 
   // Step 4: SLR1 分析表
   answers.slr1Table = {
     actionTable,
     gotoTable,
-    isSLR1: originalData.is_slr1,
+    isSLR1: originalData.isSLR1,
   }
 
   // Step 5: 字符串分析
   answers.stringAnalysis = {
-    analysisSteps: inputAnalysisResult?.steps || [],
-    isSuccess: inputAnalysisResult?.isSuccess ?? null,
-    result: inputAnalysisResult?.result || null,
+    analysisSteps: inputAnalysisResult?.info_step || [],
+    isSuccess: inputAnalysisResult?.info_res ?? null,
+    result: inputAnalysisResult?.info_res || null,
   }
 
   return answers
@@ -222,11 +222,11 @@ function getSLR1BackendData(
   return {
     // 文法信息
     grammar: {
-      productions: originalData.formulas_dict,
+      productions: originalData.formulas_list,
       nonTerminals: originalData.Vn,
       terminals: originalData.Vt,
       startSymbol: originalData.S,
-      augmentedStart: originalData.augmented_start,
+      augmentedStart: originalData.S,
     },
     // First/Follow 集
     firstFollow: {
@@ -237,20 +237,20 @@ function getSLR1BackendData(
     dfa: {
       states: dfaStates,
       dotItems: originalData.dot_items,
-      dotString: originalData.dot_string,
+      dotString: originalData.SLR1_dot_str,
     },
     // 分析表
     parsingTable: {
-      actionTable: originalData.action_table,
-      gotoTable: originalData.goto_table,
-      isSLR1: originalData.is_slr1,
+      actionTable: originalData.actions,
+      gotoTable: originalData.gotos,
+      isSLR1: originalData.isSLR1,
     },
     // 输入串分析结果
     inputAnalysis: inputAnalysisResult
       ? {
-          steps: inputAnalysisResult.steps,
-          isSuccess: inputAnalysisResult.isSuccess,
-          result: inputAnalysisResult.result,
+          steps: inputAnalysisResult.info_step,
+          isSuccess: inputAnalysisResult.info_res,
+          result: inputAnalysisResult.info_res,
         }
       : null,
   }

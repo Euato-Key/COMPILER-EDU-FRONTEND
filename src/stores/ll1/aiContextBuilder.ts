@@ -146,9 +146,9 @@ function getLL1CorrectAnswers(
 
   // Step 4: 字符串分析
   answers.stringAnalysis = {
-    analysisSteps: inputAnalysisResult?.steps || [],
-    isSuccess: inputAnalysisResult?.isSuccess ?? null,
-    result: inputAnalysisResult?.result || null,
+    analysisSteps: inputAnalysisResult?.info_step || [],
+    isSuccess: inputAnalysisResult?.info_res ?? null,
+    result: inputAnalysisResult?.info_res || null,
   }
 
   return answers
@@ -201,9 +201,9 @@ function getLL1BackendData(
     // 输入串分析结果
     inputAnalysis: inputAnalysisResult
       ? {
-          steps: inputAnalysisResult.steps,
-          isSuccess: inputAnalysisResult.isSuccess,
-          result: inputAnalysisResult.result,
+          steps: inputAnalysisResult.info_step,
+          isSuccess: inputAnalysisResult.info_res,
+          result: inputAnalysisResult.info_res,
         }
       : null,
   }
