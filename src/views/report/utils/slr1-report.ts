@@ -145,7 +145,7 @@ export function generateSLR1Report(
         }
       } else if (log.step === 'step3') {
         stats.errors.step3.total++
-        if (log.type === 'dfaState') {
+        if (log.type === 'dfaState' || log.type === 'gotoTransition') {
           stats.errors.step3.dfaStates++
         }
       } else if (log.step === 'step4') {
@@ -384,7 +384,7 @@ export function getSLR1ErrorSummary(errorLogs: SLR1HistoryRecord['errorLogs']) {
 
     if (log.step === 'step2' && log.type === 'augmentedFormula') {
       summary.step2.augmentedFormula.push(errorItem)
-    } else if (log.step === 'step3' && log.type === 'dfaState') {
+    } else if (log.step === 'step3' && (log.type === 'dfaState' || log.type === 'gotoTransition')) {
       summary.step3.dfaStates.push(errorItem)
     } else if (log.step === 'step4') {
       if (log.type === 'actionTable') {

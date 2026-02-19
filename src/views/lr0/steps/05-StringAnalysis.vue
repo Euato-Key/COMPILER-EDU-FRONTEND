@@ -1226,14 +1226,37 @@ const initUserAnswers = () => {
         symbolStack: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.symbolStack || ''),
         inputString: Array.from({ length: stepCount }, (_, i) => savedSteps[i]?.inputString || ''),
       }
+      // 确保步骤1的数据被设置（如果保存的数据中步骤1为空，则从analysisSteps填充）
+      if (!userAnswers.value.stateStack[0] && analysisSteps.value[0]) {
+        userAnswers.value.stateStack[0] = analysisSteps.value[0].stateStack
+      }
+      if (!userAnswers.value.symbolStack[0] && analysisSteps.value[0]) {
+        userAnswers.value.symbolStack[0] = analysisSteps.value[0].symbolStack
+      }
+      if (!userAnswers.value.inputString[0] && analysisSteps.value[0]) {
+        userAnswers.value.inputString[0] = analysisSteps.value[0].inputString
+      }
       console.log('恢复 step5Data:', lr0Store.step5Data)
       console.log('恢复后的 userAnswers:', userAnswers.value)
     } else if (userAnswers.value.stateStack.length !== analysisSteps.value.length) {
-      // 初始化空数据（长度不匹配时）
+      // 初始化数据（长度不匹配时）
+      // 步骤1（index === 0）是预设的初始状态，从analysisSteps填充
       userAnswers.value = {
-        stateStack: new Array(analysisSteps.value.length).fill(''),
-        symbolStack: new Array(analysisSteps.value.length).fill(''),
-        inputString: new Array(analysisSteps.value.length).fill(''),
+        stateStack: analysisSteps.value.map((step, index) => index === 0 ? step.stateStack : ''),
+        symbolStack: analysisSteps.value.map((step, index) => index === 0 ? step.symbolStack : ''),
+        inputString: analysisSteps.value.map((step, index) => index === 0 ? step.inputString : ''),
+      }
+    } else {
+      // 长度匹配但可能没有步骤1的数据，确保步骤1的数据被设置
+      // 步骤1（index === 0）是预设的初始状态，从analysisSteps填充
+      if (!userAnswers.value.stateStack[0] && analysisSteps.value[0]) {
+        userAnswers.value.stateStack[0] = analysisSteps.value[0].stateStack
+      }
+      if (!userAnswers.value.symbolStack[0] && analysisSteps.value[0]) {
+        userAnswers.value.symbolStack[0] = analysisSteps.value[0].symbolStack
+      }
+      if (!userAnswers.value.inputString[0] && analysisSteps.value[0]) {
+        userAnswers.value.inputString[0] = analysisSteps.value[0].inputString
       }
     }
 

@@ -1,45 +1,43 @@
 <template>
-  <div class="lr0-step3-report space-y-6">
+  <div class="lr0-step3-report space-y-4">
+    <!-- 步骤3标题 -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">3</div>
+      <h2 class="text-xl font-bold text-gray-900">步骤 3：DFA 状态集构造</h2>
+    </div>
+
     <!-- DFA状态集分析 -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 bg-purple-50 border-b border-purple-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-purple-900 flex items-center gap-2">
-          <Icon icon="lucide:git-branch" class="w-5 h-5 text-purple-600" />
-          DFA 状态集分析
-        </h3>
-        <span class="text-xs font-medium px-2 py-1 bg-white text-purple-600 rounded-lg border border-purple-100">Step 3</span>
-      </div>
-
-      <div class="p-6">
-        <!-- 统计信息 -->
-        <div class="grid grid-cols-4 gap-4 mb-6">
-          <div class="bg-purple-50 rounded-lg border border-purple-200 p-4">
-            <div class="text-2xl font-bold text-purple-600">{{ answerItemCount }}</div>
-            <div class="text-sm text-purple-700">项目集数量</div>
+      <div class="p-4">
+        <!-- 统计信息 - 紧凑布局 -->
+        <div class="grid grid-cols-4 gap-3 mb-4">
+          <div class="bg-purple-50 rounded-lg border border-purple-200 p-3">
+            <div class="text-xl font-bold text-purple-600">{{ answerItemCount }}</div>
+            <div class="text-xs text-purple-700">项目集数量</div>
           </div>
-          <div class="bg-indigo-50 rounded-lg border border-indigo-200 p-4">
-            <div class="text-2xl font-bold text-indigo-600">{{ answerTransitionCount }}</div>
-            <div class="text-sm text-indigo-700">转移关系数量</div>
+          <div class="bg-indigo-50 rounded-lg border border-indigo-200 p-3">
+            <div class="text-xl font-bold text-indigo-600">{{ answerTransitionCount }}</div>
+            <div class="text-xs text-indigo-700">转移关系数量</div>
           </div>
-          <div class="bg-green-50 rounded-lg border border-green-200 p-4">
-            <div class="text-2xl font-bold text-green-600">{{ userItemCount }}</div>
-            <div class="text-sm text-green-700">用户绘制节点</div>
+          <div class="bg-green-50 rounded-lg border border-green-200 p-3">
+            <div class="text-xl font-bold text-green-600">{{ userItemCount }}</div>
+            <div class="text-xs text-green-700">用户绘制节点</div>
           </div>
-          <div class="bg-blue-50 rounded-lg border border-blue-200 p-4">
-            <div class="text-2xl font-bold text-blue-600">{{ userEdgeCount }}</div>
-            <div class="text-sm text-blue-700">用户绘制连线</div>
+          <div class="bg-blue-50 rounded-lg border border-blue-200 p-3">
+            <div class="text-xl font-bold text-blue-600">{{ userEdgeCount }}</div>
+            <div class="text-xs text-blue-700">用户绘制连线</div>
           </div>
         </div>
 
-        <!-- DFA对比展示 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- DFA对比展示 - 紧凑布局 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 print:grid-cols-2 gap-4 print:gap-2">
           <!-- 左侧：用户绘制的DFA -->
-          <div class="space-y-4">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Icon icon="lucide:user" class="w-4 h-4 text-blue-600" />
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Icon icon="lucide:user" class="w-3.5 h-3.5 text-blue-600" />
               </div>
-              <h4 class="text-base font-semibold text-gray-900">学生绘图</h4>
+              <h4 class="text-sm font-semibold text-gray-900">学生绘图</h4>
               <span
                 v-if="hasUserData"
                 class="ml-auto px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full border border-green-200"
@@ -54,29 +52,28 @@
               </span>
             </div>
 
-            <div class="graph-container p-4 bg-gray-50 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center relative overflow-hidden">
+            <div class="graph-container p-2 bg-gray-50 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center relative overflow-hidden">
               <div v-if="!hasUserData" class="text-gray-400 flex flex-col items-center">
-                <Icon icon="lucide:image-off" class="w-16 h-16 mb-3 opacity-50" />
-                <p>未提交绘图数据</p>
+                <Icon icon="lucide:image-off" class="w-12 h-12 mb-2 opacity-50" />
+                <p class="text-sm">未提交绘图数据</p>
               </div>
               <div v-else-if="loading.user" class="animate-pulse w-full text-center">
-                <Icon icon="lucide:loader-2" class="w-12 h-12 mx-auto mb-2 animate-spin text-gray-300" />
-                <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
+                <Icon icon="lucide:loader-2" class="w-10 h-10 mx-auto mb-2 animate-spin text-gray-300" />
+                <div class="h-3 bg-gray-200 rounded w-2/3 mx-auto"></div>
               </div>
               <div v-else class="viz-wrapper w-full h-full flex items-center justify-center">
                 <div v-html="renderedUserSvg" class="rendered-svg-container w-full h-full flex items-center justify-center"></div>
               </div>
             </div>
-
           </div>
 
           <!-- 右侧：标准答案DFA -->
-          <div class="space-y-4">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <Icon icon="lucide:check-square" class="w-4 h-4 text-green-600" />
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                <Icon icon="lucide:check-square" class="w-3.5 h-3.5 text-green-600" />
               </div>
-              <h4 class="text-base font-semibold text-gray-900">标准答案</h4>
+              <h4 class="text-sm font-semibold text-gray-900">标准答案</h4>
               <span
                 v-if="hasAnswerData"
                 class="ml-auto px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full border border-green-200"
@@ -85,53 +82,52 @@
               </span>
             </div>
 
-            <div class="graph-container p-4 bg-green-50/30 rounded-lg border border-green-200 min-h-[400px] flex items-center justify-center relative overflow-hidden">
+            <div class="graph-container p-2 bg-green-50/30 rounded-lg border border-green-200 min-h-[300px] flex items-center justify-center relative overflow-hidden">
               <div v-if="!hasAnswerData" class="text-gray-400 flex flex-col items-center">
-                <Icon icon="lucide:help-circle" class="w-16 h-16 mb-3 opacity-50" />
-                <p>暂无参考答案</p>
+                <Icon icon="lucide:help-circle" class="w-12 h-12 mb-2 opacity-50" />
+                <p class="text-sm">暂无参考答案</p>
               </div>
               <div v-else-if="loading.answer" class="animate-pulse w-full text-center">
-                <Icon icon="lucide:loader-2" class="w-12 h-12 mx-auto mb-2 animate-spin text-green-200" />
-                <div class="h-4 bg-green-100 rounded w-3/4 mx-auto mb-4"></div>
+                <Icon icon="lucide:loader-2" class="w-10 h-10 mx-auto mb-2 animate-spin text-green-200" />
+                <div class="h-3 bg-green-100 rounded w-2/3 mx-auto"></div>
               </div>
               <div v-else class="viz-wrapper w-full h-full flex items-center justify-center">
                 <div v-html="renderedAnswerSvg" class="rendered-svg-container w-full h-full flex items-center justify-center"></div>
               </div>
             </div>
-
           </div>
         </div>
 
-        <!-- 历史错误记录 -->
-        <div v-if="itemHistoryErrors.length > 0 || gotoHistoryErrors.length > 0" class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <div class="flex items-start gap-3">
-            <Icon icon="lucide:history" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+        <!-- 历史错误记录 - 紧凑布局 -->
+        <div v-if="itemHistoryErrors.length > 0 || gotoHistoryErrors.length > 0" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex items-start gap-2">
+            <Icon icon="lucide:history" class="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
             <div class="flex-1">
-              <p class="font-medium text-amber-800 mb-3">历史错误记录：</p>
+              <p class="font-medium text-red-800 mb-2 text-sm">历史错误记录：</p>
 
               <!-- Item校验错误 -->
-              <div v-if="itemHistoryErrors.length > 0" class="mb-4">
-                <p class="text-sm text-amber-700 font-medium mb-2">Item校验失败（{{ itemHistoryErrors.length }}个）：</p>
-                <div class="space-y-3">
+              <div v-if="itemHistoryErrors.length > 0" class="mb-3">
+                <p class="text-xs text-red-700 font-medium mb-1.5">Item校验失败（{{ itemHistoryErrors.length }}个）：</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div
                     v-for="(err, idx) in itemHistoryErrors"
                     :key="`item-${idx}`"
-                    class="bg-white/70 rounded-lg p-3 border border-amber-100"
+                    class="bg-white/70 rounded-lg p-2 border border-red-100"
                   >
-                    <div class="flex items-center justify-between mb-3">
-                      <span class="text-amber-700 font-mono text-xs">{{ err.timestamp }}</span>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-red-700 font-mono text-[10px]">{{ err.timestamp }}</span>
                     </div>
                     <!-- Item产生式方块 -->
-                    <div class="flex-shrink-0 bg-red-50 border-2 border-red-200 rounded-lg p-2 min-w-[120px]">
-                      <div class="text-xs text-red-600 font-medium mb-1 border-b border-red-200 pb-1 flex items-center justify-between">
+                    <div class="flex-shrink-0 bg-red-50 border border-red-200 rounded p-1.5 min-w-[100px]">
+                      <div class="text-[10px] text-red-600 font-medium mb-0.5 border-b border-red-200 pb-0.5 flex items-center justify-between">
                         <span>Item节点</span>
-                        <span class="bg-red-200 text-red-700 px-1.5 py-0.5 rounded text-[10px]">{{ err.nodeId }}</span>
+                        <span class="bg-red-200 text-red-700 px-1 py-0 rounded text-[9px]">{{ err.nodeId }}</span>
                       </div>
                       <div class="space-y-0.5">
                         <div
                           v-for="(pro, pIdx) in err.productions"
                           :key="`pro-${pIdx}`"
-                          class="text-xs font-mono text-red-800 whitespace-nowrap"
+                          class="text-[10px] font-mono text-red-800 whitespace-nowrap"
                         >
                           {{ pro }}
                         </div>
@@ -143,34 +139,34 @@
 
               <!-- Goto校验错误 -->
               <div v-if="gotoHistoryErrors.length > 0">
-                <p class="text-sm text-amber-700 font-medium mb-2">Goto校验失败：</p>
-                <div class="space-y-4">
+                <p class="text-xs text-red-700 font-medium mb-1.5">Goto校验失败：</p>
+                <div class="space-y-2">
                   <div
                     v-for="(err, idx) in gotoHistoryErrors"
                     :key="`goto-${idx}`"
-                    class="bg-white/70 rounded-lg p-3 border border-amber-100"
+                    class="bg-white/70 rounded-lg p-2 border border-red-100 w-full"
                   >
-                    <div class="flex items-center gap-2 mb-3">
-                      <span class="text-amber-700 font-mono text-xs">{{ err.timestamp }}</span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <span class="text-red-700 font-mono text-[10px]">{{ err.timestamp }}</span>
                     </div>
                     <!-- 解析并渲染Goto连线 -->
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-12">
                       <div
                         v-for="(transition, tIdx) in parseGotoTransitions(err.wrongValue)"
                         :key="`trans-${tIdx}`"
-                        class="flex items-center gap-3 overflow-x-auto pb-2"
+                        class="flex items-stretch gap-6"
                       >
                         <!-- 起始Item方块 -->
-                        <div class="flex-shrink-0 bg-blue-50 border-2 border-blue-200 rounded-lg p-2 min-w-[120px]">
-                          <div class="text-xs text-blue-600 font-medium mb-1 border-b border-blue-200 pb-1 flex items-center justify-between">
+                        <div class="flex-1 bg-blue-50 border border-blue-200 rounded p-2 min-w-0">
+                          <div class="text-xs text-blue-600 font-bold mb-1 border-b border-blue-200 pb-1 flex items-center justify-between">
                             <span>起始Item</span>
-                            <span class="bg-blue-200 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">{{ transition.sourceItemId }}</span>
+                            <span class="bg-blue-200 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{{ transition.sourceItemId }}</span>
                           </div>
-                          <div class="space-y-0.5">
+                          <div class="space-y-1">
                             <div
                               v-for="(pro, pIdx) in transition.sourcePros"
                               :key="`src-${pIdx}`"
-                              class="text-xs font-mono text-blue-800 whitespace-nowrap"
+                              class="text-xs font-mono text-blue-800 font-medium"
                             >
                               {{ pro }}
                             </div>
@@ -180,26 +176,26 @@
                         <!-- 连线和符号 -->
                         <div class="flex-shrink-0 flex items-center">
                           <div class="flex items-center">
-                            <div class="w-6 h-0.5 bg-amber-400"></div>
-                            <div class="bg-amber-100 text-amber-700 text-xs font-mono px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1">
+                            <div class="w-4 h-0.5 bg-amber-400"></div>
+                            <div class="bg-amber-100 text-amber-700 text-xs font-bold font-mono px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1">
                               <span>{{ transition.symbol }}</span>
                               <Icon icon="lucide:arrow-right" class="w-3 h-3 text-amber-600" />
                             </div>
-                            <div class="w-6 h-0.5 bg-amber-400"></div>
+                            <div class="w-4 h-0.5 bg-amber-400"></div>
                           </div>
                         </div>
 
                         <!-- 终点Item方块 -->
-                        <div class="flex-shrink-0 bg-green-50 border-2 border-green-200 rounded-lg p-2 min-w-[120px]">
-                          <div class="text-xs text-green-600 font-medium mb-1 border-b border-green-200 pb-1 flex items-center justify-between">
+                        <div class="flex-1 bg-green-50 border border-green-200 rounded p-2 min-w-0">
+                          <div class="text-xs text-green-600 font-bold mb-1 border-b border-green-200 pb-1 flex items-center justify-between">
                             <span>终点Item</span>
-                            <span class="bg-green-200 text-green-700 px-1.5 py-0.5 rounded text-[10px]">{{ transition.targetItemId }}</span>
+                            <span class="bg-green-200 text-green-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{{ transition.targetItemId }}</span>
                           </div>
-                          <div class="space-y-0.5">
+                          <div class="space-y-1">
                             <div
                               v-for="(pro, pIdx) in transition.targetPros"
                               :key="`tgt-${pIdx}`"
-                              class="text-xs font-mono text-green-800 whitespace-nowrap"
+                              class="text-xs font-mono text-green-800 font-medium"
                             >
                               {{ pro }}
                             </div>
@@ -214,13 +210,13 @@
           </div>
         </div>
 
-        <!-- 构造提示 -->
-        <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <div class="flex items-start gap-3">
-            <Icon icon="lucide:lightbulb" class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-            <div class="text-sm text-amber-700">
-              <p class="font-medium mb-2">DFA构造要点：</p>
-              <ul class="space-y-1 text-xs">
+        <!-- 构造提示 - 紧凑布局 -->
+        <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div class="flex items-start gap-2">
+            <Icon icon="lucide:lightbulb" class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+            <div class="text-xs text-amber-700">
+              <p class="font-medium mb-1">DFA构造要点：</p>
+              <ul class="space-y-0.5 text-[11px]">
                 <li>• 从增广文法的初始项目 [S' -> .S] 开始构造 I₀</li>
                 <li>• 使用 CLOSURE 函数求闭包，添加所有相关项目</li>
                 <li>• 使用 GOTO 函数计算状态转移</li>
@@ -466,18 +462,18 @@ const parseGotoTransitions = (value: string): GotoTransition[] => {
 }
 
 .graph-container {
-  min-height: 400px;
+  min-height: 300px;
 }
 
 .viz-wrapper {
-  min-height: 350px;
+  min-height: 280px;
 }
 
 :deep(.rendered-svg-container) svg {
   max-width: 100%;
   height: auto;
-  max-height: 380px;
-  filter: drop-shadow(0 4px 6px -1px rgb(0 0 0 / 0.1));
+  max-height: 280px;
+  filter: drop-shadow(0 2px 4px -1px rgb(0 0 0 / 0.1));
 }
 
 :deep(.lr0-user-dfa-svg) {
@@ -488,5 +484,20 @@ const parseGotoTransitions = (value: string): GotoTransition[] => {
 :deep(.lr0-answer-dfa-svg) {
   max-width: 100%;
   height: auto;
+}
+
+/* 打印时保持并排布局 */
+@media print {
+  .graph-container {
+    min-height: 250px;
+  }
+
+  .viz-wrapper {
+    min-height: 230px;
+  }
+
+  :deep(.rendered-svg-container) svg {
+    max-height: 230px;
+  }
 }
 </style>

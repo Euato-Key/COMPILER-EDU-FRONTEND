@@ -1,5 +1,11 @@
 <template>
   <div class="lr0-step4-report space-y-6">
+    <!-- 步骤4标题 -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold">4</div>
+      <h2 class="text-xl font-bold text-gray-900">步骤 4：构造 LR0 分析表</h2>
+    </div>
+
     <!-- LR0分析表 -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
       <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between">
@@ -7,7 +13,6 @@
           <Icon icon="lucide:table" class="w-5 h-5 text-pink-600" />
           LR0 分析表
         </h3>
-        <span class="text-xs font-medium px-2 py-1 bg-white text-pink-600 rounded-lg border border-pink-100">Step 4</span>
       </div>
 
       <div class="p-6">
@@ -118,44 +123,59 @@
                       </div>
                     </div>
 
-                    <!-- 用户答案和标准答案对比 -->
-                    <div class="flex items-center gap-2">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-1">
-                          <span class="text-[10px] text-blue-600 font-medium">学生:</span>
-                          <span
-                            :class="[
-                              'font-mono font-medium',
-                              getCellStatus(stateIndex - 1, terminal, 'action') === 'correct' ? 'text-green-700' :
-                              getCellStatus(stateIndex - 1, terminal, 'action') === 'wrong' ? 'text-red-700' : 'text-gray-400'
-                            ]"
-                          >
-                            {{ getUserValue(stateIndex - 1, terminal, 'action') || '-' }}
-                          </span>
+                    <!-- 单元格内容 - 参考LL1样式 -->
+                    <template v-if="shouldBeEmpty(stateIndex - 1, terminal, 'action')">
+                      <!-- 应该为空 -->
+                      <div
+                        v-if="getUserValue(stateIndex - 1, terminal, 'action')"
+                        class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                      >
+                        <div class="text-sm font-mono font-bold text-red-900">
+                          {{ getUserValue(stateIndex - 1, terminal, 'action') }}
                         </div>
-                        <div class="flex items-center gap-1 mt-0.5">
-                          <span class="text-[10px] text-green-600 font-medium">答案:</span>
-                          <span class="font-mono font-medium text-green-700">
-                            {{ getCorrectValue(stateIndex - 1, terminal, 'action') || '-' }}
-                          </span>
+                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                      </div>
+                      <div v-else class="text-gray-300 text-center py-2">-</div>
+                    </template>
+
+                    <template v-else>
+                      <!-- 应该填写 -->
+                      <!-- 用户回答正确 - 只显示正确答案 -->
+                      <div
+                        v-if="getCellStatus(stateIndex - 1, terminal, 'action') === 'correct'"
+                        class="px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2"
+                      >
+                        <div class="text-sm font-mono font-bold text-green-900">
+                          {{ getCorrectValue(stateIndex - 1, terminal, 'action') }}
+                        </div>
+                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                      </div>
+
+                      <!-- 用户回答错误或未填写 -->
+                      <div v-else class="flex flex-col gap-1.5">
+                        <!-- 用户答案（错误时显示） -->
+                        <div
+                          v-if="getUserValue(stateIndex - 1, terminal, 'action')"
+                          class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                        >
+                          <div class="text-sm font-mono font-bold text-red-900 line-through">
+                            {{ getUserValue(stateIndex - 1, terminal, 'action') }}
+                          </div>
+                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                        </div>
+
+                        <!-- 未填写提示 -->
+                        <div v-else class="text-red-400 text-xs italic py-1 text-center">(未填写)</div>
+
+                        <!-- 标准答案 -->
+                        <div class="px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
+                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          <div class="text-sm font-mono font-bold text-blue-900">
+                            {{ getCorrectValue(stateIndex - 1, terminal, 'action') }}
+                          </div>
                         </div>
                       </div>
-                      <Icon
-                        v-if="getCellStatus(stateIndex - 1, terminal, 'action') === 'correct'"
-                        icon="lucide:check-circle"
-                        class="w-4 h-4 text-green-500 flex-shrink-0"
-                      />
-                      <Icon
-                        v-else-if="getCellStatus(stateIndex - 1, terminal, 'action') === 'wrong'"
-                        icon="lucide:x-circle"
-                        class="w-4 h-4 text-red-500 flex-shrink-0"
-                      />
-                      <Icon
-                        v-else
-                        icon="lucide:minus-circle"
-                        class="w-4 h-4 text-yellow-400 flex-shrink-0"
-                      />
-                    </div>
+                    </template>
                   </div>
                 </td>
 
@@ -187,44 +207,59 @@
                       </div>
                     </div>
 
-                    <!-- 用户答案和标准答案对比 -->
-                    <div class="flex items-center gap-2">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-1">
-                          <span class="text-[10px] text-blue-600 font-medium">学生:</span>
-                          <span
-                            :class="[
-                              'font-mono font-medium',
-                              getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'correct' ? 'text-green-700' :
-                              getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'wrong' ? 'text-red-700' : 'text-gray-400'
-                            ]"
-                          >
-                            {{ getUserValue(stateIndex - 1, nonterminal, 'goto') || '-' }}
-                          </span>
+                    <!-- 单元格内容 - 参考LL1样式 -->
+                    <template v-if="shouldBeEmpty(stateIndex - 1, nonterminal, 'goto')">
+                      <!-- 应该为空 -->
+                      <div
+                        v-if="getUserValue(stateIndex - 1, nonterminal, 'goto')"
+                        class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                      >
+                        <div class="text-sm font-mono font-bold text-red-900">
+                          {{ getUserValue(stateIndex - 1, nonterminal, 'goto') }}
                         </div>
-                        <div class="flex items-center gap-1 mt-0.5">
-                          <span class="text-[10px] text-green-600 font-medium">答案:</span>
-                          <span class="font-mono font-medium text-green-700">
-                            {{ getCorrectValue(stateIndex - 1, nonterminal, 'goto') || '-' }}
-                          </span>
+                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                      </div>
+                      <div v-else class="text-gray-300 text-center py-2">-</div>
+                    </template>
+
+                    <template v-else>
+                      <!-- 应该填写 -->
+                      <!-- 用户回答正确 - 只显示正确答案 -->
+                      <div
+                        v-if="getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'correct'"
+                        class="px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2"
+                      >
+                        <div class="text-sm font-mono font-bold text-green-900">
+                          {{ getCorrectValue(stateIndex - 1, nonterminal, 'goto') }}
+                        </div>
+                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                      </div>
+
+                      <!-- 用户回答错误或未填写 -->
+                      <div v-else class="flex flex-col gap-1.5">
+                        <!-- 用户答案（错误时显示） -->
+                        <div
+                          v-if="getUserValue(stateIndex - 1, nonterminal, 'goto')"
+                          class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                        >
+                          <div class="text-sm font-mono font-bold text-red-900 line-through">
+                            {{ getUserValue(stateIndex - 1, nonterminal, 'goto') }}
+                          </div>
+                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                        </div>
+
+                        <!-- 未填写提示 -->
+                        <div v-else class="text-red-400 text-xs italic py-1 text-center">(未填写)</div>
+
+                        <!-- 标准答案 -->
+                        <div class="px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
+                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          <div class="text-sm font-mono font-bold text-blue-900">
+                            {{ getCorrectValue(stateIndex - 1, nonterminal, 'goto') }}
+                          </div>
                         </div>
                       </div>
-                      <Icon
-                        v-if="getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'correct'"
-                        icon="lucide:check-circle"
-                        class="w-4 h-4 text-green-500 flex-shrink-0"
-                      />
-                      <Icon
-                        v-else-if="getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'wrong'"
-                        icon="lucide:x-circle"
-                        class="w-4 h-4 text-red-500 flex-shrink-0"
-                      />
-                      <Icon
-                        v-else
-                        icon="lucide:minus-circle"
-                        class="w-4 h-4 text-yellow-400 flex-shrink-0"
-                      />
-                    </div>
+                    </template>
                   </div>
                 </td>
               </tr>
@@ -335,6 +370,13 @@ const getCorrectValue = (state: number, symbol: string, type: 'action' | 'goto')
     const value = props.originalData?.gotos?.[key]
     return value !== undefined && value !== null ? String(value) : ''
   }
+}
+
+// 检查单元格是否应该为空
+const shouldBeEmpty = (state: number, symbol: string, type: 'action' | 'goto'): boolean => {
+  const correctVal = getCorrectValue(state, symbol, type)
+  const normalizedCorrectVal = correctVal?.trim() || ''
+  return !normalizedCorrectVal || normalizedCorrectVal === '-'
 }
 
 // 获取单元格状态

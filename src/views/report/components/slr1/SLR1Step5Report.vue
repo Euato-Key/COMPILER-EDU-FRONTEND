@@ -1,331 +1,282 @@
 <template>
-  <div class="slr1-step5-report space-y-6">
-    <!-- 输入串分析表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 bg-cyan-50 border-b border-cyan-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-cyan-900 flex items-center gap-2">
-          <Icon icon="lucide:play-circle" class="w-5 h-5 text-cyan-600" />
-          输入串分析过程回顾
+  <div class="slr1-step5-report space-y-8">
+    <!-- 步骤5标题 -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold">5</div>
+      <h2 class="text-xl font-bold text-gray-900">步骤 5：输入串分析过程</h2>
+    </div>
+
+    <!-- 全局Tooltip - 固定在body层级避免被遮挡 -->
+    <Teleport to="body">
+      <div
+        v-if="tooltipVisible && tooltipContent"
+        class="fixed z-[9999] w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-2xl pointer-events-none"
+        :style="{ left: tooltipX + 'px', top: tooltipY + 'px' }"
+      >
+        <div class="font-bold mb-1 border-b border-gray-600 pb-1 flex items-center gap-1">
+          <Icon icon="lucide:alert-circle" class="w-3 h-3" />
+          错误提示
+        </div>
+        <div class="whitespace-pre-wrap leading-relaxed">{{ tooltipContent }}</div>
+        <div class="absolute top-2 -left-1.5 border-4 border-transparent border-r-gray-800"></div>
+      </div>
+    </Teleport>
+
+    <!-- 输入串分析过程卡片 -->
+    <div class="result-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:shadow-none print:border print:border-gray-300">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 print:px-2 print:py-1 print:bg-gray-100">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 print:text-sm">
+          <Icon icon="lucide:play-circle" class="w-5 h-5 text-orange-600 print:w-4 print:h-4" />
+          移进-规约分析过程
         </h3>
-        <span class="text-xs font-medium px-2 py-1 bg-white text-cyan-600 rounded-lg border border-cyan-100">Step 5</span>
+        <p class="text-xs text-gray-500 mt-1 print:hidden">使用SLR1分析表进行输入串的语法分析</p>
       </div>
 
-      <div class="p-6">
-        <!-- 输入串信息 -->
-        <div class="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
-          <div class="flex items-center gap-2">
-            <Icon icon="lucide:file-text" class="w-5 h-5 text-cyan-600" />
-            <span class="text-sm font-medium text-cyan-800">输入串:</span>
-            <span class="text-lg font-mono font-bold text-cyan-900">{{ inputString }}</span>
-          </div>
+      <div class="p-4 overflow-x-auto print:p-1">
+        <div v-if="rows.length === 0" class="text-center py-8 text-gray-400">
+          <Icon icon="lucide:alert-circle" class="w-12 h-12 mx-auto mb-4" />
+          <p class="text-lg">暂无分析步骤数据</p>
+          <p class="text-sm mt-2">请确保已完成输入串分析</p>
         </div>
 
-        <div v-if="rows.length === 0" class="text-center py-8 text-gray-400">
-          <Icon icon="lucide:clipboard-x" class="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p>暂无分析步骤数据</p>
-        </div>
-        <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 border">
+        <div v-else>
+          <table class="min-w-full border-collapse border-2 border-gray-400">
             <thead>
-              <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider text-xs">
-                <th class="px-4 py-3 text-center border w-12">步骤</th>
-                <th class="px-3 py-3 text-left border w-32">
-                  <div class="flex flex-col gap-0.5">
-                    <span class="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded w-fit">状态栈</span>
+              <tr class="bg-gray-100">
+                <th class="border border-gray-400 px-2 py-2 text-sm font-semibold text-gray-700 text-center w-12">步骤</th>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">
+                  <div class="flex items-center justify-center gap-1">
+                    <Icon icon="lucide:layers" class="w-4 h-4 text-blue-600" />
+                    <span>状态栈</span>
                   </div>
                 </th>
-                <th class="px-3 py-3 text-left border w-32">
-                  <div class="flex flex-col gap-0.5">
-                    <span class="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded w-fit">符号栈</span>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">
+                  <div class="flex items-center justify-center gap-1">
+                    <Icon icon="lucide:database" class="w-4 h-4 text-purple-600" />
+                    <span>符号栈</span>
                   </div>
                 </th>
-                <th class="px-3 py-3 text-left border w-32">
-                  <div class="flex flex-col gap-0.5">
-                    <span class="text-[10px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded w-fit">输入串</span>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">
+                  <div class="flex items-center justify-center gap-1">
+                    <Icon icon="lucide:arrow-right" class="w-4 h-4 text-pink-600" />
+                    <span>输入串</span>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-left border min-w-[200px]">
-                  <div class="flex items-center gap-2">
-                    <span>标准答案</span>
-                    <span class="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded">状态/符号/输入</span>
-                  </div>
-                </th>
-                <th class="px-4 py-3 text-left border w-24">动作</th>
-                <th class="px-4 py-3 text-center border w-16">状态</th>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-64">动作</th>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">状态</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200 text-sm font-mono">
-              <tr 
-                v-for="(row, idx) in rows" 
-                :key="idx" 
-                class="hover:bg-gray-50 transition-colors"
-                :class="{
-                  'bg-red-50/30': row.hasUserAction && !row.isCorrect,
-                  'bg-green-50/30': row.hasUserAction && row.isCorrect
-                }"
+            <tbody class="bg-white">
+              <tr
+                v-for="(row, idx) in rows"
+                :key="idx"
+                :class="(idx % 2 === 0) ? 'bg-white' : 'bg-gray-50/50'"
               >
                 <!-- 步骤序号 -->
-                <td class="px-2 py-3 text-center border text-gray-500 font-medium">
+                <td class="border border-gray-400 px-3 py-2 text-center text-gray-500 font-medium">
                   {{ idx + 1 }}
                 </td>
 
-                <!-- 用户答案 - 状态栈 -->
-                <td class="px-3 py-3 border break-all">
-                  <div v-if="row.hasUserAction" class="flex flex-col gap-1">
+                <!-- 状态栈 -->
+                <td class="border border-gray-400 p-2">
+                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5">
                     <!-- 历史错误记录 -->
-                    <div v-if="row.stateStackHistory && row.stateStackHistory.length > 0" class="mb-1">
-                      <div class="flex flex-col gap-1">
-                        <div 
-                          v-for="(h, hi) in row.stateStackHistory" 
-                          :key="hi"
-                          class="relative group/err"
-                        >
-                          <span class="text-red-500 bg-red-50 border border-red-100 text-[10px] px-1.5 py-0.5 rounded line-through decoration-red-300 cursor-help inline-block">
-                            {{ h.value }}
-                          </span>
-                          <div v-if="h.hint" class="absolute z-50 bottom-full left-0 mb-1 w-56 p-2 bg-gray-800 text-white text-[11px] rounded shadow-lg opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                            <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                            <div class="whitespace-pre-wrap">{{ h.hint }}</div>
-                            <div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- 用户最终答案 -->
-                    <div class="flex items-center gap-2">
-                      <span 
-                        :class="{
-                          'text-green-700 font-medium': row.isStateStackCorrect,
-                          'text-red-600 font-medium': !row.isStateStackCorrect
-                        }"
+                    <div v-if="row.stateStackHistory && row.stateStackHistory.length > 0" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="(h, hi) in row.stateStackHistory"
+                        :key="hi"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        @mouseenter="showTooltip($event, h.hint)"
+                        @mouseleave="hideTooltip"
                       >
+                        {{ h.value }}
+                      </span>
+                    </div>
+
+                    <!-- 用户答案 -->
+                    <div
+                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2"
+                      :class="row.isStateStackCorrect
+                        ? 'bg-green-50 border-green-200 shadow-sm'
+                        : 'bg-red-50 border-red-200 shadow-sm'"
+                    >
+                      <div class="text-sm font-mono font-bold" :class="row.isStateStackCorrect ? 'text-green-900' : 'text-red-900'">
                         {{ row.userStateStack || '-' }}
-                      </span>
-                      <Icon 
-                        v-if="row.isStateStackCorrect" 
-                        icon="lucide:check" 
-                        class="w-4 h-4 text-green-500" 
-                      />
-                      <div v-else class="relative group/icon inline-block">
-                        <Icon 
-                          icon="lucide:x" 
-                          class="w-4 h-4 text-red-500 cursor-help" 
-                        />
-                        <!-- Hint Tooltip on Icon -->
-                        <div v-if="row.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                          <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                          <div class="whitespace-pre-wrap">{{ row.hint }}</div>
-                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                        </div>
                       </div>
+                      <Icon
+                        v-if="row.isStateStackCorrect"
+                        icon="lucide:check-circle"
+                        class="w-4 h-4 text-green-600 flex-shrink-0"
+                      />
+                      <Icon
+                        v-else
+                        icon="lucide:x-circle"
+                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                      />
+                    </div>
+
+                    <!-- 标准答案（仅当答错时显示） -->
+                    <div v-if="!row.isStateStackCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
+                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <div class="text-sm font-mono font-bold text-blue-900">{{ row.correctStateStack }}</div>
                     </div>
                   </div>
-                  <span v-else class="text-gray-400 italic">未填写</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2">未填写</span>
                 </td>
 
-                <!-- 用户答案 - 符号栈 -->
-                <td class="px-4 py-3 border break-all">
-                  <div v-if="row.hasUserAction" class="flex flex-col gap-1">
+                <!-- 符号栈 -->
+                <td class="border border-gray-400 p-2">
+                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5">
                     <!-- 历史错误记录 -->
-                    <div v-if="row.symbolStackHistory && row.symbolStackHistory.length > 0" class="mb-1">
-                      <div class="text-[10px] text-gray-500 mb-1">历史错误 ({{ row.symbolStackHistory.length }}):</div>
-                      <div class="flex flex-col gap-1">
-                        <div 
-                          v-for="(h, hi) in row.symbolStackHistory" 
-                          :key="hi"
-                          class="relative group/err"
-                        >
-                          <span class="text-red-500 bg-red-50 border border-red-100 text-[10px] px-1.5 py-0.5 rounded line-through decoration-red-300 cursor-help inline-block">
-                            {{ h.value }}
-                          </span>
-                          <div v-if="h.hint" class="absolute z-50 bottom-full left-0 mb-1 w-56 p-2 bg-gray-800 text-white text-[11px] rounded shadow-lg opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                            <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                            <div class="whitespace-pre-wrap">{{ h.hint }}</div>
-                            <div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- 用户最终答案 -->
-                    <div class="flex items-center gap-2">
-                      <span 
-                        :class="{
-                          'text-green-700 font-medium': row.isSymbolStackCorrect,
-                          'text-red-600 font-medium': !row.isSymbolStackCorrect
-                        }"
+                    <div v-if="row.symbolStackHistory && row.symbolStackHistory.length > 0" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="(h, hi) in row.symbolStackHistory"
+                        :key="hi"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        @mouseenter="showTooltip($event, h.hint)"
+                        @mouseleave="hideTooltip"
                       >
+                        {{ h.value }}
+                      </span>
+                    </div>
+
+                    <!-- 用户答案 -->
+                    <div
+                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2"
+                      :class="row.isSymbolStackCorrect
+                        ? 'bg-green-50 border-green-200 shadow-sm'
+                        : 'bg-red-50 border-red-200 shadow-sm'"
+                    >
+                      <div class="text-sm font-mono font-bold" :class="row.isSymbolStackCorrect ? 'text-green-900' : 'text-red-900'">
                         {{ row.userSymbolStack || '-' }}
-                      </span>
-                      <Icon 
-                        v-if="row.isSymbolStackCorrect" 
-                        icon="lucide:check" 
-                        class="w-4 h-4 text-green-500" 
-                      />
-                      <div v-else class="relative group/icon inline-block">
-                        <Icon 
-                          icon="lucide:x" 
-                          class="w-4 h-4 text-red-500 cursor-help" 
-                        />
-                        <!-- Hint Tooltip on Icon -->
-                        <div v-if="row.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                          <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                          <div class="whitespace-pre-wrap">{{ row.hint }}</div>
-                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                        </div>
                       </div>
+                      <Icon
+                        v-if="row.isSymbolStackCorrect"
+                        icon="lucide:check-circle"
+                        class="w-4 h-4 text-green-600 flex-shrink-0"
+                      />
+                      <Icon
+                        v-else
+                        icon="lucide:x-circle"
+                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                      />
+                    </div>
+
+                    <!-- 标准答案（仅当答错时显示） -->
+                    <div v-if="!row.isSymbolStackCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
+                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <div class="text-sm font-mono font-bold text-blue-900">{{ row.correctSymbolStack }}</div>
                     </div>
                   </div>
-                  <span v-else class="text-gray-400 italic">未填写</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2">未填写</span>
                 </td>
 
-                <!-- 用户答案 - 输入串 -->
-                <td class="px-3 py-3 border break-all">
-                  <div v-if="row.hasUserAction" class="flex flex-col gap-1">
+                <!-- 输入串 -->
+                <td class="border border-gray-400 p-2">
+                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5">
                     <!-- 历史错误记录 -->
-                    <div v-if="row.inputStringHistory && row.inputStringHistory.length > 0" class="mb-1">
-                      <div class="flex flex-col gap-1">
-                        <div 
-                          v-for="(h, hi) in row.inputStringHistory" 
-                          :key="hi"
-                          class="relative group/err"
-                        >
-                          <span class="text-red-500 bg-red-50 border border-red-100 text-[10px] px-1.5 py-0.5 rounded line-through decoration-red-300 cursor-help inline-block">
-                            {{ h.value }}
-                          </span>
-                          <div v-if="h.hint" class="absolute z-50 bottom-full left-0 mb-1 w-56 p-2 bg-gray-800 text-white text-[11px] rounded shadow-lg opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                            <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                            <div class="whitespace-pre-wrap">{{ h.hint }}</div>
-                            <div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- 用户最终答案 -->
-                    <div class="flex items-center gap-2">
-                      <span 
-                        :class="{
-                          'text-green-700 font-medium': row.isInputStringCorrect,
-                          'text-red-600 font-medium': !row.isInputStringCorrect
-                        }"
+                    <div v-if="row.inputStringHistory && row.inputStringHistory.length > 0" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="(h, hi) in row.inputStringHistory"
+                        :key="hi"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        @mouseenter="showTooltip($event, h.hint)"
+                        @mouseleave="hideTooltip"
                       >
-                        {{ row.userInputString || '-' }}
+                        {{ h.value }}
                       </span>
-                      <Icon 
-                        v-if="row.isInputStringCorrect" 
-                        icon="lucide:check" 
-                        class="w-4 h-4 text-green-500" 
-                      />
-                      <div v-else class="relative group/icon inline-block">
-                        <Icon 
-                          icon="lucide:x" 
-                          class="w-4 h-4 text-red-500 cursor-help" 
-                        />
-                        <!-- Hint Tooltip on Icon -->
-                        <div v-if="row.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover/icon:opacity-100 group-hover/icon:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                          <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                          <div class="whitespace-pre-wrap">{{ row.hint }}</div>
-                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                        </div>
-                      </div>
                     </div>
-                  </div>
-                  <span v-else class="text-gray-400 italic">未填写</span>
-                </td>
 
-                <!-- 标准答案 -->
-                <td class="px-4 py-3 border bg-green-50/50">
-                  <div class="flex flex-col gap-1">
-                    <div class="flex items-center gap-2">
-                      <span class="text-[10px] text-gray-500">状态栈:</span>
-                      <span class="text-green-800 font-medium">{{ row.correctStateStack }}</span>
+                    <!-- 用户答案 -->
+                    <div
+                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2"
+                      :class="row.isInputStringCorrect
+                        ? 'bg-green-50 border-green-200 shadow-sm'
+                        : 'bg-red-50 border-red-200 shadow-sm'"
+                    >
+                      <div class="text-sm font-mono font-bold" :class="row.isInputStringCorrect ? 'text-green-900' : 'text-red-900'">
+                        {{ row.userInputString || '-' }}
+                      </div>
+                      <Icon
+                        v-if="row.isInputStringCorrect"
+                        icon="lucide:check-circle"
+                        class="w-4 h-4 text-green-600 flex-shrink-0"
+                      />
+                      <Icon
+                        v-else
+                        icon="lucide:x-circle"
+                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                      />
                     </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-[10px] text-gray-500">符号栈:</span>
-                      <span class="text-green-800 font-medium">{{ row.correctSymbolStack }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-[10px] text-gray-500">输入串:</span>
-                      <span class="text-green-800 font-medium">{{ row.correctInputString }}</span>
+
+                    <!-- 标准答案（仅当答错时显示） -->
+                    <div v-if="!row.isInputStringCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
+                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <div class="text-sm font-mono font-bold text-blue-900">{{ row.correctInputString }}</div>
                     </div>
                   </div>
+                  <span v-else class="text-gray-400 italic text-center block py-2">未填写</span>
                 </td>
 
                 <!-- 动作说明 -->
-                <td class="px-4 py-3 border text-gray-600 text-xs">
-                  <span v-if="row.action" class="bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block">
-                    {{ row.action }}
-                  </span>
-                  <span v-else class="text-gray-300">-</span>
+                <td class="border border-gray-400 p-2 align-middle">
+                  <div v-if="row.action" class="flex flex-col gap-1">
+                    <!-- 移进动作 -->
+                    <div v-if="row.action.includes('S') || row.action.includes('移进')" class="answer-item px-2 py-1.5 rounded border bg-blue-50 border-blue-200 shadow-sm flex items-center justify-center gap-1.5">
+                      <Icon icon="lucide:arrow-down" class="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <span class="text-sm font-bold text-blue-900">{{ row.action }}</span>
+                    </div>
+                    <!-- 规约动作 -->
+                    <div v-else-if="row.action.includes('r') || row.action.includes('规约')" class="answer-item px-2 py-1.5 rounded border bg-purple-50 border-purple-200 shadow-sm flex items-center justify-center gap-1.5">
+                      <Icon icon="lucide:git-branch" class="w-4 h-4 text-purple-600 flex-shrink-0" />
+                      <span class="text-sm font-bold text-purple-900">{{ row.action }}</span>
+                    </div>
+                    <!-- 接受动作 -->
+                    <div v-else-if="row.action.includes('acc') || row.action.includes('接受')" class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-center gap-1.5">
+                      <Icon icon="lucide:party-popper" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                      <span class="text-sm font-bold text-green-900">{{ row.action }}</span>
+                    </div>
+                    <!-- 其他动作 -->
+                    <div v-else class="answer-item px-2 py-1.5 rounded border bg-gray-50 border-gray-200 shadow-sm flex items-center justify-center gap-1.5">
+                      <Icon icon="lucide:arrow-right-circle" class="w-4 h-4 text-gray-600 flex-shrink-0" />
+                      <span class="text-sm font-bold text-gray-900">{{ row.action }}</span>
+                    </div>
+                  </div>
+                  <span v-else class="text-gray-300 text-center block py-2">-</span>
                 </td>
 
                 <!-- 状态 -->
-                <td class="px-4 py-3 border text-center">
+                <td class="border border-gray-400 p-2">
                   <template v-if="row.hasUserAction">
-                    <div 
-                      v-if="row.isCorrect" 
-                      class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium"
+                    <div
+                      v-if="row.isCorrect"
+                      class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-center gap-1"
                     >
-                      <Icon icon="lucide:check" class="w-3 h-3" />
-                      正确
+                      <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600" />
+                      <span class="text-sm font-bold text-green-900">正确</span>
                     </div>
-                    <div 
-                      v-else 
-                      class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium cursor-help relative group/status"
+                    <div
+                      v-else
+                      class="answer-item px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-center gap-1 cursor-help"
+                      :title="row.hint"
                     >
-                      <Icon icon="lucide:x" class="w-3 h-3" />
-                      错误
-                      <div v-if="row.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover/status:opacity-100 group-hover/status:visible transition-all duration-200 pointer-events-none text-left font-sans">
-                        <div class="font-bold mb-1 border-b border-gray-600 pb-1">错误提示</div>
-                        <div class="whitespace-pre-wrap">{{ row.hint }}</div>
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                      </div>
+                      <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600" />
+                      <span class="text-sm font-bold text-red-900">错误</span>
                     </div>
                   </template>
-                  <span v-else class="text-gray-400 text-xs italic">未做</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2">未做</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- 图例说明 -->
-        <div class="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-600">
-          <div class="flex items-center gap-1">
-            <span class="w-3 h-3 bg-green-50 border border-green-200 rounded"></span>
-            <span>标准答案区域</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="w-3 h-3 bg-green-100 rounded"></span>
-            <span>回答正确</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="w-3 h-3 bg-red-100 rounded"></span>
-            <span>回答错误</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="text-red-500 line-through decoration-red-300">文字</span>
-            <span>历史错误记录</span>
-          </div>
-        </div>
-
-        <!-- 分析规则提示 -->
-        <div class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-          <div class="flex items-start gap-3">
-            <Icon icon="lucide:lightbulb" class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
-            <div class="text-sm text-indigo-700">
-              <p class="font-medium mb-2">SLR1移进-规约分析规则：</p>
-              <ul class="space-y-1 text-xs">
-                <li>• <strong>移进(Si)：</strong>将输入符号压入符号栈，状态i压入状态栈</li>
-                <li>• <strong>规约(rj)：</strong>根据产生式j弹出栈中符号和状态，压入产生式左部符号</li>
-                <li>• <strong>接受(acc)：</strong>分析成功完成</li>
-                <li>• <strong>错误：</strong>无对应动作，分析失败</li>
-                <li>• <strong>SLR1特点：</strong>使用FOLLOW集解决规约-规约冲突，比LR0更强大</li>
-              </ul>
-            </div>
-          </div>
+        <!-- 颜色说明 -->
+        <div class="mt-4 flex gap-4 text-xs print:mt-2 print:gap-2 print:text-[10px]">
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full print:w-2 print:h-2"></span> 回答正确</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full print:w-2 print:h-2"></span> 回答错误</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full print:w-2 print:h-2"></span> 标准答案</div>
+          <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-300 rounded-full print:w-2 print:h-2"></span> 历史错误</div>
         </div>
       </div>
     </div>
@@ -349,25 +300,27 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 历史记录展开状态
-const expandedHistory = ref<Map<string, Set<number>>>(new Map())
+// Tooltip 状态
+const tooltipVisible = ref(false)
+const tooltipContent = ref('')
+const tooltipX = ref(0)
+const tooltipY = ref(0)
 
-const toggleHistory = (idx: number, field: string) => {
-  const key = `${field}`
-  if (!expandedHistory.value.has(key)) {
-    expandedHistory.value.set(key, new Set())
-  }
-  const set = expandedHistory.value.get(key)!
-  if (set.has(idx)) {
-    set.delete(idx)
-  } else {
-    set.add(idx)
-  }
+// 显示 Tooltip
+function showTooltip(event: MouseEvent, hint: string | undefined) {
+  if (!hint) return
+  tooltipContent.value = hint
+  tooltipVisible.value = true
+  // 计算位置：在元素右侧显示
+  const rect = (event.target as HTMLElement).getBoundingClientRect()
+  tooltipX.value = rect.right + 8
+  tooltipY.value = rect.top
 }
 
-const isHistoryExpanded = (idx: number, field: string): boolean => {
-  const key = `${field}`
-  return expandedHistory.value.get(key)?.has(idx) || false
+// 隐藏 Tooltip
+function hideTooltip() {
+  tooltipVisible.value = false
+  tooltipContent.value = ''
 }
 
 interface RowData {
@@ -393,23 +346,21 @@ interface RowData {
 const rows = computed<RowData[]>(() => {
   if (!props.inputAnalysisResult) return []
 
-  const result = props.inputAnalysisResult
-  const standardSteps = result.info_step || []
-  const standardStateStacks = result.info_state_stack || []
-  const standardSymbolStacks = result.info_symbol_stack || []
-  const standardInputStrings = result.info_str || []
-  // 优先使用 info_action，如果不存在则使用 info_msg
-  const standardActions = result.info_action || result.info_msg || []
+  // 标准步骤 - 使用正确的属性名
+  const standardStateStacks = props.inputAnalysisResult.info_state_stack || []
+  const standardSymbolStacks = props.inputAnalysisResult.info_symbol_stack || []
+  const standardInputs = props.inputAnalysisResult.info_str || []
+  const standardActions = props.inputAnalysisResult.info_msg || []
 
   // 用户步骤
   const userSteps = props.step5Data?.userSteps || []
 
-  const rows: RowData[] = []
+  const result: RowData[] = []
 
-  for (let i = 0; i < standardSteps.length; i++) {
+  for (let i = 0; i < standardStateStacks.length; i++) {
     const correctStateStack = standardStateStacks[i] || ''
     const correctSymbolStack = standardSymbolStacks[i] || ''
-    const correctInputString = standardInputStrings[i] || ''
+    const correctInput = standardInputs[i] || ''
     const action = standardActions[i] || ''
 
     let userStateStack = ''
@@ -417,23 +368,15 @@ const rows = computed<RowData[]>(() => {
     let userInputString = ''
     let hasUserAction = false
 
-    // 从 userSteps 获取用户答案
+    // 首先从 userSteps 获取用户答案
     if (i < userSteps.length) {
-      userStateStack = userSteps[i].stateStack || ''
-      userSymbolStack = userSteps[i].symbolStack || ''
-      userInputString = userSteps[i].inputString || ''
+      userStateStack = userSteps[i].stateStack
+      userSymbolStack = userSteps[i].symbolStack
+      userInputString = userSteps[i].inputString
       hasUserAction = true
     }
 
-    // 第一行是预设的初始状态，使用标准答案作为用户答案
-    if (i === 0) {
-      userStateStack = correctStateStack
-      userSymbolStack = correctSymbolStack
-      userInputString = correctInputString
-      hasUserAction = true
-    }
-
-    // 查找历史错误记录
+    // 查找历史错误记录，同时如果没有 userSteps 数据，从错误日志中提取用户答案
     const stateStackHistory: Array<{ value: string; hint: string | undefined }> = []
     const symbolStackHistory: Array<{ value: string; hint: string | undefined }> = []
     const inputStringHistory: Array<{ value: string; hint: string | undefined }> = []
@@ -449,52 +392,55 @@ const rows = computed<RowData[]>(() => {
 
           // 解析 wrongValue 格式
           const wrongValue = log.wrongValue?.trim() || ''
-          if (wrongValue) {
-            // 根据 fieldKey 判断是哪个字段的错误
-            const fieldKey = log.location.fieldKey || ''
+          if (wrongValue !== '') {
+            let wrongStateStack = ''
+            let wrongSymbolStack = ''
+            let wrongInputString = ''
 
-            if (fieldKey.startsWith('stateStack-')) {
-              // 状态栈错误
-              if (!seenStateStack.has(wrongValue) && wrongValue !== correctStateStack) {
-                stateStackHistory.push({ value: wrongValue, hint: log.hint })
-                seenStateStack.add(wrongValue)
-              }
-            } else if (fieldKey.startsWith('symbolStack-')) {
-              // 符号栈错误
-              if (!seenSymbolStack.has(wrongValue) && wrongValue !== correctSymbolStack) {
-                symbolStackHistory.push({ value: wrongValue, hint: log.hint })
-                seenSymbolStack.add(wrongValue)
-              }
-            } else if (fieldKey.startsWith('inputString-')) {
-              // 输入串错误
-              if (!seenInputString.has(wrongValue) && wrongValue !== correctInputString) {
-                inputStringHistory.push({ value: wrongValue, hint: log.hint })
-                seenInputString.add(wrongValue)
-              }
+            // 尝试解析完整格式: "StateStack: xxx, SymbolStack: xxx, InputString: xxx"
+            const stateStackMatch = wrongValue.match(/StateStack:\s*([^,]+)/i)
+            const symbolStackMatch = wrongValue.match(/SymbolStack:\s*([^,]+)/i)
+            const inputStringMatch = wrongValue.match(/InputString:\s*([^,]+)/i)
+
+            if (stateStackMatch || symbolStackMatch || inputStringMatch) {
+              // 完整格式
+              wrongStateStack = stateStackMatch ? stateStackMatch[1].trim() : ''
+              wrongSymbolStack = symbolStackMatch ? symbolStackMatch[1].trim() : ''
+              wrongInputString = inputStringMatch ? inputStringMatch[1].trim() : ''
             } else {
-              // 兼容旧格式：尝试解析组合格式 "状态栈: xxx, 符号栈: xxx, 输入串: xxx"
-              const stateMatch = wrongValue.match(/状态栈:\s*([^,]+)/i)
-              const symbolMatch = wrongValue.match(/符号栈:\s*([^,]+)/i)
-              const inputMatch = wrongValue.match(/输入串:\s*([^,]+)/i)
-
-              const wrongStateStack = stateMatch ? stateMatch[1].trim() : ''
-              const wrongSymbolStack = symbolMatch ? symbolMatch[1].trim() : ''
-              const wrongInputString = inputMatch ? inputMatch[1].trim() : ''
-
-              if (wrongStateStack && !seenStateStack.has(wrongStateStack) && wrongStateStack !== correctStateStack) {
-                stateStackHistory.push({ value: wrongStateStack, hint: log.hint })
-                seenStateStack.add(wrongStateStack)
+              // 简单格式：根据 fieldKey 判断是哪个字段
+              const fieldKey = log.location.fieldKey || ''
+              if (fieldKey.includes('stateStack')) {
+                wrongStateStack = wrongValue
+              } else if (fieldKey.includes('symbolStack')) {
+                wrongSymbolStack = wrongValue
+              } else if (fieldKey.includes('inputString')) {
+                wrongInputString = wrongValue
               }
+            }
 
-              if (wrongSymbolStack && !seenSymbolStack.has(wrongSymbolStack) && wrongSymbolStack !== correctSymbolStack) {
-                symbolStackHistory.push({ value: wrongSymbolStack, hint: log.hint })
-                seenSymbolStack.add(wrongSymbolStack)
-              }
+            // 如果没有 userSteps 数据，使用错误日志中的 wrongValue 作为用户答案
+            if (!hasUserAction) {
+              if (wrongStateStack) userStateStack = wrongStateStack
+              if (wrongSymbolStack) userSymbolStack = wrongSymbolStack
+              if (wrongInputString) userInputString = wrongInputString
+              hasUserAction = true
+            }
 
-              if (wrongInputString && !seenInputString.has(wrongInputString) && wrongInputString !== correctInputString) {
-                inputStringHistory.push({ value: wrongInputString, hint: log.hint })
-                seenInputString.add(wrongInputString)
-              }
+            // 添加到历史记录（排除与正确答案相同的）
+            if (wrongStateStack && !seenStateStack.has(wrongStateStack) && wrongStateStack !== correctStateStack) {
+              stateStackHistory.push({ value: wrongStateStack, hint: log.hint })
+              seenStateStack.add(wrongStateStack)
+            }
+
+            if (wrongSymbolStack && !seenSymbolStack.has(wrongSymbolStack) && wrongSymbolStack !== correctSymbolStack) {
+              symbolStackHistory.push({ value: wrongSymbolStack, hint: log.hint })
+              seenSymbolStack.add(wrongSymbolStack)
+            }
+
+            if (wrongInputString && !seenInputString.has(wrongInputString) && wrongInputString !== correctInput) {
+              inputStringHistory.push({ value: wrongInputString, hint: log.hint })
+              seenInputString.add(wrongInputString)
             }
           }
         }
@@ -503,13 +449,13 @@ const rows = computed<RowData[]>(() => {
 
     const isStateStackCorrect = userStateStack.replace(/\s+/g, '') === correctStateStack.replace(/\s+/g, '')
     const isSymbolStackCorrect = userSymbolStack.replace(/\s+/g, '') === correctSymbolStack.replace(/\s+/g, '')
-    const isInputStringCorrect = userInputString.replace(/\s+/g, '') === correctInputString.replace(/\s+/g, '')
+    const isInputStringCorrect = userInputString.replace(/\s+/g, '') === correctInput.replace(/\s+/g, '')
 
-    rows.push({
+    result.push({
       stepIndex: i,
       correctStateStack,
       correctSymbolStack,
-      correctInputString,
+      correctInputString: correctInput,
       action,
       userStateStack,
       userSymbolStack,
@@ -526,12 +472,15 @@ const rows = computed<RowData[]>(() => {
     })
   }
 
-  return rows
+  return result
 })
 </script>
 
 <style scoped>
-.slr1-step5-report {
-  width: 100%;
+.answer-item {
+  transition: all 0.2s ease;
+}
+.slr1-step5-report :deep(table) {
+  table-layout: fixed;
 }
 </style>
