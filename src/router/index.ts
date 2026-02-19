@@ -10,7 +10,6 @@ import devRoutes from './modules/dev'
 import docRoutes from './modules/docs'
 import recordRoutes from './modules/record'
 import reportRoutes from './modules/report'
-import statsRoutes from './modules/stats'
 import staticsRoutes from './modules/statics'
 
 // 基础路由
@@ -46,7 +45,6 @@ const routes: RouteRecordRaw[] = [
   ...docRoutes,
   ...recordRoutes,
   ...reportRoutes,
-  ...statsRoutes,
   ...staticsRoutes
 ]
 
