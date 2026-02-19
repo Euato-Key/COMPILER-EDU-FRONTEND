@@ -334,14 +334,7 @@ const checkGoto = () => {
   if (uncheckedNodes.length > 0) {
     const uncheckedNodeIds = uncheckedNodes.map(node => node.id).join(', ')
     showModal('warning', '请先校验Item', `您还有未校验的Item节点: ${uncheckedNodeIds}`, '请先点击"校验Item"按钮完成所有Item的校验，再进行Goto连线校验。')
-    lr0Store.addErrorLog({
-      step: 'step3',
-      type: 'dfaState',
-      location: { fieldKey: 'checkGoto' },
-      wrongValue: '尝试校验Goto但存在未校验的Item',
-      correctValue: '应先完成所有Item的校验',
-      hint: `请先校验以下Item节点: ${uncheckedNodeIds}`
-    })
+    // 不记录错误日志，因为这只是操作流程的提示，不是真正的错误
     emit('validate-complete')
     return
   }
@@ -487,23 +480,24 @@ const checkGoto = () => {
     emit('validate-complete')
     return
   }else{
-    // 收集所有Goto连线信息（起始Item编号、终点Item编号、符号、产生式）
-    const gotoInfos: string[] = []
-    getEdges.value.forEach(edge => {
-      const sourceNode = findNode(edge.source)
-      const targetNode = findNode(edge.target)
-      const symbol = edge.data?.text || ''
-      // 获取Item编号（如果已通过校验）
-      const sourceItemId = nodeId_Map_ItemId[edge.source] || '未校验'
-      const targetItemId = nodeId_Map_ItemId[edge.target] || '未校验'
-      const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
-      const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
-      gotoInfos.push(`${sourceItemId}[${sourcePros}] --${symbol}--> ${targetItemId}[${targetPros}]`)
+    // 只收集错误的Goto连线信息
+    const wrongGotoInfos: string[] = []
+    wrongGotos.forEach(wrongGoto => {
+      const edge = getEdges.value.find(e => e.id === wrongGoto.edgeId)
+      if (edge) {
+        const sourceNode = findNode(edge.source)
+        const targetNode = findNode(edge.target)
+        const sourceItemId = nodeId_Map_ItemId[edge.source] || '未校验'
+        const targetItemId = nodeId_Map_ItemId[edge.target] || '未校验'
+        const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+        const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+        wrongGotoInfos.push(`${sourceItemId}[${sourcePros}] --${wrongGoto.gotoChar}--> ${targetItemId}[${targetPros}]`)
+      }
     })
-    const wrongGotoInfo = gotoInfos.join('; ') || '未绘制任何Goto连线'
+    const wrongGotoInfo = wrongGotoInfos.join('; ') || '未绘制任何Goto连线'
 
     showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
-    // 记录错误日志
+    // 记录错误日志 - 只记录错误的Goto连线
     lr0Store.addErrorLog({
       step: 'step3',
       type: 'gotoTransition',

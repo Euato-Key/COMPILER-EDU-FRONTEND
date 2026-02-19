@@ -337,14 +337,7 @@ const checkGoto = () => {
   if (uncheckedNodes.length > 0) {
     const uncheckedNodeIds = uncheckedNodes.map(node => node.id).join(', ')
     showModal('warning', '请先校验Item', `您还有未校验的Item节点: ${uncheckedNodeIds}`, '请先点击"校验Item"按钮完成所有Item的校验，再进行Goto连线校验。')
-    slr1Store.addErrorLog({
-      step: 'step3',
-      type: 'dfaState',
-      location: { fieldKey: 'checkGoto' },
-      wrongValue: '尝试校验Goto但存在未校验的Item',
-      correctValue: '应先完成所有Item的校验',
-      hint: `请先校验以下Item节点: ${uncheckedNodeIds}`
-    })
+    // 不记录错误日志，因为这只是操作流程的提示，不是真正的错误
     emit('validate-complete')
     return
   }
@@ -398,6 +391,13 @@ const checkGoto = () => {
 
   // 将 edge 与 item.next_ids 匹配
   let edgeMatchRight_cnt = 0
+  // 记录错误的Goto连线
+  const wrongGotos: Array<{
+    edgeId: string,
+    sourceItemId: string,
+    targetItemId: string,
+    gotoChar: string
+  }> = []
 
   for (const edge of getEdges.value) {
     if (checkRight_local_edge.includes(edge.id)) continue
@@ -405,12 +405,34 @@ const checkGoto = () => {
     const sourceId_local = edge.source
     const targetId_local = edge.target
     const inpGotoCh_local = edge.data.text
-    const sourceId_Answer = nodeId_Map_ItemId[sourceId_local] ? nodeId_Map_ItemId[sourceId_local] : ""
-    const targetId_Answer = nodeId_Map_ItemId[targetId_local] ? nodeId_Map_ItemId[targetId_local] : ""
+    const sourceId_Answer = nodeId_Map_ItemId[sourceId_local] ?  nodeId_Map_ItemId[sourceId_local] : ""
+    const targetId_Answer = nodeId_Map_ItemId[targetId_local] ?  nodeId_Map_ItemId[targetId_local] : ""
 
-    if (!sourceId_Answer && !targetId_Answer) continue
+    if (!sourceId_Answer && !targetId_Answer) {
+      // 源节点和目标节点都未通过Item校验，记录为错误
+      wrongGotos.push({
+        edgeId: edge.id,
+        sourceItemId: sourceId_local,
+        targetItemId: targetId_local,
+        gotoChar: inpGotoCh_local || '(空)'
+      })
+      continue
+    }
+
+    if (!sourceId_Answer) {
+      // 源节点未通过Item校验，记录为错误
+      wrongGotos.push({
+        edgeId: edge.id,
+        sourceItemId: sourceId_local,
+        targetItemId: targetId_Answer || targetId_local,
+        gotoChar: inpGotoCh_local || '(空)'
+      })
+      continue
+    }
 
     const sou_AnswerItem = answerItems.value[parseInt(sourceId_Answer[sourceId_Answer.length - 1])]
+    let matched = false
+
     for (const key of Object.keys(sou_AnswerItem.next_ids)) {
       const answer_goto_id = sou_AnswerItem.id + "-> " + key + "-> " + "Item" + sou_AnswerItem.next_ids[key]
       if (checkRIght_Gotos.includes(answer_goto_id)) continue
@@ -421,8 +443,19 @@ const checkGoto = () => {
         checkRIght_Gotos.push(answer_goto_id)
         checkRight_local_edge.push(edge.id)
         edgeId_Map_GotosId[edge.id] = answer_goto_id
+        matched = true
         break
       }
+    }
+
+    if (!matched) {
+      // 未匹配到正确的转移，记录为错误
+      wrongGotos.push({
+        edgeId: edge.id,
+        sourceItemId: sourceId_Answer,
+        targetItemId: targetId_Answer || targetId_local,
+        gotoChar: inpGotoCh_local || '(空)'
+      })
     }
   }
 
@@ -439,21 +472,22 @@ const checkGoto = () => {
     return
   } else {
     showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
-    // 收集所有Goto连线信息（起始Item编号、终点Item编号、符号、产生式）
-    const gotoInfos: string[] = []
-    getEdges.value.forEach(edge => {
-      const sourceNode = findNode(edge.source)
-      const targetNode = findNode(edge.target)
-      const symbol = edge.data?.text || ''
-      // 获取Item编号（如果已通过校验）
-      const sourceItemId = nodeId_Map_ItemId[edge.source] || '未校验'
-      const targetItemId = nodeId_Map_ItemId[edge.target] || '未校验'
-      const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
-      const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
-      gotoInfos.push(`${sourceItemId}[${sourcePros}] --${symbol}--> ${targetItemId}[${targetPros}]`)
+    // 只收集错误的Goto连线信息
+    const wrongGotoInfos: string[] = []
+    wrongGotos.forEach(wrongGoto => {
+      const edge = getEdges.value.find(e => e.id === wrongGoto.edgeId)
+      if (edge) {
+        const sourceNode = findNode(edge.source)
+        const targetNode = findNode(edge.target)
+        const sourceItemId = wrongGoto.sourceItemId
+        const targetItemId = wrongGoto.targetItemId
+        const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+        const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+        wrongGotoInfos.push(`${sourceItemId}[${sourcePros}] --${wrongGoto.gotoChar}--> ${targetItemId}[${targetPros}]`)
+      }
     })
-    const wrongGotoInfo = gotoInfos.join('; ') || '未绘制任何Goto连线'
-    // 记录错误日志
+    const wrongGotoInfo = wrongGotoInfos.join('; ') || '未绘制任何Goto连线'
+    // 记录错误日志 - 只记录错误的Goto连线
     slr1Store.addErrorLog({
       step: 'step3',
       type: 'gotoTransition',
