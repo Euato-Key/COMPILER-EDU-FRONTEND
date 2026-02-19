@@ -9,6 +9,12 @@
           </div>
           <div class="flex items-center gap-2">
             <router-link
+              to="/statics"
+              class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
+            >
+              学习统计
+            </router-link>
+            <router-link
               to="/record"
               class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
             >

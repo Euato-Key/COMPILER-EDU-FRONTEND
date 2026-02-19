@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { getDFAM } from '@/api'
+import { getDFAM, recordErrorAPI } from '@/api'
 import type { FAResult, DataFAType } from '@/types'
 import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
@@ -266,7 +266,7 @@ export const useFAStore = defineStore('fa', () => {
       return
     }
 
-    const nowTime = new Date().toLocaleString()
+    const nowTime = new Date().toISOString()
 
     // ==================== 修改开始 ====================
     // 修复：JSON.stringify(undefined) 会导致 JSON.parse 报错
@@ -408,9 +408,24 @@ export const useFAStore = defineStore('fa', () => {
       errorLogs.value.push({
         ...log,
         id: generateUniqueId(),
-        timestamp: new Date().toLocaleString()
+        timestamp: new Date().toISOString()
       })
       console.log(`[FA Store] 记录错误: ${log.location.fieldKey} -> ${log.wrongValue}`)
+
+      // 上报错误统计到后端
+      const recordCreatedAt = historyList.value.find(h => h.id === currentRecordId.value)?.createdAt
+        || new Date().toISOString()
+
+      recordErrorAPI({
+        record_id: currentRecordId.value || generateUniqueId(),
+        module: 'fa',
+        step: log.step,
+        error_type: log.tableType,
+        error_count: 1,
+        record_created_at: recordCreatedAt
+      }).catch(() => {
+        // 上报失败不影响本地功能
+      })
     }
   }
 

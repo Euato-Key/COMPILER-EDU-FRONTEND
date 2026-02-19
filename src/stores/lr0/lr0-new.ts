@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { getLR0AnalyseAPI, LR0AnalyseInpStrAPI } from '@/api'
+import { getLR0AnalyseAPI, LR0AnalyseInpStrAPI, recordErrorAPI } from '@/api'
 import type {
   LR0AnalysisResult,
   LR0ValidationItem,
@@ -491,7 +491,7 @@ export const useLR0Store = defineStore('lr0', () => {
       return
     }
 
-    const nowTime = new Date().toLocaleString()
+    const nowTime = new Date().toISOString()
 
     // 深拷贝用户数据
     const snapshotData = {
@@ -758,6 +758,22 @@ export const useLR0Store = defineStore('lr0', () => {
         ...log,
         id: generateUniqueId(),
         timestamp: new Date().toLocaleString()
+      })
+
+      // 上报错误统计到后端
+      // 使用当前记录的创建时间或当前时间
+      const recordCreatedAt = historyList.value.find(h => h.id === currentRecordId.value)?.createdAt
+        || new Date().toISOString()
+
+      recordErrorAPI({
+        record_id: currentRecordId.value || generateUniqueId(),
+        module: 'lr0',
+        step: log.step,
+        error_type: log.type,
+        error_count: 1,
+        record_created_at: recordCreatedAt
+      }).catch(() => {
+        // 上报失败不影响本地功能
       })
     }
   }

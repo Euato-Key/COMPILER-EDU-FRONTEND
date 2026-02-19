@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { getLL1AnalyseAPI, LL1AnalyseInpStrAPI } from '@/api'
+import { getLL1AnalyseAPI, LL1AnalyseInpStrAPI, recordErrorAPI } from '@/api'
 import type { LL1AnalysisResult, AnalysisStepInfo } from '@/types/ll1'
 import { useCommonStore } from '../common'
 import { usePersistence } from '@/composables/persistence'
@@ -336,7 +336,7 @@ export const useLL1Store = defineStore('ll1', () => {
             return
         }
 
-        const nowTime = new Date().toLocaleString()
+        const nowTime = new Date().toISOString()
 
         // 深拷贝用户数据
         const snapshotData = {
@@ -516,9 +516,24 @@ export const useLL1Store = defineStore('ll1', () => {
             errorLogs.value.push({
                 ...log,
                 id: generateUniqueId(),
-                timestamp: new Date().toLocaleString()
+                timestamp: new Date().toISOString()
             })
             console.log(`[LL1 Store] 记录错误: [${log.step}] ${JSON.stringify(log.location)} -> ${log.wrongValue}`)
+
+            // 上报错误统计到后端
+            const recordCreatedAt = historyList.value.find(h => h.id === currentRecordId.value)?.createdAt
+                || new Date().toISOString()
+
+            recordErrorAPI({
+                record_id: currentRecordId.value || generateUniqueId(),
+                module: 'll1',
+                step: log.step,
+                error_type: log.type,
+                error_count: 1,
+                record_created_at: recordCreatedAt
+            }).catch(() => {
+                // 上报失败不影响本地功能
+            })
         }
     }
 

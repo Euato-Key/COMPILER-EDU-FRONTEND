@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { getSLR1AnalyseAPI, SLR1AnalyseInpStrAPI } from '@/api'
+import { getSLR1AnalyseAPI, SLR1AnalyseInpStrAPI, recordErrorAPI } from '@/api'
 import type {
   SLR1AnalysisResult,
   SLR1ValidationItem,
@@ -498,7 +498,7 @@ export const useSLR1Store = defineStore('slr1', () => {
       return
     }
 
-    const nowTime = new Date().toLocaleString()
+    const nowTime = new Date().toISOString()
 
     // 深拷贝用户数据
     const snapshotData = {
@@ -765,7 +765,22 @@ export const useSLR1Store = defineStore('slr1', () => {
       errorLogs.value.push({
         ...log,
         id: generateUniqueId(),
-        timestamp: new Date().toLocaleString()
+        timestamp: new Date().toISOString()
+      })
+
+      // 上报错误统计到后端
+      const recordCreatedAt = historyList.value.find(h => h.id === currentRecordId.value)?.createdAt
+        || new Date().toISOString()
+
+      recordErrorAPI({
+        record_id: currentRecordId.value || generateUniqueId(),
+        module: 'slr1',
+        step: log.step,
+        error_type: log.type,
+        error_count: 1,
+        record_created_at: recordCreatedAt
+      }).catch(() => {
+        // 上报失败不影响本地功能
       })
     }
   }
