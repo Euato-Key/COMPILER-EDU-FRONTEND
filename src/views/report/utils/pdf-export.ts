@@ -233,56 +233,62 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
 </html>
   `
 
-  // 使用隐藏的 iframe 进行打印，避免弹窗
+  // 使用新标签页打开打印页面，允许用户控制文件名
   return new Promise((resolve, reject) => {
     try {
-      // 创建隐藏的 iframe
-      const iframe = document.createElement('iframe')
-      iframe.style.cssText = 'position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0;'
-      document.body.appendChild(iframe)
-
-      const iframeDoc = iframe.contentWindow?.document
-      if (!iframeDoc) {
-        document.body.removeChild(iframe)
-        throw new Error('无法创建打印文档')
+      // 创建新窗口
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        throw new Error('无法打开打印窗口，请检查是否被浏览器拦截')
       }
 
-      // 写入内容到 iframe
-      iframeDoc.open()
-      iframeDoc.write(printContent)
-      iframeDoc.close()
+      // 写入内容到新窗口
+      printWindow.document.open()
+      printWindow.document.write(printContent)
+      printWindow.document.close()
 
-      // 等待 iframe 加载完成并触发打印
-      const iframeWindow = iframe.contentWindow
-      if (!iframeWindow) {
-        document.body.removeChild(iframe)
-        throw new Error('无法访问打印窗口')
-      }
-
-      // 设置 iframe 的 document title（某些浏览器会使用这个作为默认文件名）
-      iframeDoc.title = suggestedFilename
+      // 设置窗口标题（会影响默认文件名）
+      printWindow.document.title = suggestedFilename
 
       // 延迟执行打印，确保内容完全渲染
       setTimeout(() => {
         try {
-          iframeWindow.focus()
-          iframeWindow.print()
+          printWindow.focus()
+          printWindow.print()
 
-          // 监听打印完成
-          iframeWindow.onafterprint = () => {
-            document.body.removeChild(iframe)
+          // 如果浏览器支持 onafterprint，打印完成后自动关闭窗口
+          printWindow.onafterprint = () => {
+            printWindow.close()
             resolve()
           }
 
-          // 如果浏览器不支持 onafterprint，5秒后自动清理
-          setTimeout(() => {
-            if (document.body.contains(iframe)) {
-              document.body.removeChild(iframe)
+          // 对于不支持 onafterprint 的浏览器，检测打印对话框关闭
+          // 通过检测窗口是否获得焦点来判断打印是否完成
+          let printDialogClosed = false
+          const checkFocus = setInterval(() => {
+            if (printDialogClosed && document.hasFocus()) {
+              // 打印对话框已关闭且主窗口获得焦点，说明打印完成
+              clearInterval(checkFocus)
+              printWindow.close()
               resolve()
             }
-          }, 5000)
+          }, 500)
+
+          // 标记打印对话框已打开
+          setTimeout(() => {
+            printDialogClosed = true
+          }, 1000)
+
+          // 超时处理（30秒后自动关闭）
+          setTimeout(() => {
+            clearInterval(checkFocus)
+            if (!printWindow.closed) {
+              printWindow.close()
+            }
+            resolve()
+          }, 30000)
         } catch (printError) {
-          document.body.removeChild(iframe)
+          printWindow.close()
           reject(printError)
         }
       }, 500)

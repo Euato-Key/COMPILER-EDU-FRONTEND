@@ -2,10 +2,15 @@
   <div class="ai-report-section">
     <!-- 头部 -->
     <div class="flex items-center justify-between mb-6">
-      <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-        <Icon icon="lucide:sparkles" class="w-5 h-5 text-purple-600" />
-        AI 智能学习报告
-      </h3>
+      <div class="flex items-center gap-3">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <Icon icon="lucide:sparkles" class="w-5 h-5 text-purple-600" />
+          AI 智能学习报告
+        </h3>
+        <span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">
+          AI生成，仅供参考
+        </span>
+      </div>
       <div class="flex items-center gap-2">
         <!-- 缓存标识 -->
         <span
