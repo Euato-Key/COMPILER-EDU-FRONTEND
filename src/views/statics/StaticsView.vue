@@ -43,20 +43,23 @@
     <!-- 主要内容 -->
     <main id="stats-content" class="max-w-7xl mx-auto px-4 py-8 mt-20">
       <!-- 页面标题 -->
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          学习统计
+      <div class="page-header text-center mb-10">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg mb-4">
+          <Icon icon="lucide:bar-chart-2" class="w-8 h-8 text-white" />
+        </div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">
+          学习统计分析
         </h1>
-        <p class="text-gray-600 mb-4">
-          查看所有用户的学习错误统计，了解各模块的掌握情况
+        <p class="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+          全面追踪学习进度，深入分析错误分布，助力编译原理学习提升
         </p>
         <!-- 导出按钮 -->
         <button
           @click="handleExportPDF"
           :disabled="exportingPDF"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
-          <Icon icon="lucide:file-down" class="w-4 h-4" />
+          <Icon icon="lucide:file-down" class="w-5 h-5" />
           {{ exportingPDF ? '导出中...' : '导出PDF报告' }}
         </button>
       </div>
@@ -69,12 +72,21 @@
       />
 
       <!-- 总统计卡片 -->
-      <div class="stats-overview mb-8">
+      <div class="stats-overview mb-10">
+        <div class="section-header flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+            <Icon icon="lucide:layout-dashboard" class="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">总体统计概览</h2>
+            <p class="text-sm text-gray-500">关键指标一目了然</p>
+          </div>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-blue-100 text-sm mb-1">总错误次数</p>
+                <p class="text-blue-100 text-sm font-medium mb-1">总错误次数</p>
                 <p class="text-3xl font-bold">{{ totalStats.totalErrors }}</p>
               </div>
               <Icon icon="lucide:alert-circle" class="w-10 h-10 text-blue-200" />
@@ -84,7 +96,7 @@
           <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-green-100 text-sm mb-1">答题记录数</p>
+                <p class="text-green-100 text-sm font-medium mb-1">答题记录数</p>
                 <p class="text-3xl font-bold">{{ totalStats.totalRecords }}</p>
               </div>
               <Icon icon="lucide:file-text" class="w-10 h-10 text-green-200" />
@@ -94,7 +106,7 @@
           <div class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-purple-100 text-sm mb-1">平均错误次数</p>
+                <p class="text-purple-100 text-sm font-medium mb-1">平均错误次数</p>
                 <p class="text-3xl font-bold">{{ totalStats.avgErrors }}</p>
               </div>
               <Icon icon="lucide:bar-chart-2" class="w-10 h-10 text-purple-200" />
@@ -104,7 +116,7 @@
           <div class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-orange-100 text-sm mb-1">活跃模块数</p>
+                <p class="text-orange-100 text-sm font-medium mb-1">活跃模块数</p>
                 <p class="text-3xl font-bold">{{ totalStats.activeModules }}</p>
               </div>
               <Icon icon="lucide:layers" class="w-10 h-10 text-orange-200" />

@@ -17,6 +17,13 @@
           <div class="flex items-center gap-2">
             <ThemeSelector />
             <router-link
+              to="/statics"
+              class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors flex items-center gap-1"
+            >
+              <Icon icon="lucide:bar-chart-2" class="w-4 h-4" />
+              学习统计
+            </router-link>
+            <router-link
               to="/"
               class="px-3 py-2 theme-header-text hover:opacity-80 transition-colors"
             >

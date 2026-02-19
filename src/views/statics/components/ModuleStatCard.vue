@@ -95,16 +95,55 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 格式化步骤名称
+// 格式化步骤名称 - 根据模块显示具体内容
 const formatStepName = (step: string) => {
-  const stepNames: Record<string, string> = {
-    step2: '步骤 2',
-    step3: '步骤 3',
-    step4: '步骤 4',
-    step5: '步骤 5',
-    step6: '步骤 6'
+  // 模块步骤映射表
+  const moduleStepNames: Record<string, Record<string, string>> = {
+    // FA 模块步骤
+    FA: {
+      step1: '输入正则表达式',
+      step2: '构造 NFA',
+      step3: '子集构造法',
+      step4: '绘制 DFA',
+      step5: 'DFA 最小化',
+      step6: '最小化 DFA 结果'
+    },
+    // LL1 模块步骤
+    LL1: {
+      step1: '输入文法',
+      step2: 'First/Follow 集',
+      step3: '构建 LL1 分析表',
+      step4: '字符串分析'
+    },
+    // LR0 模块步骤
+    LR0: {
+      step1: '文法输入',
+      step2: '增广文法',
+      step3: '构造 DFA',
+      step4: 'LR0 表构建',
+      step5: '字符串分析'
+    },
+    // SLR1 模块步骤
+    SLR1: {
+      step1: '文法输入',
+      step2: '增广文法',
+      step3: '构造 DFA',
+      step4: 'SLR1 表构建',
+      step5: '字符串分析'
+    }
   }
-  return stepNames[step] || step
+
+  // 获取步骤编号
+  const stepNum = step.replace('step', '')
+
+  // 获取当前模块的步骤映射
+  const currentModuleSteps = moduleStepNames[props.moduleName]
+  if (currentModuleSteps && currentModuleSteps[step]) {
+    return `步骤 ${stepNum} · ${currentModuleSteps[step]}`
+  }
+
+  // 默认返回步骤编号
+  return `步骤 ${stepNum}`
 }
 
 // 格式化错误类型
@@ -112,7 +151,7 @@ const formatErrorType = (type: string) => {
   const typeNames: Record<string, string> = {
     conversionTable: '转换表',
     transitionMatrix: '转移矩阵',
-    pSets: 'P集',
+    pSets: '状态子集',
     minimizedMatrix: '最小化矩阵',
     firstSet: 'First集',
     followSet: 'Follow集',

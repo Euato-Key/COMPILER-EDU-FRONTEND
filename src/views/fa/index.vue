@@ -44,6 +44,13 @@
               <Icon icon="lucide:history" class="w-4 h-4" />
               答题记录
             </router-link>
+            <router-link
+              to="/statics"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <Icon icon="lucide:bar-chart-2" class="w-4 h-4" />
+              学习统计
+            </router-link>
             <button
               @click="resetProgress"
               class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"

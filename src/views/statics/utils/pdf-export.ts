@@ -282,19 +282,80 @@ export async function exportStatsPDF(
     }
 
     h1 {
-      font-size: 22px !important;
+      font-size: 26px !important;
+      font-weight: bold !important;
     }
 
     h2 {
-      font-size: 16px !important;
+      font-size: 20px !important;
+      font-weight: bold !important;
     }
 
     h3 {
-      font-size: 13px !important;
+      font-size: 15px !important;
+      font-weight: 600 !important;
     }
 
     p, span, div {
-      font-size: 11px;
+      font-size: 12px;
+    }
+
+    /* 页面头部打印优化 */
+    .page-header {
+      margin-bottom: 24px !important;
+      padding-bottom: 16px !important;
+      border-bottom: 2px solid #e5e7eb !important;
+    }
+
+    .page-header h1 {
+      font-size: 28px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .page-header p {
+      font-size: 13px !important;
+      color: #6b7280 !important;
+    }
+
+    /* 区块标题打印优化 */
+    .section-header {
+      margin-bottom: 16px !important;
+      page-break-after: avoid !important;
+    }
+
+    .section-header h2 {
+      font-size: 18px !important;
+      font-weight: bold !important;
+    }
+
+    .section-header p {
+      font-size: 11px !important;
+      color: #6b7280 !important;
+    }
+
+    /* 统计卡片打印优化 */
+    .stat-card {
+      padding: 16px !important;
+    }
+
+    .stat-card .text-3xl {
+      font-size: 24px !important;
+      font-weight: bold !important;
+    }
+
+    /* 模块统计卡片打印优化 */
+    .module-stat-card {
+      border: 1px solid #e5e7eb !important;
+    }
+
+    .module-stat-card h3 {
+      font-size: 16px !important;
+      font-weight: bold !important;
+    }
+
+    .module-stat-card .text-2xl {
+      font-size: 22px !important;
+      font-weight: bold !important;
     }
   </style>
 </head>

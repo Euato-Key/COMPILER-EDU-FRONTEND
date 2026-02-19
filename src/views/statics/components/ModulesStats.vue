@@ -1,9 +1,14 @@
 <template>
-  <div class="modules-stats">
-    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-      <Icon icon="lucide:bar-chart-2" class="w-5 h-5" />
-      各模块错误统计
-    </h2>
+  <div class="modules-stats mb-10">
+    <div class="section-header flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+        <Icon icon="lucide:bar-chart-2" class="w-5 h-5 text-white" />
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">各模块错误统计</h2>
+        <p class="text-sm text-gray-500">按模块查看详细错误分布情况</p>
+      </div>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
       <!-- FA 模块 -->

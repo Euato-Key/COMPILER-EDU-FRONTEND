@@ -24,7 +24,7 @@ const formatErrorTypeName = (type: string): string => {
   const typeNames: Record<string, string> = {
     conversionTable: '转换表',
     transitionMatrix: '转移矩阵',
-    pSets: 'P集',
+    pSets: '状态子集',
     minimizedMatrix: '最小化矩阵',
     firstSet: 'First集',
     followSet: 'Follow集',

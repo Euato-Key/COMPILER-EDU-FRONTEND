@@ -1,9 +1,14 @@
 <template>
-  <div class="charts-section mb-8">
-    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-      <Icon icon="lucide:bar-chart-3" class="w-5 h-5" />
-      数据可视化分析
-    </h2>
+  <div class="charts-section mb-10">
+    <div class="section-header flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+        <Icon icon="lucide:pie-chart" class="w-5 h-5 text-white" />
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">数据可视化分析</h2>
+        <p class="text-sm text-gray-500">多维度图表展示错误分布与趋势</p>
+      </div>
+    </div>
 
     <!-- 图表网格 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -47,6 +52,7 @@
               v-model="trendModule"
               class="text-sm border border-gray-200 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+              <option value="">全部模块</option>
               <option value="fa">FA</option>
               <option value="ll1">LL1</option>
               <option value="lr0">LR0</option>
@@ -65,6 +71,7 @@
         <TrendLineChart
           ref="lineChartRef"
           :data="trendData"
+          :multi-data="trendModule === '' ? allModulesTrendData : null"
           :module-name="trendModuleName"
         />
       </div>
@@ -198,11 +205,20 @@ const selectedModuleName = computed(() => {
 })
 
 const trendModuleName = computed(() => {
-  return moduleNames[trendModule.value] || trendModule.value.toUpperCase()
+  return trendModule.value ? moduleNames[trendModule.value] : '全部模块'
 })
+
+// 所有模块的趋势数据
+const allModulesTrendData = ref<Record<string, { date: string; count: number }[]>>({})
 
 // 获取趋势数据
 const fetchTrendData = async () => {
+  // 如果选择了全部模块，获取所有模块的数据
+  if (trendModule.value === '') {
+    await fetchAllModulesTrendData()
+    return
+  }
+
   try {
     const res = await getErrorTrendAPI({
       module: trendModule.value,
@@ -219,6 +235,50 @@ const fetchTrendData = async () => {
     console.error('获取趋势数据失败:', err)
     trendData.value = []
   }
+}
+
+// 获取所有模块的趋势数据
+const fetchAllModulesTrendData = async () => {
+  const modules = ['fa', 'll1', 'lr0', 'slr1']
+  const newData: Record<string, { date: string; count: number }[]> = {}
+
+  await Promise.all(
+    modules.map(async (module) => {
+      try {
+        const res = await getErrorTrendAPI({
+          module,
+          days: trendDays.value
+        })
+
+        if (res.data.code === 0 && res.data.data) {
+          newData[module] = res.data.data.trend.map((item: TrendItem) => ({
+            date: item.day,
+            count: item.daily_errors
+          }))
+        }
+      } catch (err) {
+        console.error(`获取${module}趋势数据失败:`, err)
+        newData[module] = []
+      }
+    })
+  )
+
+  allModulesTrendData.value = newData
+
+  // 计算总和作为默认显示
+  const allDates = new Set<string>()
+  Object.values(newData).forEach((moduleData) => {
+    moduleData.forEach((item) => allDates.add(item.date))
+  })
+
+  const sortedDates = Array.from(allDates).sort()
+  trendData.value = sortedDates.map((date) => {
+    const totalCount = Object.values(newData).reduce((sum, moduleData) => {
+      const item = moduleData.find((d) => d.date === date)
+      return sum + (item?.count || 0)
+    }, 0)
+    return { date, count: totalCount }
+  })
 }
 
 // 监听趋势配置变化
