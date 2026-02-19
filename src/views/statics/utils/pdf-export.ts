@@ -1,43 +1,56 @@
-interface StudentInfo {
-  name: string
-  studentId: string
-  className: string
-}
-
-interface PDFExportOptions {
-  containerId: string
-  studentInfo: StudentInfo
-  reportTitle: string
-  modelName: string
-  recordId: string
-  filename?: string
+interface ChartImages {
+  barChart: string
+  pieChart: string
+  lineChart: string
 }
 
 /**
- * 导出 PDF 报告
- * 使用隐藏的 iframe 进行打印，避免弹窗
- * @param options 导出选项
+ * 导出统计页面 PDF
+ * 使用图表图片替换 Canvas，确保打印时图表可见
+ * @param containerId 统计页面容器 ID
+ * @param chartImages 图表图片数据
  * @returns Promise<void>
  */
-export async function exportPDF(options: PDFExportOptions): Promise<void> {
-  const {
-    containerId,
-    studentInfo,
-    reportTitle,
-    modelName,
-    recordId
-  } = options
-
-  // 规范化文件名：学号-班别-姓名-模型-记录ID-日期时间
+export async function exportStatsPDF(
+  containerId: string,
+  chartImages: ChartImages
+): Promise<void> {
   const now = new Date()
   const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
   const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '')
-  const suggestedFilename = `${studentInfo.studentId}-${studentInfo.className}-${studentInfo.name}-${modelName}-${recordId}-${dateStr}_${timeStr}.pdf`
+  const suggestedFilename = `学习统计报告-${dateStr}_${timeStr}.pdf`
 
   const container = document.getElementById(containerId)
   if (!container) {
     throw new Error(`容器 ${containerId} 不存在`)
   }
+
+  // 克隆容器内容
+  const clonedContainer = container.cloneNode(true) as HTMLElement
+
+  // 替换图表区域为图片
+  const chartCards = clonedContainer.querySelectorAll('.chart-card')
+  chartCards.forEach((card, index) => {
+    const chartDiv = card.querySelector('[class*="min-h-[300px]"]')
+    if (chartDiv) {
+      let imageSrc = ''
+      if (index === 0) imageSrc = chartImages.barChart
+      else if (index === 1) imageSrc = chartImages.pieChart
+      else if (index === 2) imageSrc = chartImages.lineChart
+
+      if (imageSrc) {
+        chartDiv.innerHTML = `<img src="${imageSrc}" style="width: 100%; height: 100%; object-fit: contain;" />`
+      }
+    }
+  })
+
+  // 隐藏不需要打印的元素
+  const elementsToHide = clonedContainer.querySelectorAll(
+    'button, .no-print, header, nav, .theme-selector, .time-range-selector, select'
+  )
+  elementsToHide.forEach(el => {
+    (el as HTMLElement).style.display = 'none'
+  })
 
   // 获取页面的完整样式
   const styles = Array.from(document.styleSheets)
@@ -91,46 +104,22 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
 
     .report-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       padding-bottom: 20px;
       border-bottom: 2px solid #e5e7eb;
     }
 
     .report-header h1 {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
       color: #111827;
       margin: 0 0 10px 0;
     }
 
-    .student-info {
-      margin-bottom: 20px;
-      padding: 15px;
-      background-color: #f9fafb;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .student-info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-
-    .student-info-item {
-      display: flex;
-      align-items: center;
-    }
-
-    .student-info-label {
-      font-weight: 500;
+    .report-header p {
       color: #6b7280;
-      margin-right: 8px;
-    }
-
-    .student-info-value {
-      color: #111827;
-      font-weight: 600;
+      margin: 0;
+      font-size: 14px;
     }
 
     .report-content {
@@ -142,8 +131,97 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     button,
     [role="button"],
     .btn,
-    .action-buttons {
+    .action-buttons,
+    header,
+    nav,
+    .theme-selector,
+    .time-range-selector,
+    select,
+    .charts-section h2,
+    .modules-stats h2 {
       display: none !important;
+    }
+
+    /* 强制网格布局 - 统计卡片 4列 */
+    .stats-overview .grid {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 12px !important;
+    }
+
+    /* 统计卡片打印优化 */
+    .stat-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      padding: 12px !important;
+      min-height: auto !important;
+    }
+
+    .stat-card .text-3xl {
+      font-size: 20px !important;
+    }
+
+    /* 模块统计卡片 - 强制2列 */
+    .modules-stats .grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+    }
+
+    .module-stat-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 12px;
+      padding: 12px !important;
+    }
+
+    .module-stat-card h3 {
+      font-size: 14px !important;
+    }
+
+    /* 图表区域 - 强制2列 */
+    .charts-section .grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+    }
+
+    /* 图表打印优化 */
+    .chart-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 12px;
+      padding: 12px !important;
+      min-height: 200px !important;
+    }
+
+    .chart-card img {
+      max-width: 100%;
+      height: auto;
+      max-height: 180px;
+    }
+
+    /* 趋势图占满宽度 */
+    .chart-card.lg\\:col-span-2,
+    .charts-section .grid > div:last-child {
+      grid-column: span 2 !important;
+    }
+
+    /* 紧凑间距 */
+    .mb-8 {
+      margin-bottom: 16px !important;
+    }
+
+    .mb-4 {
+      margin-bottom: 8px !important;
+    }
+
+    .p-6 {
+      padding: 12px !important;
+    }
+
+    .gap-6 {
+      gap: 12px !important;
     }
 
     /* 表格打印优化 */
@@ -151,6 +229,7 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       width: 100%;
       border-collapse: collapse;
       page-break-inside: auto;
+      font-size: 11px;
     }
 
     tr {
@@ -160,7 +239,7 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
 
     th, td {
       border: 1px solid #d1d5db;
-      padding: 8px;
+      padding: 4px 6px;
       text-align: left;
     }
 
@@ -172,12 +251,16 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     /* 卡片打印优化 */
     .card,
     .rounded-xl,
-    .shadow-sm {
+    .shadow-sm,
+    .shadow-lg {
       box-shadow: none !important;
       border: 1px solid #e5e7eb;
+      border-radius: 8px !important;
     }
 
     /* 确保背景色打印 */
+    .bg-gradient-to-br,
+    .bg-blue-500, .bg-green-500, .bg-purple-500, .bg-orange-500,
     .bg-green-50, .bg-red-50, .bg-blue-50, .bg-yellow-50,
     .bg-gray-50, .bg-indigo-50, .bg-pink-50, .bg-purple-50 {
       -webkit-print-color-adjust: exact !important;
@@ -193,40 +276,38 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       page-break-inside: avoid;
     }
 
-    /* 响应式调整 */
-    @media (max-width: 768px) {
-      .student-info-grid {
-        grid-template-columns: 1fr;
-      }
+    /* 字体大小优化 */
+    body {
+      font-size: 12px;
+    }
+
+    h1 {
+      font-size: 22px !important;
+    }
+
+    h2 {
+      font-size: 16px !important;
+    }
+
+    h3 {
+      font-size: 13px !important;
+    }
+
+    p, span, div {
+      font-size: 11px;
     }
   </style>
 </head>
 <body>
   <div class="report-container">
     <div class="report-header">
-      <h1>${reportTitle}</h1>
-      <p style="color: #6b7280; margin: 0;">答题报告</p>
-    </div>
-
-    <div class="student-info">
-      <div class="student-info-grid">
-        <div class="student-info-item">
-          <span class="student-info-label">姓名：</span>
-          <span class="student-info-value">${studentInfo.name}</span>
-        </div>
-        <div class="student-info-item">
-          <span class="student-info-label">学号：</span>
-          <span class="student-info-value">${studentInfo.studentId}</span>
-        </div>
-        <div class="student-info-item">
-          <span class="student-info-label">班别：</span>
-          <span class="student-info-value">${studentInfo.className}</span>
-        </div>
-      </div>
+      <h1>学习统计报告</h1>
+      <p>编译原理可视化工具 - 错误统计分析</p>
+      <p style="margin-top: 10px; font-size: 12px;">生成时间: ${now.toLocaleString('zh-CN')}</p>
     </div>
 
     <div class="report-content">
-      ${container.innerHTML}
+      ${clonedContainer.innerHTML}
     </div>
   </div>
 </body>
@@ -241,7 +322,7 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     console.warn('复制文件名到剪贴板失败:', clipboardError)
   }
 
-  // 使用新标签页打开打印页面，允许用户控制文件名
+  // 使用新标签页打开打印页面
   return new Promise((resolve, reject) => {
     try {
       // 创建新窗口
@@ -255,34 +336,31 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       printWindow.document.write(printContent)
       printWindow.document.close()
 
-      // 设置窗口标题（会影响默认文件名）
+      // 设置窗口标题
       printWindow.document.title = suggestedFilename
 
-      // 延迟执行打印，确保内容完全渲染
+      // 延迟执行打印
       setTimeout(() => {
         try {
           printWindow.focus()
           printWindow.print()
 
-          // 如果浏览器支持 onafterprint，打印完成后自动关闭窗口
+          // 打印完成后自动关闭窗口
           printWindow.onafterprint = () => {
             printWindow.close()
             resolve()
           }
 
-          // 对于不支持 onafterprint 的浏览器，检测打印对话框关闭
-          // 通过检测窗口是否获得焦点来判断打印是否完成
+          // 检测打印对话框关闭
           let printDialogClosed = false
           const checkFocus = setInterval(() => {
             if (printDialogClosed && document.hasFocus()) {
-              // 打印对话框已关闭且主窗口获得焦点，说明打印完成
               clearInterval(checkFocus)
               printWindow.close()
               resolve()
             }
           }, 500)
 
-          // 标记打印对话框已打开
           setTimeout(() => {
             printDialogClosed = true
           }, 1000)
@@ -304,12 +382,4 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       reject(error)
     }
   })
-}
-
-/**
- * 直接打印报告（不保存为文件）
- * @param options 导出选项
- */
-export async function printReport(options: PDFExportOptions): Promise<void> {
-  await exportPDF(options)
 }

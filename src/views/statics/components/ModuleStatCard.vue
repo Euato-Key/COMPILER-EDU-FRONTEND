@@ -1,5 +1,5 @@
 <template>
-  <div class="module-stat-card bg-white rounded-xl shadow-lg overflow-hidden">
+  <div class="module-stat-card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
     <!-- 头部 -->
     <div class="card-header p-5 border-b" :class="`bg-${moduleColor}-50 border-${moduleColor}-100`">
       <div class="flex items-center justify-between">
@@ -20,7 +20,7 @@
     </div>
 
     <!-- 步骤统计列表 -->
-    <div class="card-body p-5">
+    <div class="card-body p-5 flex-1">
       <div class="steps-list space-y-4">
         <div
           v-for="step in stats.steps"
@@ -122,7 +122,12 @@ const formatErrorType = (type: string) => {
     nfa: 'NFA',
     closure: '闭包',
     goto: 'Goto表',
-    action: 'Action表'
+    action: 'Action表',
+    augmentedFormula: '增广文法',
+    dfaState: 'DFA状态',
+    gotoTransition: 'Goto转换',
+    actionTable: 'Action表',
+    gotoTable: 'Goto表'
   }
   return typeNames[type] || type
 }

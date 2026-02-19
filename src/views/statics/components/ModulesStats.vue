@@ -5,10 +5,11 @@
       各模块错误统计
     </h2>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
       <!-- FA 模块 -->
       <ModuleStatCard
         v-if="moduleStats.fa"
+        class="h-full"
         module-name="FA"
         module-icon="lucide:git-branch"
         module-color="blue"
@@ -18,6 +19,7 @@
       <!-- LL1 模块 -->
       <ModuleStatCard
         v-if="moduleStats.ll1"
+        class="h-full"
         module-name="LL1"
         module-icon="lucide:layers"
         module-color="green"
@@ -27,6 +29,7 @@
       <!-- LR0 模块 -->
       <ModuleStatCard
         v-if="moduleStats.lr0"
+        class="h-full"
         module-name="LR0"
         module-icon="lucide:workflow"
         module-color="purple"
@@ -36,6 +39,7 @@
       <!-- SLR1 模块 -->
       <ModuleStatCard
         v-if="moduleStats.slr1"
+        class="h-full"
         module-name="SLR1"
         module-icon="lucide:git-merge"
         module-color="orange"

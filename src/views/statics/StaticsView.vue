@@ -41,15 +41,24 @@
     </header>
 
     <!-- 主要内容 -->
-    <main class="max-w-7xl mx-auto px-4 py-8 mt-20">
+    <main id="stats-content" class="max-w-7xl mx-auto px-4 py-8 mt-20">
       <!-- 页面标题 -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
           学习统计
         </h1>
-        <p class="text-gray-600">
+        <p class="text-gray-600 mb-4">
           查看所有用户的学习错误统计，了解各模块的掌握情况
         </p>
+        <!-- 导出按钮 -->
+        <button
+          @click="handleExportPDF"
+          :disabled="exportingPDF"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Icon icon="lucide:file-down" class="w-4 h-4" />
+          {{ exportingPDF ? '导出中...' : '导出PDF报告' }}
+        </button>
       </div>
 
       <!-- 时间轴选择器 -->
@@ -107,6 +116,14 @@
       <!-- 各模块统计 -->
       <ModulesStats :module-stats="moduleStats" />
 
+      <!-- 图表分析区域 -->
+      <ChartsSection
+        ref="chartsSectionRef"
+        :module-stats="moduleStats"
+        :start-date="startDate"
+        :end-date="endDate"
+      />
+
       <!-- 加载状态 -->
       <div v-if="loading" class="flex justify-center items-center py-12">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -126,7 +143,10 @@ import { Icon } from '@iconify/vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
 import TimeRangeSelector from './components/TimeRangeSelector.vue'
 import ModulesStats from './components/ModulesStats.vue'
+import ChartsSection from './components/ChartsSection.vue'
 import type { ModuleStat as ModuleStatsType } from './utils/types'
+import type ChartsSectionType from './components/ChartsSection.vue'
+import { exportStatsPDF } from './utils/pdf-export'
 import {
   getOverallStatsAPI,
   getStatsSummaryAPI,
@@ -137,10 +157,14 @@ import {
 // 加载状态
 const loading = ref(false)
 const error = ref('')
+const exportingPDF = ref(false)
 
 // 时间范围
 const startDate = ref('')
 const endDate = ref('')
+
+// 图表区域引用
+const chartsSectionRef = ref<InstanceType<typeof ChartsSectionType> | null>(null)
 
 // 总统计数据
 const totalStats = reactive({
@@ -267,6 +291,25 @@ const processModuleStats = async (summaryData: StatsSummaryItem[]) => {
 // 时间范围变化处理
 const handleTimeRangeChange = () => {
   fetchStats()
+}
+
+// 导出 PDF
+const handleExportPDF = async () => {
+  exportingPDF.value = true
+  try {
+    // 获取图表图片
+    const chartImages = chartsSectionRef.value?.getChartImages() || {
+      barChart: '',
+      pieChart: '',
+      lineChart: ''
+    }
+    await exportStatsPDF('stats-content', chartImages)
+  } catch (err) {
+    console.error('导出 PDF 失败:', err)
+    alert('导出 PDF 失败，请稍后重试')
+  } finally {
+    exportingPDF.value = false
+  }
 }
 
 onMounted(() => {
