@@ -81,6 +81,34 @@
     width: 100% !important;
   }
 
+  /* 学生信息打印优化 - 防止换行 */
+  .student-info-grid,
+  .student-info :deep(.student-info-grid) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 40px !important;
+  }
+
+  .student-info-item,
+  .student-info :deep(.student-info-item) {
+    display: flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .student-info-label,
+  .student-info :deep(.student-info-label) {
+    white-space: nowrap !important;
+    margin-right: 8px !important;
+  }
+
+  .student-info-value,
+  .student-info :deep(.student-info-value) {
+    white-space: nowrap !important;
+  }
+
   /* SVG 图表最大化利用空间 */
   .fa-canvas-report :deep(.rendered-svg-container),
   .fa-canvas-report :deep(.viz-wrapper) {

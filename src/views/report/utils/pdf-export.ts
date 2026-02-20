@@ -142,25 +142,30 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     }
 
     .student-info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 40px;
     }
 
     .student-info-item {
       display: flex;
       align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .student-info-label {
       font-weight: 500;
       color: #6b7280;
       margin-right: 8px;
+      white-space: nowrap;
     }
 
     .student-info-value {
       color: #111827;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .report-content {
