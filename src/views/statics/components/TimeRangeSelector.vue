@@ -133,6 +133,14 @@ watch(() => props.endDate, (newVal) => {
 const minDate = ref(new Date())
 const maxDate = ref(new Date())
 
+// 将 Date 对象格式化为本地日期字符串 YYYY-MM-DD
+const formatDateToLocalString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // 初始化时间范围
 onMounted(() => {
   const now = new Date()
@@ -176,7 +184,7 @@ const timeTicks = computed((): TimeTick[] => {
     date.setDate(date.getDate() + Math.round((totalDays * i) / tickCount))
 
     ticks.push({
-      date: date.toISOString().split('T')[0],
+      date: formatDateToLocalString(date),
       position,
       label: totalDays > 365 ? formatYearMonth(date) : formatShortDate(date)
     })
@@ -245,8 +253,8 @@ const selectQuickOption = (days: number) => {
   const start = new Date()
   start.setDate(start.getDate() - days)
 
-  emit('update:endDate', end.toISOString().split('T')[0])
-  emit('update:startDate', start.toISOString().split('T')[0])
+  emit('update:endDate', formatDateToLocalString(end))
+  emit('update:startDate', formatDateToLocalString(start))
   emit('change')
 }
 
@@ -268,7 +276,7 @@ const handleEndDateChange = (newDate: string) => {
 
 // 格式化日期用于input的max/min属性
 const formatDateForInput = (date: Date) => {
-  return date.toISOString().split('T')[0]
+  return formatDateToLocalString(date)
 }
 
 // 起点拖拽开始
@@ -294,7 +302,7 @@ const handleDragMove = (e: MouseEvent | TouchEvent) => {
   const totalTime = maxDate.value.getTime() - minDate.value.getTime()
   const newTime = minDate.value.getTime() + (totalTime * percentage) / 100
   const newDate = new Date(newTime)
-  const dateStr = newDate.toISOString().split('T')[0]
+  const dateStr = formatDateToLocalString(newDate)
 
   if (isDragging.value === 'start') {
     // 确保起点不超过终点

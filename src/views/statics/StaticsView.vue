@@ -334,14 +334,22 @@ const handleExportPDF = async () => {
   }
 }
 
+// 将 Date 对象格式化为本地日期字符串 YYYY-MM-DD
+const formatDateToLocalString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 onMounted(() => {
   // 设置默认时间范围为最近30天
   const end = new Date()
   const start = new Date()
   start.setDate(start.getDate() - 30)
 
-  endDate.value = end.toISOString().split('T')[0]
-  startDate.value = start.toISOString().split('T')[0]
+  endDate.value = formatDateToLocalString(end)
+  startDate.value = formatDateToLocalString(start)
 
   fetchStats()
 })
