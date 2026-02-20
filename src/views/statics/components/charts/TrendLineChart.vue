@@ -90,7 +90,9 @@ const updateChart = () => {
       data: dates,
       axisLabel: {
         fontSize: 11,
-        rotate: dates.length > 10 ? 45 : 0
+        rotate: dates.length > 10 ? 45 : 0,
+        // 根据数据量动态调整间隔
+        interval: dates.length > 60 ? 6 : dates.length > 30 ? 3 : dates.length > 10 ? 1 : 0
       }
     },
     yAxis: {
@@ -202,7 +204,9 @@ const updateMultiModuleChart = () => {
       data: sortedDates,
       axisLabel: {
         fontSize: 11,
-        rotate: sortedDates.length > 10 ? 45 : 0
+        rotate: sortedDates.length > 10 ? 45 : 0,
+        // 根据数据量动态调整间隔
+        interval: sortedDates.length > 60 ? 6 : sortedDates.length > 30 ? 3 : sortedDates.length > 10 ? 1 : 0
       }
     },
     yAxis: {
