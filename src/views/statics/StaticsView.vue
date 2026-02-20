@@ -175,6 +175,7 @@ import {
   getErrorDistributionAPI,
   type StatsSummaryItem
 } from '@/api/stats'
+import { localDateToUTC, formatDateToLocalString } from '@/utils/timezone'
 
 // 加载状态
 const loading = ref(false)
@@ -216,9 +217,10 @@ const fetchStats = async () => {
 
   try {
     // 获取整体统计（带时间范围）
+    // 将本地日期转换为 UTC 日期进行查询
     const overallRes = await getOverallStatsAPI({
-      start_date: startDate.value || undefined,
-      end_date: endDate.value || undefined
+      start_date: startDate.value ? localDateToUTC(startDate.value) : undefined,
+      end_date: endDate.value ? localDateToUTC(endDate.value) : undefined
     })
 
     if (overallRes.data.code === 0 && overallRes.data.data) {
@@ -233,8 +235,8 @@ const fetchStats = async () => {
 
     // 获取各模块详细统计
     const summaryRes = await getStatsSummaryAPI({
-      start_date: startDate.value || undefined,
-      end_date: endDate.value || undefined
+      start_date: startDate.value ? localDateToUTC(startDate.value) : undefined,
+      end_date: endDate.value ? localDateToUTC(endDate.value) : undefined
     })
 
     if (summaryRes.data.code === 0 && summaryRes.data.data) {
@@ -275,8 +277,8 @@ const processModuleStats = async (summaryData: StatsSummaryItem[]) => {
     try {
       const distRes = await getErrorDistributionAPI({
         module,
-        start_date: startDate.value || undefined,
-        end_date: endDate.value || undefined
+        start_date: startDate.value ? localDateToUTC(startDate.value) : undefined,
+        end_date: endDate.value ? localDateToUTC(endDate.value) : undefined
       })
       if (distRes.data.code === 0 && distRes.data.data) {
         distribution = distRes.data.data.distribution
@@ -334,13 +336,7 @@ const handleExportPDF = async () => {
   }
 }
 
-// 将 Date 对象格式化为本地日期字符串 YYYY-MM-DD
-const formatDateToLocalString = (date: Date): string => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
+
 
 onMounted(() => {
   // 设置默认时间范围为最近30天

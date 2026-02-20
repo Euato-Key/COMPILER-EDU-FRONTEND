@@ -86,6 +86,7 @@ import ModuleBarChart from './charts/ModuleBarChart.vue'
 import ErrorTypePieChart from './charts/ErrorTypePieChart.vue'
 import TrendLineChart from './charts/TrendLineChart.vue'
 import { getErrorTrendAPI, type TrendItem } from '@/api/stats'
+import { utcToLocalDate } from '@/utils/timezone'
 
 interface ModuleStat {
   totalErrors: number
@@ -227,7 +228,7 @@ const fetchTrendData = async () => {
 
     if (res.data.code === 0 && res.data.data) {
       trendData.value = res.data.data.trend.map((item: TrendItem) => ({
-        date: item.day,
+        date: utcToLocalDate(item.day),
         count: item.daily_errors
       }))
     }
@@ -252,7 +253,7 @@ const fetchAllModulesTrendData = async () => {
 
         if (res.data.code === 0 && res.data.data) {
           newData[module] = res.data.data.trend.map((item: TrendItem) => ({
-            date: item.day,
+            date: utcToLocalDate(item.day),
             count: item.daily_errors
           }))
         }

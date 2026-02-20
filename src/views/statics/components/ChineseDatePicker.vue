@@ -67,6 +67,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
+import { formatDateToLocalString } from '@/utils/timezone'
 
 interface Props {
   modelValue: string
@@ -219,7 +220,7 @@ const isToday = (date: Date) => {
 
 // 判断是否禁用
 const isDisabled = (date: Date) => {
-  const dateStr = date.toISOString().split('T')[0]
+  const dateStr = formatDateToLocalString(date)
   if (props.min && dateStr < props.min) return true
   if (props.max && dateStr > props.max) return true
   return false
@@ -228,7 +229,7 @@ const isDisabled = (date: Date) => {
 // 选择日期
 const selectDate = (day: CalendarDay) => {
   if (isDisabled(day.date)) return
-  const dateStr = day.date.toISOString().split('T')[0]
+  const dateStr = formatDateToLocalString(day.date)
   emit('update:modelValue', dateStr)
   isOpen.value = false
 }
@@ -236,7 +237,7 @@ const selectDate = (day: CalendarDay) => {
 // 选择今天
 const selectToday = () => {
   const today = new Date()
-  const dateStr = today.toISOString().split('T')[0]
+  const dateStr = formatDateToLocalString(today)
   emit('update:modelValue', dateStr)
   selectedYear.value = today.getFullYear()
   selectedMonth.value = today.getMonth()

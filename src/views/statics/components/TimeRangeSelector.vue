@@ -97,6 +97,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import ChineseDatePicker from './ChineseDatePicker.vue'
+import { formatDateToLocalString } from '@/utils/timezone'
 
 interface Props {
   startDate: string
@@ -132,14 +133,6 @@ watch(() => props.endDate, (newVal) => {
 // 时间范围（最近3年）
 const minDate = ref(new Date())
 const maxDate = ref(new Date())
-
-// 将 Date 对象格式化为本地日期字符串 YYYY-MM-DD
-const formatDateToLocalString = (date: Date): string => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
 
 // 初始化时间范围
 onMounted(() => {

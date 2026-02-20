@@ -292,6 +292,7 @@
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import axios from 'axios'
+import { utcToLocalDate, localDateToUTC, formatDateToLocalString } from '@/utils/timezone'
 
 // 认证状态
 const isAuthenticated = ref(false)
@@ -366,7 +367,13 @@ const fetchDbStatus = async () => {
   try {
     const response = await axios.get(`${API_BASE}/api/stats/debug/db-status`)
     if (response.data.code === 0) {
-      dbStatus.value = response.data.data
+      // 将 UTC 时间转换为本地日期显示（只显示日期，不显示时间）
+      const data = response.data.data
+      dbStatus.value = {
+        ...data,
+        min_date: data.min_date ? utcToLocalDate(data.min_date) : '-',
+        max_date: data.max_date ? utcToLocalDate(data.max_date) : '-'
+      }
     }
   } catch (error) {
     showResult('error', '获取数据库状态失败')
@@ -375,26 +382,29 @@ const fetchDbStatus = async () => {
   }
 }
 
+
+
 // 导出数据
 const exportData = async () => {
   isExporting.value = true
   try {
     const params = new URLSearchParams()
-    if (exportForm.value.start_date) params.append('start_date', exportForm.value.start_date)
-    if (exportForm.value.end_date) params.append('end_date', exportForm.value.end_date)
+    // 将本地日期转换为 UTC 日期进行查询
+    if (exportForm.value.start_date) params.append('start_date', localDateToUTC(exportForm.value.start_date))
+    if (exportForm.value.end_date) params.append('end_date', localDateToUTC(exportForm.value.end_date))
     if (exportForm.value.module) params.append('module', exportForm.value.module)
-    
+
     const response = await axios.get(`${API_BASE}/api/stats/export?${params}`)
-    
+
     if (response.data.code === 0) {
       const sql = response.data.data.sql
       const blob = new Blob([sql], { type: 'text/sql' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      
-      // 生成文件名
-      const date = new Date().toISOString().split('T')[0]
+
+      // 生成文件名（使用本地时间）
+      const date = formatDateToLocalString(new Date())
       const module = exportForm.value.module || 'all'
       link.download = `stats_backup_${module}_${date}.sql`
       
@@ -531,9 +541,10 @@ const confirmDeleteByDate = () => {
 // 按日期删除
 const deleteByDate = async () => {
   try {
+    // 将本地日期转换为 UTC 日期进行删除
     const response = await axios.post(`${API_BASE}/api/stats/delete/by-date`, {
-      start_date: deleteDateForm.value.start_date,
-      end_date: deleteDateForm.value.end_date
+      start_date: localDateToUTC(deleteDateForm.value.start_date),
+      end_date: localDateToUTC(deleteDateForm.value.end_date)
     })
     if (response.data.code === 0) {
       showResult('success', response.data.msg)
