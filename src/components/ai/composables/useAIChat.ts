@@ -1,8 +1,6 @@
 import { ref, reactive } from 'vue'
-import OpenAI from 'openai'
-import type { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions'
 import type { Message, ChatContext, AIConfig, AIResponse } from '../types'
-import { getApiKeyWithStoredPassword } from '@/api/ai'
+import { sendAIChat, sendAIChatStream } from '@/api/ai'
 
 export function useAIChat() {
   // AI配置
@@ -20,34 +18,6 @@ export function useAIChat() {
   const isStreaming = ref(false)
   const currentStreamContent = ref('')
   const error = ref<string | null>(null)
-
-  // 初始化OpenAI客户端（延迟初始化，等待获取API密钥）
-  let openai: OpenAI | null = null
-
-  // 获取OpenAI客户端实例（确保已初始化）
-  const getOpenAIClient = async (): Promise<OpenAI> => {
-    if (openai) {
-      return openai
-    }
-
-    // 从后端获取API密钥
-    const apiKey = await getApiKeyWithStoredPassword()
-    if (!apiKey) {
-      throw new Error('未配置API密钥，请先前往API管理页面配置')
-    }
-
-    // 更新配置
-    aiConfig.apiKey = apiKey
-
-    // 初始化客户端
-    openai = new OpenAI({
-      baseURL: aiConfig.baseURL,
-      apiKey: apiKey,
-      dangerouslyAllowBrowser: true // 允许在浏览器中使用
-    })
-
-    return openai
-  }
 
   // 添加消息
   const addMessage = (role: Message['role'], content: string) => {
@@ -205,7 +175,7 @@ export function useAIChat() {
         addMessage('user', userMessage)
       }
 
-                  // 构建系统提示词
+      // 构建系统提示词
       const systemPrompt = buildSystemPrompt(context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore, homeChatStore)
 
       // 构建消息历史
@@ -214,38 +184,75 @@ export function useAIChat() {
         ...(currentStore ? currentStore.messages : messages.value)
       ]
 
-      // 获取OpenAI客户端
-      const client = await getOpenAIClient()
-
-      // 发送请求
-      const stream = await client.chat.completions.create({
-        model: aiConfig.model,
-        messages: messageHistory,
-        temperature: aiConfig.temperature,
-        max_tokens: aiConfig.maxTokens,
-        stream: aiConfig.stream
-      })
-
-                  // 处理流式响应
       let fullContent = ''
 
-      // 判断是否为流式响应
-      if (aiConfig.stream && Symbol.asyncIterator in stream) {
-        for await (const chunk of stream as AsyncIterable<ChatCompletionChunk>) {
-          const content = chunk.choices[0]?.delta?.content || ''
-          if (content) {
-            fullContent += content
-            if (currentStore) {
-              currentStore.updateStreamContent(fullContent)
-            } else {
-              currentStreamContent.value = fullContent
+      // 根据是否流式选择不同的请求方式
+      if (aiConfig.stream) {
+        // 流式请求
+        const response = await sendAIChatStream({
+          messages: messageHistory,
+          model: aiConfig.model,
+          temperature: aiConfig.temperature,
+          max_tokens: aiConfig.maxTokens,
+          module: context.currentPage || 'unknown'
+        })
+
+        if (!response) {
+          throw new Error('AI 请求失败')
+        }
+
+        const reader = response.body?.getReader()
+        const decoder = new TextDecoder()
+
+        if (!reader) {
+          throw new Error('无法读取响应流')
+        }
+
+        // 读取流式响应
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n')
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6)
+              if (data === '[DONE]') continue
+
+              try {
+                const parsed = JSON.parse(data)
+                const content = parsed.choices?.[0]?.delta?.content || ''
+                if (content) {
+                  fullContent += content
+                  if (currentStore) {
+                    currentStore.updateStreamContent(fullContent)
+                  } else {
+                    currentStreamContent.value = fullContent
+                  }
+                }
+              } catch (e) {
+                // 忽略解析错误
+              }
             }
           }
         }
       } else {
-        // 非流式响应，直接获取内容
-        const completion = stream as ChatCompletion
-        fullContent = completion.choices[0]?.message?.content || ''
+        // 非流式请求
+        const response = await sendAIChat({
+          messages: messageHistory,
+          model: aiConfig.model,
+          temperature: aiConfig.temperature,
+          max_tokens: aiConfig.maxTokens,
+          module: context.currentPage || 'unknown'
+        })
+
+        if (!response) {
+          throw new Error('AI 请求失败')
+        }
+
+        fullContent = response.choices?.[0]?.message?.content || ''
       }
 
       // 添加AI回复

@@ -115,11 +115,31 @@ export interface BalanceResponse {
 }
 
 /**
- * 查询 DeepSeek API 余额
- * @param apiKey DeepSeek API 密钥
+ * 查询 DeepSeek API 余额（通过后端代理，更安全）
  * @returns 余额信息
  */
-export const queryDeepSeekBalance = async (apiKey: string): Promise<BalanceResponse | null> => {
+export const queryDeepSeekBalance = async (): Promise<BalanceResponse | null> => {
+  try {
+    const response = await request.get<ApiResponse<BalanceResponse>>('/api/ai/balance')
+
+    if (response.data.code === 0) {
+      return response.data.data || null
+    }
+    console.error('查询余额失败:', response.data.msg)
+    return null
+  } catch (error) {
+    console.error('查询余额请求失败:', error)
+    return null
+  }
+}
+
+/**
+ * 查询 DeepSeek API 余额（直接请求，需要 API Key）
+ * @param apiKey DeepSeek API 密钥
+ * @returns 余额信息
+ * @deprecated 请使用 queryDeepSeekBalance() 通过后端代理查询
+ */
+export const queryDeepSeekBalanceDirect = async (apiKey: string): Promise<BalanceResponse | null> => {
   try {
     const response = await fetch('https://api.deepseek.com/user/balance', {
       method: 'GET',
@@ -138,6 +158,157 @@ export const queryDeepSeekBalance = async (apiKey: string): Promise<BalanceRespo
     return data
   } catch (error) {
     console.error('查询余额请求失败:', error)
+    return null
+  }
+}
+
+// Token 用量统计接口
+export interface TokenUsageSummary {
+  total_requests: number
+  total_input_tokens: number
+  total_output_tokens: number
+  total_tokens: number
+}
+
+export interface ModuleTokenStat {
+  module: string
+  requests: number
+  input_tokens: number
+  output_tokens: number
+  total_tokens: number
+}
+
+export interface DailyTokenStat {
+  date: string
+  requests: number
+  total_tokens: number
+}
+
+export interface ModelTokenStat {
+  model: string
+  requests: number
+  total_tokens: number
+}
+
+export interface TokenUsageResponse {
+  summary: TokenUsageSummary
+  module_stats: ModuleTokenStat[]
+  daily_stats: DailyTokenStat[]
+  model_stats: ModelTokenStat[]
+  date_range: {
+    start_date: string
+    end_date: string
+  }
+}
+
+/**
+ * 获取 Token 使用统计
+ * @param params 查询参数
+ * @returns Token 用量统计
+ */
+export const getTokenUsage = async (params?: {
+  start_date?: string
+  end_date?: string
+  module?: string
+}): Promise<TokenUsageResponse | null> => {
+  try {
+    const response = await request.get<ApiResponse<TokenUsageResponse>>('/api/ai/token-usage', {
+      params
+    })
+
+    if (response.data.code === 0) {
+      return response.data.data || null
+    }
+    console.error('获取 Token 用量失败:', response.data.msg)
+    return null
+  } catch (error) {
+    console.error('获取 Token 用量请求失败:', error)
+    return null
+  }
+}
+
+// AI 聊天请求参数
+export interface AIChatRequest {
+  messages: Array<{
+    role: 'system' | 'user' | 'assistant'
+    content: string
+  }>
+  model?: string
+  temperature?: number
+  max_tokens?: number
+  response_format?: { type: string }
+  top_p?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+  thinking?: { type: 'enabled' | 'disabled' }
+  module?: string
+}
+
+// AI 聊天响应
+export interface AIChatResponse {
+  id: string
+  object: string
+  created: number
+  model: string
+  choices: Array<{
+    index: number
+    message: {
+      role: string
+      content: string
+      reasoning_content?: string
+    }
+    finish_reason: string
+  }>
+  usage?: {
+    prompt_tokens: number
+    completion_tokens: number
+    total_tokens: number
+  }
+}
+
+/**
+ * 发送 AI 聊天请求（非流式，通过后端代理）
+ * @param data 请求参数
+ * @returns AI 响应
+ */
+export const sendAIChat = async (data: AIChatRequest): Promise<AIChatResponse | null> => {
+  try {
+    const response = await request.post<ApiResponse<AIChatResponse>>('/api/ai/chat', data)
+
+    if (response.data.code === 0) {
+      return response.data.data || null
+    }
+    console.error('AI 聊天请求失败:', response.data.msg)
+    return null
+  } catch (error) {
+    console.error('AI 聊天请求失败:', error)
+    return null
+  }
+}
+
+/**
+ * 发送 AI 聊天请求（流式，通过后端代理）
+ * @param data 请求参数
+ * @returns Response 对象，需要自行处理流
+ */
+export const sendAIChatStream = async (data: AIChatRequest): Promise<Response | null> => {
+  try {
+    const response = await fetch('/api/ai/chat/stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      console.error('AI 流式请求失败:', response.status)
+      return null
+    }
+
+    return response
+  } catch (error) {
+    console.error('AI 流式请求失败:', error)
     return null
   }
 }

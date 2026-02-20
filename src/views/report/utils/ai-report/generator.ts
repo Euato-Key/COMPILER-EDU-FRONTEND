@@ -12,10 +12,9 @@ import type {
 } from './types'
 import { getFullPrompt } from './prompts'
 import { saveAIReport, loadAIReport } from './storage'
-import { getApiKeyWithStoredPassword } from '@/api'
+import { sendAIChat } from '@/api/ai'
 
-// DeepSeek API配置
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'
+// 默认模型配置
 const DEFAULT_MODEL = 'deepseek-chat'
 const DEFAULT_TEMPERATURE = 0.3
 const DEFAULT_MAX_TOKENS = 6000
@@ -45,26 +44,24 @@ export async function generateAIReport(
     }
   }
 
-  // 2. 获取API密钥
-  const apiKey = await getApiKeyWithStoredPassword()
-  if (!apiKey) {
-    return {
-      success: false,
-      error: '未配置API密钥，请先设置AI助手',
-    }
-  }
-
   try {
-    // 3. 构建Prompt
+    // 2. 构建Prompt
     const prompt = buildPrompt(context, options.customPrompt)
 
-    // 4. 调用AI API
-    const response = await callDeepSeekAPI(prompt, apiKey, options.modelParams)
+    // 3. 调用AI API（通过后端代理）
+    const response = await callAIAPI(prompt, context.moduleType, options.modelParams)
 
-    // 5. 解析响应
+    if (!response) {
+      return {
+        success: false,
+        error: '生成报告失败，请稍后重试',
+      }
+    }
+
+    // 4. 解析响应
     const content = parseAIResponse(response)
 
-    // 6. 保存到缓存
+    // 5. 保存到缓存
     saveAIReport(recordId, moduleType, content)
 
     return {
@@ -125,49 +122,41 @@ function formatErrorLogs(errorLogs: any[]): string {
 }
 
 /**
- * 调用DeepSeek API
+ * 调用AI API（通过后端代理）
  * @param prompt Prompt内容
- * @param apiKey API密钥
+ * @param moduleType 模块类型
  * @param modelParams 模型参数
- * @returns API响应
+ * @returns API响应内容
  */
-async function callDeepSeekAPI(
+async function callAIAPI(
   prompt: string,
-  apiKey: string,
+  moduleType: string,
   modelParams?: { temperature?: number; maxTokens?: number }
 ): Promise<string> {
-  const response = await fetch(DEEPSEEK_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: DEFAULT_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content:
-            '你是一位专业的编译原理教学助手，擅长分析学生的学习情况并给出个性化的学习建议。请确保返回有效的JSON格式。',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: modelParams?.temperature ?? DEFAULT_TEMPERATURE,
-      max_tokens: modelParams?.maxTokens ?? DEFAULT_MAX_TOKENS,
-      response_format: { type: 'json_object' },
-    }),
+  const response = await sendAIChat({
+    messages: [
+      {
+        role: 'system',
+        content:
+          '你是一位专业的编译原理教学助手，擅长分析学生的学习情况并给出个性化的学习建议。请确保返回有效的JSON格式。',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    model: DEFAULT_MODEL,
+    temperature: modelParams?.temperature ?? DEFAULT_TEMPERATURE,
+    max_tokens: modelParams?.maxTokens ?? DEFAULT_MAX_TOKENS,
+    response_format: { type: 'json_object' },
+    module: moduleType,
   })
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.error?.message || `API请求失败: ${response.status}`)
+  if (!response) {
+    throw new Error('AI 请求失败')
   }
 
-  const data = await response.json()
-  return data.choices?.[0]?.message?.content || ''
+  return response.choices?.[0]?.message?.content || ''
 }
 
 /**
