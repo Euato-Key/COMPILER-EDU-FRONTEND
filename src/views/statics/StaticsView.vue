@@ -43,25 +43,31 @@
     <!-- 主要内容 -->
     <main id="stats-content" class="max-w-7xl mx-auto px-4 py-8 mt-20">
       <!-- 页面标题 -->
-      <div class="page-header text-center mb-10">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg mb-4">
-          <Icon icon="lucide:bar-chart-2" class="w-8 h-8 text-white" />
+      <div class="page-header mb-10">
+        <div class="flex items-center gap-6">
+          <div class="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
+            <Icon icon="lucide:chart-pie" class="w-10 h-10 text-white" />
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-4 mb-2">
+              <h1 class="text-4xl font-bold text-gray-900">
+                学习统计分析
+              </h1>
+              <!-- 导出按钮 -->
+              <button
+                @click="handleExportPDF"
+                :disabled="exportingPDF"
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+              >
+                <Icon icon="lucide:file-down" class="w-4 h-4" />
+                {{ exportingPDF ? '导出中...' : '导出PDF报告' }}
+              </button>
+            </div>
+            <p class="text-lg text-gray-600 max-w-2xl">
+              全面追踪学习进度，深入分析错误分布，助力编译原理学习提升
+            </p>
+          </div>
         </div>
-        <h1 class="text-4xl font-bold text-gray-900 mb-3">
-          学习统计分析
-        </h1>
-        <p class="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-          全面追踪学习进度，深入分析错误分布，助力编译原理学习提升
-        </p>
-        <!-- 导出按钮 -->
-        <button
-          @click="handleExportPDF"
-          :disabled="exportingPDF"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-        >
-          <Icon icon="lucide:file-down" class="w-5 h-5" />
-          {{ exportingPDF ? '导出中...' : '导出PDF报告' }}
-        </button>
       </div>
 
       <!-- 时间轴选择器 -->
@@ -83,43 +89,43 @@
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
+          <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-blue-100 text-sm font-medium mb-1">总错误次数</p>
-                <p class="text-3xl font-bold">{{ totalStats.totalErrors }}</p>
+                <p class="text-blue-100 text-xs font-medium mb-0.5">总错误次数</p>
+                <p class="text-2xl font-bold">{{ totalStats.totalErrors }}</p>
               </div>
-              <Icon icon="lucide:alert-circle" class="w-10 h-10 text-blue-200" />
+              <Icon icon="lucide:alert-circle" class="w-8 h-8 text-blue-200" />
             </div>
           </div>
 
-          <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
+          <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-green-100 text-sm font-medium mb-1">答题记录数</p>
-                <p class="text-3xl font-bold">{{ totalStats.totalRecords }}</p>
+                <p class="text-green-100 text-xs font-medium mb-0.5">答题记录数</p>
+                <p class="text-2xl font-bold">{{ totalStats.totalRecords }}</p>
               </div>
-              <Icon icon="lucide:file-text" class="w-10 h-10 text-green-200" />
+              <Icon icon="lucide:file-text" class="w-8 h-8 text-green-200" />
             </div>
           </div>
 
-          <div class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
+          <div class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-4 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-purple-100 text-sm font-medium mb-1">平均错误次数</p>
-                <p class="text-3xl font-bold">{{ totalStats.avgErrors }}</p>
+                <p class="text-purple-100 text-xs font-medium mb-0.5">平均错误次数</p>
+                <p class="text-2xl font-bold">{{ totalStats.avgErrors }}</p>
               </div>
-              <Icon icon="lucide:bar-chart-2" class="w-10 h-10 text-purple-200" />
+              <Icon icon="lucide:bar-chart-2" class="w-8 h-8 text-purple-200" />
             </div>
           </div>
 
-          <div class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg">
+          <div class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 shadow-lg">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-orange-100 text-sm font-medium mb-1">活跃模块数</p>
-                <p class="text-3xl font-bold">{{ totalStats.activeModules }}</p>
+                <p class="text-orange-100 text-xs font-medium mb-0.5">活跃模块数</p>
+                <p class="text-2xl font-bold">{{ totalStats.activeModules }}</p>
               </div>
-              <Icon icon="lucide:layers" class="w-10 h-10 text-orange-200" />
+              <Icon icon="lucide:layers" class="w-8 h-8 text-orange-200" />
             </div>
           </div>
         </div>

@@ -90,10 +90,40 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
     }
 
     .report-header {
+      position: relative;
       text-align: center;
       margin-bottom: 20px;
       padding-bottom: 20px;
       border-bottom: 2px solid #e5e7eb;
+    }
+
+    .university-brand {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .university-logo {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+
+    .university-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a365d;
+      margin: 0;
+      font-family: "SimSun", "宋体", "Source Han Serif SC", "Noto Serif SC", serif;
+      letter-spacing: 0.5px;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 120px;
+      text-shadow: 0.5px 0.5px 0.5px rgba(0,0,0,0.1);
     }
 
     .report-header h1 {
@@ -204,6 +234,10 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
 <body>
   <div class="report-container">
     <div class="report-header">
+      <div class="university-brand">
+        <img src="https://tse1.mm.bing.net/th/id/OIP.IBQmsIvHRvakUvXVgRIXmQAAAA?cb=defcachec2&rs=1&pid=ImgDetMain&o=7&rm=3" alt="广州大学" class="university-logo" />
+        <span class="university-name">广州大学计算机科学与网络工程学院</span>
+      </div>
       <h1>${reportTitle}</h1>
       <p style="color: #6b7280; margin: 0;">答题报告</p>
     </div>

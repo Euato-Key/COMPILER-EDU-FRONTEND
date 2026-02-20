@@ -136,7 +136,7 @@ defineExpose({
 const selectedModule = ref('')
 
 // 趋势图配置
-const trendModule = ref('fa')
+const trendModule = ref('')
 const trendDays = ref(30)
 const trendData = ref<Array<{ date: string; count: number }>>([])
 

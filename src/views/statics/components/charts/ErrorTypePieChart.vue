@@ -29,7 +29,7 @@ const formatErrorTypeName = (type: string): string => {
     firstSet: 'First集',
     followSet: 'Follow集',
     parsingTable: '分析表',
-    analysisStep: '分析步骤',
+    analysisStep: '输入串分析',
     augmentedFormula: '增广文法',
     dfaState: 'DFA状态',
     gotoTransition: 'Goto转换',

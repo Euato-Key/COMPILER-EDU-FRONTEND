@@ -79,8 +79,38 @@ export async function exportHTML(options: HTMLExportOptions): Promise<void> {
       min-height: 100vh;
     }
     .report-header {
+      position: relative;
       text-align: center;
       margin-bottom: 2rem;
+    }
+
+    .university-brand {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .university-logo {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+
+    .university-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a365d;
+      margin: 0;
+      font-family: "SimSun", "宋体", "Source Han Serif SC", "Noto Serif SC", serif;
+      letter-spacing: 0.5px;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 120px;
+      text-shadow: 0.5px 0.5px 0.5px rgba(0,0,0,0.1);
     }
     .student-info {
       margin-bottom: 2rem;
@@ -104,6 +134,10 @@ export async function exportHTML(options: HTMLExportOptions): Promise<void> {
 <body>
   <div class="report-container">
     <div class="report-header">
+      <div class="university-brand">
+        <img src="https://bkimg.cdn.bcebos.com/pic/b3b7d0a20cf431adcbef663a0261bbaf2edda3cc3223?x-bce-process=image/format,f_auto/quality,Q_70/resize,m_lfit,limit_1,w_536" alt="广州大学" class="university-logo" />
+        <span class="university-name">广州大学计算机科学与网络工程学院</span>
+      </div>
       <h1 class="text-3xl font-bold text-gray-900 mb-2">${reportTitle}</h1>
     </div>
     
