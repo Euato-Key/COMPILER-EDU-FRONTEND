@@ -109,6 +109,38 @@
     white-space: nowrap !important;
   }
 
+  /* 元数据信息网格 - 打印时改为2列 */
+  .grid.grid-cols-1.md\\:grid-cols-4,
+  .grid.md\\:grid-cols-4,
+  [class*="grid-cols-4"],
+  :deep(.grid.grid-cols-1.md\\:grid-cols-4),
+  :deep(.grid.md\\:grid-cols-4) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* 元数据卡片防止分页切割 */
+  .grid > div,
+  :deep(.grid > div) {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 元数据标题和值防止换行 */
+  .grid h2,
+  .grid [class*="font-mono"],
+  .grid [class*="text-lg"],
+  .grid [class*="text-base"],
+  :deep(.grid h2),
+  :deep(.grid [class*="font-mono"]),
+  :deep(.grid [class*="text-lg"]),
+  :deep(.grid [class*="text-base"]) {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
   /* SVG 图表最大化利用空间 */
   .fa-canvas-report :deep(.rendered-svg-container),
   .fa-canvas-report :deep(.viz-wrapper) {

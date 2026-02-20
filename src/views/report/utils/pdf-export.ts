@@ -139,6 +139,8 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       background-color: #f9fafb;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     .student-info-grid {
@@ -226,6 +228,31 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
 
     .avoid-break {
       page-break-inside: avoid;
+    }
+
+    /* 元数据信息网格 - 打印时改为2列 */
+    .grid.grid-cols-1.md\\:grid-cols-4,
+    .grid.md\\:grid-cols-4,
+    [class*="grid-cols-4"] {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+    }
+
+    /* 元数据卡片防止分页切割 */
+    .grid > div {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* 元数据标题和值防止换行 */
+    .grid h2,
+    .grid [class*="font-mono"],
+    .grid [class*="text-lg"],
+    .grid [class*="text-base"] {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
 
     /* 响应式调整 */
