@@ -152,3 +152,50 @@ export const getModuleConfigAPI = () => {
 export const getModuleErrorTypesAPI = (module: string) => {
   return request.get<ApiResponse<{ module: string; error_types: Record<string, string[]> }>>(`/api/stats/config/error-types/${module}`)
 }
+
+/**
+ * 数据库状态信息
+ */
+export interface DbStatus {
+  total_records: number
+  min_date: string
+  max_date: string
+  module_counts: Array<{ module: string; count: number }>
+  recent_records: ErrorStatRecord[]
+}
+
+/**
+ * 获取数据库状态（调试接口）
+ */
+export const getDbStatusAPI = () => {
+  return request.get<ApiResponse<DbStatus>>('/api/stats/debug/db-status')
+}
+
+/**
+ * 导出数据
+ */
+export const exportStatsAPI = (params?: {
+  start_date?: string
+  end_date?: string
+  module?: string
+}) => {
+  return request.get<ApiResponse<{ sql: string; count: number }>>('/api/stats/export', { params })
+}
+
+/**
+ * 导入数据
+ */
+export const importStatsAPI = (sql_content: string) => {
+  return request.post<ApiResponse<{ success_count: number; fail_count: number }>>('/api/stats/import', { sql_content })
+}
+
+/**
+ * 按日期范围删除数据
+ */
+export const deleteByDateRangeAPI = (data: {
+  start_date: string
+  end_date: string
+  module?: string
+}) => {
+  return request.post<ApiResponse<{ success: boolean }>>('/api/stats/delete/by-date', data)
+}

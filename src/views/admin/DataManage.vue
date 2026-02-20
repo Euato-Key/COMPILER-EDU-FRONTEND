@@ -291,8 +291,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import axios from 'axios'
 import { utcToLocalDate, localDateToUTC, formatDateToLocalString } from '@/utils/timezone'
+import {
+  getDbStatusAPI,
+  exportStatsAPI,
+  importStatsAPI,
+  deleteByDateRangeAPI,
+  clearAllStatsAPI,
+  deleteModuleStatsAPI
+} from '@/api/stats'
 
 // 认证状态
 const isAuthenticated = ref(false)
@@ -330,22 +337,20 @@ const deleteDateForm = ref({
 // 恢复结果（单独显示在数据恢复容器下方）
 const importResult = ref<{ type: 'success' | 'error'; message: string } | null>(null)
 
-// API 基础地址
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
-
 // 登录验证
 const handleLogin = async () => {
   if (!password.value) return
-  
+
   isLoading.value = true
   errorMsg.value = ''
-  
+
   try {
-    // 调用验证密码 API
-    const response = await axios.post(`${API_BASE}/api/admin/verify-password`, {
+    // 动态导入 request 模块进行密码验证
+    const { default: request } = await import('@/lib/request')
+    const response = await request.post('/api/admin/verify-password', {
       password: password.value
     })
-    
+
     if (response.data.code === 0) {
       isAuthenticated.value = true
       // 保存密码用于后续操作
@@ -365,8 +370,8 @@ const handleLogin = async () => {
 const fetchDbStatus = async () => {
   isLoadingStatus.value = true
   try {
-    const response = await axios.get(`${API_BASE}/api/stats/debug/db-status`)
-    if (response.data.code === 0) {
+    const response = await getDbStatusAPI()
+    if (response.data.code === 0 && response.data.data) {
       // 将 UTC 时间转换为本地日期显示（只显示日期，不显示时间）
       const data = response.data.data
       dbStatus.value = {
@@ -388,15 +393,14 @@ const fetchDbStatus = async () => {
 const exportData = async () => {
   isExporting.value = true
   try {
-    const params = new URLSearchParams()
     // 将本地日期转换为 UTC 日期进行查询
-    if (exportForm.value.start_date) params.append('start_date', localDateToUTC(exportForm.value.start_date))
-    if (exportForm.value.end_date) params.append('end_date', localDateToUTC(exportForm.value.end_date))
-    if (exportForm.value.module) params.append('module', exportForm.value.module)
+    const response = await exportStatsAPI({
+      start_date: exportForm.value.start_date ? localDateToUTC(exportForm.value.start_date) : undefined,
+      end_date: exportForm.value.end_date ? localDateToUTC(exportForm.value.end_date) : undefined,
+      module: exportForm.value.module || undefined
+    })
 
-    const response = await axios.get(`${API_BASE}/api/stats/export?${params}`)
-
-    if (response.data.code === 0) {
+    if (response.data.code === 0 && response.data.data) {
       const sql = response.data.data.sql
       const blob = new Blob([sql], { type: 'text/sql' })
       const url = URL.createObjectURL(blob)
@@ -407,15 +411,15 @@ const exportData = async () => {
       const date = formatDateToLocalString(new Date())
       const module = exportForm.value.module || 'all'
       link.download = `stats_backup_${module}_${date}.sql`
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-      
-      showResult('success', `成功导出 ${response.data.data.count} 条记录`)
+
+      showResult('success', `成功导出 ${response.data.data?.count ?? 0} 条记录`)
     } else {
-      showResult('error', response.data.msg)
+      showResult('error', response.data.msg || '导出失败')
     }
   } catch (error: any) {
     showResult('error', error.response?.data?.msg || '导出失败')
@@ -446,9 +450,7 @@ const importData = async () => {
   isImporting.value = true
   importResult.value = null
   try {
-    const response = await axios.post(`${API_BASE}/api/stats/import`, {
-      sql_content: importSqlContent.value
-    })
+    const response = await importStatsAPI(importSqlContent.value)
 
     if (response.data.code === 0) {
       const data = response.data.data
@@ -494,12 +496,12 @@ const confirmClearAll = () => {
 // 清空所有数据
 const clearAllData = async () => {
   try {
-    const response = await axios.post(`${API_BASE}/api/stats/clear`)
+    const response = await clearAllStatsAPI()
     if (response.data.code === 0) {
-      showResult('success', response.data.msg)
+      showResult('success', response.data.msg || '清空成功')
       fetchDbStatus()
     } else {
-      showResult('error', response.data.msg)
+      showResult('error', response.data.msg || '清空失败')
     }
   } catch (error: any) {
     showResult('error', error.response?.data?.msg || '清空失败')
@@ -517,13 +519,13 @@ const confirmDeleteModule = () => {
 // 删除模块数据
 const deleteModuleData = async () => {
   try {
-    const response = await axios.post(`${API_BASE}/api/stats/delete/${deleteModuleForm.value.module}`)
+    const response = await deleteModuleStatsAPI(deleteModuleForm.value.module)
     if (response.data.code === 0) {
-      showResult('success', response.data.msg)
+      showResult('success', response.data.msg || '删除成功')
       deleteModuleForm.value.module = ''
       fetchDbStatus()
     } else {
-      showResult('error', response.data.msg)
+      showResult('error', response.data.msg || '删除失败')
     }
   } catch (error: any) {
     showResult('error', error.response?.data?.msg || '删除失败')
@@ -542,17 +544,17 @@ const confirmDeleteByDate = () => {
 const deleteByDate = async () => {
   try {
     // 将本地日期转换为 UTC 日期进行删除
-    const response = await axios.post(`${API_BASE}/api/stats/delete/by-date`, {
+    const response = await deleteByDateRangeAPI({
       start_date: localDateToUTC(deleteDateForm.value.start_date),
       end_date: localDateToUTC(deleteDateForm.value.end_date)
     })
     if (response.data.code === 0) {
-      showResult('success', response.data.msg)
+      showResult('success', response.data.msg || '删除成功')
       deleteDateForm.value.start_date = ''
       deleteDateForm.value.end_date = ''
       fetchDbStatus()
     } else {
-      showResult('error', response.data.msg)
+      showResult('error', response.data.msg || '删除失败')
     }
   } catch (error: any) {
     showResult('error', error.response?.data?.msg || '删除失败')
