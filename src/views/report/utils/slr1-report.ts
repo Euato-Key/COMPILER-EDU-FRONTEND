@@ -326,9 +326,15 @@ function formatLocation(location: SLR1HistoryRecord['errorLogs'][0]['location'],
   if (step === 'step2') {
     return location.row !== undefined ? `第 ${location.row} 行` : '未知位置'
   }
-  // Step 3: DFA状态
+  // Step 3: DFA状态 - 区分Item校验和Goto校验
   if (step === 'step3') {
-    return location.row !== undefined ? `状态 ${location.row}` : '未知状态'
+    const fieldKey = location.fieldKey
+    if (fieldKey === 'checkItem' || type === 'dfaState') {
+      return 'Item校验'
+    } else if (fieldKey === 'checkGoto' || fieldKey === 'goto-check' || type === 'gotoTransition') {
+      return 'Goto校验'
+    }
+    return 'DFA构造'
   }
   // Step 4: Action/Goto表
   if (step === 'step4') {
@@ -353,7 +359,8 @@ export function getSLR1ErrorSummary(errorLogs: SLR1HistoryRecord['errorLogs']) {
       augmentedFormula: [] as ErrorItem[]
     },
     step3: {
-      dfaStates: [] as ErrorItem[]
+      dfaStates: [] as ErrorItem[],
+      gotoTransitions: [] as ErrorItem[]
     },
     step4: {
       actionTable: [] as ErrorItem[],
@@ -365,11 +372,28 @@ export function getSLR1ErrorSummary(errorLogs: SLR1HistoryRecord['errorLogs']) {
   }
 
   errorLogs.forEach(log => {
+    // 简化Goto Transition错误的显示：只显示Item和goto连线，忽略产生式
+    let displayWrongValue = log.wrongValue
+    let displayCorrectValue = log.correctValue
+    if (log.type === 'gotoTransition') {
+      // 将 "Item0[S'->.S, S->.BB] --a--> Item4[B->b.]" 简化为 "Item0 --a--> Item4"
+      if (log.wrongValue) {
+        displayWrongValue = log.wrongValue.replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim()
+      }
+      // 正确答案同样简化显示
+      if (log.correctValue && log.correctValue !== '无正确转移') {
+        displayCorrectValue = log.correctValue.replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim()
+      } else if (!log.correctValue || log.correctValue === '') {
+        // 正确答案为空，表示不存在可到达的Goto
+        displayCorrectValue = '不存在可到达的Goto'
+      }
+    }
+
     // 转换错误日志为 ErrorItem 格式
     const errorItem: ErrorItem = {
       location: formatLocation(log.location, log.step, log.type),
-      wrongValue: log.wrongValue,
-      correctValue: log.correctValue,
+      wrongValue: displayWrongValue,
+      correctValue: displayCorrectValue,
       timestamp: log.timestamp,
       hint: log.hint,
       details: {
@@ -384,8 +408,9 @@ export function getSLR1ErrorSummary(errorLogs: SLR1HistoryRecord['errorLogs']) {
 
     if (log.step === 'step2' && log.type === 'augmentedFormula') {
       summary.step2.augmentedFormula.push(errorItem)
-    } else if (log.step === 'step3' && (log.type === 'dfaState' || log.type === 'gotoTransition')) {
-      summary.step3.dfaStates.push(errorItem)
+    } else if (log.step === 'step3') {
+      if (log.type === 'dfaState') summary.step3.dfaStates.push(errorItem)
+      else if (log.type === 'gotoTransition') summary.step3.gotoTransitions.push(errorItem)
     } else if (log.step === 'step4') {
       if (log.type === 'actionTable') {
         summary.step4.actionTable.push(errorItem)

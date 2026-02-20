@@ -39,14 +39,14 @@
                   <span class="text-xs text-gray-500">{{ formatDate(error.timestamp) }}</span>
                 </div>
               </div>
-              <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="grid gap-3 text-sm" :class="error.correctValue ? 'grid-cols-2' : 'grid-cols-1'">
                 <div>
                   <div class="text-xs text-gray-500 mb-1">错误答案</div>
                   <div class="px-2 py-1 bg-red-100 text-red-800 rounded font-mono text-xs">
                     {{ formatValue(error.wrongValue || '(空)', section) }}
                   </div>
                 </div>
-                <div>
+                <div v-if="error.correctValue">
                   <div class="text-xs text-gray-500 mb-1">正确答案</div>
                   <div class="px-2 py-1 bg-green-100 text-green-800 rounded font-mono text-xs">
                     {{ formatValue(error.correctValue, section) }}

@@ -230,29 +230,158 @@ export async function exportPDF(options: PDFExportOptions): Promise<void> {
       page-break-inside: avoid;
     }
 
-    /* 元数据信息网格 - 打印时改为2列 */
+    /* 元数据信息网格 - 打印时4个一排，允许换行 */
     .grid.grid-cols-1.md\\:grid-cols-4,
     .grid.md\\:grid-cols-4,
     [class*="grid-cols-4"] {
-      display: grid !important;
-      grid-template-columns: repeat(2, 1fr) !important;
-      gap: 12px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      gap: 8px !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
-    /* 元数据卡片防止分页切割 */
-    .grid > div {
+    /* 元数据卡片子项 - 4个一排 */
+    .grid.grid-cols-1.md\\:grid-cols-4 > div,
+    .grid.md\\:grid-cols-4 > div,
+    [class*="grid-cols-4"] > div {
+      flex: 1 1 calc(25% - 6px) !important;
+      min-width: 140px !important;
+      max-width: calc(25% - 6px) !important;
       break-inside: avoid;
       page-break-inside: avoid;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
-    /* 元数据标题和值防止换行 */
-    .grid h2,
-    .grid [class*="font-mono"],
-    .grid [class*="text-lg"],
-    .grid [class*="text-base"] {
+    /* 元数据标题样式优化 */
+    .grid h2 {
+      font-size: 11px !important;
+      margin-bottom: 3px !important;
       white-space: nowrap !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
+    }
+
+    /* 元数据值容器样式优化 */
+    .grid [class*="rounded-lg"] {
+      padding: 4px 6px !important;
+      font-size: 10px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    /* 元数据值文字样式 */
+    .grid [class*="font-mono"],
+    .grid [class*="text-lg"],
+    .grid [class*="text-base"] {
+      font-size: 10px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    /* 文法产生式容器 - 打印时允许换行 */
+    .grid [class*="whitespace-pre-wrap"] {
+      white-space: pre-wrap !important;
+      word-wrap: break-word !important;
+      word-break: break-all !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+    }
+
+    /* 正则表达式/文法产生式容器 - 打印时允许换行 */
+    .grid .break-all {
+      white-space: normal !important;
+      word-wrap: break-word !important;
+      word-break: break-all !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+    }
+
+    /* 步骤进度卡片网格 - 打印时强制2列 */
+    .grid.grid-cols-1.lg\\:grid-cols-2,
+    .grid.lg\\:grid-cols-2 {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* 步骤进度卡片子项 */
+    .grid.grid-cols-1.lg\\:grid-cols-2 > div,
+    .grid.lg\\:grid-cols-2 > div {
+      min-width: 0 !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+    }
+
+    /* 步骤进度卡片防止分页切割 */
+    .grid > div[class*="rounded-xl"],
+    .grid > div[class*="shadow-sm"],
+    .grid > div[class*="border"] {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 0 !important;
+    }
+
+    /* 错误列表中的提示信息换行 */
+    .report-error-list .bg-amber-50,
+    .report-error-list .bg-blue-50,
+    .report-error-list .bg-purple-50 {
+      white-space: normal !important;
+      word-wrap: break-word !important;
+      word-break: break-all !important;
+    }
+
+    /* 错误列表网格布局 */
+    .report-error-list .grid.grid-cols-2 {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+    }
+
+    .report-error-list .grid.grid-cols-2 > div {
+      min-width: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .report-error-list .font-mono {
+      white-space: normal !important;
+      word-wrap: break-word !important;
+      word-break: break-all !important;
+      font-size: 9px !important;
+    }
+
+    /* 错误统计卡片网格 - 打印时强制横向排列 */
+    .grid.grid-cols-1.md\\:grid-cols-3,
+    .grid.grid-cols-2.md\\:grid-cols-4,
+    .grid.grid-cols-2.md\\:grid-cols-5,
+    .grid.md\\:grid-cols-3,
+    .grid.md\\:grid-cols-4,
+    .grid.md\\:grid-cols-5 {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      gap: 12px !important;
+    }
+
+    /* 错误统计卡片子项 - 横向排列 */
+    .grid.grid-cols-1.md\\:grid-cols-3 > div,
+    .grid.grid-cols-2.md\\:grid-cols-4 > div,
+    .grid.grid-cols-2.md\\:grid-cols-5 > div,
+    .grid.md\\:grid-cols-3 > div,
+    .grid.md\\:grid-cols-4 > div,
+    .grid.md\\:grid-cols-5 > div {
+      flex: 1 1 auto !important;
+      min-width: 120px !important;
+      max-width: calc(50% - 6px) !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
 
     /* 响应式调整 */

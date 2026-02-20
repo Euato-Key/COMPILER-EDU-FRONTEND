@@ -43,13 +43,13 @@
           <table class="min-w-full border-collapse border-2 border-gray-400">
             <thead>
               <tr class="bg-gray-100">
-                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-24 sticky left-0 z-10 bg-gray-100">
+                <th class="border border-gray-400 px-2 py-1.5 text-sm font-semibold text-gray-700 text-center w-19 sticky left-0 z-10 bg-gray-100">
                   VN \ VT
                 </th>
                 <th
                   v-for="vt in colHeaders"
                   :key="vt"
-                  class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center"
+                  class="border border-gray-400 px-2 py-1.5 text-sm font-semibold text-gray-700 text-center"
                 >
                   {{ vt }}
                 </th>
@@ -57,13 +57,13 @@
             </thead>
             <tbody class="bg-white">
               <tr v-for="vn in rowHeaders" :key="vn" :class="(rowHeaders.indexOf(vn) % 2 === 0) ? 'bg-white' : 'bg-gray-50/50'">
-                <td class="border border-gray-400 px-3 py-2 text-center font-mono font-bold text-gray-900 sticky left-0 z-10 bg-inherit">
+                <td class="border border-gray-400 px-2 py-1.5 text-center font-mono font-bold text-gray-900 sticky left-0 z-10 bg-inherit">
                   {{ vn }}
                 </td>
                 <td
                   v-for="vt in colHeaders"
                   :key="`${vn}|${vt}`"
-                  class="border border-gray-400 p-2 align-top"
+                  class="border border-gray-400 p-1.5 align-top"
                 >
                   <div class="flex flex-col gap-1.5">
                     <!-- 历史错误记录 -->
@@ -104,7 +104,7 @@
                         <div class="text-sm font-mono font-bold text-green-900">
                           {{ formatProduction(vn, getUserValue(vn, vt)) }}
                         </div>
-                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden" />
                       </div>
 
                       <!-- 用户回答错误或未填写 -->

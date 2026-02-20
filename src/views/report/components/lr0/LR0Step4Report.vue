@@ -7,38 +7,38 @@
     </div>
 
     <!-- LR0分析表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
-          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600" />
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 print:shadow-none print:border print:border-gray-300">
+      <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between print:px-2 print:py-1 print:bg-pink-100">
+        <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2 print:text-sm">
+          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600 print:hidden" />
           LR0 分析表
         </h3>
       </div>
 
-      <div class="p-6">
+      <div class="p-6 print:p-2">
         <!-- 统计信息 -->
-        <div class="grid grid-cols-4 gap-4 mb-6">
-          <div class="bg-blue-50 rounded-lg border border-blue-200 p-4">
-            <div class="text-2xl font-bold text-blue-600">{{ stateCount }}</div>
-            <div class="text-sm text-blue-700">状态数量</div>
+        <div class="grid grid-cols-4 gap-4 mb-6 print:grid-cols-4 print:gap-2 print:mb-2">
+          <div class="bg-blue-50 rounded-lg border border-blue-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-blue-600 print:text-lg">{{ stateCount }}</div>
+            <div class="text-sm text-blue-700 print:text-[10px]">状态数量</div>
           </div>
-          <div class="bg-green-50 rounded-lg border border-green-200 p-4">
-            <div class="text-2xl font-bold text-green-600">{{ terminals.length }}</div>
-            <div class="text-sm text-green-700">终结符数量</div>
+          <div class="bg-green-50 rounded-lg border border-green-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-green-600 print:text-lg">{{ terminals.length }}</div>
+            <div class="text-sm text-green-700 print:text-[10px]">终结符数量</div>
           </div>
-          <div class="bg-purple-50 rounded-lg border border-purple-200 p-4">
-            <div class="text-2xl font-bold text-purple-600">{{ nonterminals.length }}</div>
-            <div class="text-sm text-purple-700">非终结符数量</div>
+          <div class="bg-purple-50 rounded-lg border border-purple-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-purple-600 print:text-lg">{{ nonterminals.length }}</div>
+            <div class="text-sm text-purple-700 print:text-[10px]">非终结符数量</div>
           </div>
-          <div class="bg-orange-50 rounded-lg border border-orange-200 p-4">
-            <div class="text-2xl font-bold text-orange-600">{{ accuracy }}%</div>
-            <div class="text-sm text-orange-700">正确率</div>
+          <div class="bg-orange-50 rounded-lg border border-orange-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-orange-600 print:text-lg">{{ accuracy }}%</div>
+            <div class="text-sm text-orange-700 print:text-[10px]">正确率</div>
           </div>
         </div>
 
         <!-- 分析表对比 -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full border border-gray-300">
+        <div class="overflow-x-auto print:overflow-visible">
+          <table class="min-w-full border border-gray-300 print:w-full print:table-fixed">
             <!-- 表头 -->
             <thead class="bg-gray-50">
               <tr>
@@ -79,7 +79,7 @@
                 <th
                   v-for="nonterminal in nonterminals"
                   :key="nonterminal"
-                  class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50"
+                  class="px-3 py-2 border border-gray-300 text-xs font-medium text-gray-900 bg-green-50 print:px-1 print:py-1 print:text-[9px]"
                 >
                   {{ nonterminal }}
                 </th>
@@ -88,9 +88,9 @@
 
             <!-- 表体 -->
             <tbody>
-              <tr v-for="stateIndex in stateCount" :key="stateIndex - 1" class="hover:bg-gray-50">
+              <tr v-for="stateIndex in stateCount" :key="stateIndex - 1" class="hover:bg-gray-50 print:hover:bg-transparent">
                 <td
-                  class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center"
+                  class="px-3 py-2 border border-gray-300 text-xs font-bold bg-gray-50 text-center print:px-1 print:py-1 print:text-[9px]"
                 >
                   {{ stateIndex - 1 }}
                 </td>
@@ -99,26 +99,20 @@
                 <td
                   v-for="terminal in [...terminals, '#']"
                   :key="`action-${stateIndex - 1}-${terminal}`"
-                  class="px-2 py-1 border border-gray-300 text-xs"
+                  class="px-2 py-1 border border-gray-300 text-xs print:px-1 print:py-0.5"
                 >
-                  <div class="flex flex-col gap-1">
+                  <div class="flex flex-col gap-1 print:gap-0.5">
                     <!-- 历史错误记录 -->
-                    <div v-if="getErrorHistory(stateIndex - 1, terminal, 'action').length > 0" class="mb-1">
-                      <div class="flex flex-wrap gap-1">
+                    <div v-if="getErrorHistory(stateIndex - 1, terminal, 'action').length > 0" class="mb-1 print:mb-0">
+                      <div class="flex flex-wrap gap-1 print:gap-0.5">
                         <div
                           v-for="(err, eIdx) in getErrorHistory(stateIndex - 1, terminal, 'action')"
                           :key="`err-${eIdx}`"
                           class="relative group/err"
                         >
-                          <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] line-through decoration-red-400 border border-red-100 cursor-help block">
+                          <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] line-through decoration-red-400 border border-red-100 cursor-help block print:text-[8px] print:px-0.5 print:py-0">
                             {{ err.value }}
                           </span>
-                          <!-- Hint Tooltip -->
-                          <div v-if="err.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-48 p-2 bg-gray-700 text-white text-[10px] rounded shadow-xl opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left">
-                            <div class="font-bold mb-1 border-b border-gray-500 pb-0.5">历史错误</div>
-                            <div class="whitespace-pre-wrap">{{ err.hint }}</div>
-                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-700"></div>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -128,14 +122,14 @@
                       <!-- 应该为空 -->
                       <div
                         v-if="getUserValue(stateIndex - 1, terminal, 'action')"
-                        class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                        class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       >
-                        <div class="text-sm font-mono font-bold text-red-900">
+                        <div class="text-sm font-mono font-bold text-red-900 print:text-[9px]">
                           {{ getUserValue(stateIndex - 1, terminal, 'action') }}
                         </div>
-                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden" />
                       </div>
-                      <div v-else class="text-gray-300 text-center py-2">-</div>
+                      <div v-else class="text-gray-300 text-center py-2 print:py-0.5 print:text-[9px]">-</div>
                     </template>
 
                     <template v-else>
@@ -143,34 +137,34 @@
                       <!-- 用户回答正确 - 只显示正确答案 -->
                       <div
                         v-if="getCellStatus(stateIndex - 1, terminal, 'action') === 'correct'"
-                        class="px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2"
+                        class="px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       >
-                        <div class="text-sm font-mono font-bold text-green-900">
+                        <div class="text-sm font-mono font-bold text-green-900 print:text-[9px]">
                           {{ getCorrectValue(stateIndex - 1, terminal, 'action') }}
                         </div>
-                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden" />
                       </div>
 
                       <!-- 用户回答错误或未填写 -->
-                      <div v-else class="flex flex-col gap-1.5">
+                      <div v-else class="flex flex-col gap-1.5 print:gap-0.5">
                         <!-- 用户答案（错误时显示） -->
                         <div
                           v-if="getUserValue(stateIndex - 1, terminal, 'action')"
-                          class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                          class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                         >
-                          <div class="text-sm font-mono font-bold text-red-900 line-through">
+                          <div class="text-sm font-mono font-bold text-red-900 line-through print:text-[9px]">
                             {{ getUserValue(stateIndex - 1, terminal, 'action') }}
                           </div>
-                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden" />
                         </div>
 
                         <!-- 未填写提示 -->
-                        <div v-else class="text-red-400 text-xs italic py-1 text-center">(未填写)</div>
+                        <div v-else class="text-red-400 text-xs italic py-1 text-center print:text-[8px] print:py-0">(未填写)</div>
 
                         <!-- 标准答案 -->
-                        <div class="px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
-                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          <div class="text-sm font-mono font-bold text-blue-900">
+                        <div class="px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2 print:px-1 print:py-0.5 print:gap-1">
+                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0 print:hidden" />
+                          <div class="text-sm font-mono font-bold text-blue-900 print:text-[9px]">
                             {{ getCorrectValue(stateIndex - 1, terminal, 'action') }}
                           </div>
                         </div>
@@ -183,26 +177,20 @@
                 <td
                   v-for="nonterminal in nonterminals"
                   :key="`goto-${stateIndex - 1}-${nonterminal}`"
-                  class="px-2 py-1 border border-gray-300 text-xs"
+                  class="px-2 py-1 border border-gray-300 text-xs print:px-1 print:py-0.5"
                 >
-                  <div class="flex flex-col gap-1">
+                  <div class="flex flex-col gap-1 print:gap-0.5">
                     <!-- 历史错误记录 -->
-                    <div v-if="getErrorHistory(stateIndex - 1, nonterminal, 'goto').length > 0" class="mb-1">
-                      <div class="flex flex-wrap gap-1">
+                    <div v-if="getErrorHistory(stateIndex - 1, nonterminal, 'goto').length > 0" class="mb-1 print:mb-0">
+                      <div class="flex flex-wrap gap-1 print:gap-0.5">
                         <div
                           v-for="(err, eIdx) in getErrorHistory(stateIndex - 1, nonterminal, 'goto')"
                           :key="`err-${eIdx}`"
                           class="relative group/err"
                         >
-                          <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] line-through decoration-red-400 border border-red-100 cursor-help block">
+                          <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] line-through decoration-red-400 border border-red-100 cursor-help block print:text-[8px] print:px-0.5 print:py-0">
                             {{ err.value }}
                           </span>
-                          <!-- Hint Tooltip -->
-                          <div v-if="err.hint" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-48 p-2 bg-gray-700 text-white text-[10px] rounded shadow-xl opacity-0 invisible group-hover/err:opacity-100 group-hover/err:visible transition-all duration-200 pointer-events-none text-left">
-                            <div class="font-bold mb-1 border-b border-gray-500 pb-0.5">历史错误</div>
-                            <div class="whitespace-pre-wrap">{{ err.hint }}</div>
-                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-700"></div>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -212,14 +200,14 @@
                       <!-- 应该为空 -->
                       <div
                         v-if="getUserValue(stateIndex - 1, nonterminal, 'goto')"
-                        class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                        class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       >
-                        <div class="text-sm font-mono font-bold text-red-900">
+                        <div class="text-sm font-mono font-bold text-red-900 print:text-[9px]">
                           {{ getUserValue(stateIndex - 1, nonterminal, 'goto') }}
                         </div>
-                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                        <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden" />
                       </div>
-                      <div v-else class="text-gray-300 text-center py-2">-</div>
+                      <div v-else class="text-gray-300 text-center py-2 print:py-0.5 print:text-[9px]">-</div>
                     </template>
 
                     <template v-else>
@@ -227,34 +215,34 @@
                       <!-- 用户回答正确 - 只显示正确答案 -->
                       <div
                         v-if="getCellStatus(stateIndex - 1, nonterminal, 'goto') === 'correct'"
-                        class="px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2"
+                        class="px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       >
-                        <div class="text-sm font-mono font-bold text-green-900">
+                        <div class="text-sm font-mono font-bold text-green-900 print:text-[9px]">
                           {{ getCorrectValue(stateIndex - 1, nonterminal, 'goto') }}
                         </div>
-                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden" />
                       </div>
 
                       <!-- 用户回答错误或未填写 -->
-                      <div v-else class="flex flex-col gap-1.5">
+                      <div v-else class="flex flex-col gap-1.5 print:gap-0.5">
                         <!-- 用户答案（错误时显示） -->
                         <div
                           v-if="getUserValue(stateIndex - 1, nonterminal, 'goto')"
-                          class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2"
+                          class="px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                         >
-                          <div class="text-sm font-mono font-bold text-red-900 line-through">
+                          <div class="text-sm font-mono font-bold text-red-900 line-through print:text-[9px]">
                             {{ getUserValue(stateIndex - 1, nonterminal, 'goto') }}
                           </div>
-                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0" />
+                          <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden" />
                         </div>
 
                         <!-- 未填写提示 -->
-                        <div v-else class="text-red-400 text-xs italic py-1 text-center">(未填写)</div>
+                        <div v-else class="text-red-400 text-xs italic py-1 text-center print:text-[8px] print:py-0">(未填写)</div>
 
                         <!-- 标准答案 -->
-                        <div class="px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
-                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          <div class="text-sm font-mono font-bold text-blue-900">
+                        <div class="px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2 print:px-1 print:py-0.5 print:gap-1">
+                          <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0 print:hidden" />
+                          <div class="text-sm font-mono font-bold text-blue-900 print:text-[9px]">
                             {{ getCorrectValue(stateIndex - 1, nonterminal, 'goto') }}
                           </div>
                         </div>
@@ -268,18 +256,18 @@
         </div>
 
         <!-- 图例说明 -->
-        <div class="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-600">
+        <div class="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-600 print:mt-2 print:gap-2 print:text-[10px]">
           <div class="flex items-center gap-1">
-            <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-500" />
-            <span>回答正确</span>
+            <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-500 print:hidden" />
+            <span class="print:hidden">回答正确</span>
           </div>
           <div class="flex items-center gap-1">
-            <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-500" />
-            <span>回答错误</span>
+            <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-500 print:hidden" />
+            <span class="print:hidden">回答错误</span>
           </div>
           <div class="flex items-center gap-1">
-            <Icon icon="lucide:minus-circle" class="w-4 h-4 text-yellow-400" />
-            <span>未填写</span>
+            <Icon icon="lucide:minus-circle" class="w-4 h-4 text-yellow-400 print:hidden" />
+            <span class="print:hidden">未填写</span>
           </div>
           <div class="flex items-center gap-1">
             <span class="text-red-500 line-through decoration-red-300 text-[10px]">文字</span>
@@ -288,7 +276,7 @@
         </div>
 
         <!-- 填表规则提示 -->
-        <div class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+        <div class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg print:hidden">
           <div class="flex items-start gap-3">
             <Icon icon="lucide:lightbulb" class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
             <div class="text-sm text-indigo-700">

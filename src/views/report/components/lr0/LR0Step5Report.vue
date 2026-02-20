@@ -32,7 +32,7 @@
         <p class="text-xs text-gray-500 mt-1 print:hidden">使用LR0分析表进行输入串的语法分析</p>
       </div>
 
-      <div class="p-4 overflow-x-auto print:p-1">
+      <div class="p-4 overflow-x-auto print:p-1 print:overflow-visible">
         <div v-if="rows.length === 0" class="text-center py-8 text-gray-400">
           <Icon icon="lucide:alert-circle" class="w-12 h-12 mx-auto mb-4" />
           <p class="text-lg">暂无分析步骤数据</p>
@@ -40,30 +40,30 @@
         </div>
 
         <div v-else>
-          <table class="min-w-full border-collapse border-2 border-gray-400">
+          <table class="min-w-full border-collapse border-2 border-gray-400 print:w-full print:table-fixed">
             <thead>
               <tr class="bg-gray-100">
-                <th class="border border-gray-400 px-2 py-2 text-sm font-semibold text-gray-700 text-center w-12">步骤</th>
-                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">
+                <th class="border border-gray-400 px-2 py-2 text-sm font-semibold text-gray-700 text-center w-12 print:w-[8%] print:px-1 print:py-1 print:text-[10px]">步骤</th>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32 print:w-[18%] print:px-1 print:py-1 print:text-[10px]">
                   <div class="flex items-center justify-center gap-1">
-                    <Icon icon="lucide:layers" class="w-4 h-4 text-blue-600" />
+                    <Icon icon="lucide:layers" class="w-4 h-4 text-blue-600 print:hidden" />
                     <span>状态栈</span>
                   </div>
                 </th>
-                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32 print:w-[18%] print:px-1 print:py-1 print:text-[10px]">
                   <div class="flex items-center justify-center gap-1">
-                    <Icon icon="lucide:database" class="w-4 h-4 text-purple-600" />
+                    <Icon icon="lucide:database" class="w-4 h-4 text-purple-600 print:hidden" />
                     <span>符号栈</span>
                   </div>
                 </th>
-                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32 print:w-[18%] print:px-1 print:py-1 print:text-[10px]">
                   <div class="flex items-center justify-center gap-1">
-                    <Icon icon="lucide:arrow-right" class="w-4 h-4 text-pink-600" />
+                    <Icon icon="lucide:arrow-right" class="w-4 h-4 text-pink-600 print:hidden" />
                     <span>输入串</span>
                   </div>
                 </th>
-                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-64">动作</th>
-                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32">状态</th>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-64 print:w-[28%] print:px-1 print:py-1 print:text-[10px]">动作</th>
+                <th class="border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-700 text-center w-32 print:w-[10%] print:px-1 print:py-1 print:text-[10px]">状态</th>
               </tr>
             </thead>
             <tbody class="bg-white">
@@ -73,19 +73,19 @@
                 :class="(idx % 2 === 0) ? 'bg-white' : 'bg-gray-50/50'"
               >
                 <!-- 步骤序号 -->
-                <td class="border border-gray-400 px-3 py-2 text-center text-gray-500 font-medium">
+                <td class="border border-gray-400 px-3 py-2 text-center text-gray-500 font-medium print:px-1 print:py-1 print:text-[10px]">
                   {{ idx + 1 }}
                 </td>
 
                 <!-- 状态栈 -->
-                <td class="border border-gray-400 p-2">
-                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5">
+                <td class="border border-gray-400 p-2 print:p-1">
+                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5 print:gap-1">
                     <!-- 历史错误记录 -->
-                    <div v-if="row.stateStackHistory && row.stateStackHistory.length > 0" class="flex flex-wrap gap-1">
+                    <div v-if="row.stateStackHistory && row.stateStackHistory.length > 0" class="flex flex-wrap gap-1 print:gap-0.5">
                       <span
                         v-for="(h, hi) in row.stateStackHistory"
                         :key="hi"
-                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help print:text-[8px] print:px-0.5 print:py-0"
                         @mouseenter="showTooltip($event, h.hint)"
                         @mouseleave="hideTooltip"
                       >
@@ -95,44 +95,44 @@
 
                     <!-- 用户答案 -->
                     <div
-                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2"
+                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       :class="row.isStateStackCorrect
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : 'bg-red-50 border-red-200 shadow-sm'"
                     >
-                      <div class="text-sm font-mono font-bold" :class="row.isStateStackCorrect ? 'text-green-900' : 'text-red-900'">
+                      <div class="text-sm font-mono font-bold print:text-[10px]" :class="row.isStateStackCorrect ? 'text-green-900' : 'text-red-900'">
                         {{ row.userStateStack || '-' }}
                       </div>
                       <Icon
                         v-if="row.isStateStackCorrect"
                         icon="lucide:check-circle"
-                        class="w-4 h-4 text-green-600 flex-shrink-0"
+                        class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden"
                       />
                       <Icon
                         v-else
                         icon="lucide:x-circle"
-                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                        class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden"
                       />
                     </div>
 
                     <!-- 标准答案（仅当答错时显示） -->
-                    <div v-if="!row.isStateStackCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
-                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <div class="text-sm font-mono font-bold text-blue-900">{{ row.correctStateStack }}</div>
+                    <div v-if="!row.isStateStackCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0 print:hidden" />
+                      <div class="text-sm font-mono font-bold text-blue-900 print:text-[10px]">{{ row.correctStateStack }}</div>
                     </div>
                   </div>
-                  <span v-else class="text-gray-400 italic text-center block py-2">未填写</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2 print:text-[10px] print:py-1">未填写</span>
                 </td>
 
                 <!-- 符号栈 -->
-                <td class="border border-gray-400 p-2">
-                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5">
+                <td class="border border-gray-400 p-2 print:p-1">
+                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5 print:gap-1">
                     <!-- 历史错误记录 -->
-                    <div v-if="row.symbolStackHistory && row.symbolStackHistory.length > 0" class="flex flex-wrap gap-1">
+                    <div v-if="row.symbolStackHistory && row.symbolStackHistory.length > 0" class="flex flex-wrap gap-1 print:gap-0.5">
                       <span
                         v-for="(h, hi) in row.symbolStackHistory"
                         :key="hi"
-                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help print:text-[8px] print:px-0.5 print:py-0"
                         @mouseenter="showTooltip($event, h.hint)"
                         @mouseleave="hideTooltip"
                       >
@@ -142,44 +142,44 @@
 
                     <!-- 用户答案 -->
                     <div
-                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2"
+                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       :class="row.isSymbolStackCorrect
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : 'bg-red-50 border-red-200 shadow-sm'"
                     >
-                      <div class="text-sm font-mono font-bold" :class="row.isSymbolStackCorrect ? 'text-green-900' : 'text-red-900'">
+                      <div class="text-sm font-mono font-bold print:text-[10px]" :class="row.isSymbolStackCorrect ? 'text-green-900' : 'text-red-900'">
                         {{ row.userSymbolStack || '-' }}
                       </div>
                       <Icon
                         v-if="row.isSymbolStackCorrect"
                         icon="lucide:check-circle"
-                        class="w-4 h-4 text-green-600 flex-shrink-0"
+                        class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden"
                       />
                       <Icon
                         v-else
                         icon="lucide:x-circle"
-                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                        class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden"
                       />
                     </div>
 
                     <!-- 标准答案（仅当答错时显示） -->
-                    <div v-if="!row.isSymbolStackCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
-                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <div class="text-sm font-mono font-bold text-blue-900">{{ row.correctSymbolStack }}</div>
+                    <div v-if="!row.isSymbolStackCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0 print:hidden" />
+                      <div class="text-sm font-mono font-bold text-blue-900 print:text-[10px]">{{ row.correctSymbolStack }}</div>
                     </div>
                   </div>
-                  <span v-else class="text-gray-400 italic text-center block py-2">未填写</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2 print:text-[10px] print:py-1">未填写</span>
                 </td>
 
                 <!-- 输入串 -->
-                <td class="border border-gray-400 p-2">
-                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5">
+                <td class="border border-gray-400 p-2 print:p-1">
+                  <div v-if="row.hasUserAction" class="flex flex-col gap-1.5 print:gap-1">
                     <!-- 历史错误记录 -->
-                    <div v-if="row.inputStringHistory && row.inputStringHistory.length > 0" class="flex flex-wrap gap-1">
+                    <div v-if="row.inputStringHistory && row.inputStringHistory.length > 0" class="flex flex-wrap gap-1 print:gap-0.5">
                       <span
                         v-for="(h, hi) in row.inputStringHistory"
                         :key="hi"
-                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help"
+                        class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-xs font-mono line-through opacity-70 border border-red-200 cursor-help print:text-[8px] print:px-0.5 print:py-0"
                         @mouseenter="showTooltip($event, h.hint)"
                         @mouseleave="hideTooltip"
                       >
@@ -189,82 +189,82 @@
 
                     <!-- 用户答案 -->
                     <div
-                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2"
+                      class="answer-item px-2 py-1.5 rounded border transition-all flex items-center justify-between gap-2 print:px-1 print:py-0.5 print:gap-1"
                       :class="row.isInputStringCorrect
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : 'bg-red-50 border-red-200 shadow-sm'"
                     >
-                      <div class="text-sm font-mono font-bold" :class="row.isInputStringCorrect ? 'text-green-900' : 'text-red-900'">
+                      <div class="text-sm font-mono font-bold print:text-[10px]" :class="row.isInputStringCorrect ? 'text-green-900' : 'text-red-900'">
                         {{ row.userInputString || '-' }}
                       </div>
                       <Icon
                         v-if="row.isInputStringCorrect"
                         icon="lucide:check-circle"
-                        class="w-4 h-4 text-green-600 flex-shrink-0"
+                        class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden"
                       />
                       <Icon
                         v-else
                         icon="lucide:x-circle"
-                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                        class="w-4 h-4 text-red-600 flex-shrink-0 print:hidden"
                       />
                     </div>
 
                     <!-- 标准答案（仅当答错时显示） -->
-                    <div v-if="!row.isInputStringCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2">
-                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <div class="text-sm font-mono font-bold text-blue-900">{{ row.correctInputString }}</div>
+                    <div v-if="!row.isInputStringCorrect" class="answer-item px-2 py-1.5 bg-blue-50 border border-blue-100 rounded flex items-center gap-2 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:book-open" class="w-4 h-4 text-blue-500 flex-shrink-0 print:hidden" />
+                      <div class="text-sm font-mono font-bold text-blue-900 print:text-[10px]">{{ row.correctInputString }}</div>
                     </div>
                   </div>
-                  <span v-else class="text-gray-400 italic text-center block py-2">未填写</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2 print:text-[10px] print:py-1">未填写</span>
                 </td>
 
                 <!-- 动作说明 -->
-                <td class="border border-gray-400 p-2 align-middle">
-                  <div v-if="row.action" class="flex flex-col gap-1">
+                <td class="border border-gray-400 p-2 align-middle print:p-1">
+                  <div v-if="row.action" class="flex flex-col gap-1 print:gap-0.5">
                     <!-- 移进动作 -->
-                    <div v-if="row.action.includes('S') || row.action.includes('移进')" class="answer-item px-2 py-1.5 rounded border bg-blue-50 border-blue-200 shadow-sm flex items-center justify-center gap-1.5">
-                      <Icon icon="lucide:arrow-down" class="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <span class="text-sm font-bold text-blue-900">{{ row.action }}</span>
+                    <div v-if="row.action.includes('S') || row.action.includes('移进')" class="answer-item px-2 py-1.5 rounded border bg-blue-50 border-blue-200 shadow-sm flex items-center justify-center gap-1.5 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:arrow-down" class="w-4 h-4 text-blue-600 flex-shrink-0 print:hidden" />
+                      <span class="text-sm font-bold text-blue-900 print:text-[10px]">{{ row.action }}</span>
                     </div>
                     <!-- 规约动作 -->
-                    <div v-else-if="row.action.includes('r') || row.action.includes('规约')" class="answer-item px-2 py-1.5 rounded border bg-purple-50 border-purple-200 shadow-sm flex items-center justify-center gap-1.5">
-                      <Icon icon="lucide:git-branch" class="w-4 h-4 text-purple-600 flex-shrink-0" />
-                      <span class="text-sm font-bold text-purple-900">{{ row.action }}</span>
+                    <div v-else-if="row.action.includes('r') || row.action.includes('规约')" class="answer-item px-2 py-1.5 rounded border bg-purple-50 border-purple-200 shadow-sm flex items-center justify-center gap-1.5 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:git-branch" class="w-4 h-4 text-purple-600 flex-shrink-0 print:hidden" />
+                      <span class="text-sm font-bold text-purple-900 print:text-[10px]">{{ row.action }}</span>
                     </div>
                     <!-- 接受动作 -->
-                    <div v-else-if="row.action.includes('acc') || row.action.includes('接受')" class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-center gap-1.5">
-                      <Icon icon="lucide:party-popper" class="w-4 h-4 text-green-600 flex-shrink-0" />
-                      <span class="text-sm font-bold text-green-900">{{ row.action }}</span>
+                    <div v-else-if="row.action.includes('acc') || row.action.includes('接受')" class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-center gap-1.5 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:party-popper" class="w-4 h-4 text-green-600 flex-shrink-0 print:hidden" />
+                      <span class="text-sm font-bold text-green-900 print:text-[10px]">{{ row.action }}</span>
                     </div>
                     <!-- 其他动作 -->
-                    <div v-else class="answer-item px-2 py-1.5 rounded border bg-gray-50 border-gray-200 shadow-sm flex items-center justify-center gap-1.5">
-                      <Icon icon="lucide:arrow-right-circle" class="w-4 h-4 text-gray-600 flex-shrink-0" />
-                      <span class="text-sm font-bold text-gray-900">{{ row.action }}</span>
+                    <div v-else class="answer-item px-2 py-1.5 rounded border bg-gray-50 border-gray-200 shadow-sm flex items-center justify-center gap-1.5 print:px-1 print:py-0.5 print:gap-1">
+                      <Icon icon="lucide:arrow-right-circle" class="w-4 h-4 text-gray-600 flex-shrink-0 print:hidden" />
+                      <span class="text-sm font-bold text-gray-900 print:text-[10px]">{{ row.action }}</span>
                     </div>
                   </div>
-                  <span v-else class="text-gray-300 text-center block py-2">-</span>
+                  <span v-else class="text-gray-300 text-center block py-2 print:text-[10px] print:py-1">-</span>
                 </td>
 
                 <!-- 状态 -->
-                <td class="border border-gray-400 p-2">
+                <td class="border border-gray-400 p-2 print:p-1">
                   <template v-if="row.hasUserAction">
                     <div
                       v-if="row.isCorrect"
-                      class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-center gap-1"
+                      class="answer-item px-2 py-1.5 rounded border bg-green-50 border-green-200 shadow-sm flex items-center justify-center gap-1 print:px-1 print:py-0.5"
                     >
-                      <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600" />
-                      <span class="text-sm font-bold text-green-900">正确</span>
+                      <Icon icon="lucide:check-circle" class="w-4 h-4 text-green-600 print:hidden" />
+                      <span class="text-sm font-bold text-green-900 print:text-[10px]">正确</span>
                     </div>
                     <div
                       v-else
-                      class="answer-item px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-center gap-1 cursor-help"
+                      class="answer-item px-2 py-1.5 rounded border bg-red-50 border-red-200 shadow-sm flex items-center justify-center gap-1 cursor-help print:px-1 print:py-0.5"
                       :title="row.hint"
                     >
-                      <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600" />
-                      <span class="text-sm font-bold text-red-900">错误</span>
+                      <Icon icon="lucide:x-circle" class="w-4 h-4 text-red-600 print:hidden" />
+                      <span class="text-sm font-bold text-red-900 print:text-[10px]">错误</span>
                     </div>
                   </template>
-                  <span v-else class="text-gray-400 italic text-center block py-2">未做</span>
+                  <span v-else class="text-gray-400 italic text-center block py-2 print:text-[10px] print:py-1">未做</span>
                 </td>
               </tr>
             </tbody>

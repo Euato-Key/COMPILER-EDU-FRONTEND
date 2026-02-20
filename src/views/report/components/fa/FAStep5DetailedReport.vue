@@ -23,7 +23,6 @@
           <div class="flex gap-4 text-xs mt-3 print:hidden">
             <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-green-500 rounded-full"></span> 匹配正确</div>
             <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-red-500 rounded-full"></span> 匹配错误/多余</div>
-            <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-gray-300 rounded-full"></span> 未匹配到</div>
           </div>
         </div>
 
@@ -47,8 +46,8 @@
             </div>
             <div v-else class="flex items-center gap-1.5">
               <span class="px-1.5 py-0.5 bg-blue-600 text-white text-xs font-bold rounded flex-shrink-0">SET {{ item.id }}</span>
-              <div class="flex-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded text-base font-mono font-bold text-gray-400 flex items-center gap-1.5">
-                <Icon icon="lucide:minus" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <div class="flex-1 px-2 py-1 bg-red-50 border border-red-200 rounded text-base font-mono font-bold text-red-400 flex items-center gap-1.5">
+                <Icon icon="lucide:x-circle" class="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
                 未填写
               </div>
             </div>
@@ -81,15 +80,15 @@
 
           <!-- 历史错误记录 -->
           <div v-if="pSetHistoryErrors.length > 0" class="mt-4">
-            <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+            <h4 class="text-sm font-bold text-red-500 uppercase tracking-wider flex items-center gap-2 mb-3">
               <Icon icon="lucide:history" class="w-4 h-4" />
               历史错误记录
             </h4>
-            <div class="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex flex-wrap gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
               <span
                 v-for="(err, idx) in pSetHistoryErrors"
                 :key="idx"
-                class="px-2 py-1 bg-white border border-gray-200 text-gray-400 rounded text-xs font-mono line-through"
+                class="px-2 py-1 bg-white border border-red-200 text-red-500 rounded text-xs font-mono line-through"
               >
                 {{ formatAsSet(err) }}
               </span>

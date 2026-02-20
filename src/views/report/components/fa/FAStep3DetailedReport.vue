@@ -37,13 +37,13 @@
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-gray-50 border-gray-100')"
                     >
-                      <div class="text-sm font-mono font-bold truncate" :class="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
+                      <div class="text-sm font-mono font-bold truncate print:text-xs" :class="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
                         {{ formatAsSet(getFinalUserValue('conversionTable', col, rowIdx - 1)) }}
                       </div>
                       <Icon
                         v-if="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'correct'"
                         icon="lucide:check-circle"
-                        class="w-3 h-3 text-green-600 flex-shrink-0"
+                        class="w-3 h-3 text-green-600 flex-shrink-0 print:hidden"
                       />
                       <Icon
                         v-else-if="getUserAnswerStatus('conversionTable', col, rowIdx - 1) === 'wrong'"
@@ -113,13 +113,13 @@
                         ? 'bg-green-50 border-green-200 shadow-sm'
                         : (getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong' ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-gray-50 border-gray-100')"
                     >
-                      <div class="text-sm font-mono font-bold truncate" :class="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
+                      <div class="text-sm font-mono font-bold truncate print:text-xs" :class="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'correct' ? 'text-green-900' : (getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong' ? 'text-red-900' : 'text-gray-400')">
                         {{ getFinalUserValue('transitionMatrix', col, rowIdx - 1) || '-' }}
                       </div>
                       <Icon
                         v-if="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'correct'"
                         icon="lucide:check-circle"
-                        class="w-3 h-3 text-green-600 flex-shrink-0"
+                        class="w-3 h-3 text-green-600 flex-shrink-0 print:hidden"
                       />
                       <Icon
                         v-else-if="getUserAnswerStatus('transitionMatrix', col, rowIdx - 1) === 'wrong'"

@@ -224,7 +224,7 @@ const checkItem = () => {
   if(next_step_open.value[0]) return
 
   // 检查是否有未检验的Item
-  const uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
+  let uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
   if (uncheckedNodes.length === 0) {
     if (getNodes.value.length === 0) {
       showModal('warning', '请先添加Item', '您还没有添加任何Item节点', '请先点击"添加节点"按钮添加Item，然后再进行校验。')
@@ -275,7 +275,12 @@ const checkItem = () => {
     return
   }
 
-  if( NodeMatchRight_cnt !=0 && (checkRight_Items.length === 1 ||  NodeMatchRight_cnt === addNodeLimit) ){ // 当前校验正确，开启下一轮
+  // 获取未校验的节点（校验失败的节点）- 重新计算，因为校验过程中可能有节点被标记为成功
+  uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
+  const failedCount = uncheckedNodes.length
+
+  // 只有当所有当前节点都校验成功时，才开启下一轮
+  if( NodeMatchRight_cnt > 0 && failedCount === 0 && (checkRight_Items.length === 1 ||  NodeMatchRight_cnt === addNodeLimit) ){
     let cnt = 0; // 下轮可添加的数量
     everyEpooch_Items.forEach( (item: any)=> { // 找补集，确定下轮可添加的按钮数量
       if(!checkRight_Items.includes(item)) {
@@ -293,14 +298,40 @@ const checkItem = () => {
   }
 
   if(NodeMatchRight_cnt > 0){
-    showModal('success', 'Item校验成功', `${NodeMatchRight_cnt}个 Item 校验成功！`)
+    // 部分成功的情况：显示成功和失败的数量
+    if (failedCount > 0) {
+      showModal('warning', 'Item校验部分成功', `${NodeMatchRight_cnt}个 Item 校验成功，${failedCount}个 Item 校验失败。`, '请检查失败的Item产生式是否正确')
+
+      // 为每个失败的Item节点记录错误日志
+      uncheckedNodes.forEach((node, index) => {
+        const nodePros = node.data.pros
+          .filter((p: any) => p.text && p.text.trim())
+          .map((p: any) => p.text.trim())
+        
+        const wrongValue = nodePros.length > 0 ? nodePros.join('; ') : '未填写产生式'
+        
+        lr0Store.addErrorLog({
+          step: 'step3',
+          type: 'dfaState',
+          location: { 
+            fieldKey: 'checkItem',
+            row: index,
+            col: node.id
+          },
+          wrongValue: wrongValue,
+          correctValue: '', // Item校验不显示正确答案，因为产生式由用户输入
+          hint: '请检查该项目集的产生式是否完整、正确，或是否属于当前轮次应添加的Item'
+        })
+      })
+    } else {
+      showModal('success', 'Item校验成功', `${NodeMatchRight_cnt}个 Item 校验成功！`)
+    }
     emit('validate-complete')
     return
   }else{
     showModal('error', 'Item校验失败', '无 Item 校验成功，请检查您的输入。')
     
     // 为每个未校验的Item节点单独记录错误日志
-    const uncheckedNodes = getNodes.value.filter(node => !checkRight_local_node.includes(node.id))
     uncheckedNodes.forEach((node, index) => {
       const nodePros = node.data.pros
         .filter((p: any) => p.text && p.text.trim())
@@ -317,8 +348,8 @@ const checkItem = () => {
           col: node.id
         },
         wrongValue: wrongValue,
-        correctValue: '项目集产生式正确',
-        hint: '请检查该项目集的产生式是否正确'
+        correctValue: '', // Item校验不显示正确答案，因为产生式由用户输入
+        hint: '请检查该项目集的产生式是否完整、正确，或是否属于当前轮次应添加的Item'
       })
     })
     
@@ -475,13 +506,67 @@ const checkGoto = () => {
     return
   }
 
+  // 计算失败的Goto连线数量
+  const failedGotoCount = wrongGotos.length
+
   if(edgeMatchRight_cnt > 0){
-    showModal('success', 'Goto校验成功', `${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
+    // 部分成功的情况：显示成功和失败的数量
+    if (failedGotoCount > 0) {
+      showModal('warning', 'Goto校验部分成功', `${edgeMatchRight_cnt}条 Goto 连线校验成功，${failedGotoCount}条 Goto 连线校验失败。`, '请检查失败的Goto连线')
+
+      // 记录失败的Goto连线错误日志
+      const wrongGotoInfos: string[] = []
+      const correctGotoInfos: string[] = []
+      wrongGotos.forEach(wrongGoto => {
+        const edge = getEdges.value.find(e => e.id === wrongGoto.edgeId)
+        if (edge) {
+          const sourceNode = findNode(edge.source)
+          const targetNode = findNode(edge.target)
+          const sourceItemId = nodeId_Map_ItemId[edge.source] || '未校验'
+          const targetItemId = nodeId_Map_ItemId[edge.target] || '未校验'
+          const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+          const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
+          wrongGotoInfos.push(`${sourceItemId}[${sourcePros}] --${wrongGoto.gotoChar}--> ${targetItemId}[${targetPros}]`)
+
+          // 构建正确答案：找到从源Item到目标Item的正确转移字符
+          const sourceIdAnswer = nodeId_Map_ItemId[edge.source]
+          const targetIdAnswer = nodeId_Map_ItemId[edge.target]
+          if (sourceIdAnswer && targetIdAnswer) {
+            const souAnswerItem = answerItems.value[parseInt(sourceIdAnswer[sourceIdAnswer.length-1])]
+            if (souAnswerItem && souAnswerItem.next_ids) {
+              // 查找哪个转移字符会到达目标Item
+              const correctChar = Object.entries(souAnswerItem.next_ids)
+                .find(([ch, nextId]) => `Item${nextId}` === targetIdAnswer)?.[0]
+              if (correctChar) {
+                // 找到了正确的转移字符
+                correctGotoInfos.push(`${sourceIdAnswer} --${correctChar}--> ${targetIdAnswer}`)
+              }
+              // 如果correctChar不存在，说明目标Item无法从源Item直接到达，不记录正确答案
+            }
+          }
+          // 如果源Item或目标Item未校验，不记录正确答案
+        }
+      })
+      const wrongGotoInfo = wrongGotoInfos.join('; ')
+      const correctGotoInfo = correctGotoInfos.join('; ')
+
+      lr0Store.addErrorLog({
+        step: 'step3',
+        type: 'gotoTransition',
+        location: { fieldKey: 'checkGoto' },
+        wrongValue: wrongGotoInfo,
+        correctValue: correctGotoInfo,
+        hint: '请检查Goto连线的源状态、目标状态和转移字符是否正确'
+      })
+    } else {
+      showModal('success', 'Goto校验成功', `${edgeMatchRight_cnt}条 Goto 连线校验成功！`)
+    }
     emit('validate-complete')
     return
   }else{
     // 只收集错误的Goto连线信息
     const wrongGotoInfos: string[] = []
+    const correctGotoInfos: string[] = []
     wrongGotos.forEach(wrongGoto => {
       const edge = getEdges.value.find(e => e.id === wrongGoto.edgeId)
       if (edge) {
@@ -492,9 +577,28 @@ const checkGoto = () => {
         const sourcePros = sourceNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
         const targetPros = targetNode?.data?.pros?.map((p: any) => p.text).filter((t: string) => t.trim()).join(', ') || '空'
         wrongGotoInfos.push(`${sourceItemId}[${sourcePros}] --${wrongGoto.gotoChar}--> ${targetItemId}[${targetPros}]`)
+
+        // 构建正确答案：找到从源Item到目标Item的正确转移字符
+        const sourceIdAnswer = nodeId_Map_ItemId[edge.source]
+        const targetIdAnswer = nodeId_Map_ItemId[edge.target]
+        if (sourceIdAnswer && targetIdAnswer) {
+          const souAnswerItem = answerItems.value[parseInt(sourceIdAnswer[sourceIdAnswer.length-1])]
+          if (souAnswerItem && souAnswerItem.next_ids) {
+            // 查找哪个转移字符会到达目标Item
+            const correctChar = Object.entries(souAnswerItem.next_ids)
+              .find(([ch, nextId]) => `Item${nextId}` === targetIdAnswer)?.[0]
+            if (correctChar) {
+              // 找到了正确的转移字符
+              correctGotoInfos.push(`${sourceIdAnswer} --${correctChar}--> ${targetIdAnswer}`)
+            }
+            // 如果correctChar不存在，说明目标Item无法从源Item直接到达，不记录正确答案
+          }
+        }
+        // 如果源Item或目标Item未校验，不记录正确答案
       }
     })
     const wrongGotoInfo = wrongGotoInfos.join('; ') || '未绘制任何Goto连线'
+    const correctGotoInfo = correctGotoInfos.join('; ')
 
     showModal('error', 'Goto校验失败', '无 Goto 连线校验成功，请检查您的连线。')
     // 记录错误日志 - 只记录错误的Goto连线
@@ -503,7 +607,7 @@ const checkGoto = () => {
       type: 'gotoTransition',
       location: { fieldKey: 'checkGoto' },
       wrongValue: wrongGotoInfo,
-      correctValue: '所有Goto连线正确',
+      correctValue: correctGotoInfo,
       hint: '请检查Goto连线的源状态、目标状态和转移字符是否正确'
     })
     emit('validate-complete')

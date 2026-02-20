@@ -277,11 +277,13 @@
             v-if="errorSummary"
             title="步骤 3 错误详情"
             :error-sections="{
-              'DFA 状态集': errorSummary.step3.dfaStates
+              'Item 校验': errorSummary.step3.dfaStates,
+              'Goto 校验': errorSummary.step3.gotoTransitions
             }"
             :total-count="reportData.errors.step3.total"
             :section-labels="{
-              'DFA 状态集': 'DFA States'
+              'Item 校验': 'DFA States',
+              'Goto 校验': 'Goto Transitions'
             }"
           />
 

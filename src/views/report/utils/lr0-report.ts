@@ -315,7 +315,8 @@ export function getLR0ErrorSummary(errorLogs: LR0HistoryRecord['errorLogs']) {
       augmentedFormula: [] as Array<{ location: string; wrongValue: string; correctValue: string; timestamp: string; details?: any }>
     },
     step3: {
-      dfaStates: [] as Array<{ location: string; wrongValue: string; correctValue: string; timestamp: string; details?: any }>
+      dfaStates: [] as Array<{ location: string; wrongValue: string; correctValue: string; timestamp: string; details?: any }>,
+      gotoTransitions: [] as Array<{ location: string; wrongValue: string; correctValue: string; timestamp: string; details?: any }>
     },
     step4: {
       actionTable: [] as Array<{ location: string; wrongValue: string; correctValue: string; timestamp: string; details?: any }>,
@@ -332,7 +333,23 @@ export function getLR0ErrorSummary(errorLogs: LR0HistoryRecord['errorLogs']) {
     let locStr = ''
     let details: any = {}
 
-    if (log.step === 'step4') {
+    if (log.step === 'step3') {
+      // 步骤3：DFA状态集构造 - 区分Item校验和Goto校验
+      const fieldKey = log.location.fieldKey
+      if (fieldKey === 'checkItem' || log.type === 'dfaState') {
+        // Item校验失败
+        locStr = 'Item校验'
+      } else if (fieldKey === 'checkGoto' || fieldKey === 'goto-check' || log.type === 'gotoTransition') {
+        // Goto校验失败
+        locStr = 'Goto校验'
+      } else {
+        locStr = 'DFA构造'
+      }
+      details = {
+        fieldKey,
+        type: log.type
+      }
+    } else if (log.step === 'step4') {
       // 步骤4：显示 ACTION/GOTO 表的具体位置
       const tableType = log.type === 'actionTable' ? 'ACTION' : 'GOTO'
       const state = log.location.row
@@ -376,10 +393,27 @@ export function getLR0ErrorSummary(errorLogs: LR0HistoryRecord['errorLogs']) {
       locStr = JSON.stringify(log.location)
     }
 
+    // 简化Goto Transition错误的显示：只显示Item和goto连线，忽略产生式
+    let displayWrongValue = log.wrongValue
+    let displayCorrectValue = log.correctValue
+    if (log.type === 'gotoTransition') {
+      // 将 "Item0[S'->.S, S->.BB] --a--> Item4[B->b.]" 简化为 "Item0 --a--> Item4"
+      if (log.wrongValue) {
+        displayWrongValue = log.wrongValue.replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim()
+      }
+      // 正确答案同样简化显示
+      if (log.correctValue && log.correctValue !== '无正确转移') {
+        displayCorrectValue = log.correctValue.replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim()
+      } else if (!log.correctValue || log.correctValue === '') {
+        // 正确答案为空，表示不存在可到达的Goto
+        displayCorrectValue = '不存在可到达的Goto'
+      }
+    }
+
     const errorItem = {
       location: locStr,
-      wrongValue: log.wrongValue,
-      correctValue: log.correctValue,
+      wrongValue: displayWrongValue,
+      correctValue: displayCorrectValue,
       timestamp: log.timestamp,
       details
     }
@@ -388,6 +422,7 @@ export function getLR0ErrorSummary(errorLogs: LR0HistoryRecord['errorLogs']) {
       if (log.type === 'augmentedFormula') summary.step2.augmentedFormula.push(errorItem)
     } else if (log.step === 'step3') {
       if (log.type === 'dfaState') summary.step3.dfaStates.push(errorItem)
+      else if (log.type === 'gotoTransition') summary.step3.gotoTransitions.push(errorItem)
     } else if (log.step === 'step4') {
       if (log.type === 'actionTable') summary.step4.actionTable.push(errorItem)
       else if (log.type === 'gotoTable') summary.step4.gotoTable.push(errorItem)

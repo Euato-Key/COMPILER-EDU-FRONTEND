@@ -7,37 +7,37 @@
     </div>
 
     <!-- SLR1分析表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
-          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600" />
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 print:shadow-none print:border print:border-gray-300">
+      <div class="px-6 py-4 bg-pink-50 border-b border-pink-100 flex items-center justify-between print:px-2 print:py-1 print:bg-pink-100">
+        <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2 print:text-sm">
+          <Icon icon="lucide:table" class="w-5 h-5 text-pink-600 print:hidden" />
           SLR1 分析表
         </h3>
       </div>
 
-      <div class="p-6">
+      <div class="p-6 print:p-2">
         <!-- 统计信息 -->
-        <div class="grid grid-cols-4 gap-4 mb-6">
-          <div class="bg-blue-50 rounded-lg border border-blue-200 p-4">
-            <div class="text-2xl font-bold text-blue-600">{{ stateCount }}</div>
-            <div class="text-sm text-blue-700">状态数量</div>
+        <div class="grid grid-cols-4 gap-4 mb-6 print:grid-cols-4 print:gap-2 print:mb-2">
+          <div class="bg-blue-50 rounded-lg border border-blue-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-blue-600 print:text-lg">{{ stateCount }}</div>
+            <div class="text-sm text-blue-700 print:text-[10px]">状态数量</div>
           </div>
-          <div class="bg-green-50 rounded-lg border border-green-200 p-4">
-            <div class="text-2xl font-bold text-green-600">{{ terminals.length }}</div>
-            <div class="text-sm text-green-700">终结符数量</div>
+          <div class="bg-green-50 rounded-lg border border-green-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-green-600 print:text-lg">{{ terminals.length }}</div>
+            <div class="text-sm text-green-700 print:text-[10px]">终结符数量</div>
           </div>
-          <div class="bg-purple-50 rounded-lg border border-purple-200 p-4">
-            <div class="text-2xl font-bold text-purple-600">{{ nonterminals.length }}</div>
-            <div class="text-sm text-purple-700">非终结符数量</div>
+          <div class="bg-purple-50 rounded-lg border border-purple-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-purple-600 print:text-lg">{{ nonterminals.length }}</div>
+            <div class="text-sm text-purple-700 print:text-[10px]">非终结符数量</div>
           </div>
-          <div class="bg-orange-50 rounded-lg border border-orange-200 p-4">
-            <div class="text-2xl font-bold text-orange-600">{{ accuracy }}%</div>
-            <div class="text-sm text-orange-700">正确率</div>
+          <div class="bg-orange-50 rounded-lg border border-orange-200 p-4 print:p-2">
+            <div class="text-2xl font-bold text-orange-600 print:text-lg">{{ accuracy }}%</div>
+            <div class="text-sm text-orange-700 print:text-[10px]">正确率</div>
           </div>
         </div>
 
         <!-- SLR1特性提示 -->
-        <div v-if="isSLR1Grammar === false" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div v-if="isSLR1Grammar === false" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg print:hidden">
           <div class="flex items-start gap-3">
             <Icon icon="lucide:alert-triangle" class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
             <div class="text-sm text-red-700">
@@ -48,7 +48,7 @@
         </div>
 
         <!-- FOLLOW集展示 -->
-        <div v-if="followSets && Object.keys(followSets).length > 0" class="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
+        <div v-if="followSets && Object.keys(followSets).length > 0" class="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg print:hidden">
           <div class="flex items-start gap-3">
             <Icon icon="lucide:book-open" class="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0" />
             <div class="flex-1">
@@ -68,8 +68,8 @@
         </div>
 
         <!-- 分析表对比 -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full border border-gray-300">
+        <div class="overflow-x-auto print:overflow-visible">
+          <table class="min-w-full border border-gray-300 print:w-full print:table-fixed">
             <!-- 表头 -->
             <thead class="bg-gray-50">
               <tr>
