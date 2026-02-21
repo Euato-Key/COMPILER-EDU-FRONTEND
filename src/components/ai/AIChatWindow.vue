@@ -1,37 +1,37 @@
 <template>
   <div class="ai-chat-window theme-content-bg border rounded-lg shadow-lg flex flex-col theme-transition w-full">
-    <!-- 聊天窗口头部 -->
-    <div class="flex items-center justify-between p-4 border-b theme-step-bg">
+    <!-- 聊天窗口头部 - 压缩高度 -->
+    <div class="flex items-center justify-between px-3 py-2 border-b theme-step-bg">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-          <Icon icon="lucide:brain" class="w-5 h-5 text-white" />
+        <div class="w-7 h-7 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+          <Icon icon="lucide:brain" class="w-4 h-4 text-white" />
         </div>
         <div>
-          <h3 class="font-semibold text-gray-900">编译知脑</h3>
-          <p class="text-xs text-gray-500">编译原理智能问答</p>
+          <h3 class="font-semibold text-gray-900 text-sm">编译知脑</h3>
+          <p class="text-[10px] text-gray-500 leading-tight">编译原理智能问答</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1">
         <button
           @click="toggleFullscreen"
-          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-sm"
+          class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 hover:scale-105"
           :title="isFullscreen ? '退出全屏' : '全屏模式'"
         >
-          <Icon :icon="isFullscreen ? 'lucide:minimize-2' : 'lucide:maximize-2'" class="w-4 h-4" />
+          <Icon :icon="isFullscreen ? 'lucide:minimize-2' : 'lucide:maximize-2'" class="w-3.5 h-3.5" />
         </button>
         <button
           @click="handleClearChat"
-          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-sm"
+          class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 hover:scale-105"
           title="清空聊天记录"
         >
-          <Icon icon="lucide:trash-2" class="w-4 h-4" />
+          <Icon icon="lucide:trash-2" class="w-3.5 h-3.5" />
         </button>
         <button
           @click="$emit('close')"
-          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-sm"
+          class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 hover:scale-105"
           title="关闭聊天"
         >
-          <Icon icon="lucide:x" class="w-4 h-4" />
+          <Icon icon="lucide:x" class="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
@@ -41,24 +41,24 @@
       ref="messagesContainer"
       class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 w-full messages-container"
     >
-      <!-- 欢迎消息 -->
-      <div v-if="messages.length === 0" class="text-center py-8">
-        <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
-          <Icon icon="lucide:sparkles" class="w-8 h-8 text-purple-600 animate-bounce" />
+      <!-- 欢迎消息 - 压缩高度 -->
+      <div v-if="messages.length === 0" class="text-center py-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-2 shadow-md animate-pulse">
+          <Icon icon="lucide:sparkles" class="w-6 h-6 text-purple-600 animate-bounce" />
         </div>
-        <h4 class="font-medium text-gray-900 mb-2">欢迎使用编译知脑</h4>
-        <p class="text-sm text-gray-500 mb-4">我可以帮助您理解编译原理的概念和算法</p>
+        <h4 class="font-medium text-gray-900 mb-1 text-sm">欢迎使用编译知脑</h4>
+        <p class="text-xs text-gray-500 mb-3">我可以帮助您理解编译原理的概念和算法</p>
 
         <!-- 预设问题 -->
-        <div class="space-y-2">
-          <p class="text-xs text-gray-400">快速提问：</p>
-          <div class="flex flex-wrap gap-2 justify-center">
+        <div class="space-y-1.5">
+          <p class="text-[10px] text-gray-400">快速提问：</p>
+          <div class="flex flex-wrap gap-1.5 justify-center">
             <button
               v-for="(question, index) in presetQuestions"
               :key="question"
               @click="sendPresetQuestion(question)"
-              class="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-all duration-300 border border-blue-200 hover:border-blue-300 hover:scale-105 hover:shadow-md animate-fade-in"
-              :style="{ animationDelay: `${index * 150}ms` }"
+              class="px-2.5 py-0.5 text-[10px] bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-all duration-200 border border-blue-200 hover:border-blue-300 hover:scale-105 animate-fade-in"
+              :style="{ animationDelay: `${index * 100}ms` }"
             >
               {{ question }}
             </button>
@@ -191,30 +191,30 @@
       </Transition>
     </div>
 
-    <!-- 输入区域 -->
-    <div class="border-t border-gray-200 p-4 input-area">
-      <div class="flex gap-2 h-full items-stretch">
-        <div class="flex-1 relative h-full">
+    <!-- 输入区域 - 压缩高度 -->
+    <div class="border-t border-gray-200 p-2 input-area">
+      <div class="flex gap-2 items-end">
+        <div class="flex-1 relative">
           <textarea
             v-model="inputMessage"
             @keydown="handleKeydown"
             placeholder=""
-            class="w-full h-full px-3 py-2 pr-24 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-theme-primary focus:border-transparent transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
-            :rows="isFullscreen ? 6 : inputRows"
+            class="w-full px-2.5 py-1.5 pr-20 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-theme-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 focus:shadow-md"
+            :rows="isFullscreen ? 4 : 2"
             :disabled="isStreaming"
           ></textarea>
-          <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+          <div class="absolute bottom-1.5 right-2 text-[10px] text-gray-400">
             <span class="hidden sm:inline">Enter 发送，</span>Shift+Enter 换行
           </div>
         </div>
         <button
           @click="handleSend"
           :disabled="!inputMessage.trim() || isStreaming"
-          class="px-4 py-2 theme-btn-primary text-white rounded-lg hover:opacity-90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center gap-2"
+          class="px-3 py-1.5 theme-btn-primary text-white rounded-md hover:opacity-90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 hover:shadow-md flex items-center gap-1.5"
         >
-          <Icon v-if="isStreaming" icon="lucide:loader-2" class="w-4 h-4 animate-spin" />
-          <Icon v-else icon="lucide:send" class="w-4 h-4" />
-          <span class="hidden sm:inline">发送</span>
+          <Icon v-if="isStreaming" icon="lucide:loader-2" class="w-3.5 h-3.5 animate-spin" />
+          <Icon v-else icon="lucide:send" class="w-3.5 h-3.5" />
+          <span class="hidden sm:inline text-sm">发送</span>
         </button>
       </div>
     </div>
@@ -414,9 +414,11 @@ onMounted(() => {
 
 <style scoped>
 .ai-chat-window {
-  min-height: 500px;
-  max-height: calc(100vh - 120px);
-  height: 100%;
+  min-height: 300px;
+  height: 100%;                    /* 填满父容器 */
+  max-height: 100%;                /* 不超过父容器 */
+  display: flex;
+  flex-direction: column;
 }
 
 /* 全屏模式下覆盖样式 */
@@ -539,9 +541,24 @@ onMounted(() => {
   display: block;
 }
 
-/* 消息容器样式 */
+/* 消息容器样式 - 使用flex布局自动适应 */
 .messages-container {
-  max-height: calc(100vh - 300px);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/* 普通模式下输入区域样式 - 固定高度，不占用消息区域空间 */
+.input-area {
+  flex: 0 0 auto;           /* 不伸缩，固定高度 */
+  height: 70px;             /* 固定高度 */
+  min-height: 70px;
+  max-height: 70px;
+}
+
+.input-area textarea {
+  min-height: 40px !important;
+  max-height: 50px !important;
 }
 
 /* 全屏模式下的消息容器 - 让内容区域填满剩余空间 */
@@ -551,15 +568,15 @@ onMounted(() => {
   flex: 1 1 auto !important;
 }
 
-/* 全屏模式下输入区域样式 */
+/* 全屏模式下输入区域样式 - 压缩高度 */
 :global(.ai-chat-fullscreen) .input-area {
   flex: 0 0 auto;
-  min-height: 180px;
-  max-height: 250px;
+  min-height: 80px;
+  max-height: 80px;
 }
 
 :global(.ai-chat-fullscreen) .input-area textarea {
-  min-height: 140px !important;
+  min-height: 60px !important;
 }
 
 /* 全屏模式下隐藏外层滚动条，只保留消息区域滚动条 */

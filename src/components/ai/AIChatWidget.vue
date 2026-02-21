@@ -94,19 +94,19 @@ const isExpanded = ref(false)
 const chatContainer = ref<HTMLElement>()
 const isResizing = ref(false)
 const chatWidth = ref(600)
-const chatHeight = ref(Math.min(window.innerHeight - 120, 800)) // 动态计算初始高度
+const chatHeight = ref(Math.min(window.innerHeight * 0.8, 800)) // 使用百分比计算初始高度
 const unreadCount = ref(0)
 const hasUnreadMessages = ref(false)
 const isFullscreen = ref(false)
 
-// 计算属性
+// 计算属性 - 自适应高度，填满可用空间
 const chatWindowStyle = computed(() => ({
   width: `${chatWidth.value}px`,
   height: `${chatHeight.value}px`,
   minWidth: '400px',
-  minHeight: '500px',
+  minHeight: '300px',
   maxWidth: '90vw',
-  maxHeight: 'calc(100vh - 120px)' // 减去顶部空间，更好地利用屏幕高度
+  maxHeight: '85vh' // 使用百分比，更好地适应不同屏幕
 }))
 
 // 全屏样式
