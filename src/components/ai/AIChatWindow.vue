@@ -177,20 +177,30 @@
             <Icon icon="lucide:brain" class="w-4 h-4 text-white" />
           </div>
           <div class="flex-1 min-w-0 w-full">
-            <!-- 流式思考内容 -->
+            <!-- 流式思考内容（可折叠） -->
             <div v-if="currentReasoningStreamContent" class="mb-1">
-              <div class="flex items-center gap-2 text-xs text-purple-600 mb-1">
+              <div
+                @click="toggleStreamingReasoningCollapse"
+                class="flex items-center gap-2 text-xs text-purple-600 cursor-pointer hover:text-purple-700 transition-colors mb-1"
+              >
                 <Icon icon="lucide:sparkles" class="w-3.5 h-3.5 animate-pulse" />
                 <span class="font-medium">正在思考...</span>
+                <Icon
+                  :icon="isStreamingReasoningCollapsed ? 'lucide:chevron-right' : 'lucide:chevron-down'"
+                  class="w-3.5 h-3.5 transition-transform"
+                />
               </div>
-              <div class="bg-gradient-to-r from-purple-50/80 to-purple-50/40 px-4 py-3 rounded-t-2xl text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">
+              <div
+                v-show="!isStreamingReasoningCollapsed"
+                class="bg-gradient-to-r from-purple-50/80 to-purple-50/40 px-4 py-3 rounded-t-2xl text-xs text-gray-600 whitespace-pre-wrap leading-relaxed"
+              >
                 {{ currentReasoningStreamContent }}
               </div>
             </div>
             <div
               :class="[
                 'text-gray-900 px-4 py-3 shadow-sm w-full',
-                currentReasoningStreamContent
+                currentReasoningStreamContent && !isStreamingReasoningCollapsed
                   ? 'bg-gradient-to-r from-purple-50/40 to-gray-50/80 rounded-b-2xl rounded-tr-2xl'
                   : 'bg-gray-50 rounded-2xl rounded-bl-md'
               ]"
@@ -361,6 +371,9 @@ const presetQuestions = computed(() => currentStore.value?.presetQuestions || []
 // 思考内容折叠状态
 const collapsedReasoningIndices = ref<Set<number>>(new Set())
 
+// 流式思考内容折叠状态
+const isStreamingReasoningCollapsed = ref(false)
+
 // 切换思考内容折叠状态
 const toggleReasoningCollapse = (index: number) => {
   if (collapsedReasoningIndices.value.has(index)) {
@@ -373,6 +386,11 @@ const toggleReasoningCollapse = (index: number) => {
 // 检查思考内容是否折叠
 const isReasoningCollapsed = (index: number) => {
   return collapsedReasoningIndices.value.has(index)
+}
+
+// 切换流式思考内容折叠状态
+const toggleStreamingReasoningCollapse = () => {
+  isStreamingReasoningCollapsed.value = !isStreamingReasoningCollapsed.value
 }
 
 // 切换深度思考模式
