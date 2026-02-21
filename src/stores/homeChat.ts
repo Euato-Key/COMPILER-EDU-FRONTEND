@@ -8,10 +8,12 @@ export const useHomeChatStore = defineStore('home-chat', () => {
   const messages = ref<Message[]>([])
   const isStreaming = ref(false)
   const currentStreamContent = ref('')
+  const currentReasoningStreamContent = ref('')  // 当前流式思考内容
   const error = ref<string | null>(null)
   const unreadCount = ref(0)
   const hasUnreadMessages = ref(false)
   const lastContext = ref<ChatContext | null>(null)
+  const isDeepThinking = ref(false)  // 深度思考模式
 
   // 计算属性
   const messageCount = computed(() => messages.value.length)
@@ -158,10 +160,11 @@ export const useHomeChatStore = defineStore('home-chat', () => {
   }
 
   // 方法
-  const addMessage = (role: Message['role'], content: string) => {
+  const addMessage = (role: Message['role'], content: string, reasoningContent?: string) => {
     const message: Message = {
       role,
       content,
+      reasoningContent,
       timestamp: Date.now()
     }
     messages.value.push(message)
@@ -174,6 +177,10 @@ export const useHomeChatStore = defineStore('home-chat', () => {
 
   const updateStreamContent = (content: string) => {
     currentStreamContent.value = content
+  }
+
+  const updateReasoningStreamContent = (content: string) => {
+    currentReasoningStreamContent.value = content
   }
 
   const setStreaming = (streaming: boolean) => {
@@ -191,10 +198,21 @@ export const useHomeChatStore = defineStore('home-chat', () => {
     messages.value = []
     error.value = null
     currentStreamContent.value = ''
+    currentReasoningStreamContent.value = ''
     isStreaming.value = false
     unreadCount.value = 0
     hasUnreadMessages.value = false
     lastContext.value = null
+  }
+
+  // 切换深度思考模式
+  const toggleDeepThinking = () => {
+    isDeepThinking.value = !isDeepThinking.value
+  }
+
+  // 设置深度思考模式
+  const setDeepThinking = (value: boolean) => {
+    isDeepThinking.value = value
   }
 
   const deleteMessage = (index: number) => {
@@ -262,16 +280,19 @@ export const useHomeChatStore = defineStore('home-chat', () => {
     messages,
     isStreaming,
     currentStreamContent,
+    currentReasoningStreamContent,
     error,
     unreadCount,
     hasUnreadMessages,
     lastContext,
+    isDeepThinking,
     messageCount,
     hasMessages,
     presetQuestions,
     getProjectKnowledge,
     addMessage,
     updateStreamContent,
+    updateReasoningStreamContent,
     setStreaming,
     setError,
     clearChat,
@@ -280,6 +301,8 @@ export const useHomeChatStore = defineStore('home-chat', () => {
     resetUnreadCount,
     updateContext,
     getContext,
+    toggleDeepThinking,
+    setDeepThinking,
     saveToStorage,
     loadFromStorage,
     clearStorage

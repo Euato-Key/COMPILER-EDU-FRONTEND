@@ -13,20 +13,35 @@ export function useAIChat() {
     stream: true
   })
 
+  // 深度思考模式
+  const isDeepThinking = ref(false)
+
   // 聊天状态
   const messages = ref<Message[]>([])
   const isStreaming = ref(false)
   const currentStreamContent = ref('')
+  const currentReasoningContent = ref('')  // 当前流式思考内容
   const error = ref<string | null>(null)
 
   // 添加消息
-  const addMessage = (role: Message['role'], content: string) => {
+  const addMessage = (role: Message['role'], content: string, reasoningContent?: string) => {
     const message: Message = {
       role,
       content,
+      reasoningContent,
       timestamp: Date.now()
     }
     messages.value.push(message)
+  }
+
+  // 切换深度思考模式
+  const toggleDeepThinking = () => {
+    isDeepThinking.value = !isDeepThinking.value
+  }
+
+  // 设置深度思考模式
+  const setDeepThinking = (value: boolean) => {
+    isDeepThinking.value = value
   }
 
     // 构建系统提示词
@@ -185,8 +200,12 @@ export function useAIChat() {
       ]
 
       let fullContent = ''
+      let fullReasoningContent = ''
 
       // 根据是否流式选择不同的请求方式
+      // 从store获取深度思考状态
+      const storeDeepThinking = currentStore?.isDeepThinking ?? isDeepThinking.value
+
       if (aiConfig.stream) {
         // 流式请求
         const response = await sendAIChatStream({
@@ -194,6 +213,7 @@ export function useAIChat() {
           model: aiConfig.model,
           temperature: aiConfig.temperature,
           max_tokens: aiConfig.maxTokens,
+          thinking: storeDeepThinking ? { type: 'enabled' } : undefined,
           module: context.currentPage || 'unknown'
         })
 
@@ -223,7 +243,21 @@ export function useAIChat() {
 
               try {
                 const parsed = JSON.parse(data)
-                const content = parsed.choices?.[0]?.delta?.content || ''
+                const delta = parsed.choices?.[0]?.delta
+
+                // 处理思考内容
+                const reasoningContent = delta?.reasoning_content
+                if (reasoningContent) {
+                  fullReasoningContent += reasoningContent
+                  if (currentStore) {
+                    currentStore.updateReasoningStreamContent(fullReasoningContent)
+                  } else {
+                    currentReasoningContent.value = fullReasoningContent
+                  }
+                }
+
+                // 处理正式回复内容
+                const content = delta?.content
                 if (content) {
                   fullContent += content
                   if (currentStore) {
@@ -245,6 +279,7 @@ export function useAIChat() {
           model: aiConfig.model,
           temperature: aiConfig.temperature,
           max_tokens: aiConfig.maxTokens,
+          thinking: storeDeepThinking ? { type: 'enabled' } : undefined,
           module: context.currentPage || 'unknown'
         })
 
@@ -253,17 +288,20 @@ export function useAIChat() {
         }
 
         fullContent = response.choices?.[0]?.message?.content || ''
+        fullReasoningContent = response.choices?.[0]?.message?.reasoning_content || ''
       }
 
       // 添加AI回复
       if (currentStore) {
-        currentStore.addMessage('assistant', fullContent)
+        currentStore.addMessage('assistant', fullContent, fullReasoningContent || undefined)
         currentStore.setStreaming(false)
         currentStore.updateStreamContent('')
+        currentStore.updateReasoningStreamContent('')
       } else {
-        addMessage('assistant', fullContent)
+        addMessage('assistant', fullContent, fullReasoningContent || undefined)
         isStreaming.value = false
         currentStreamContent.value = ''
+        currentReasoningContent.value = ''
       }
 
       return {
@@ -389,13 +427,17 @@ export function useAIChat() {
     messages,
     isStreaming,
     currentStreamContent,
+    currentReasoningContent,
     error,
     aiConfig,
+    isDeepThinking,
 
     // 方法
     sendMessage,
     addMessage,
     clearChat,
-    getPresetQuestions
+    getPresetQuestions,
+    toggleDeepThinking,
+    setDeepThinking
   }
 }

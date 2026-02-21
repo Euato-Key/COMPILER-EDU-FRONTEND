@@ -8,10 +8,12 @@ export const useFAChatStore = defineStore('fa-chat', () => {
   const messages = ref<Message[]>([])
   const isStreaming = ref(false)
   const currentStreamContent = ref('')
+  const currentReasoningStreamContent = ref('')  // 当前流式思考内容
   const error = ref<string | null>(null)
   const unreadCount = ref(0)
   const hasUnreadMessages = ref(false)
   const lastContext = ref<ChatContext | null>(null)
+  const isDeepThinking = ref(false)  // 深度思考模式
 
   // 计算属性
   const messageCount = computed(() => messages.value.length)
@@ -271,10 +273,11 @@ DFA最小化算法（Hopcroft算法）：
   }
 
   // 方法
-  const addMessage = (role: Message['role'], content: string) => {
+  const addMessage = (role: Message['role'], content: string, reasoningContent?: string) => {
     const message: Message = {
       role,
       content,
+      reasoningContent,
       timestamp: Date.now()
     }
     messages.value.push(message)
@@ -290,10 +293,15 @@ DFA最小化算法（Hopcroft算法）：
     currentStreamContent.value = content
   }
 
+  const updateReasoningStreamContent = (content: string) => {
+    currentReasoningStreamContent.value = content
+  }
+
   const setStreaming = (streaming: boolean) => {
     isStreaming.value = streaming
     if (!streaming) {
       currentStreamContent.value = ''
+      currentReasoningStreamContent.value = ''
     }
   }
 
@@ -305,10 +313,21 @@ DFA最小化算法（Hopcroft算法）：
     messages.value = []
     error.value = null
     currentStreamContent.value = ''
+    currentReasoningStreamContent.value = ''
     isStreaming.value = false
     unreadCount.value = 0
     hasUnreadMessages.value = false
     lastContext.value = null
+  }
+
+  // 切换深度思考模式
+  const toggleDeepThinking = () => {
+    isDeepThinking.value = !isDeepThinking.value
+  }
+
+  // 设置深度思考模式
+  const setDeepThinking = (value: boolean) => {
+    isDeepThinking.value = value
   }
 
   const deleteMessage = (index: number) => {
@@ -377,10 +396,12 @@ DFA最小化算法（Hopcroft算法）：
     messages,
     isStreaming,
     currentStreamContent,
+    currentReasoningStreamContent,
     error,
     unreadCount,
     hasUnreadMessages,
     lastContext,
+    isDeepThinking,
 
     // 计算属性
     messageCount,
@@ -393,6 +414,7 @@ DFA最小化算法（Hopcroft算法）：
     // 方法
     addMessage,
     updateStreamContent,
+    updateReasoningStreamContent,
     setStreaming,
     setError,
     clearChat,
@@ -401,6 +423,8 @@ DFA最小化算法（Hopcroft算法）：
     resetUnreadCount,
     updateContext,
     getContext,
+    toggleDeepThinking,
+    setDeepThinking,
 
     // 持久化
     saveToStorage,

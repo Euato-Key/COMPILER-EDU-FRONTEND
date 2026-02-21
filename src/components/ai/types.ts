@@ -2,6 +2,7 @@
 export interface Message {
   role: 'system' | 'user' | 'assistant'
   content: string
+  reasoningContent?: string  // 深度思考内容
   timestamp?: number
 }
 

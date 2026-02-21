@@ -8,10 +8,24 @@
         </div>
         <div>
           <h3 class="font-semibold text-gray-900 text-sm">编译知脑</h3>
-          <p class="text-[10px] text-gray-500 leading-tight">编译原理智能问答</p>
+          <p class="text-[10px] text-gray-500 leading-tight">AI生成内容仅供参考，请谨慎辨别</p>
         </div>
       </div>
       <div class="flex items-center gap-1">
+        <!-- 深度思考开关 -->
+        <button
+          @click="toggleDeepThinking"
+          :class="[
+            'px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 flex items-center gap-1',
+            isDeepThinking
+              ? 'bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-transparent'
+          ]"
+          :title="isDeepThinking ? '深度思考已开启' : '开启深度思考'"
+        >
+          <Icon icon="lucide:sparkles" class="w-3.5 h-3.5" :class="{ 'animate-pulse': isDeepThinking }" />
+          <span class="hidden sm:inline">深度思考</span>
+        </button>
         <button
           @click="toggleFullscreen"
           class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 hover:scale-105"
@@ -102,7 +116,34 @@
               <Icon icon="lucide:brain" class="w-4 h-4 text-white animate-pulse" />
             </div>
             <div class="flex-1 min-w-0 w-full">
-              <div class="bg-gray-100 text-gray-900 px-4 py-2 rounded-2xl rounded-bl-md shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 w-full">
+              <!-- 思考内容（可折叠） -->
+              <div v-if="message.reasoningContent" class="mb-1">
+                <div
+                  @click="toggleReasoningCollapse(index)"
+                  class="flex items-center gap-2 text-xs text-purple-600 cursor-pointer hover:text-purple-700 transition-colors mb-1"
+                >
+                  <Icon icon="lucide:sparkles" class="w-3.5 h-3.5" />
+                  <span class="font-medium">已思考</span>
+                  <Icon
+                    :icon="isReasoningCollapsed(index) ? 'lucide:chevron-right' : 'lucide:chevron-down'"
+                    class="w-3.5 h-3.5 transition-transform"
+                  />
+                </div>
+                <div
+                  v-show="!isReasoningCollapsed(index)"
+                  class="bg-gradient-to-r from-purple-50/80 to-purple-50/40 px-4 py-3 rounded-t-2xl text-xs text-gray-600 whitespace-pre-wrap leading-relaxed"
+                >
+                  {{ message.reasoningContent }}
+                </div>
+              </div>
+              <div
+                :class="[
+                  'text-gray-900 px-4 py-3 shadow-sm hover:shadow-md transition-all duration-300 w-full',
+                  message.reasoningContent && !isReasoningCollapsed(index)
+                    ? 'bg-gradient-to-r from-purple-50/40 to-gray-50/80 rounded-b-2xl rounded-tr-2xl'
+                    : 'bg-gray-50 rounded-2xl rounded-bl-md'
+                ]"
+              >
                 <MarkdownRenderer
                   :content="message.content"
                   theme="auto"
@@ -136,13 +177,30 @@
             <Icon icon="lucide:brain" class="w-4 h-4 text-white" />
           </div>
           <div class="flex-1 min-w-0 w-full">
-            <div class="bg-gray-100 text-gray-900 px-4 py-2 rounded-2xl rounded-bl-md shadow-sm border-l-4 border-purple-400 w-full">
+            <!-- 流式思考内容 -->
+            <div v-if="currentReasoningStreamContent" class="mb-1">
+              <div class="flex items-center gap-2 text-xs text-purple-600 mb-1">
+                <Icon icon="lucide:sparkles" class="w-3.5 h-3.5 animate-pulse" />
+                <span class="font-medium">正在思考...</span>
+              </div>
+              <div class="bg-gradient-to-r from-purple-50/80 to-purple-50/40 px-4 py-3 rounded-t-2xl text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">
+                {{ currentReasoningStreamContent }}
+              </div>
+            </div>
+            <div
+              :class="[
+                'text-gray-900 px-4 py-3 shadow-sm w-full',
+                currentReasoningStreamContent
+                  ? 'bg-gradient-to-r from-purple-50/40 to-gray-50/80 rounded-b-2xl rounded-tr-2xl'
+                  : 'bg-gray-50 rounded-2xl rounded-bl-md'
+              ]"
+            >
               <MarkdownRenderer
                 :content="currentStreamContent"
                 theme="auto"
                 size="sm"
               />
-              <span class="inline-block w-2 h-4 bg-purple-400 animate-pulse rounded"></span>
+              <span class="inline-block w-2 h-4 bg-purple-400 animate-pulse rounded ml-1"></span>
             </div>
             <!-- 操作按钮行 -->
             <div class="flex items-center gap-2 mt-2 ml-2">
@@ -267,7 +325,8 @@ const props = defineProps<Props>()
 
 // 使用AI聊天组合式函数
 const {
-  sendMessage
+  sendMessage,
+  isDeepThinking: globalIsDeepThinking
 } = useAIChat()
 
 // 使用聊天store
@@ -292,10 +351,38 @@ const currentStore = computed(() => {
 const messages = computed(() => currentStore.value?.messages || [])
 const isStreaming = computed(() => currentStore.value?.isStreaming || false)
 const currentStreamContent = computed(() => currentStore.value?.currentStreamContent || '')
+const currentReasoningStreamContent = computed(() => currentStore.value?.currentReasoningStreamContent || '')
 const error = computed(() => currentStore.value?.error || null)
+const isDeepThinking = computed(() => currentStore.value?.isDeepThinking || false)
 
 // 获取预设问题
 const presetQuestions = computed(() => currentStore.value?.presetQuestions || [])
+
+// 思考内容折叠状态
+const collapsedReasoningIndices = ref<Set<number>>(new Set())
+
+// 切换思考内容折叠状态
+const toggleReasoningCollapse = (index: number) => {
+  if (collapsedReasoningIndices.value.has(index)) {
+    collapsedReasoningIndices.value.delete(index)
+  } else {
+    collapsedReasoningIndices.value.add(index)
+  }
+}
+
+// 检查思考内容是否折叠
+const isReasoningCollapsed = (index: number) => {
+  return collapsedReasoningIndices.value.has(index)
+}
+
+// 切换深度思考模式
+const toggleDeepThinking = () => {
+  if (currentStore.value) {
+    currentStore.value.toggleDeepThinking()
+    // 同时更新全局状态
+    globalIsDeepThinking.value = currentStore.value.isDeepThinking
+  }
+}
 
 // 本地状态
 const inputMessage = ref('')
@@ -387,20 +474,6 @@ const handleKeydown = (e: KeyboardEvent) => {
     handleSend()
   }
 }
-
-// 自动滚动到底部
-const scrollToBottom = async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
-}
-
-// 监听消息变化，自动滚动
-watch([messages, currentStreamContent], scrollToBottom, { deep: true })
-
-// 监听流式输出变化
-watch(currentStreamContent, scrollToBottom)
 
 // 组件挂载时加载存储的聊天记录
 onMounted(() => {
