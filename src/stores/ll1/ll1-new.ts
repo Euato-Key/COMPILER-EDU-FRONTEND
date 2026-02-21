@@ -141,7 +141,7 @@ export const useLL1Store = defineStore('ll1', () => {
                 return { isValid: false, errorMessage: '输入不能包含中文字符！', processedProductions: [] }
             }
 
-            let processedText = inputText.replace(/ +/g, '')
+            const processedText = inputText.replace(/ +/g, '')
             processedProductions = processedText.split('\n').filter((item) => item.trim() !== '')
 
             const productionSet = new Set(processedProductions)
@@ -287,7 +287,7 @@ export const useLL1Store = defineStore('ll1', () => {
     }
 
     const analyzeInputString = async () => {
-        let cleanedInputString = inputString.value.replace(/ +/g, '')
+        const cleanedInputString = inputString.value.replace(/ +/g, '')
         if (/^\s*$/.test(cleanedInputString)) {
             commonStore.setError('请先输入字符串')
             return false

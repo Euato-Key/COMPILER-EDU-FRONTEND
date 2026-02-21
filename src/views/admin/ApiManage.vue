@@ -77,6 +77,31 @@
             <Icon icon="lucide:shield-check" class="w-4 h-4" />
             <span>API 密钥已加密存储，仅显示掩码版本以确保安全</span>
           </div>
+
+          <!-- 未配置时的提示 -->
+          <div
+            v-if="!currentApiKey || currentApiKey === '未配置'"
+            class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+          >
+            <div class="flex items-start gap-3">
+              <Icon icon="lucide:info" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p class="text-sm text-blue-800 font-medium mb-1">还没有 API 密钥？</p>
+                <p class="text-sm text-blue-600 mb-2">
+                  前往 DeepSeek 开放平台获取您的 API 密钥，即可开始使用 AI 功能。
+                </p>
+                <a
+                  href="https://platform.deepseek.com/api_keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-800 font-medium hover:underline"
+                >
+                  <Icon icon="lucide:external-link" class="w-4 h-4" />
+                  前往 DeepSeek 官网获取密钥 →
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 余额查询 -->

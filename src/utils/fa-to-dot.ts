@@ -25,7 +25,7 @@ export function faToDot(nodes: any[], edges: any[]): string {
         const isInitial = node.data?.isInitial
         const isFinal = node.data?.isFinal
 
-        let attributes: string[] = []
+        const attributes: string[] = []
 
         // 形状：终态使用双圈
         if (isFinal) {

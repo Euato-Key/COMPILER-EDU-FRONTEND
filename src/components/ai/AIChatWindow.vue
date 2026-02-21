@@ -13,6 +13,13 @@
       </div>
       <div class="flex items-center gap-2">
         <button
+          @click="toggleFullscreen"
+          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-sm"
+          :title="isFullscreen ? '退出全屏' : '全屏模式'"
+        >
+          <Icon :icon="isFullscreen ? 'lucide:minimize-2' : 'lucide:maximize-2'" class="w-4 h-4" />
+        </button>
+        <button
           @click="handleClearChat"
           class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-sm"
           title="清空聊天记录"
@@ -32,8 +39,7 @@
     <!-- 聊天消息区域 -->
     <div
       ref="messagesContainer"
-      class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 w-full"
-      style="max-height: calc(100vh - 300px);"
+      class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 w-full messages-container"
     >
       <!-- 欢迎消息 -->
       <div v-if="messages.length === 0" class="text-center py-8">
@@ -72,9 +78,18 @@
           :style="{ animationDelay: `${index * 100}ms` }"
         >
           <!-- 用户消息 -->
-          <div v-if="message.role === 'user'" class="flex items-end gap-2 max-w-[80%] animate-fade-in">
-            <div class="theme-btn-primary text-white px-4 py-2 rounded-2xl rounded-br-md flex-1 min-w-0 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
-              <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
+          <div v-if="message.role === 'user'" class="flex items-end gap-2 max-w-[80%] animate-fade-in group">
+            <div class="flex items-end gap-1">
+              <button
+                @click="deleteMessage(index)"
+                class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200 opacity-0 group-hover:opacity-100"
+                title="删除此消息"
+              >
+                <Icon icon="lucide:trash-2" class="w-3.5 h-3.5" />
+              </button>
+              <div class="theme-btn-primary text-white px-4 py-2 rounded-2xl rounded-br-md flex-1 min-w-0 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
+              </div>
             </div>
             <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
               <Icon icon="lucide:user-circle" class="w-4 h-4 text-white" />
@@ -82,7 +97,7 @@
           </div>
 
           <!-- AI消息 -->
-          <div v-else-if="message.role === 'assistant'" class="flex items-start gap-2 w-full animate-fade-in">
+          <div v-else-if="message.role === 'assistant'" class="flex items-start gap-2 w-full animate-fade-in group">
             <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
               <Icon icon="lucide:brain" class="w-4 h-4 text-white animate-pulse" />
             </div>
@@ -102,6 +117,13 @@
                   title="复制原始Markdown"
                 >
                   <Icon icon="lucide:copy" class="w-4 h-4" />
+                </button>
+                <button
+                  @click="deleteMessage(index)"
+                  class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200"
+                  title="删除此消息"
+                >
+                  <Icon icon="lucide:trash-2" class="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -170,15 +192,15 @@
     </div>
 
     <!-- 输入区域 -->
-    <div class="border-t border-gray-200 p-4">
-      <div class="flex gap-2">
-        <div class="flex-1 relative">
+    <div class="border-t border-gray-200 p-4 input-area">
+      <div class="flex gap-2 h-full items-stretch">
+        <div class="flex-1 relative h-full">
           <textarea
             v-model="inputMessage"
             @keydown="handleKeydown"
             placeholder=""
-            class="w-full px-3 py-2 pr-24 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-theme-primary focus:border-transparent transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
-            :rows="inputRows"
+            class="w-full h-full px-3 py-2 pr-24 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-theme-primary focus:border-transparent transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
+            :rows="isFullscreen ? 6 : inputRows"
             :disabled="isStreaming"
           ></textarea>
           <div class="absolute bottom-2 right-2 text-xs text-gray-400">
@@ -238,14 +260,10 @@ const copyToClipboard = async (text: string) => {
 interface Props {
   pageType: string
   context: ChatContext
+  isFullscreen?: boolean
 }
 
 const props = defineProps<Props>()
-
-// Emits
-defineEmits<{
-  close: []
-}>()
 
 // 使用AI聊天组合式函数
 const {
@@ -283,6 +301,17 @@ const presetQuestions = computed(() => currentStore.value?.presetQuestions || []
 const inputMessage = ref('')
 const messagesContainer = ref<HTMLElement>()
 const showCopySuccess = ref(false)
+
+// 全屏切换方法
+const toggleFullscreen = () => {
+  emit('toggleFullscreen', !props.isFullscreen)
+}
+
+// 定义emit函数
+const emit = defineEmits<{
+  close: []
+  toggleFullscreen: [isFullscreen: boolean]
+}>()
 
 // 计算属性
 const inputRows = computed(() => {
@@ -337,6 +366,14 @@ const handleClearChat = () => {
   }
 }
 
+// 删除单条消息
+const deleteMessage = (index: number) => {
+  if (currentStore.value) {
+    currentStore.value.deleteMessage(index)
+    currentStore.value.saveToStorage()
+  }
+}
+
 // 处理键盘事件
 const handleKeydown = (e: KeyboardEvent) => {
   // Shift+Enter 换行
@@ -380,6 +417,14 @@ onMounted(() => {
   min-height: 500px;
   max-height: calc(100vh - 120px);
   height: 100%;
+}
+
+/* 全屏模式下覆盖样式 */
+:global(.ai-chat-fullscreen) .ai-chat-window {
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
 }
 
 /* 自定义滚动条 */
@@ -492,5 +537,33 @@ onMounted(() => {
   max-width: 100%;
   overflow-x: auto;
   display: block;
+}
+
+/* 消息容器样式 */
+.messages-container {
+  max-height: calc(100vh - 300px);
+}
+
+/* 全屏模式下的消息容器 - 让内容区域填满剩余空间 */
+:global(.ai-chat-fullscreen) .messages-container {
+  max-height: none !important;
+  height: auto !important;
+  flex: 1 1 auto !important;
+}
+
+/* 全屏模式下输入区域样式 */
+:global(.ai-chat-fullscreen) .input-area {
+  flex: 0 0 auto;
+  min-height: 180px;
+  max-height: 250px;
+}
+
+:global(.ai-chat-fullscreen) .input-area textarea {
+  min-height: 140px !important;
+}
+
+/* 全屏模式下隐藏外层滚动条，只保留消息区域滚动条 */
+:global(.ai-chat-fullscreen) {
+  overflow: hidden !important;
 }
 </style>

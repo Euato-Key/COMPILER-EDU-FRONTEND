@@ -311,6 +311,12 @@ DFA最小化算法（Hopcroft算法）：
     lastContext.value = null
   }
 
+  const deleteMessage = (index: number) => {
+    if (index >= 0 && index < messages.value.length) {
+      messages.value.splice(index, 1)
+    }
+  }
+
   const incrementUnreadCount = () => {
     unreadCount.value++
     hasUnreadMessages.value = true
@@ -390,6 +396,7 @@ DFA最小化算法（Hopcroft算法）：
     setStreaming,
     setError,
     clearChat,
+    deleteMessage,
     incrementUnreadCount,
     resetUnreadCount,
     updateContext,

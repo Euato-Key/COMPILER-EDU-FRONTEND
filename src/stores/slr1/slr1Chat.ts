@@ -181,6 +181,12 @@ GOTO表：
     lastContext.value = null
   }
 
+  const deleteMessage = (index: number) => {
+    if (index >= 0 && index < messages.value.length) {
+      messages.value.splice(index, 1)
+    }
+  }
+
   const incrementUnreadCount = () => {
     unreadCount.value++
     hasUnreadMessages.value = true
@@ -253,6 +259,7 @@ GOTO表：
     setStreaming,
     setError,
     clearChat,
+    deleteMessage,
     incrementUnreadCount,
     resetUnreadCount,
     updateContext,

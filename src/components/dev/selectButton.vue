@@ -12,7 +12,7 @@ const props = defineProps({
 })
 const emit = defineEmits(["update:text","focus-input"])
 
-let writingState:Ref<boolean> = ref(false)
+const writingState:Ref<boolean> = ref(false)
 const handerFocus = ()=>{
   emit('focus-input')
   writingState.value = true

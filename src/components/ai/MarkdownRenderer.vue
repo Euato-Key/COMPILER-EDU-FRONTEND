@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onUnmounted } from 'vue'
+import { computed, ref, watch, nextTick, onUnmounted, onMounted } from 'vue'
 import MarkdownIt from 'markdown-it'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
@@ -203,7 +203,14 @@ md.renderer.rules.fence = function (tokens, idx) {
 
 
 // 防抖定时器
-let renderTimeout: NodeJS.Timeout | null = null
+let renderTimeout: ReturnType<typeof setTimeout> | null = null
+
+// 已渲染的DOT图表集合，避免重复渲染
+const renderedDotElements = new Set<HTMLElement>()
+
+// 重试计数器，用于处理渲染失败的情况
+const renderRetryCount = new Map<HTMLElement, number>()
+const MAX_RETRY_COUNT = 3
 
 // 渲染图表的函数
 const renderDiagrams = async () => {
@@ -217,10 +224,15 @@ const renderDiagrams = async () => {
       : document.querySelectorAll('.ai-chat-widget .mermaid, .ai-chat-window .mermaid')
 
     for (const element of mermaidElements) {
-      if (element instanceof HTMLElement) {
-        await mermaid.run({
-          nodes: [element]
-        })
+      if (element instanceof HTMLElement && !element.hasAttribute('data-processed')) {
+        try {
+          await mermaid.run({
+            nodes: [element]
+          })
+          element.setAttribute('data-processed', 'true')
+        } catch (mermaidError) {
+          console.warn('Mermaid图表渲染错误:', mermaidError)
+        }
       }
     }
 
@@ -230,13 +242,54 @@ const renderDiagrams = async () => {
       : document.querySelectorAll('.ai-chat-widget .dot-graph, .ai-chat-window .dot-graph')
 
     for (const element of dotElements) {
-      if (element instanceof HTMLElement) {
+      if (element instanceof HTMLElement && !renderedDotElements.has(element)) {
         const dotCode = element.textContent || ''
-        if (dotCode.trim()) {
-          const vizInstance = await viz()
-          const result = await vizInstance.renderSVGElement(dotCode)
-          element.innerHTML = ''
-          element.appendChild(result)
+        // 检查是否包含有效的DOT代码
+        if (dotCode.trim() && (dotCode.includes('digraph') || dotCode.includes('graph'))) {
+          // 获取当前重试次数
+          const currentRetry = renderRetryCount.get(element) || 0
+          
+          if (currentRetry >= MAX_RETRY_COUNT) {
+            // 超过最大重试次数，显示错误
+            console.warn('DOT图表渲染超过最大重试次数')
+            element.innerHTML = `<div class="dot-render-error" style="color: #dc2626; padding: 8px; font-size: 12px; border: 1px solid #fecaca; border-radius: 4px; background: #fef2f2;">
+              <strong>图表渲染失败</strong><br>
+              超过最大重试次数<br>
+              <button onclick="this.nextElementSibling.style.display='block';this.style.display='none'" style="margin-top: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer;">显示原始代码</button>
+              <pre style="display:none; margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 4px; overflow-x: auto;"><code>${dotCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+            </div>`
+            renderedDotElements.add(element) // 标记为已处理，避免无限重试
+            continue
+          }
+          
+          try {
+            const vizInstance = await viz()
+            const result = await vizInstance.renderSVGElement(dotCode)
+            element.innerHTML = ''
+            element.appendChild(result)
+            renderedDotElements.add(element)
+            renderRetryCount.delete(element) // 成功后清除重试计数
+          } catch (dotError) {
+            console.warn('DOT图表渲染错误:', dotError)
+            renderRetryCount.set(element, currentRetry + 1)
+            
+            // 延迟后重试
+            if (currentRetry + 1 < MAX_RETRY_COUNT) {
+              setTimeout(() => {
+                renderedDotElements.delete(element) // 允许重新渲染
+                renderDiagrams()
+              }, 1000 * (currentRetry + 1)) // 递增延迟
+            } else {
+              // 超过最大重试次数，显示错误信息
+              element.innerHTML = `<div class="dot-render-error" style="color: #dc2626; padding: 8px; font-size: 12px; border: 1px solid #fecaca; border-radius: 4px; background: #fef2f2;">
+                <strong>图表渲染失败</strong><br>
+                错误: ${dotError instanceof Error ? dotError.message : '未知错误'}<br>
+                <button onclick="this.nextElementSibling.style.display='block';this.style.display='none'" style="margin-top: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer;">显示原始代码</button>
+                <pre style="display:none; margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 4px; overflow-x: auto;"><code>${dotCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+              </div>`
+              renderedDotElements.add(element)
+            }
+          }
         }
       }
     }
@@ -253,6 +306,11 @@ const renderContent = async () => {
   }
 
   try {
+    // 清理之前渲染的DOT图表记录（因为内容已更新）
+    renderedDotElements.clear()
+    // 清理重试计数器
+    renderRetryCount.clear()
+
     // 先处理数学公式，用特殊标记替换
     const processedContent = props.content
       .replace(/\\\(([\s\S]*?)\\\)/g, 'MATH_INLINE_START$1MATH_INLINE_END')
@@ -301,9 +359,10 @@ const renderContent = async () => {
     }
 
     // 延迟渲染图表，等待内容稳定
+    // 使用更长的延迟确保DOM完全更新
     renderTimeout = setTimeout(async () => {
       await renderDiagrams()
-    }, 500) // 500ms延迟，等待流式生成完成
+    }, 800) // 800ms延迟，等待流式生成完成
 
   } catch (error) {
     console.error('Markdown渲染错误:', error)
@@ -315,12 +374,16 @@ const renderContent = async () => {
 // 监听内容变化
 watch(() => props.content, renderContent, { immediate: true })
 
-// 组件卸载时清理定时器
+// 组件卸载时清理
 onUnmounted(() => {
   if (renderTimeout) {
     clearTimeout(renderTimeout)
     renderTimeout = null
   }
+  // 清理已渲染的DOT图表记录
+  renderedDotElements.clear()
+  // 清理重试计数器
+  renderRetryCount.clear()
 })
 
 // 复制代码功能

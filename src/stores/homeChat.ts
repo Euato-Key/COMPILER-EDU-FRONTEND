@@ -197,6 +197,12 @@ export const useHomeChatStore = defineStore('home-chat', () => {
     lastContext.value = null
   }
 
+  const deleteMessage = (index: number) => {
+    if (index >= 0 && index < messages.value.length) {
+      messages.value.splice(index, 1)
+    }
+  }
+
   const incrementUnreadCount = () => {
     unreadCount.value++
     hasUnreadMessages.value = true
@@ -269,6 +275,7 @@ export const useHomeChatStore = defineStore('home-chat', () => {
     setStreaming,
     setError,
     clearChat,
+    deleteMessage,
     incrementUnreadCount,
     resetUnreadCount,
     updateContext,

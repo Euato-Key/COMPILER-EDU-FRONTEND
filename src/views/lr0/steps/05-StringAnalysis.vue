@@ -1074,7 +1074,7 @@ const validateCell = (index: number, field: 'stateStack' | 'symbolStack' | 'inpu
     const action = getActionValue(Number(state), symbol)
 
     // 构建提示信息
-    let hintInfo = `第${index}步${fieldNames[field]}填写错误，正确值应为: ${correctValue}`
+    const hintInfo = `第${index}步${fieldNames[field]}填写错误，正确值应为: ${correctValue}`
     let hintDetails = ''
 
     if (action.startsWith('s')) {

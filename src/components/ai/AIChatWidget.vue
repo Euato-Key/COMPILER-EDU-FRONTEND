@@ -42,15 +42,21 @@
       leave-active-class="transition-all duration-300 ease-in"
       leave-from-class="opacity-100 scale-100 translate-y-0 rotate-0"
       leave-to-class="opacity-0 scale-90 translate-y-8 -rotate-2"
+      :class="{ 'fullscreen-transition': isFullscreen }"
     >
       <div
         v-if="isExpanded"
         ref="chatContainer"
-        class="fixed top-20 left-4 z-50 theme-content-bg border rounded-lg shadow-2xl theme-transition"
-        :style="chatWindowStyle"
+        class="fixed z-50 theme-content-bg border rounded-lg shadow-2xl theme-transition"
+        :class="isFullscreen ? 'ai-chat-fullscreen' : 'top-20 left-4'"
+        :style="isFullscreen ? fullscreenStyle : chatWindowStyle"
       >
-        <!-- 调整大小手柄 -->
-        <div class="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize hover:bg-gray-100 rounded-tl-lg transition-colors duration-200" @mousedown="startResize">
+        <!-- 调整大小手柄 - 全屏时隐藏 -->
+        <div
+          v-if="!isFullscreen"
+          class="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize hover:bg-gray-100 rounded-tl-lg transition-colors duration-200"
+          @mousedown="startResize"
+        >
           <div class="absolute bottom-1 right-1 w-4 h-4 border-r-2 border-b-2 border-gray-400 hover:border-gray-600 transition-colors duration-200"></div>
         </div>
 
@@ -58,7 +64,9 @@
         <AIChatWindow
           :page-type="pageType"
           :context="props.context"
+          :is-fullscreen="isFullscreen"
           @close="toggleChat"
+          @toggleFullscreen="handleToggleFullscreen"
         />
       </div>
     </Transition>
@@ -89,6 +97,7 @@ const chatWidth = ref(600)
 const chatHeight = ref(Math.min(window.innerHeight - 120, 800)) // 动态计算初始高度
 const unreadCount = ref(0)
 const hasUnreadMessages = ref(false)
+const isFullscreen = ref(false)
 
 // 计算属性
 const chatWindowStyle = computed(() => ({
@@ -98,6 +107,17 @@ const chatWindowStyle = computed(() => ({
   minHeight: '500px',
   maxWidth: '90vw',
   maxHeight: 'calc(100vh - 120px)' // 减去顶部空间，更好地利用屏幕高度
+}))
+
+// 全屏样式
+const fullscreenStyle = computed(() => ({
+  width: '100vw',
+  height: '100vh',
+  top: '0',
+  left: '0',
+  borderRadius: '0',
+  maxWidth: '100vw',
+  maxHeight: '100vh'
 }))
 
 // 方法
@@ -145,6 +165,11 @@ const handleNewMessage = () => {
     unreadCount.value++
     hasUnreadMessages.value = true
   }
+}
+
+// 处理全屏切换
+const handleToggleFullscreen = (fullscreen: boolean) => {
+  isFullscreen.value = fullscreen
 }
 
 // 监听键盘事件
@@ -214,5 +239,31 @@ watch(() => props.context, (newContext) => {
 /* 调整大小时的视觉反馈 */
 .ai-chat-widget .cursor-se-resize:active {
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 全屏模式样式 */
+.ai-chat-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* 确保全屏模式下内部内容正确填充 */
+.ai-chat-fullscreen :deep(.ai-chat-window) {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+}
+
+/* 全屏过渡动画 */
+.fullscreen-transition > div {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 </style>
