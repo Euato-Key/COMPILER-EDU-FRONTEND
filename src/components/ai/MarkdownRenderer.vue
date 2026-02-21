@@ -73,19 +73,114 @@ md.renderer.rules.table_close = function () {
   return '</table></div>'
 }
 
+// 生成缓存的 Mermaid 图表 HTML
+const renderCachedMermaid = (blockId: string, code: string, svg: string): string => {
+  const viewState = viewStateCache.get(blockId) || 'image'
+  const codeId = `code-${blockId}`
+
+  return `
+    <div class="mermaid-block-wrapper" id="${blockId}">
+      <div class="mermaid-header">
+        <div class="mermaid-tabs">
+          <button class="tab-button ${viewState === 'image' ? 'active' : ''}" onclick="switchMermaidView('${blockId}', 'image')" data-view="image">图片</button>
+          <button class="tab-button ${viewState === 'code' ? 'active' : ''}" onclick="switchMermaidView('${blockId}', 'code')" data-view="code">代码</button>
+        </div>
+        <div class="mermaid-actions">
+          <button class="action-button" onclick="downloadMermaidSVG('${blockId}')" title="下载图片">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7,10 12,15 17,10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+          <button class="action-button" onclick="copyMermaidContent('${blockId}')" title="复制">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <button class="action-button" onclick="fullscreenMermaid('${blockId}')" title="全屏查看">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15,3 21,3 21,9"></polyline>
+              <polyline points="9,21 3,21 3,15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="mermaid-container" data-view="image" style="display: ${viewState === 'image' ? 'block' : 'none'}">
+        ${svg}
+      </div>
+      <pre class="mermaid-code" data-view="code" style="display: ${viewState === 'code' ? 'block' : 'none'};"><code id="${codeId}">${code}</code></pre>
+    </div>
+  `
+}
+
+// 生成缓存的 DOT 图表 HTML
+const renderCachedDot = (blockId: string, code: string, svg: string): string => {
+  const viewState = viewStateCache.get(blockId) || 'image'
+  const codeId = `code-${blockId}`
+
+  return `
+    <div class="dot-block-wrapper" id="${blockId}">
+      <div class="dot-header">
+        <div class="dot-tabs">
+          <button class="tab-button ${viewState === 'image' ? 'active' : ''}" onclick="switchDotView('${blockId}', 'image')" data-view="image">图片</button>
+          <button class="tab-button ${viewState === 'code' ? 'active' : ''}" onclick="switchDotView('${blockId}', 'code')" data-view="code">代码</button>
+        </div>
+        <div class="dot-actions">
+          <button class="action-button" onclick="downloadDotSVG('${blockId}')" title="下载图片">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7,10 12,15 17,10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+          <button class="action-button" onclick="copyDotContent('${blockId}')" title="复制">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <button class="action-button" onclick="fullscreenDot('${blockId}')" title="全屏查看">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15,3 21,3 21,9"></polyline>
+              <polyline points="9,21 3,21 3,15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="dot-container" data-view="image" style="display: ${viewState === 'image' ? 'block' : 'none'}">
+        ${svg}
+      </div>
+      <pre class="dot-code" data-view="code" style="display: ${viewState === 'code' ? 'block' : 'none'};"><code id="${codeId}">${code}</code></pre>
+    </div>
+  `
+}
+
 // 自定义代码块渲染器
 md.renderer.rules.fence = function (tokens, idx) {
   const token = tokens[idx]
   const lang = token.info.trim()
   const code = token.content
 
-  // 生成唯一ID
+  // 生成唯一ID（用于普通代码块）
   const codeId = `code-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   // 处理 mermaid 代码块
   if (lang === 'mermaid') {
-    const mermaidId = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const blockId = `mermaid-block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const blockId = getStableId(code, 'mermaid')
+    const cacheKey = `mermaid-${blockId}`
+
+    // 如果有缓存的渲染结果，直接使用缓存
+    if (renderCache.has(cacheKey)) {
+      return renderCachedMermaid(blockId, code, renderCache.get(cacheKey)!)
+    }
+
+    // 否则返回待渲染的占位符
     return `
       <div class="mermaid-block-wrapper" id="${blockId}">
         <div class="mermaid-header">
@@ -118,7 +213,7 @@ md.renderer.rules.fence = function (tokens, idx) {
           </div>
         </div>
         <div class="mermaid-container" data-view="image">
-          <div class="mermaid" id="${mermaidId}">${code}</div>
+          <div class="mermaid" id="mermaid-${blockId}">${code}</div>
         </div>
         <pre class="mermaid-code" data-view="code" style="display: none;"><code id="${codeId}">${code}</code></pre>
       </div>
@@ -127,8 +222,15 @@ md.renderer.rules.fence = function (tokens, idx) {
 
   // 处理 DOT 代码块
   if (lang === 'dot') {
-    const dotId = `dot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const blockId = `dot-block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const blockId = getStableId(code, 'dot')
+    const cacheKey = `dot-${blockId}`
+
+    // 如果有缓存的渲染结果，直接使用缓存
+    if (renderCache.has(cacheKey)) {
+      return renderCachedDot(blockId, code, renderCache.get(cacheKey)!)
+    }
+
+    // 否则返回待渲染的占位符
     return `
       <div class="dot-block-wrapper" id="${blockId}">
         <div class="dot-header">
@@ -161,7 +263,7 @@ md.renderer.rules.fence = function (tokens, idx) {
           </div>
         </div>
         <div class="dot-container" data-view="image">
-          <div class="dot-graph" id="${dotId}">${code}</div>
+          <div class="dot-graph" id="dot-${blockId}">${code}</div>
         </div>
         <pre class="dot-code" data-view="code" style="display: none;"><code id="${codeId}">${code}</code></pre>
       </div>
@@ -205,14 +307,156 @@ md.renderer.rules.fence = function (tokens, idx) {
 // 防抖定时器
 let renderTimeout: ReturnType<typeof setTimeout> | null = null
 
-// 已渲染的DOT图表集合，避免重复渲染
-const renderedDotElements = new Set<HTMLElement>()
+// 已渲染的图表元素集合，避免重复渲染
+const renderedElements = new Set<HTMLElement>()
 
 // 重试计数器，用于处理渲染失败的情况
 const renderRetryCount = new Map<HTMLElement, number>()
 const MAX_RETRY_COUNT = 3
 
-// 渲染图表的函数
+// ==================== 图表缓存机制 ====================
+
+// 简单的字符串哈希函数
+const hashCode = (str: string): string => {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return Math.abs(hash).toString(36)
+}
+
+// 生成稳定的图表 ID
+const getStableId = (code: string, type: 'mermaid' | 'dot'): string => {
+  return `${type}-${hashCode(code.trim())}`
+}
+
+// 渲染结果缓存：代码哈希 -> SVG 字符串
+const renderCache = new Map<string, string>()
+
+// 用户视图状态缓存：图表 ID -> 当前视图（'image' | 'code'）
+const viewStateCache = new Map<string, 'image' | 'code'>()
+
+// ==================== 缓存机制结束 ====================
+
+// 检查内容是否包含完整的代码块（以```结尾）
+const hasCompleteCodeBlock = (content: string, lang: string): boolean => {
+  const regex = new RegExp('```\\s*' + lang + '\\s*\\n[\\s\\S]*?\\n```', 'g')
+  return regex.test(content)
+}
+
+// 提取完整的代码块内容
+const extractCompleteCodeBlocks = (content: string, lang: string): Array<{ code: string; fullMatch: string }> => {
+  const regex = new RegExp('```\\s*' + lang + '\\s*\\n([\\s\\S]*?)\\n```', 'g')
+  const results: Array<{ code: string; fullMatch: string }> = []
+  let match
+  while ((match = regex.exec(content)) !== null) {
+    results.push({ code: match[1].trim(), fullMatch: match[0] })
+  }
+  return results
+}
+
+// 渲染单个 Mermaid 图表
+const renderMermaidElement = async (element: HTMLElement) => {
+  if (element.hasAttribute('data-processed') || renderedElements.has(element)) {
+    return
+  }
+
+  const code = element.textContent || ''
+  // 检查代码是否完整（包含必要的mermaid语法）
+  if (!code.trim() || !(code.includes('graph') || code.includes('flowchart') || code.includes('sequenceDiagram') || code.includes('classDiagram') || code.includes('stateDiagram') || code.includes('gantt') || code.includes('pie') || code.includes('erDiagram'))) {
+    return
+  }
+
+  // 生成缓存key
+  const blockId = getStableId(code, 'mermaid')
+  const cacheKey = `mermaid-${blockId}`
+
+  // 如果已经缓存，跳过渲染（fence渲染器会使用缓存）
+  if (renderCache.has(cacheKey)) {
+    element.setAttribute('data-processed', 'true')
+    renderedElements.add(element)
+    return
+  }
+
+  // 标记为已处理（无论成功与否，只尝试一次）
+  renderedElements.add(element)
+
+  try {
+    await mermaid.run({ nodes: [element] })
+    element.setAttribute('data-processed', 'true')
+
+    // 缓存渲染结果
+    const svg = element.innerHTML
+    if (svg && svg.includes('<svg')) {
+      renderCache.set(cacheKey, svg)
+    }
+  } catch (mermaidError) {
+    console.warn('Mermaid图表渲染错误:', mermaidError)
+    // 直接显示错误，不重试
+    element.innerHTML = `<div class="diagram-error" style="color: #dc2626; padding: 16px; font-size: 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; text-align: center;">
+      <strong style="font-size: 16px;">Mermaid 语法错误</strong><br>
+      <span style="color: #991b1b; margin-top: 8px; display: inline-block;">渲染失败，请检查图表语法</span>
+    </div>`
+  }
+}
+
+// 渲染单个 DOT 图表
+const renderDotElement = async (element: HTMLElement) => {
+  if (renderedElements.has(element)) {
+    return
+  }
+
+  const dotCode = element.textContent || ''
+  // 检查是否包含有效的DOT代码
+  if (!dotCode.trim() || !(dotCode.includes('digraph') || dotCode.includes('graph'))) {
+    return
+  }
+
+  // 检查DOT代码是否完整（有开必有合）
+  const openBraces = (dotCode.match(/{/g) || []).length
+  const closeBraces = (dotCode.match(/}/g) || []).length
+  if (openBraces !== closeBraces || openBraces === 0) {
+    // DOT代码不完整，跳过渲染
+    return
+  }
+
+  // 生成缓存key
+  const blockId = getStableId(dotCode, 'dot')
+  const cacheKey = `dot-${blockId}`
+
+  // 如果已经缓存，跳过渲染（fence渲染器会使用缓存）
+  if (renderCache.has(cacheKey)) {
+    renderedElements.add(element)
+    return
+  }
+
+  // 标记为已处理（无论成功与否，只尝试一次）
+  renderedElements.add(element)
+
+  try {
+    const vizInstance = await viz()
+    const result = await vizInstance.renderSVGElement(dotCode)
+    element.innerHTML = ''
+    element.appendChild(result)
+
+    // 缓存渲染结果
+    const svg = element.innerHTML
+    if (svg && svg.includes('<svg')) {
+      renderCache.set(cacheKey, svg)
+    }
+  } catch (dotError) {
+    console.warn('DOT图表渲染错误:', dotError)
+    // 直接显示错误，不重试
+    element.innerHTML = `<div class="diagram-error" style="color: #dc2626; padding: 16px; font-size: 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; text-align: center;">
+      <strong style="font-size: 16px;">Graphviz 语法错误</strong><br>
+      <span style="color: #991b1b; margin-top: 8px; display: inline-block;">渲染失败，请检查图表语法</span>
+    </div>`
+  }
+}
+
+// 渲染图表的函数 - 即时渲染完整图表
 const renderDiagrams = async () => {
   try {
     // 只渲染AI组件内部的图表，不渲染文档系统的图表
@@ -220,19 +464,12 @@ const renderDiagrams = async () => {
 
     // 渲染 mermaid 图表
     const mermaidElements = aiContainer
-      ? aiContainer.querySelectorAll('.mermaid')
-      : document.querySelectorAll('.ai-chat-widget .mermaid, .ai-chat-window .mermaid')
+      ? aiContainer.querySelectorAll('.mermaid:not([data-processed])')
+      : document.querySelectorAll('.ai-chat-widget .mermaid:not([data-processed]), .ai-chat-window .mermaid:not([data-processed])')
 
     for (const element of mermaidElements) {
-      if (element instanceof HTMLElement && !element.hasAttribute('data-processed')) {
-        try {
-          await mermaid.run({
-            nodes: [element]
-          })
-          element.setAttribute('data-processed', 'true')
-        } catch (mermaidError) {
-          console.warn('Mermaid图表渲染错误:', mermaidError)
-        }
+      if (element instanceof HTMLElement) {
+        await renderMermaidElement(element)
       }
     }
 
@@ -242,55 +479,8 @@ const renderDiagrams = async () => {
       : document.querySelectorAll('.ai-chat-widget .dot-graph, .ai-chat-window .dot-graph')
 
     for (const element of dotElements) {
-      if (element instanceof HTMLElement && !renderedDotElements.has(element)) {
-        const dotCode = element.textContent || ''
-        // 检查是否包含有效的DOT代码
-        if (dotCode.trim() && (dotCode.includes('digraph') || dotCode.includes('graph'))) {
-          // 获取当前重试次数
-          const currentRetry = renderRetryCount.get(element) || 0
-          
-          if (currentRetry >= MAX_RETRY_COUNT) {
-            // 超过最大重试次数，显示错误
-            console.warn('DOT图表渲染超过最大重试次数')
-            element.innerHTML = `<div class="dot-render-error" style="color: #dc2626; padding: 8px; font-size: 12px; border: 1px solid #fecaca; border-radius: 4px; background: #fef2f2;">
-              <strong>图表渲染失败</strong><br>
-              超过最大重试次数<br>
-              <button onclick="this.nextElementSibling.style.display='block';this.style.display='none'" style="margin-top: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer;">显示原始代码</button>
-              <pre style="display:none; margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 4px; overflow-x: auto;"><code>${dotCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-            </div>`
-            renderedDotElements.add(element) // 标记为已处理，避免无限重试
-            continue
-          }
-          
-          try {
-            const vizInstance = await viz()
-            const result = await vizInstance.renderSVGElement(dotCode)
-            element.innerHTML = ''
-            element.appendChild(result)
-            renderedDotElements.add(element)
-            renderRetryCount.delete(element) // 成功后清除重试计数
-          } catch (dotError) {
-            console.warn('DOT图表渲染错误:', dotError)
-            renderRetryCount.set(element, currentRetry + 1)
-            
-            // 延迟后重试
-            if (currentRetry + 1 < MAX_RETRY_COUNT) {
-              setTimeout(() => {
-                renderedDotElements.delete(element) // 允许重新渲染
-                renderDiagrams()
-              }, 1000 * (currentRetry + 1)) // 递增延迟
-            } else {
-              // 超过最大重试次数，显示错误信息
-              element.innerHTML = `<div class="dot-render-error" style="color: #dc2626; padding: 8px; font-size: 12px; border: 1px solid #fecaca; border-radius: 4px; background: #fef2f2;">
-                <strong>图表渲染失败</strong><br>
-                错误: ${dotError instanceof Error ? dotError.message : '未知错误'}<br>
-                <button onclick="this.nextElementSibling.style.display='block';this.style.display='none'" style="margin-top: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer;">显示原始代码</button>
-                <pre style="display:none; margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 4px; overflow-x: auto;"><code>${dotCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-              </div>`
-              renderedDotElements.add(element)
-            }
-          }
-        }
+      if (element instanceof HTMLElement) {
+        await renderDotElement(element)
       }
     }
   } catch (error) {
@@ -306,11 +496,6 @@ const renderContent = async () => {
   }
 
   try {
-    // 清理之前渲染的DOT图表记录（因为内容已更新）
-    renderedDotElements.clear()
-    // 清理重试计数器
-    renderRetryCount.clear()
-
     // 先处理数学公式，用特殊标记替换
     const processedContent = props.content
       .replace(/\\\(([\s\S]*?)\\\)/g, 'MATH_INLINE_START$1MATH_INLINE_END')
@@ -350,7 +535,7 @@ const renderContent = async () => {
 
     renderedContent.value = finalHtml
 
-    // 等待DOM更新后执行后续操作
+    // 等待DOM更新
     await nextTick()
 
     // 清除之前的定时器
@@ -358,11 +543,13 @@ const renderContent = async () => {
       clearTimeout(renderTimeout)
     }
 
-    // 延迟渲染图表，等待内容稳定
-    // 使用更长的延迟确保DOM完全更新
+    // 立即渲染图表（不等待，实现即时渲染）
+    await renderDiagrams()
+
+    // 设置一个较短的延迟再次尝试渲染，处理可能的异步加载问题
     renderTimeout = setTimeout(async () => {
       await renderDiagrams()
-    }, 800) // 800ms延迟，等待流式生成完成
+    }, 100)
 
   } catch (error) {
     console.error('Markdown渲染错误:', error)
@@ -380,8 +567,8 @@ onUnmounted(() => {
     clearTimeout(renderTimeout)
     renderTimeout = null
   }
-  // 清理已渲染的DOT图表记录
-  renderedDotElements.clear()
+  // 清理已渲染的图表记录
+  renderedElements.clear()
   // 清理重试计数器
   renderRetryCount.clear()
 })
@@ -426,6 +613,9 @@ const switchMermaidView = (blockId: string, view: 'image' | 'code') => {
     return
   }
 
+  // 保存用户视图状态
+  viewStateCache.set(blockId, view)
+
   // 切换标签状态
   const tabs = block.querySelectorAll('.tab-button')
   tabs.forEach(tab => {
@@ -441,22 +631,11 @@ const switchMermaidView = (blockId: string, view: 'image' | 'code') => {
     if (container instanceof HTMLElement) {
       if (container.getAttribute('data-view') === view) {
         container.style.display = 'block'
-        console.log('Showing container:', container.className, 'for view:', view)
       } else {
         container.style.display = 'none'
-        console.log('Hiding container:', container.className, 'for view:', view)
       }
     }
   })
-
-  // 确保代码内容存在
-  if (view === 'code') {
-    const codeContainer = block.querySelector('.mermaid-code')
-    const codeElement = block.querySelector('.mermaid-code code')
-    if (codeContainer && codeElement) {
-      console.log('Code content:', codeElement.textContent)
-    }
-  }
 }
 
 const downloadMermaidSVG = async (blockId: string) => {
@@ -554,6 +733,9 @@ const switchDotView = (blockId: string, view: 'image' | 'code') => {
     return
   }
 
+  // 保存用户视图状态
+  viewStateCache.set(blockId, view)
+
   // 切换标签状态
   const tabs = block.querySelectorAll('.tab-button')
   tabs.forEach(tab => {
@@ -569,22 +751,11 @@ const switchDotView = (blockId: string, view: 'image' | 'code') => {
     if (container instanceof HTMLElement) {
       if (container.getAttribute('data-view') === view) {
         container.style.display = 'block'
-        console.log('Showing container:', container.className, 'for view:', view)
       } else {
         container.style.display = 'none'
-        console.log('Hiding container:', container.className, 'for view:', view)
       }
     }
   })
-
-  // 确保代码内容存在
-  if (view === 'code') {
-    const codeContainer = block.querySelector('.dot-code')
-    const codeElement = block.querySelector('.dot-code code')
-    if (codeContainer && codeElement) {
-      console.log('Code content:', codeElement.textContent)
-    }
-  }
 }
 
 const downloadDotSVG = async (blockId: string) => {

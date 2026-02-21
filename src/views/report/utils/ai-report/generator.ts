@@ -18,6 +18,7 @@ import { sendAIChat } from '@/api/ai'
 const DEFAULT_MODEL = 'deepseek-chat'
 const DEFAULT_TEMPERATURE = 0.3
 const DEFAULT_MAX_TOKENS = 6000
+const DEFAULT_THINKING = true  // 默认开启深度思考
 
 /**
  * 生成AI报告
@@ -131,7 +132,7 @@ function formatErrorLogs(errorLogs: any[]): string {
 async function callAIAPI(
   prompt: string,
   moduleType: string,
-  modelParams?: { temperature?: number; maxTokens?: number }
+  modelParams?: { temperature?: number; maxTokens?: number; thinking?: boolean }
 ): Promise<string> {
   const response = await sendAIChat({
     messages: [
@@ -148,6 +149,7 @@ async function callAIAPI(
     model: DEFAULT_MODEL,
     temperature: modelParams?.temperature ?? DEFAULT_TEMPERATURE,
     max_tokens: modelParams?.maxTokens ?? DEFAULT_MAX_TOKENS,
+    thinking: (modelParams?.thinking ?? DEFAULT_THINKING) ? { type: 'enabled' } : undefined,
     response_format: { type: 'json_object' },
     module: moduleType,
   })
@@ -156,6 +158,7 @@ async function callAIAPI(
     throw new Error('AI 请求失败')
   }
 
+  // 只取正式回答内容，忽略 reasoning_content
   return response.choices?.[0]?.message?.content || ''
 }
 

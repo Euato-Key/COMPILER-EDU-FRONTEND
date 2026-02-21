@@ -72,6 +72,8 @@ export interface AIReportGenerateOptions {
   modelParams?: {
     temperature?: number
     maxTokens?: number
+    // 是否开启深度思考（默认开启）
+    thinking?: boolean
   }
 }
 
