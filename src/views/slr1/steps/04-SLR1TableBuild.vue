@@ -151,6 +151,8 @@
             @validation-complete="handleValidation"
             @step-complete="handleStepComplete"
             @cell-blur="handleCellBlur"
+            @cell-error="handleCellError"
+            @cell-correct="handleCellCorrect"
           />
         </div>
         <div v-else-if="!isDataReady && tableProps" class="text-center py-12">
@@ -453,6 +455,30 @@ const handleCellBlur = (newActionTable: Record<string, string>, newGotoTable: Re
   // 更新本地响应式数据，watch 会自动触发保存
   userActionTable.value = { ...newActionTable }
   userGotoTable.value = { ...newGotoTable }
+}
+
+// 处理单元格错误事件 - 实时保存错误
+const handleCellError = (error: { key: string; type: 'action' | 'goto'; userValue: string; correctValue: string }) => {
+  const [state, symbol] = error.key.split(',')
+  slr1Store.addErrorLog({
+    step: 'step4',
+    type: error.type === 'action' ? 'actionTable' : 'gotoTable',
+    location: {
+      row: state,
+      col: symbol,
+      fieldKey: `${error.type}-${error.key}`
+    },
+    wrongValue: error.userValue,
+    correctValue: error.correctValue,
+    hint: '答案错误'
+  })
+}
+
+// 处理单元格正确事件 - 可以在这里清除已纠正的错误（如果需要）
+const handleCellCorrect = (key: string, type: 'action' | 'goto') => {
+  // 可选：当用户纠正错误后，从错误日志中移除该错误
+  // 目前保持简单，不主动移除，因为 addErrorLog 有去重逻辑
+  console.log('单元格回答正确:', key, type)
 }
 
 // 处理步骤完成状态

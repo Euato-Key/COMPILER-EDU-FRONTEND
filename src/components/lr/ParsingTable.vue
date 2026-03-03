@@ -322,6 +322,8 @@ const emit = defineEmits<{
   'validation-complete': [result: ValidationResult & { userActionTable?: Record<string, string>; userGotoTable?: Record<string, string> }]
   'step-complete': [isComplete: boolean]
   'cell-blur': [userActionTable: Record<string, string>, userGotoTable: Record<string, string>]
+  'cell-error': [error: { key: string; type: 'action' | 'goto'; userValue: string; correctValue: string }]
+  'cell-correct': [key: string, type: 'action' | 'goto']
 }>()
 
 // 响应式数据
@@ -382,6 +384,21 @@ const isTableComplete = computed(() => {
 const handleCellBlur = (key: string, type: 'action' | 'goto') => {
   validateCell(key, type)
   emit('cell-blur', { ...userInputs.actions }, { ...userInputs.gotos })
+
+  // 实时保存错误 - 如果验证结果为错误，发送错误事件
+  const result = type === 'action' ? validationResults.actions[key] : validationResults.gotos[key]
+  if (result && result.type === 'incorrect') {
+    const userInput = (type === 'action' ? userInputs.actions[key] : userInputs.gotos[key]) || ''
+    emit('cell-error', {
+      key,
+      type,
+      userValue: userInput,
+      correctValue: result.correctAnswer || ''
+    })
+  } else if (result && result.type === 'correct') {
+    // 如果答对了，发送正确事件，让父组件可以清除该错误
+    emit('cell-correct', key, type)
+  }
 }
 
 // 验证单个单元格
