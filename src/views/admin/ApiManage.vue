@@ -4,7 +4,7 @@
       <!-- 标题 -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-slate-800 mb-2">API 密钥管理</h1>
-        <p class="text-slate-500">管理 DeepSeek API 密钥、查看 Token 用量和管理员密码</p>
+        <p class="text-slate-500">管理 DeepSeek 和 GLM API 密钥、查看 Token 用量和管理员密码</p>
       </div>
 
       <!-- 密码验证卡片 -->
@@ -46,63 +46,46 @@
 
       <!-- 管理面板 -->
       <div v-else class="space-y-6">
-        <!-- 当前 API 密钥 -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Icon icon="lucide:key" class="w-5 h-5 text-blue-600" />
-            </div>
-            <h2 class="text-lg font-semibold text-slate-800">当前 API 密钥</h2>
-          </div>
-          <div class="bg-slate-50 rounded-lg p-4 mb-4">
-            <div class="flex items-center justify-between">
-              <code class="text-sm text-slate-600 font-mono">{{ currentApiKey || '未配置' }}</code>
-              <div
-                v-if="currentApiKey && currentApiKey !== '未配置'"
-                class="flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
-              >
-                <Icon icon="lucide:check-circle" class="w-3.5 h-3.5" />
-                <span>已配置</span>
-              </div>
-              <div
-                v-else
-                class="flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
-              >
-                <Icon icon="lucide:alert-circle" class="w-3.5 h-3.5" />
-                <span>未配置</span>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-slate-500">
-            <Icon icon="lucide:shield-check" class="w-4 h-4" />
-            <span>API 密钥已加密存储，仅显示掩码版本以确保安全</span>
-          </div>
+        <!-- 模型选择策略 -->
+        <ModelStrategyCard
+          ref="modelStrategyRef"
+          v-model="modelStrategy"
+          @change="handleUpdateModelStrategy"
+        />
 
-          <!-- 未配置时的提示 -->
-          <div
-            v-if="!currentApiKey || currentApiKey === '未配置'"
-            class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
-          >
-            <div class="flex items-start gap-3">
-              <Icon icon="lucide:info" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p class="text-sm text-blue-800 font-medium mb-1">还没有 API 密钥？</p>
-                <p class="text-sm text-blue-600 mb-2">
-                  前往 DeepSeek 开放平台获取您的 API 密钥，即可开始使用 AI 功能。
-                </p>
-                <a
-                  href="https://platform.deepseek.com/api_keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-800 font-medium hover:underline"
-                >
-                  <Icon icon="lucide:external-link" class="w-4 h-4" />
-                  前往 DeepSeek 官网获取密钥 →
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- DeepSeek API 密钥 -->
+        <ApiKeyCard
+          ref="deepseekCardRef"
+          title="DeepSeek API 密钥"
+          icon="lucide:key"
+          theme-color="blue"
+          :current-key="currentApiKey"
+          key-hint="以 sk- 开头"
+          placeholder="sk-..."
+          :help-links="[
+            { text: '前往 DeepSeek 官网获取密钥 →', url: 'https://platform.deepseek.com/api_keys' }
+          ]"
+          no-key-title="还没有 DeepSeek API 密钥？"
+          no-key-desc="前往 DeepSeek 开放平台获取您的 API 密钥，即可开始使用 AI 功能。"
+          @update="handleUpdateApiKey"
+        />
+
+        <!-- Hunyuan API 密钥 -->
+        <ApiKeyCard
+          ref="hunyuanCardRef"
+          title="Hunyuan API 密钥"
+          icon="lucide:zap"
+          theme-color="green"
+          :current-key="currentHunyuanKey"
+          badge="hunyuan-lite 免费，不支持思考推理"
+          extra-hint="hunyuan-lite 模型完全免费，其他模型可能收费"
+          :help-links="[
+            { text: '前往腾讯云获取 Hunyuan API 密钥 →', url: 'https://console.cloud.tencent.com/hunyuan/api-key' }
+          ]"
+          no-key-title="还没有 Hunyuan API 密钥？"
+          no-key-desc="hunyuan-lite 模型完全免费，前往腾讯云开通服务并获取 API 密钥。"
+          @update="handleUpdateHunyuanKey"
+        />
 
         <!-- 余额查询 -->
         <div class="bg-white rounded-2xl shadow-lg p-6">
@@ -335,80 +318,6 @@
           </div>
         </div>
 
-        <!-- 更新 API 密钥 -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <Icon icon="lucide:refresh-cw" class="w-5 h-5 text-green-600" />
-            </div>
-            <h2 class="text-lg font-semibold text-slate-800">更新 API 密钥</h2>
-          </div>
-          <div class="space-y-4">
-            <!-- API 密钥输入 -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                新的 API 密钥
-                <span class="text-xs text-slate-400 font-normal ml-1">（以 sk- 开头）</span>
-              </label>
-              <div class="relative">
-                <input
-                  v-model="newApiKey"
-                  :type="showNewApiKey ? 'text' : 'password'"
-                  placeholder="sk-..."
-                  class="w-full px-4 py-2 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all font-mono"
-                />
-                <button
-                  type="button"
-                  @click="showNewApiKey = !showNewApiKey"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-                  :title="showNewApiKey ? '隐藏密钥' : '显示密钥'"
-                >
-                  <Icon :icon="showNewApiKey ? 'lucide:eye-off' : 'lucide:eye'" class="w-4 h-4 text-slate-400" />
-                </button>
-              </div>
-
-            </div>
-
-            <!-- 错误提示（放在按钮上方，用户能看到） -->
-            <div v-if="apiKeyErrorMsg" class="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-red-600 text-sm flex items-center gap-2">
-                <Icon icon="lucide:alert-circle" class="w-4 h-4 flex-shrink-0" />
-                {{ apiKeyErrorMsg }}
-              </p>
-            </div>
-
-            <!-- 成功提示 -->
-            <div v-if="apiKeySuccessMsg" class="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p class="text-green-600 text-sm flex items-center gap-2">
-                <Icon icon="lucide:check-circle" class="w-4 h-4 flex-shrink-0" />
-                {{ apiKeySuccessMsg }}
-              </p>
-            </div>
-
-            <!-- 更新按钮 -->
-            <button
-              @click="handleUpdateApiKey"
-              :disabled="isUpdating || !newApiKey"
-              class="w-full py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-slate-300 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <Icon v-if="isUpdating" icon="lucide:loader-2" class="w-4 h-4 animate-spin" />
-              <span>{{ isUpdating ? '验证并更新中...' : '更新 API 密钥' }}</span>
-            </button>
-
-            <!-- 安全提示 -->
-            <div class="flex items-start gap-2 text-xs text-slate-500 bg-slate-50 rounded-lg p-3">
-              <Icon icon="lucide:shield" class="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div>
-                <p class="font-medium text-slate-600 mb-1">安全提示</p>
-                <ul class="space-y-0.5 text-slate-500">
-                  <li>• API 密钥输入时默认隐藏，防止旁人偷看</li>
-                  <li>• 更新成功后输入框将自动清空</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- 修改管理员密码 -->
         <div class="bg-white rounded-2xl shadow-lg p-6">
           <div class="flex items-center gap-3 mb-4">
@@ -499,12 +408,16 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
+import ApiKeyCard from './components/ApiKeyCard.vue'
+import ModelStrategyCard from './components/ModelStrategyCard.vue'
 import {
   getStoredPassword,
   storePassword,
   clearStoredPassword,
   getApiKey,
   updateApiKey,
+  updateHunyuanApiKey,
+  updateModelStrategy,
   updateAdminPassword,
   queryDeepSeekBalance,
   getTokenUsage,
@@ -526,31 +439,32 @@ import { useMessage } from './composables/useMessage'
 const {
   errorMsg,
   successMsg,
-  apiKeyErrorMsg,
-  apiKeySuccessMsg,
   passwordErrorMsg,
   passwordSuccessMsg,
   showError,
-  showSuccess,
-  showApiKeyError,
-  showApiKeySuccess,
   showPasswordError,
   showPasswordSuccess,
   clearAllMessages
 } = useMessage()
 
+// 组件引用
+const deepseekCardRef = ref<InstanceType<typeof ApiKeyCard> | null>(null)
+const hunyuanCardRef = ref<InstanceType<typeof ApiKeyCard> | null>(null)
+const modelStrategyRef = ref<InstanceType<typeof ModelStrategyCard> | null>(null)
+
 // 状态
 const isAuthenticated = ref(false)
 const isLoading = ref(false)
-const isUpdating = ref(false)
 const isUpdatingPassword = ref(false)
 const password = ref('')
-const currentApiKey = ref('')  // 现在存储的是后端返回的掩码版本
-const newApiKey = ref('')
-const showNewApiKey = ref(false)  // 控制新密钥输入框的显示/隐藏
+const currentApiKey = ref('')  // DeepSeek API Key（掩码版本）
+const currentHunyuanKey = ref('')  // Hunyuan API Key（掩码版本）
 const oldPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
+
+// 模型策略
+const modelStrategy = ref<'deepseek' | 'hunyuan' | 'dynamic'>('dynamic')
 
 // 余额查询状态
 const isQueryingBalance = ref(false)
@@ -599,6 +513,8 @@ const handleLogin = async () => {
     const res = await getApiKey(password.value)
     if (res.data.code === 0) {
       currentApiKey.value = res.data.data?.api_key || ''
+      currentHunyuanKey.value = res.data.data?.hunyuan_api_key || ''
+      modelStrategy.value = (res.data.data?.model_strategy as 'deepseek' | 'hunyuan' | 'dynamic') || 'dynamic'
       storePassword(password.value)
       isAuthenticated.value = true
     } else {
@@ -619,39 +535,26 @@ const handleLogout = () => {
   isAuthenticated.value = false
   password.value = ''
   currentApiKey.value = ''
-  newApiKey.value = ''
-  showNewApiKey.value = false
+  currentHunyuanKey.value = ''
   oldPassword.value = ''
   newPassword.value = ''
   confirmPassword.value = ''
+  modelStrategy.value = 'dynamic'
   balanceInfo.value = null
   tokenUsageData.value = null
   clearAllMessages()
 }
 
-// 更新 API 密钥
-const handleUpdateApiKey = async () => {
-  if (!newApiKey.value) {
-    showApiKeyError('请输入新的 API 密钥')
+// 更新 DeepSeek API 密钥
+const handleUpdateApiKey = async (key: string, callback: (error?: Error) => void) => {
+  const storedPassword = getStoredPassword()
+  if (!storedPassword) {
+    callback(new Error('登录已过期，请重新登录'))
     return
   }
 
-  isUpdating.value = true
-  apiKeyErrorMsg.value = ''
-  apiKeySuccessMsg.value = ''
-
   try {
-    const storedPassword = getStoredPassword()
-    if (!storedPassword) {
-      showApiKeyError('登录已过期，请重新登录')
-      isAuthenticated.value = false
-      return
-    }
-
-    const res = await updateApiKey(
-      storedPassword,
-      newApiKey.value
-    )
+    const res = await updateApiKey(storedPassword, key)
 
     if (res.data.code === 0) {
       // 更新成功后，重新获取掩码版本的密钥
@@ -659,29 +562,90 @@ const handleUpdateApiKey = async () => {
       if (keyRes.data.code === 0) {
         currentApiKey.value = keyRes.data.data?.api_key || ''
       }
-
-      // 清空输入框和相关状态
-      newApiKey.value = ''
-      showNewApiKey.value = false
-
-      showApiKeySuccess('API 密钥更新成功')
+      callback()
     } else {
-      showApiKeyError(res.data.msg || '更新失败')
+      callback(new Error(res.data.msg || '更新失败'))
     }
   } catch (error: any) {
     // 处理 Axios 错误，提取后端返回的错误信息
     if (error.response?.data?.msg) {
-      showApiKeyError(error.response.data.msg)
+      callback(new Error(error.response.data.msg))
     } else if (error.response?.data?.message) {
-      showApiKeyError(error.response.data.message)
+      callback(new Error(error.response.data.message))
     } else if (error.message) {
-      showApiKeyError(`更新失败: ${error.message}`)
+      callback(new Error(error.message))
     } else {
-      showApiKeyError('更新失败，请检查网络连接')
+      callback(new Error('更新失败，请检查网络连接'))
     }
-    console.error('更新 API 密钥失败:', error)
-  } finally {
-    isUpdating.value = false
+  }
+}
+
+// 更新 Hunyuan API 密钥
+const handleUpdateHunyuanKey = async (key: string, callback: (error?: Error) => void) => {
+  const storedPassword = getStoredPassword()
+  if (!storedPassword) {
+    callback(new Error('登录已过期，请重新登录'))
+    return
+  }
+
+  try {
+    const res = await updateHunyuanApiKey(storedPassword, key)
+
+    if (res.data.code === 0) {
+      // 更新成功后，重新获取掩码版本的密钥
+      const keyRes = await getApiKey(storedPassword)
+      if (keyRes.data.code === 0) {
+        currentHunyuanKey.value = keyRes.data.data?.hunyuan_api_key || ''
+      }
+      callback()
+    } else {
+      callback(new Error(res.data.msg || '更新失败'))
+    }
+  } catch (error: any) {
+    // 处理 Axios 错误，提取后端返回的错误信息
+    if (error.response?.data?.msg) {
+      callback(new Error(error.response.data.msg))
+    } else if (error.response?.data?.message) {
+      callback(new Error(error.response.data.message))
+    } else if (error.message) {
+      callback(new Error(error.message))
+    } else {
+      callback(new Error('更新失败，请检查网络连接'))
+    }
+  }
+}
+
+// 更新模型策略
+const handleUpdateModelStrategy = async (
+  value: 'deepseek' | 'hunyuan' | 'dynamic',
+  callback: (error?: Error) => void
+) => {
+  try {
+    const storedPassword = getStoredPassword()
+    if (!storedPassword) {
+      isAuthenticated.value = false
+      callback(new Error('登录已过期，请重新登录'))
+      return
+    }
+
+    const res = await updateModelStrategy(storedPassword, value)
+
+    if (res.data.code === 0) {
+      callback()
+    } else {
+      callback(new Error(res.data.msg || '更新失败'))
+    }
+  } catch (error: any) {
+    if (error.response?.data?.msg) {
+      callback(new Error(error.response.data.msg))
+    } else if (error.response?.data?.message) {
+      callback(new Error(error.response.data.message))
+    } else if (error.message) {
+      callback(new Error(`更新失败: ${error.message}`))
+    } else {
+      callback(new Error('更新失败，请检查网络连接'))
+    }
+    console.error('更新模型策略失败:', error)
   }
 }
 

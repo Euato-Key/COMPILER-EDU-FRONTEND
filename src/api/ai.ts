@@ -33,7 +33,7 @@ export const clearStoredPassword = (): void => {
  * @returns API 密钥
  */
 export const getApiKey = (password: string) => {
-  return request.get<ApiResponse<{ api_key: string }>>('/api/getApiKey', {
+  return request.get<ApiResponse<{ api_key: string; hunyuan_api_key: string; model_strategy: string }>>('/api/getApiKey', {
     headers: {
       'X-Admin-Password': password
     }
@@ -73,6 +73,44 @@ export const updateAdminPassword = (oldPassword: string, newPassword: string) =>
     old_password: oldPassword,
     new_password: newPassword
   })
+}
+
+/**
+ * 更新 Hunyuan API 密钥
+ * @param oldPassword 原密码
+ * @param newHunyuanKey 新 Hunyuan API 密钥
+ * @returns 更新结果
+ */
+export const updateHunyuanApiKey = (
+  oldPassword: string,
+  newHunyuanKey: string
+) => {
+  return request.post<ApiResponse<{ hunyuan_api_key_updated: boolean }>>(
+    '/api/updateHunyuanApiKey',
+    {
+      old_password: oldPassword,
+      new_hunyuan_api_key: newHunyuanKey
+    }
+  )
+}
+
+/**
+ * 更新模型选择策略
+ * @param oldPassword 原密码
+ * @param strategy 策略: 'deepseek' | 'hunyuan' | 'dynamic'
+ * @returns 更新结果
+ */
+export const updateModelStrategy = (
+  oldPassword: string,
+  strategy: 'deepseek' | 'hunyuan' | 'dynamic'
+) => {
+  return request.post<ApiResponse<{ model_strategy: string }>>(
+    '/api/updateModelStrategy',
+    {
+      old_password: oldPassword,
+      strategy: strategy
+    }
+  )
 }
 
 /**
@@ -309,6 +347,45 @@ export const sendAIChatStream = async (data: AIChatRequest): Promise<Response | 
     return response
   } catch (error) {
     console.error('AI 流式请求失败:', error)
+    return null
+  }
+}
+
+/**
+ * 生成对话摘要（静默调用 Hunyuan-lite，低成本）
+ * @param question 用户问题
+ * @param answer AI回答
+ * @returns 摘要内容
+ */
+export const generateSummary = async (
+  question: string,
+  answer: string
+): Promise<string | null> => {
+  try {
+    const response = await request.post<ApiResponse<AIChatResponse>>('/api/ai/chat', {
+      messages: [
+        {
+          role: 'system',
+          content: '你是一个对话摘要生成助手。请将用户的问题和AI的回答总结成摘要，保留关键信息，用于后续的对话上下文。包括用户的疑惑点以及回答的关键点，不超过500个字。'
+        },
+        {
+          role: 'user',
+          content: `请生成摘要：问题：${question}\n\n回答：${answer}\n\n`
+        }
+      ],
+      model: 'hunyuan-lite',  // 使用免费的 Hunyuan-lite
+      temperature: 0.3,
+      max_tokens: 100,
+      module: 'summary'
+    })
+
+    if (response.data.code === 0) {
+      return response.data.data?.choices?.[0]?.message?.content?.trim() || null
+    }
+    console.error('生成摘要失败:', response.data.msg)
+    return null
+  } catch (error) {
+    console.error('生成摘要请求失败:', error)
     return null
   }
 }
