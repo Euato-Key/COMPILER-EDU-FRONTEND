@@ -169,8 +169,23 @@ async function callAIAPI(
  */
 function parseAIResponse(response: string): AIReportContent {
   try {
-    // 尝试直接解析JSON
-    const parsed = JSON.parse(response)
+    // 清理响应内容：去除 markdown 代码块标记
+    let cleanedResponse = response.trim()
+    
+    // 去除开头的 ```json 或 ```
+    if (cleanedResponse.startsWith('```json')) {
+      cleanedResponse = cleanedResponse.substring(7).trim()
+    } else if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse.substring(3).trim()
+    }
+    
+    // 去除结尾的 ```
+    if (cleanedResponse.endsWith('```')) {
+      cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3).trim()
+    }
+    
+    // 尝试解析JSON
+    const parsed = JSON.parse(cleanedResponse)
 
     // 验证必要字段
     if (!parsed.overallEvaluation) {
