@@ -4,6 +4,7 @@ export interface Message {
   content: string
   reasoningContent?: string  // 深度思考内容
   timestamp?: number
+  summary?: string  // 对话摘要（用于上下文，替代完整内容以节省token）
 }
 
 // 错误日志条目

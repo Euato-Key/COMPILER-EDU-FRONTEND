@@ -308,7 +308,6 @@ const copyToClipboard = async (text: string) => {
       showCopySuccess.value = false
     }, 2000)
   } catch (err) {
-    console.error('复制失败:', err)
     // 降级方案：使用传统的复制方法
     const textArea = document.createElement('textarea')
     textArea.value = text
@@ -429,10 +428,6 @@ const handleSend = async () => {
   const message = inputMessage.value.trim()
   if (!message || isStreaming.value) return
 
-  console.log('发送消息:', message)
-  console.log('当前store:', currentStore.value)
-  console.log('聊天上下文:', props.context)
-
   inputMessage.value = ''
 
     try {
@@ -449,15 +444,10 @@ const handleSend = async () => {
       currentStore.value.saveToStorage()
     }
   } catch (err) {
-    console.error('发送消息失败:', err)
   }
 }
 
 const sendPresetQuestion = async (question: string) => {
-  console.log('发送预设问题:', question)
-  console.log('当前页面类型:', props.pageType)
-  console.log('当前store:', currentStore.value)
-  console.log('预设问题:', presetQuestions.value)
   inputMessage.value = question
   await handleSend()
 }

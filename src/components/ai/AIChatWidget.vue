@@ -198,7 +198,6 @@ onUnmounted(() => {
 // 监听聊天上下文变化
 watch(() => props.context, (newContext) => {
   // 当上下文变化时，可以触发一些操作
-  console.log('聊天上下文已更新:', newContext)
 }, { deep: true })
 </script>
 

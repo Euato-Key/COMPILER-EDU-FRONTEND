@@ -346,6 +346,19 @@ const hasCompleteCodeBlock = (content: string, lang: string): boolean => {
   return regex.test(content)
 }
 
+// 检查内容中是否有未闭合的代码块（以 ```lang 开头但没有对应的 ``` 结尾）
+const hasUnclosedCodeBlock = (content: string, lang: string): boolean => {
+  // 查找所有 ```lang 开头的位置
+  const openRegex = new RegExp('```\\s*' + lang + '\\s*\\n', 'g')
+  const closeRegex = /```\s*(?:\n|$)/g
+
+  const openMatches = [...content.matchAll(openRegex)]
+  const closeMatches = [...content.matchAll(closeRegex)]
+
+  // 如果开标签数量大于闭标签数量，说明有未闭合的代码块
+  return openMatches.length > closeMatches.length
+}
+
 // 提取完整的代码块内容
 const extractCompleteCodeBlocks = (content: string, lang: string): Array<{ code: string; fullMatch: string }> => {
   const regex = new RegExp('```\\s*' + lang + '\\s*\\n([\\s\\S]*?)\\n```', 'g')
@@ -456,9 +469,14 @@ const renderDotElement = async (element: HTMLElement) => {
   }
 }
 
-// 渲染图表的函数 - 即时渲染完整图表
+// 渲染图表的函数 - 只有所有代码块都闭合时才渲染
 const renderDiagrams = async () => {
   try {
+    // 检查是否有未闭合的代码块，如果有则跳过渲染（等待流式输出完成）
+    if (hasUnclosedCodeBlock(props.content, 'mermaid') || hasUnclosedCodeBlock(props.content, 'dot')) {
+      return
+    }
+
     // 只渲染AI组件内部的图表，不渲染文档系统的图表
     const aiContainer = document.querySelector('.ai-chat-widget') || document.querySelector('.ai-chat-window')
 

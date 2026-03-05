@@ -1,6 +1,6 @@
 import { ref, reactive } from 'vue'
 import type { Message, ChatContext, AIConfig, AIResponse } from '../types'
-import { sendAIChat, sendAIChatStream } from '@/api/ai'
+import { sendAIChat, sendAIChatStream, generateSummary } from '@/api/ai'
 
 export function useAIChat() {
   // AI配置
@@ -193,10 +193,16 @@ export function useAIChat() {
       // 构建系统提示词
       const systemPrompt = buildSystemPrompt(context, faChatStore, ll1ChatStore, lr0ChatStore, slr1ChatStore, homeChatStore)
 
-      // 构建消息历史
+      // 构建消息历史（使用摘要替代完整内容以节省 token）
+      const rawMessages = currentStore ? currentStore.messages : messages.value
       const messageHistory: Message[] = [
         { role: 'system', content: systemPrompt },
-        ...(currentStore ? currentStore.messages : messages.value)
+        ...rawMessages.map(msg => ({
+          role: msg.role,
+          // 如果有摘要则使用摘要，否则使用原始内容
+          content: msg.summary || msg.content,
+          reasoningContent: msg.reasoningContent
+        }))
       ]
 
       let fullContent = ''
@@ -291,7 +297,7 @@ export function useAIChat() {
         fullReasoningContent = response.choices?.[0]?.message?.reasoning_content || ''
       }
 
-      // 添加AI回复
+      // 添加AI回复（包含完整内容）
       if (currentStore) {
         currentStore.addMessage('assistant', fullContent, fullReasoningContent || undefined)
         currentStore.setStreaming(false)
@@ -304,13 +310,30 @@ export function useAIChat() {
         currentReasoningContent.value = ''
       }
 
+      // 静默生成摘要（使用 Hunyuan-lite，低成本）
+      // 摘要用于后续对话的上下文，不阻塞用户
+      generateSummary(userMessage, fullContent).then(summary => {
+        if (summary) {
+          // 更新最后一条消息的摘要
+          const targetStore = currentStore || { messages }
+          const lastMsg = targetStore.messages[targetStore.messages.length - 1]
+          if (lastMsg && lastMsg.role === 'assistant') {
+            lastMsg.summary = summary
+            // 同时为用户消息也生成摘要
+            const userMsg = targetStore.messages[targetStore.messages.length - 2]
+            if (userMsg && userMsg.role === 'user') {
+              userMsg.summary = userMessage.length > 50 ? userMessage.substring(0, 50) + '...' : userMessage
+            }
+          }
+        }
+      })
+
       return {
         content: fullContent,
         isStreaming: false
       }
 
                 } catch (err) {
-      console.error('AI聊天错误:', err)
       const errorMessage = err instanceof Error ? err.message : '未知错误'
 
       // 根据页面类型选择正确的store进行错误处理
