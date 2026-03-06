@@ -12,6 +12,11 @@
   --theme-step-bg: #F8FAFC;
   --theme-step-border: #E5E7EB;
 
+  /* 页脚主题变量 */
+  --theme-footer-bg: #FFFFFF;
+  --theme-footer-border: #E5E7EB;
+  --theme-footer-text: #6B7280;
+
   /* 文档系统主题变量 */
   --theme-sidebar-bg: #FFFFFF;
   --theme-border: #E5E7EB;
@@ -95,6 +100,19 @@ html, body {
   color: var(--theme-text-muted);
 }
 
+/* 页脚主题样式 */
+.theme-footer-bg {
+  background-color: var(--theme-footer-bg);
+}
+
+.theme-footer-border {
+  border-color: var(--theme-footer-border);
+}
+
+.theme-footer-text {
+  color: var(--theme-footer-text);
+}
+
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -102,6 +120,9 @@ html, body {
     --theme-border: #374151;
     --theme-text: #F9FAFB;
     --theme-text-muted: #9CA3AF;
+    --theme-footer-bg: #1F2937;
+    --theme-footer-border: #374151;
+    --theme-footer-text: #9CA3AF;
   }
 }
 
@@ -110,4 +131,7 @@ html, body {
   --theme-border: #374151;
   --theme-text: #F9FAFB;
   --theme-text-muted: #9CA3AF;
+  --theme-footer-bg: #1F2937;
+  --theme-footer-border: #374151;
+  --theme-footer-text: #9CA3AF;
 }

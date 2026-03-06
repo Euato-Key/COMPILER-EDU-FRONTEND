@@ -179,6 +179,9 @@
       page-type="home"
       :context="chatContext"
     />
+
+    <!-- 页脚 -->
+    <AppFooter />
   </div>
 </template>
 
@@ -190,6 +193,7 @@ defineOptions({
 
 import { Icon } from '@iconify/vue'
 import ThemeSelector from '@/components/shared/ThemeSelector.vue'
+import AppFooter from '@/components/shared/AppFooter.vue'
 import { AIChatWidget } from '@/components/ai'
 import { useHomeChatStore } from '@/stores/homeChat'
 import type { ChatContext } from '@/components/ai/types'

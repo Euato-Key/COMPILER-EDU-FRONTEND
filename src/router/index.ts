@@ -11,6 +11,7 @@ import docRoutes from './modules/docs'
 import recordRoutes from './modules/record'
 import reportRoutes from './modules/report'
 import staticsRoutes from './modules/statics'
+import legalRoutes from './modules/legal'
 
 // 基础路由
 const baseRoutes: RouteRecordRaw[] = [
@@ -54,7 +55,8 @@ const routes: RouteRecordRaw[] = [
   ...docRoutes,
   ...recordRoutes,
   ...reportRoutes,
-  ...staticsRoutes
+  ...staticsRoutes,
+  ...legalRoutes
 ]
 
 const router = createRouter({
